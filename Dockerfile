@@ -14,8 +14,11 @@ RUN npm ci
 # Copy backend application files
 COPY backend .
 
-# Generate Prisma Client
-RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npx prisma generate
+# Generate Prisma Client with explicit schema path
+RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npx prisma generate --schema=./prisma/schema.prisma
+
+# Verify Prisma client was generated
+RUN ls -la src/generated/prisma/ || echo "Warning: Prisma client not found"
 
 # Remove dev dependencies, keep only production
 RUN npm prune --production
