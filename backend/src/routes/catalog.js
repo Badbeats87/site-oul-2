@@ -9,6 +9,7 @@ import {
   fullTextSearch,
   autocomplete,
   searchByAlbumArtistLabel,
+  facetedSearch,
 } from '../controllers/releaseController.js';
 
 const router = express.Router();
@@ -284,5 +285,101 @@ router.post('/', createRelease);
 router.put('/:id', updateRelease);
 
 router.delete('/:id', deleteRelease);
+
+/**
+ * @swagger
+ * /api/v1/catalog/search/faceted:
+ *   get:
+ *     summary: Faceted search with filters and category counts
+ *     description: Advanced search with genre, condition, price, and year filtering plus aggregated facets
+ *     tags:
+ *       - Catalog
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         description: Optional search query
+ *       - in: query
+ *         name: genres
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Filter by genre(s)
+ *       - in: query
+ *         name: conditions
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Filter by condition(s) (MINT, NEAR_MINT, etc.)
+ *       - in: query
+ *         name: priceMin
+ *         schema:
+ *           type: number
+ *         description: Minimum price
+ *       - in: query
+ *         name: priceMax
+ *         schema:
+ *           type: number
+ *         description: Maximum price
+ *       - in: query
+ *         name: yearMin
+ *         schema:
+ *           type: integer
+ *         description: Minimum release year
+ *       - in: query
+ *         name: yearMax
+ *         schema:
+ *           type: integer
+ *         description: Maximum release year
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *           maximum: 200
+ *         description: Maximum results per page
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Faceted search results with aggregated counts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     results:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                     pagination:
+ *                       type: object
+ *                     facets:
+ *                       type: object
+ *                       properties:
+ *                         genres:
+ *                           type: array
+ *                         conditions:
+ *                           type: array
+ *                         priceRanges:
+ *                           type: array
+ *                         years:
+ *                           type: array
+ */
+router.get('/search/faceted', facetedSearch);
 
 export default router;

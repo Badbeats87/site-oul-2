@@ -657,6 +657,248 @@ class ReleaseService {
       throw new ApiError('Failed to search by album/artist/label', 500);
     }
   }
+
+  /**
+   * Faceted search with filterable fields and category counts
+   * Supports filtering by genre, condition, price range with aggregated facets
+   * @param {Object} filters - Filter options
+   * @param {string} filters.query - Optional search query
+   * @param {string[]} filters.genres - Genre filter(s)
+   * @param {string[]} filters.conditions - Condition filter(s)
+   * @param {number} filters.priceMin - Minimum price
+   * @param {number} filters.priceMax - Maximum price
+   * @param {number} filters.yearMin - Minimum release year
+   * @param {number} filters.yearMax - Maximum release year
+   * @param {number} limit - Maximum results
+   * @param {number} page - Page number for pagination
+   * @returns {Promise<Object>} Search results with facets
+   */
+  async facetedSearch(filters = {}, limit = 50, page = 1) {
+    try {
+      const { query, genres, conditions, priceMin, priceMax, yearMin, yearMax } = filters;
+
+      if (limit > 200) {
+        throw new ApiError('Limit cannot exceed 200', 400);
+      }
+
+      const offset = (page - 1) * limit;
+
+      // Build WHERE clause for releases
+      const where = {};
+
+      // Text search filter
+      if (query && query.trim().length > 0) {
+        // Use raw query for full-text search
+        where.OR = [
+          { title: { contains: query, mode: 'insensitive' } },
+          { artist: { contains: query, mode: 'insensitive' } },
+          { label: { contains: query, mode: 'insensitive' } },
+        ];
+      }
+
+      // Genre filter
+      if (genres && genres.length > 0) {
+        where.genre = { in: genres };
+      }
+
+      // Year range filter
+      if (yearMin || yearMax) {
+        where.releaseYear = {};
+        if (yearMin) where.releaseYear.gte = yearMin;
+        if (yearMax) where.releaseYear.lte = yearMax;
+      }
+
+      // Fetch releases with inventory information
+      const releases = await prisma.release.findMany({
+        where,
+        take: limit,
+        skip: offset,
+        orderBy: { updatedAt: 'desc' },
+        include: {
+          inventoryLots: {
+            where: { status: 'LIVE' },
+            select: {
+              id: true,
+              listPrice: true,
+              conditionMedia: true,
+              conditionSleeve: true,
+            },
+          },
+        },
+      });
+
+      // Filter by price and condition after fetch (using inventory data)
+      let filteredReleases = releases;
+
+      if (priceMin || priceMax || (conditions && conditions.length > 0)) {
+        filteredReleases = releases.filter(release => {
+          // Check if release has any inventory
+          if (!release.inventoryLots || release.inventoryLots.length === 0) {
+            return false;
+          }
+
+          // Apply price filter
+          if (priceMin || priceMax) {
+            const hasMatchingPrice = release.inventoryLots.some(lot => {
+              const price = Number(lot.listPrice);
+              if (priceMin && price < priceMin) return false;
+              if (priceMax && price > priceMax) return false;
+              return true;
+            });
+            if (!hasMatchingPrice) return false;
+          }
+
+          // Apply condition filter
+          if (conditions && conditions.length > 0) {
+            const hasMatchingCondition = release.inventoryLots.some(lot =>
+              conditions.includes(lot.conditionMedia)
+            );
+            if (!hasMatchingCondition) return false;
+          }
+
+          return true;
+        });
+      }
+
+      // Count total matching releases
+      const totalCount = await prisma.release.count({ where });
+
+      // Build facets (aggregated counts per category)
+      const facets = await this._buildFacets(where);
+
+      // Format results with inventory stats
+      const resultsWithInventory = filteredReleases.map(release => {
+        const { inventoryLots, ...releaseData } = release;
+        
+        if (!inventoryLots || inventoryLots.length === 0) {
+          return {
+            ...releaseData,
+            inventory: {
+              available: false,
+              count: 0,
+              lowestPrice: null,
+              highestPrice: null,
+              conditions: [],
+            },
+          };
+        }
+
+        const prices = inventoryLots.map(lot => Number(lot.listPrice));
+        const conditions = [...new Set(inventoryLots.map(lot => lot.conditionMedia))];
+
+        return {
+          ...releaseData,
+          inventory: {
+            available: true,
+            count: inventoryLots.length,
+            lowestPrice: Math.min(...prices),
+            highestPrice: Math.max(...prices),
+            conditions,
+          },
+        };
+      });
+
+      return {
+        results: resultsWithInventory,
+        pagination: {
+          page,
+          limit,
+          total: totalCount,
+          totalPages: Math.ceil(totalCount / limit),
+        },
+        facets,
+        filters: filters,
+        executedAt: new Date(),
+      };
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      logger.error('Faceted search failed', { filters, error: error.message });
+      throw new ApiError('Failed to perform faceted search', 500);
+    }
+  }
+
+  /**
+   * Build facets (aggregated counts) for search results
+   * Provides counts for genres, conditions, price ranges, and years
+   * @param {Object} where - Base WHERE clause for filtering
+   * @returns {Promise<Object>} Facet counts
+   * @private
+   */
+  async _buildFacets(where) {
+    try {
+      // Genre facets
+      const genreFacets = await prisma.release.groupBy({
+        by: ['genre'],
+        where,
+        _count: true,
+        orderBy: { _count: { genre: 'desc' } },
+      });
+
+      // Year facets (grouped by decade)
+      const yearFacets = await prisma.release.groupBy({
+        by: ['releaseYear'],
+        where,
+        _count: true,
+        orderBy: { releaseYear: 'desc' },
+      });
+
+      // Condition facets (from inventory)
+      const conditionFacets = await prisma.inventoryLot.groupBy({
+        by: ['conditionMedia'],
+        where: { status: 'LIVE' },
+        _count: true,
+      });
+
+      // Price range facets
+      const priceRanges = [
+        { label: 'Under $10', min: 0, max: 10 },
+        { label: '$10 - $25', min: 10, max: 25 },
+        { label: '$25 - $50', min: 25, max: 50 },
+        { label: '$50 - $100', min: 50, max: 100 },
+        { label: 'Over $100', min: 100, max: Infinity },
+      ];
+
+      const priceFacets = await Promise.all(
+        priceRanges.map(async range => {
+          const count = await prisma.inventoryLot.count({
+            where: {
+              status: 'LIVE',
+              listPrice: {
+                gte: range.min,
+                ...(range.max !== Infinity && { lt: range.max }),
+              },
+            },
+          });
+          return { ...range, count };
+        })
+      );
+
+      return {
+        genres: genreFacets.map(f => ({
+          value: f.genre,
+          count: f._count,
+        })),
+        years: yearFacets.map(f => ({
+          value: f.releaseYear,
+          count: f._count,
+        })),
+        conditions: conditionFacets.map(f => ({
+          value: f.conditionMedia,
+          count: f._count,
+        })),
+        priceRanges: priceFacets,
+      };
+    } catch (error) {
+      logger.error('Failed to build facets', { error: error.message });
+      // Return empty facets on error
+      return {
+        genres: [],
+        years: [],
+        conditions: [],
+        priceRanges: [],
+      };
+    }
+  }
 }
 
 export default new ReleaseService();
