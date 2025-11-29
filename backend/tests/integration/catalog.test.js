@@ -1,6 +1,7 @@
 import request from 'supertest';
 import app from '../../src/index.js';
 import prisma from '../../src/utils/db.js';
+import { getTestAuthHeader } from '../fixtures/tokens.js';
 
 describe('Catalog API Integration Tests', () => {
   let testReleaseId;
@@ -22,6 +23,7 @@ describe('Catalog API Integration Tests', () => {
     it('should create a new release', async () => {
       const response = await request(app)
         .post('/api/v1/catalog')
+        .set('Authorization', getTestAuthHeader())
         .send({
           title: 'Test Album',
           artist: 'Test Artist',
@@ -42,6 +44,7 @@ describe('Catalog API Integration Tests', () => {
     it('should fail without required fields', async () => {
       const response = await request(app)
         .post('/api/v1/catalog')
+        .set('Authorization', getTestAuthHeader())
         .send({
           label: 'Test Label',
         });
@@ -53,7 +56,9 @@ describe('Catalog API Integration Tests', () => {
 
   describe('GET /api/v1/catalog/:id', () => {
     it('should retrieve a release by ID', async () => {
-      const response = await request(app).get(`/api/v1/catalog/${testReleaseId}`);
+      const response = await request(app)
+        .get(`/api/v1/catalog/${testReleaseId}`)
+        .set('Authorization', getTestAuthHeader());
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -62,7 +67,9 @@ describe('Catalog API Integration Tests', () => {
     });
 
     it('should return 404 for non-existent release', async () => {
-      const response = await request(app).get('/api/v1/catalog/non-existent-id');
+      const response = await request(app)
+        .get('/api/v1/catalog/non-existent-id')
+        .set('Authorization', getTestAuthHeader());
 
       expect(response.status).toBe(404);
       expect(response.body.success).toBe(false);
@@ -73,6 +80,7 @@ describe('Catalog API Integration Tests', () => {
     it('should list all releases with pagination', async () => {
       const response = await request(app)
         .get('/api/v1/catalog')
+        .set('Authorization', getTestAuthHeader())
         .query({ page: 1, limit: 10 });
 
       expect(response.status).toBe(200);
@@ -86,6 +94,7 @@ describe('Catalog API Integration Tests', () => {
     it('should filter by artist', async () => {
       const response = await request(app)
         .get('/api/v1/catalog')
+        .set('Authorization', getTestAuthHeader())
         .query({ artist: 'Test Artist' });
 
       expect(response.status).toBe(200);
@@ -98,6 +107,7 @@ describe('Catalog API Integration Tests', () => {
     it('should update a release', async () => {
       const response = await request(app)
         .put(`/api/v1/catalog/${testReleaseId}`)
+        .set('Authorization', getTestAuthHeader())
         .send({
           title: 'Updated Album',
           genre: 'Jazz',
@@ -112,7 +122,9 @@ describe('Catalog API Integration Tests', () => {
 
   describe('DELETE /api/v1/catalog/:id', () => {
     it('should delete a release', async () => {
-      const response = await request(app).delete(`/api/v1/catalog/${testReleaseId}`);
+      const response = await request(app)
+        .delete(`/api/v1/catalog/${testReleaseId}`)
+        .set('Authorization', getTestAuthHeader());
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -120,7 +132,9 @@ describe('Catalog API Integration Tests', () => {
     });
 
     it('should return 404 when deleting non-existent release', async () => {
-      const response = await request(app).delete('/api/v1/catalog/non-existent-id');
+      const response = await request(app)
+        .delete('/api/v1/catalog/non-existent-id')
+        .set('Authorization', getTestAuthHeader());
 
       expect(response.status).toBe(404);
       expect(response.body.success).toBe(false);
@@ -141,6 +155,7 @@ describe('Catalog API Integration Tests', () => {
     it('should search for releases by query', async () => {
       const response = await request(app)
         .get('/api/v1/catalog/search')
+        .set('Authorization', getTestAuthHeader())
         .query({ q: 'Searchable' });
 
       expect(response.status).toBe(200);
@@ -152,6 +167,7 @@ describe('Catalog API Integration Tests', () => {
     it('should fail with query less than 2 characters', async () => {
       const response = await request(app)
         .get('/api/v1/catalog/search')
+        .set('Authorization', getTestAuthHeader())
         .query({ q: 'a' });
 
       expect(response.status).toBe(400);

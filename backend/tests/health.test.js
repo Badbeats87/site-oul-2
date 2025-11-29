@@ -42,10 +42,10 @@ describe('Health Check Endpoints', () => {
   });
 
   describe('Error Handling', () => {
-    it('should return 404 for non-existent endpoint', async () => {
+    it('should return 401 for non-existent endpoint without auth', async () => {
       const response = await request(app).get('/api/v1/non-existent');
 
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(401);
       expect(response.body.success).toBe(false);
       expect(response.body.error).toHaveProperty('message');
     });
