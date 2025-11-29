@@ -240,3 +240,47 @@ export const fullTextSearch = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * Faceted search with filters and aggregated category counts
+ * Supports genre, condition, price, and year filtering
+ */
+export const facetedSearch = async (req, res, next) => {
+  try {
+    const {
+      q,
+      genres,
+      conditions,
+      priceMin,
+      priceMax,
+      yearMin,
+      yearMax,
+      limit,
+      page,
+    } = req.query;
+
+    const filters = {
+      query: q,
+      genres: genres ? (Array.isArray(genres) ? genres : [genres]) : undefined,
+      conditions: conditions ? (Array.isArray(conditions) ? conditions : [conditions]) : undefined,
+      priceMin: priceMin ? parseFloat(priceMin) : undefined,
+      priceMax: priceMax ? parseFloat(priceMax) : undefined,
+      yearMin: yearMin ? parseInt(yearMin, 10) : undefined,
+      yearMax: yearMax ? parseInt(yearMax, 10) : undefined,
+    };
+
+    const results = await releaseService.facetedSearch(
+      filters,
+      limit ? parseInt(limit, 10) : 50,
+      page ? parseInt(page, 10) : 1
+    );
+
+    res.json({
+      success: true,
+      data: results,
+      requestId: req.id,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
