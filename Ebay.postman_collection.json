@@ -1,0 +1,722 @@
+{
+	"info": {
+		"_postman_id": "007fb30c-c8ae-4349-8a4c-36e7914a7a99",
+		"name": "Ebay",
+		"description": "The eBay platform offers an unprecedented opportunity to build a new eBay business or expand your current business, reach new customers, and create a potential new stream of revenue. Leverage the resources of the eBay Developers Program to tap into the eBay Marketplace with millions of active users globally, with tools and services that meet the diverse needs of buyers and sellers.\n\nContact Support:\n Name: No Contact\n Email: email@example.com",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "34184255",
+		"_collection_link": "https://www.postman.com/api-evangelist/workspace/ebay/collection/35240-007fb30c-c8ae-4349-8a4c-36e7914a7a99?action=share&source=collection_link&creator=34184255"
+	},
+	"item": [
+		{
+			"name": "item",
+			"item": [
+				{
+					"name": "Get Item",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X",
+								"value": "<>",
+								"description": "The ID for the eBay marketplace where the items are hosted. For example: &nbsp;&nbsp;X-EBAY-C-MARKETPLACE-ID = EBAY-US For a list of supported sites see, API Restrictions."
+							},
+							{
+								"key": "Range",
+								"value": "<>",
+								"description": "This header specifies the range in bytes of the chunks of the gzip file being returned. Format: bytes=startpos-endpos For example, the following retrieves the first 10 MBs of the feed file. &nbsp;&nbsp;Range bytes=0-10485760 For more information about using this headers, see Retrieving a gzip feed file. Maximum: 100 MB"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/item?feed_scope=<>&category_id=<>&date=<>",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "feed_scope",
+									"value": "<>",
+									"description": "Controls the contents of the feed file. Valid Value: NEWLY_LISTED - Contains all items that were listed on the day specified by the date parameter in the category specified by the category_id parameter. The items will be Good 'til Cancelled and non-Good 'til Cancelled items. If the item is a non-Good 'til Cancelled item, the item's end date will be returned in the itemEndDate column. /item?feed_scope=NEWLY_LISTED&amp;category_id=15032&amp;date=20170925"
+								},
+								{
+									"key": "category_id",
+									"value": "<>",
+									"description": "An eBay top-level category ID of the items to be returned in the feed file. The list of eBay category IDs is not published and category IDs are not all the same across all the eBay maketplace. You can use the following techniques to find a category by site. Use the Category Changes page. Use the Taxonomy API getCategoryTree call. For details see Get Categories for Buy APIs. /commerce/taxonomy/v1_beta/category_tree/0 Restriction: Must be a top-level category"
+								},
+								{
+									"key": "date",
+									"value": "<>",
+									"description": "The date of the feed file you want. The Item feed files are generated every day and there are always 7 daily feed files available. Important: The daily generated files are available each day after 9am MST (US Mountain Standard Time), which is -7 hours UTC time. There is a 48 hour latency when generating the files. This means you can download the file for July 10th on July 12 after 9am MST. Format: yyyyMMdd Requirement: Must be within 3-10 days in the past"
+								}
+							]
+						},
+						"description": "The Item feed file is generated each day. This call lets you download a daily TSV_GZIP (tab separated value gzip) Item feed file of all the items that were listed on a specific day in a specific category. For each item, all the item details are returned, except for the item description. The description of each item is excluded because these can be huge and items in an item group (an item with variations, such as size and color) can share the same description. The item descriptions are returned i"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Item Get Item By Legacy",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/item/get_item_by_legacy_id?fieldgroups=<>&legacy_item_id=<>&legacy_variation_id=<>&legacy_variation_sku=<>",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"item",
+								"get_item_by_legacy_id"
+							],
+							"query": [
+								{
+									"key": "fieldgroups",
+									"value": "<>",
+									"description": "This field lets you control what is returned in the response. If you do not set this field, the call returns all the details of the item. Note: In this call, the only value supported is PRODUCT. Valid values: PRODUCT - This adds the additionalImages, additionalProductIdentities, aspectGroups, description, gtins, image, and title fields to the response, which describe the item's product. See Product for more information about these fields."
+								},
+								{
+									"key": "legacy_item_id",
+									"value": "<>",
+									"description": "Specifies either: The legacy item Id of an item that is not part of a group. The legacy item Id of a group, which is the Id of the &quot;parent&quot; of the group of items. Note: If you pass in a group Id, you must also use the legacy_variation_id field and pass in the legacy Id of the specific item variation (child Id). Legacy Ids are returned by eBay traditional APIs, such as the Trading API or Finding API. The following is an example of using the value of the ItemID field for a specific item "
+								},
+								{
+									"key": "legacy_variation_id",
+									"value": "<>",
+									"description": "Specifies the legacy item Id of a specific item in an item group, such as the red shirt size L. Legacy Ids are returned by eBay traditional APIs, such as the Trading API or Finding API. Maximum: 1 Requirement: You must always pass in the legacy_item_id with the legacy_variation_id"
+								},
+								{
+									"key": "legacy_variation_sku",
+									"value": "<>",
+									"description": "Specifics the legacy SKU of the item. SKU are item Ids created by the seller. Legacy SKUs are returned by eBay traditional APIs, such as the Trading API or Finding API. The following is an example of using the value of the ItemID and SKU fields, which were returned by the Trading API, to get the RESTful itemId value. &nbsp;&nbsp;&nbsp; browse/v1/item/get_item_by_legacy_id?legacy_item_id=110039490209&amp;legacy_variation_sku=V-00031-WHM Maximum: 1 Requirement: You must always pass in the legacy_i"
+								}
+							]
+						},
+						"description": "This call is a bridge between the eBay legacy APIs, such as Trading, Shopping, and Finding and the eBay Buy APIs. There are differences between how legacy APIs and RESTful APIs return the identifier of an &quot;item&quot;. There is also a difference in what the item Id represents and in the format of the item Id value returned. This call lets you use the legacy item Ids retrieve the details of a specific item, such as description, price, and other information the buyer needs to make a purchasing"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Item Get Items By Item Group",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/item/get_items_by_item_group?item_group_id=<>",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"item",
+								"get_items_by_item_group"
+							],
+							"query": [
+								{
+									"key": "item_group_id",
+									"value": "<>",
+									"description": "Identifier of the item group to return. An item group is an item that has various aspect differences, such as color, size, storage capacity, etc. This Id is returned in the itemGroupHref field of the search and getItem calls. For Example: https://api.ebay.com/buy/browse/v1/item/get_items_by_item_group?item_group_id=351825690866"
+								}
+							]
+						},
+						"description": "This call retrieves the details of the individual items in an item group. An item group is an item that has various aspect differences, such as color, size, storage capacity, etc. You pass in the item group Id as a URI parameter. You use this call to show the item details of items with multiple aspects, such as color, size, storage capacity, etc. This call returns two main containers; items and commonDescriptions. The items container has an array of containers with the details of each item in th"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Item Item",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/item/:item_id?fieldgroups=<>",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"item",
+								":item_id"
+							],
+							"query": [
+								{
+									"key": "fieldgroups",
+									"value": "<>",
+									"description": "This field lets you control what is returned in the response. If you do not set this field, the call returns all the details of the item. Note: In this call, the only value supported is PRODUCT. Valid values: PRODUCT - This adds the additionalImages, additionalProductIdentities, aspectGroups, description, gtins, image, and title fields to the response, which describe the item's product. See Product for more information about these fields."
+								}
+							],
+							"variable": [
+								{
+									"key": "item_id",
+									"value": "<>",
+									"type": "string",
+									"description": "The eBay identifier of an item. This Id is returned by the Browse and Feed API calls. The Id must be in RESTful item Id format. For example: v1|262446562346|561248611424 or v1|112330214619|0. For more information about item Id for RESTful APIs, see the Legacy API compatibility section of the Buy APIs Overview."
+								}
+							]
+						},
+						"description": "This call retrieves the details of a specific item, such as description, price, category, all item aspects, condition, return policies, seller feedback and score, shipping options, shipping costs, estimated delivery, and other information the buyer needs to make a purchasing decision. The Buy APIs are designed to let you create an eBay shopping experience in your app or website. This means you will need to know when something, such as the availability, quantity, etc., has changed in any eBay ite"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "merchandised product",
+			"item": [
+				{
+					"name": "Get Merchandised Product",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/merchandised_product?aspect_filter=<>&category_id=<>&limit=<get>&metric_name=<>",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"merchandised_product"
+							],
+							"query": [
+								{
+									"key": "aspect_filter",
+									"value": "<>",
+									"description": "The aspect name/value pairs and category, which is required, to use to limit the results. For example, in a clothing category one aspect pair would be Color/Red. For example, the call below uses the category Id for Women's Clothing. This will return only items for a woman's red shirt. /buy/browse/v1/item_summary/search?q=shirt&amp;aspect_filter=categoryId:15724,Color:{Red} To get a list of the aspects pairs and the category, which is returned in the dominantCategoryId field, set fieldgroups to A"
+								},
+								{
+									"key": "category_id",
+									"value": "<>",
+									"description": "An eBay top-level category ID of the items to be returned in the feed file. The list of eBay category IDs is not published and category IDs are not all the same across all the eBay maketplace. You can use the following techniques to find a category by site. Use the Category Changes page. Use the Taxonomy API getCategoryTree call. For details see Get Categories for Buy APIs. /commerce/taxonomy/v1_beta/category_tree/0 Restriction: Must be a top-level category"
+								},
+								{
+									"key": "limit",
+									"value": "<get>",
+									"description": "The number of items in a result set. Default: 50 Maximum per result set: 200 Maximum number of items returned: 10,000"
+								},
+								{
+									"key": "metric_name",
+									"value": "<>",
+									"description": "This value filters the result set by the specified metric. Only products in this metric are returned. Currently, the only metric supported is BEST_SELLING. Default: BEST_SELLING Maximum: 1 Required: 1"
+								}
+							]
+						},
+						"description": "This call returns an array of products based on the category and metric specified. This includes details of the product, such as the eBay product Id (EPID), title, and user reviews and ratings for the product. You can use the epid returned by this call in the Browse API search call to retrieve items for this product. Restrictions For a list of supported sites and other restrictions, see API Restrictions."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Merchandised Product Get Also Bought Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/merchandised_product/get_also_bought_products?brand=<get>&epid=<get>&gtin=<get>&mpn=<get>",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"merchandised_product",
+								"get_also_bought_products"
+							],
+							"query": [
+								{
+									"key": "brand",
+									"value": "<get>",
+									"description": "The brand of the product. Restriction: This must be used along with mpn. Required: You must specify one epid, or one gtin, or one brand plus mpn pair."
+								},
+								{
+									"key": "epid",
+									"value": "<get>",
+									"description": "The EPID is the eBay product identifier of a product from the eBay product catalog. Only items in the specified EPID are returned. The Marketing API getMerchandisedProducts call and the getItem, getItemByLegacyId, and getItemsByItemGroup calls return the EPID of the product. &nbsp;&nbsp;&nbsp;/buy/browse/v1/item_summary/search?epid:{15032} Maximum: 1 Required: The call must have category_ids, epid, gtin, or q (or any combination of these)"
+								},
+								{
+									"key": "gtin",
+									"value": "<get>",
+									"description": "This field lets you search by the Global Trade Item Number of the item as defined by http://www.gtin.info. This can be a UPC (Universal Product Code), EAN (European Article Number), or an ISBN (International Standard Book Number) value. &nbsp;&nbsp;&nbsp;/buy/browse/v1/item_summary/search?gtin:{099482432621} Maximum: 1 Required: The call must have category_ids, epid, gtin, or q (or any combination of these)"
+								},
+								{
+									"key": "mpn",
+									"value": "<get>",
+									"description": "The manufacturer part number of the product. Restriction: This must be used along with brand. Required: You must specify one epid, or one gtin, or one brand plus mpn pair."
+								}
+							]
+						},
+						"description": "This call returns products that were also bought when shoppers bought the product specified in the request. Showing 'also bought' products inspires up-selling and cross-selling. You specify the product by one of the following. epid (eBay Product Id) gtin (Global Trade Item Number) brand (brand name such as Nike) plus mpn (Manufacturer's Part Number) Restrictions For a list of supported sites and other restrictions, see API Restrictions. Maximum: A maximum of 12 products are returned. The call wi"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Merchandised Product Get Also Viewed Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/merchandised_product/get_also_viewed_products?brand=<get>&epid=<get>&gtin=<get>&mpn=<get>",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"merchandised_product",
+								"get_also_viewed_products"
+							],
+							"query": [
+								{
+									"key": "brand",
+									"value": "<get>",
+									"description": "The brand of the product. Restriction: This must be used along with mpn. Required: You must specify one epid, or one gtin, or one brand plus mpn pair."
+								},
+								{
+									"key": "epid",
+									"value": "<get>",
+									"description": "The EPID is the eBay product identifier of a product from the eBay product catalog. Only items in the specified EPID are returned. The Marketing API getMerchandisedProducts call and the getItem, getItemByLegacyId, and getItemsByItemGroup calls return the EPID of the product. &nbsp;&nbsp;&nbsp;/buy/browse/v1/item_summary/search?epid:{15032} Maximum: 1 Required: The call must have category_ids, epid, gtin, or q (or any combination of these)"
+								},
+								{
+									"key": "gtin",
+									"value": "<get>",
+									"description": "This field lets you search by the Global Trade Item Number of the item as defined by http://www.gtin.info. This can be a UPC (Universal Product Code), EAN (European Article Number), or an ISBN (International Standard Book Number) value. &nbsp;&nbsp;&nbsp;/buy/browse/v1/item_summary/search?gtin:{099482432621} Maximum: 1 Required: The call must have category_ids, epid, gtin, or q (or any combination of these)"
+								},
+								{
+									"key": "mpn",
+									"value": "<get>",
+									"description": "The manufacturer part number of the product. Restriction: This must be used along with brand. Required: You must specify one epid, or one gtin, or one brand plus mpn pair."
+								}
+							]
+						},
+						"description": "This call returns products that were also viewed when shoppers viewed the product specified in the request. Showing 'also viewed' products encourages up-selling and cross-selling. You specify the product by one of the following. epid (eBay Product Id) gtin (Global Trade Item Number) brand (brand name such as Nike) plus mpn (Manufacturer's Part Number) Restrictions For a list of supported sites and other restrictions, see API Restrictions. Maximum: A maximum of 12 products are returned. The call "
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "category tree/{category tree id}",
+			"item": [
+				{
+					"name": "Get Category Tree Category Tree",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/category_tree/:category_tree_id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"category_tree",
+								":category_tree_id"
+							],
+							"variable": [
+								{
+									"key": "category_tree_id",
+									"value": "<>",
+									"type": "string",
+									"description": "The unique identifier of the eBay category tree being requested."
+								}
+							]
+						},
+						"description": "This call retrieves the complete category tree that is identified by the category_tree_id parameter. The value of category_tree_id was returned by the getDefaultCategoryTreeId call in the categoryTreeId field. The response contains details of all nodes of the specified eBay category tree, as well as the eBay marketplaces that use this category tree. Note: This call can return a very large payload, so you are strongly advised to submit the request with the following HTTP header: &nbsp;&nbsp;Accep"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Category Tree Category Tree  Get Category Subtree",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/category_tree/:category_tree_id/get_category_subtree?category_id=<>",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"category_tree",
+								":category_tree_id",
+								"get_category_subtree"
+							],
+							"query": [
+								{
+									"key": "category_id",
+									"value": "<>",
+									"description": "An eBay top-level category ID of the items to be returned in the feed file. The list of eBay category IDs is not published and category IDs are not all the same across all the eBay maketplace. You can use the following techniques to find a category by site. Use the Category Changes page. Use the Taxonomy API getCategoryTree call. For details see Get Categories for Buy APIs. /commerce/taxonomy/v1_beta/category_tree/0 Restriction: Must be a top-level category"
+								}
+							],
+							"variable": [
+								{
+									"key": "category_tree_id",
+									"value": "<>",
+									"type": "string",
+									"description": "The unique identifier of the eBay category tree being requested."
+								}
+							]
+						},
+						"description": "This call retrieves the details of all nodes of the category tree hierarchy (the subtree) below a specified category of a category tree. You identify the tree using the category_tree_id parameter, which was returned by the getDefaultCategoryTreeId call in the categoryTreeId field. Note: This call can return a very large payload, so you are strongly advised to submit the request with the following HTTP header: &nbsp;&nbsp;Accept-Encoding: application/gzip With this header (in addition to the requ"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Category Tree Category Tree  Get Category Suggestions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/category_tree/:category_tree_id/get_category_suggestions?q=<>",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"category_tree",
+								":category_tree_id",
+								"get_category_suggestions"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "<>",
+									"description": "A string consisting of one or more words that are used for a search of items on eBay. For example: &quot;iphone&quot; or &quot;Harry Potter&quot;. When keywords are separated by a comma, the comma is ignored. So a keyword of &quot;iphone, ipad&quot; is the same as using &quot;iphone ipad&quot;. Both queries return items that have iphone or ipad. Restriction: The * wildcard character is not allowed in this field. Required: The call must have category_ids, epid, gtin, or q (or any combination of t"
+								}
+							],
+							"variable": [
+								{
+									"key": "category_tree_id",
+									"value": "<>",
+									"type": "string",
+									"description": "The unique identifier of the eBay category tree being requested."
+								}
+							]
+						},
+						"description": "This call returns an array of category tree leaf nodes in the specified category tree that are considered by eBay to most closely correspond to the query string q. Returned with each suggested node is a localized name for that category (based on the Accept-Language header specified for the call), and details about each of the category's ancestor nodes, extending from its immediate parent up to the root of the category tree. Note: This call can return a large payload, so you are advised to submit"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Category Tree Category Tree  Get Item Aspects For Category",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/category_tree/:category_tree_id/get_item_aspects_for_category?category_id=<>",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"category_tree",
+								":category_tree_id",
+								"get_item_aspects_for_category"
+							],
+							"query": [
+								{
+									"key": "category_id",
+									"value": "<>",
+									"description": "An eBay top-level category ID of the items to be returned in the feed file. The list of eBay category IDs is not published and category IDs are not all the same across all the eBay maketplace. You can use the following techniques to find a category by site. Use the Category Changes page. Use the Taxonomy API getCategoryTree call. For details see Get Categories for Buy APIs. /commerce/taxonomy/v1_beta/category_tree/0 Restriction: Must be a top-level category"
+								}
+							],
+							"variable": [
+								{
+									"key": "category_tree_id",
+									"value": "<>",
+									"type": "string",
+									"description": "The unique identifier of the eBay category tree being requested."
+								}
+							]
+						},
+						"description": "This call returns a list of aspects that are appropriate or necessary for accurately describing items in the specified leaf category. Each aspect identifies an item attribute (for example, color) for which the seller will be required or encouraged to provide a value (or variation values) when offering an item in that category on eBay. For each aspect, getItemAspectsForCategory provides complete metadata, including: The aspect's data type, format, and entry mode Whether the aspect is required in "
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "order",
+			"item": [
+				{
+					"name": "{order Id}",
+					"item": [
+						{
+							"name": "shipping fulfillment",
+							"item": [
+								{
+									"name": "Get Order Order Shipping Fulfillment",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/order/:orderId/shipping_fulfillment",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"order",
+												":orderId",
+												"shipping_fulfillment"
+											],
+											"variable": [
+												{
+													"key": "orderId",
+													"value": "<get>",
+													"type": "string",
+													"description": "The unique identifier of the order. This value was returned by the getOrders call in the orders.orderId field; for example, 170009092860-9849164007!140000000544476."
+												}
+											]
+										},
+										"description": "Use this call to retrieve the contents of all fulfillments currently defined for a specified order based on the order's unique identifier, orderId. This value is returned in the getOrders call's members.orderId field when you search for orders by creation date or shipment status."
+									},
+									"response": []
+								},
+								{
+									"name": "Get Order Order Shipping Fulfillment Fulfillment",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/order/:orderId/shipping_fulfillment/:fulfillmentId",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"order",
+												":orderId",
+												"shipping_fulfillment",
+												":fulfillmentId"
+											],
+											"variable": [
+												{
+													"key": "fulfillmentId",
+													"value": "<get>",
+													"type": "string",
+													"description": "The unique identifier of the fulfillment. This eBay-generated value was created by the Create Shipping Fulfillment call, and returned by the getShippingFulfillments call in the fulfillments.fulfillmentId field; for example, 9405509699937003457459."
+												},
+												{
+													"key": "orderId",
+													"value": "<get>",
+													"type": "string",
+													"description": "The unique identifier of the order. This value was returned by the getOrders call in the orders.orderId field; for example, 170009092860-9849164007!140000000544476."
+												}
+											]
+										},
+										"description": "Use this call to retrieve the contents of a fulfillment based on its unique identifier, fulfillmentId (combined with the associated order's orderId). The fulfillmentId value was originally generated by the createShippingFulfillment call, and is returned by the getShippingFulfillments call in the members.fulfillmentId field."
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Get Order Order",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/order/:orderId",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"order",
+										":orderId"
+									],
+									"variable": [
+										{
+											"key": "orderId",
+											"value": "<get>",
+											"type": "string",
+											"description": "The unique identifier of the order. This value was returned by the getOrders call in the orders.orderId field; for example, 170009092860-9849164007!140000000544476."
+										}
+									]
+								},
+								"description": "Use this call to retrieve the contents of an order based on its unique identifier, orderId. This value was returned in the getOrders call's orders.orderId field when you searched for orders by creation date, modification date, or fulfillment status. The returned Order object contains information you can use to create and process fulfillments, including: Information about the buyer and seller Information about the order's line items The plans for packaging, addressing and shipping the order The s"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Get Order",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/order?filter=<>&limit=<get>&offset=<get>&orderIds=<>",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"order"
+							],
+							"query": [
+								{
+									"key": "filter",
+									"value": "<>",
+									"description": "This field supports multiple field filters that can be used to use to limit/customize the result set. For example: &nbsp;&nbsp;&nbsp;GET https://api.ebay.com/buy/browse/v1/item_summary/search?q=shirt&amp;filter=price:[10..50] You can also combine filters. &nbsp;&nbsp;&nbsp;GET https://api.ebay.com/buy/browse/v1/item_summary/search?q=shirt&amp;filter=price:[10..50],sellers:{rpseller|bigSal} The following are the supported filters. For details and examples for all the filters, see search Call Fiel"
+								},
+								{
+									"key": "limit",
+									"value": "<get>",
+									"description": "The number of items in a result set. Default: 50 Maximum per result set: 200 Maximum number of items returned: 10,000"
+								},
+								{
+									"key": "offset",
+									"value": "<get>",
+									"description": "The number of items to skip in the result set. This is used with the limit field to control the pagination of the output. If offset is 0 and limit is 10, the call will retrieve items 1-10 from the list of items returned, if offset is 10 and limit is 10, the call will retrieve items 11 thru 20 from the list of items returned. Valid Values: 0-10,000 (inclusive) Default: 0 Maximum number of items returned: 10,000"
+								},
+								{
+									"key": "orderIds",
+									"value": "<>",
+									"description": "A comma-separated list of the unique identifiers of the orders to retrieve (maximum 50). These values were originally generated by eBay as a result of the buyer's checkout process; for example, 170009092860-9849164007!140000000544476. These values are also returned in the orders.orderId field by invoking this call with filter parameters. Note: If the orderIds parameter is included in the request, all other query parameters will be ignored."
+								}
+							]
+						},
+						"description": "Use this call to search for and retrieve one or more orders based on their creation date, last modification date, or fulfillment status using the filter parameter. You can alternatively specify a list of orders using the orderIds parameter. The returned Order objects contain information you can use to create and process fulfillments, including: Information about the buyer and seller Information about the order's line items The plans for packaging, addressing and shipping the order The status of "
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Get Item Summary Search",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/item_summary/search?aspect_filter=<>&category_ids=<>&epid=<get>&fieldgroups=<>&filter=<>&gtin=<get>&limit=<get>&offset=<get>&q=<>&sort=<>",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"item_summary",
+						"search"
+					],
+					"query": [
+						{
+							"key": "aspect_filter",
+							"value": "<>",
+							"description": "The aspect name/value pairs and category, which is required, to use to limit the results. For example, in a clothing category one aspect pair would be Color/Red. For example, the call below uses the category Id for Women's Clothing. This will return only items for a woman's red shirt. /buy/browse/v1/item_summary/search?q=shirt&amp;aspect_filter=categoryId:15724,Color:{Red} To get a list of the aspects pairs and the category, which is returned in the dominantCategoryId field, set fieldgroups to A"
+						},
+						{
+							"key": "category_ids",
+							"value": "<>",
+							"description": "The category Ids to use to limit the results. This field can have one category Id or a comma separated list of Ids. For example: &nbsp;&nbsp;&nbsp;GET https://api.ebay.com/buy/browse/v1/item_summary/search?category_ids=29792 Note: Currently, you can pass in only one category Id. You can also use any combination of the category_Ids, epid, and q fields. This gives you additional control over the result set. For example, let's say you are looking of a toy phone. If you search for &quot;phone&quot;,"
+						},
+						{
+							"key": "epid",
+							"value": "<get>",
+							"description": "The EPID is the eBay product identifier of a product from the eBay product catalog. Only items in the specified EPID are returned. The Marketing API getMerchandisedProducts call and the getItem, getItemByLegacyId, and getItemsByItemGroup calls return the EPID of the product. &nbsp;&nbsp;&nbsp;/buy/browse/v1/item_summary/search?epid:{15032} Maximum: 1 Required: The call must have category_ids, epid, gtin, or q (or any combination of these)"
+						},
+						{
+							"key": "fieldgroups",
+							"value": "<>",
+							"description": "This field lets you control what is returned in the response. If you do not set this field, the call returns all the details of the item. Note: In this call, the only value supported is PRODUCT. Valid values: PRODUCT - This adds the additionalImages, additionalProductIdentities, aspectGroups, description, gtins, image, and title fields to the response, which describe the item's product. See Product for more information about these fields."
+						},
+						{
+							"key": "filter",
+							"value": "<>",
+							"description": "This field supports multiple field filters that can be used to use to limit/customize the result set. For example: &nbsp;&nbsp;&nbsp;GET https://api.ebay.com/buy/browse/v1/item_summary/search?q=shirt&amp;filter=price:[10..50] You can also combine filters. &nbsp;&nbsp;&nbsp;GET https://api.ebay.com/buy/browse/v1/item_summary/search?q=shirt&amp;filter=price:[10..50],sellers:{rpseller|bigSal} The following are the supported filters. For details and examples for all the filters, see search Call Fiel"
+						},
+						{
+							"key": "gtin",
+							"value": "<get>",
+							"description": "This field lets you search by the Global Trade Item Number of the item as defined by http://www.gtin.info. This can be a UPC (Universal Product Code), EAN (European Article Number), or an ISBN (International Standard Book Number) value. &nbsp;&nbsp;&nbsp;/buy/browse/v1/item_summary/search?gtin:{099482432621} Maximum: 1 Required: The call must have category_ids, epid, gtin, or q (or any combination of these)"
+						},
+						{
+							"key": "limit",
+							"value": "<get>",
+							"description": "The number of items in a result set. Default: 50 Maximum per result set: 200 Maximum number of items returned: 10,000"
+						},
+						{
+							"key": "offset",
+							"value": "<get>",
+							"description": "The number of items to skip in the result set. This is used with the limit field to control the pagination of the output. If offset is 0 and limit is 10, the call will retrieve items 1-10 from the list of items returned, if offset is 10 and limit is 10, the call will retrieve items 11 thru 20 from the list of items returned. Valid Values: 0-10,000 (inclusive) Default: 0 Maximum number of items returned: 10,000"
+						},
+						{
+							"key": "q",
+							"value": "<>",
+							"description": "A string consisting of one or more words that are used for a search of items on eBay. For example: &quot;iphone&quot; or &quot;Harry Potter&quot;. When keywords are separated by a comma, the comma is ignored. So a keyword of &quot;iphone, ipad&quot; is the same as using &quot;iphone ipad&quot;. Both queries return items that have iphone or ipad. Restriction: The * wildcard character is not allowed in this field. Required: The call must have category_ids, epid, gtin, or q (or any combination of t"
+						},
+						{
+							"key": "sort",
+							"value": "<>",
+							"description": "Specifies the order and the field name to use to sort the items. To sort in descending order use - before the field name. Currently, you can only sort by price (in ascending or descending order), or by distance (only applicable if the &quot;pickup&quot; filters are used, and only ascending order is supported). If no sort parameter is submitted, the result set is sorted by &quot;Best Match&quot;. The following are examples of using the sort query parameter. Sort Result &amp;sort=price Sorts by pr"
+						}
+					]
+				},
+				"description": "This call performs an advanced search for items. You can search by keyword, category, eBay product Id (EPID), or gtin. Or a combination of these. Encoding Parameters and Headers As with all query parameter values, the fields parameter value and request header values must be URL encoded. For better readability, the examples in this document omit the encoding. Example: &nbsp;&nbsp;search?q=world cup soccer ball&amp;aspect_filter=categoryId:20863,Brand:{Nike|Wilson} Encoded Example: &nbsp;&nbsp; se"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Item Description",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "X",
+						"value": "<>",
+						"description": "The ID for the eBay marketplace where the items are hosted. For example: &nbsp;&nbsp;X-EBAY-C-MARKETPLACE-ID = EBAY-US For a list of supported sites see, API Restrictions."
+					},
+					{
+						"key": "Range",
+						"value": "<>",
+						"description": "This header specifies the range in bytes of the chunks of the gzip file being returned. Format: bytes=startpos-endpos For example, the following retrieves the first 10 MBs of the feed file. &nbsp;&nbsp;Range bytes=0-10485760 For more information about using this headers, see Retrieving a gzip feed file. Maximum: 100 MB"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/item_description?feed_scope=<>&category_id=<>&date=<>",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"item_description"
+					],
+					"query": [
+						{
+							"key": "feed_scope",
+							"value": "<>",
+							"description": "Controls the contents of the feed file. Valid Value: NEWLY_LISTED - Contains all items that were listed on the day specified by the date parameter in the category specified by the category_id parameter. The items will be Good 'til Cancelled and non-Good 'til Cancelled items. If the item is a non-Good 'til Cancelled item, the item's end date will be returned in the itemEndDate column. /item?feed_scope=NEWLY_LISTED&amp;category_id=15032&amp;date=20170925"
+						},
+						{
+							"key": "category_id",
+							"value": "<>",
+							"description": "An eBay top-level category ID of the items to be returned in the feed file. The list of eBay category IDs is not published and category IDs are not all the same across all the eBay maketplace. You can use the following techniques to find a category by site. Use the Category Changes page. Use the Taxonomy API getCategoryTree call. For details see Get Categories for Buy APIs. /commerce/taxonomy/v1_beta/category_tree/0 Restriction: Must be a top-level category"
+						},
+						{
+							"key": "date",
+							"value": "<>",
+							"description": "The date of the feed file you want. The Item feed files are generated every day and there are always 7 daily feed files available. Important: The daily generated files are available each day after 9am MST (US Mountain Standard Time), which is -7 hours UTC time. There is a 48 hour latency when generating the files. This means you can download the file for July 10th on July 12 after 9am MST. Format: yyyyMMdd Requirement: Must be within 3-10 days in the past"
+						}
+					]
+				},
+				"description": "The Description feed file is generated each day. This call lets you download a daily TSV_GZIP (tab separated value gzip) Description feed file containing the descriptions of all the items that were listed on a specific day in a specific category. To store the complete item details, you would always run the getItemFeed and getItemDescriptionFeed calls with the same parameters. &nbsp;&nbsp;&nbsp; /item?feed_scope=NEWLY_LISTED&amp;category_id=625&amp;date=20170918 &nbsp;&nbsp;&nbsp; /item_descripti"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Get Default Category Tree",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/get_default_category_tree_id?marketplace_id=<>",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"get_default_category_tree_id"
+					],
+					"query": [
+						{
+							"key": "marketplace_id",
+							"value": "<>",
+							"description": "The ID of the eBay marketplace for which the category tree ID is being requested. For a list of supported marketplace IDs, see Marketplaces with Default Category Trees."
+						}
+					]
+				},
+				"description": "A given eBay marketplace might use multiple category trees, but one of those trees is considered to be the default for that marketplace. This call retrieves a reference to the default category tree associated with the specified eBay marketplace ID. The response includes only the tree's unique identifier and version, which you can use to retrieve more details about the tree, its structure, and its individual category nodes."
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "httpsapi.ebay.com/",
+			"type": "string"
+		}
+	]
+}

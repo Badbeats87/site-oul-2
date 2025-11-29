@@ -1,0 +1,2272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vinyl Catalog - User Interface Mockups</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --secondary: #dc2626;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-500: #6b7280;
+            --gray-700: #374151;
+            --gray-900: #111827;
+            --border-radius: 8px;
+            --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+            --box-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            color: var(--gray-900);
+            background: var(--gray-100);
+            line-height: 1.6;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 0;
+            background: white;
+            border-bottom: 2px solid var(--gray-200);
+            padding: 0;
+            margin: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--box-shadow);
+        }
+
+        .nav-tab {
+            padding: 16px 24px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-500);
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .nav-tab:hover {
+            color: var(--primary);
+            background: var(--gray-100);
+        }
+
+        .nav-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* Content Sections */
+        .section {
+            display: none;
+            padding: 32px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 32px;
+            color: var(--gray-900);
+        }
+
+        /* Common Components */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding: 24px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1e40af;
+        }
+
+        .btn-secondary {
+            background: var(--gray-200);
+            color: var(--gray-900);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-300);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-sm {
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--gray-200);
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .card-body {
+            font-size: 14px;
+        }
+
+        /* Tables */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        .table thead {
+            background: var(--gray-100);
+            border-bottom: 2px solid var(--gray-200);
+        }
+
+        .table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--gray-700);
+        }
+
+        .table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--gray-200);
+            font-size: 14px;
+        }
+
+        .table tbody tr:hover {
+            background: var(--gray-50);
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-primary {
+            background: rgba(30, 58, 138, 0.1);
+            color: var(--primary);
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        /* Grid Layouts */
+        .grid {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .grid.cols-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .grid.cols-3 {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .grid.cols-4 {
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+        }
+
+        /* Search Bar */
+        .search-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+        }
+
+        /* Product Card */
+        .product-card {
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--box-shadow-lg);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .product-info {
+            padding: 16px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-title {
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+
+        .product-artist {
+            color: var(--gray-500);
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .product-details {
+            font-size: 13px;
+            color: var(--gray-600);
+            margin-bottom: 12px;
+        }
+
+        .product-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+
+        .product-footer {
+            display: flex;
+            gap: 8px;
+            margin-top: auto;
+        }
+
+        .product-footer .btn {
+            flex: 1;
+            text-align: center;
+        }
+
+        /* Alert */
+        .alert {
+            padding: 16px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary);
+            border-left: 4px solid var(--primary);
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border-left: 4px solid var(--success);
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border-left: 4px solid var(--warning);
+        }
+
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border-left: 4px solid var(--danger);
+        }
+
+        /* Status Indicators */
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-dot.active {
+            background: var(--success);
+        }
+
+        .status-dot.pending {
+            background: var(--warning);
+        }
+
+        .status-dot.inactive {
+            background: var(--gray-300);
+        }
+
+        /* Summary Box */
+        .summary-box {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 20px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--gray-200);
+            font-size: 14px;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+
+        .summary-row strong {
+            font-weight: 600;
+        }
+
+        .summary-value {
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* Sidebar */
+        .sidebar-layout {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 24px;
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 20px;
+            height: fit-content;
+        }
+
+        .sidebar-section {
+            margin-bottom: 24px;
+        }
+
+        .sidebar-title {
+            font-weight: 700;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: var(--gray-700);
+        }
+
+        .sidebar-item {
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            color: var(--gray-700);
+            transition: all 0.2s;
+        }
+
+        .sidebar-item:hover {
+            background: var(--gray-100);
+        }
+
+        .sidebar-item.active {
+            background: var(--primary-light);
+            color: white;
+        }
+
+        /* Condition Widget */
+        .condition-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .condition-option {
+            padding: 12px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+
+        .condition-option:hover {
+            border-color: var(--primary);
+        }
+
+        .condition-option.selected {
+            border-color: var(--primary);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .grid.cols-2,
+            .grid.cols-3,
+            .grid.cols-4,
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .section {
+                padding: 16px;
+            }
+
+            .nav-tab {
+                padding: 12px 16px;
+                font-size: 12px;
+            }
+        }
+
+        /* Placeholder Styles */
+        .placeholder {
+            background: linear-gradient(90deg, var(--gray-200) 25%, var(--gray-100) 50%, var(--gray-200) 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .placeholder-text {
+            height: 12px;
+            background: var(--gray-200);
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .placeholder-line {
+            height: 12px;
+            background: var(--gray-200);
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .placeholder-line:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <div class="nav-tabs">
+        <button class="nav-tab active" onclick="switchTab('seller')">Seller Site</button>
+        <button class="nav-tab" onclick="switchTab('buyer')">Buyer Storefront</button>
+        <button class="nav-tab" onclick="switchTab('admin')">Admin Console</button>
+        <button class="nav-tab" onclick="switchTab('inventory')">Inventory Manager</button>
+        <button class="nav-tab" onclick="switchTab('pricing-editor')">Pricing Policy Editor</button>
+    </div>
+
+    <!-- SELLER SITE SECTION -->
+    <div id="seller" class="section active">
+        <div class="header">
+            <div>
+                <h1>🎵 Sell to Us</h1>
+                <p style="color: var(--gray-500); font-size: 14px; margin-top: 4px;">Get instant quotes for your vinyl collection</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary">Account</button>
+            </div>
+        </div>
+
+        <!-- Search Section -->
+        <div class="card">
+            <div class="card-header">Find Your Record</div>
+            <div class="card-body">
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="Search by artist, title, or barcode...">
+                    <button class="btn btn-primary">Search</button>
+                </div>
+                <div class="alert alert-info">💡 Auto-complete suggestions will appear as you type</div>
+            </div>
+        </div>
+
+        <!-- Product Found Section -->
+        <div class="grid cols-1" style="grid-template-columns: 300px 1fr; gap: 24px;">
+            <div class="product-card">
+                <div class="product-image">Album Cover</div>
+                <div class="product-info">
+                    <div class="product-title">Dark Side of the Moon</div>
+                    <div class="product-artist">Pink Floyd</div>
+                    <div class="product-details">
+                        <div>1973 • UK Pressing</div>
+                        <div>EMI (SHVL 804)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="card">
+                    <div class="card-header">Quote Details</div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>Media Condition</label>
+                            <div class="condition-selector">
+                                <div class="condition-option selected">Mint</div>
+                                <div class="condition-option">Near Mint</div>
+                                <div class="condition-option">Very Good +</div>
+                                <div class="condition-option">Very Good</div>
+                                <div class="condition-option">Very Good -</div>
+                                <div class="condition-option">Good</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Sleeve Condition</label>
+                            <div class="condition-selector">
+                                <div class="condition-option">Mint</div>
+                                <div class="condition-option selected">Near Mint</div>
+                                <div class="condition-option">Very Good +</div>
+                                <div class="condition-option">Very Good</div>
+                                <div class="condition-option">Very Good -</div>
+                                <div class="condition-option">Good</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Quantity</label>
+                            <input type="number" class="form-control" value="1" min="1">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Notes (Optional)</label>
+                            <textarea class="form-control" rows="3" placeholder="Any scratches, stickers, or other notable conditions..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="summary-box">
+                    <div class="summary-row">
+                        <span>Base Offer per Record</span>
+                        <span class="summary-value">$28.50</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Condition Adjustment</span>
+                        <span>-15% (-$4.28)</span>
+                    </div>
+                    <div class="summary-row" style="border-bottom: 2px solid var(--gray-300); font-weight: 700; font-size: 16px;">
+                        <span>Total Offer (1 record)</span>
+                        <span class="summary-value" style="font-size: 18px;">$24.22</span>
+                    </div>
+                    <div style="margin-top: 12px; color: var(--gray-500); font-size: 12px;">
+                        Subject to inspection upon receipt. Offer valid for 14 days.
+                    </div>
+                </div>
+
+                <button class="btn btn-success" style="width: 100%; padding: 12px;">Add to My Selling List</button>
+            </div>
+        </div>
+
+        <!-- Selling List Section -->
+        <div class="card">
+            <div class="card-header">My Selling List (3 records)</div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Record</th>
+                        <th>Conditions</th>
+                        <th>Qty</th>
+                        <th>Offer per Record</th>
+                        <th>Total</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <strong>Dark Side of the Moon</strong><br>
+                            <span style="color: var(--gray-500); font-size: 13px;">Pink Floyd</span>
+                        </td>
+                        <td>Media: NM<br>Sleeve: NM</td>
+                        <td>1</td>
+                        <td>$24.22</td>
+                        <td><strong>$24.22</strong></td>
+                        <td><button class="btn btn-sm btn-secondary">Remove</button></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>Abbey Road</strong><br>
+                            <span style="color: var(--gray-500); font-size: 13px;">The Beatles</span>
+                        </td>
+                        <td>Media: VG<br>Sleeve: VG+</td>
+                        <td>2</td>
+                        <td>$18.50</td>
+                        <td><strong>$37.00</strong></td>
+                        <td><button class="btn btn-sm btn-secondary">Remove</button></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>Led Zeppelin IV</strong><br>
+                            <span style="color: var(--gray-500); font-size: 13px;">Led Zeppelin</span>
+                        </td>
+                        <td>Media: NM<br>Sleeve: G</td>
+                        <td>1</td>
+                        <td>$15.75</td>
+                        <td><strong>$15.75</strong></td>
+                        <td><button class="btn btn-sm btn-secondary">Remove</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Checkout Section -->
+        <div class="grid cols-2" style="margin-top: 32px;">
+            <div class="summary-box">
+                <div class="card-header">Order Summary</div>
+                <div class="summary-row">
+                    <span>Subtotal (4 records)</span>
+                    <span class="summary-value">$76.97</span>
+                </div>
+                <div class="summary-row">
+                    <span>Payout Method</span>
+                    <div>
+                        <select class="form-control" style="margin-top: 4px;">
+                            <option>ACH Bank Transfer</option>
+                            <option>PayPal</option>
+                            <option>Store Credit (5% bonus)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="alert alert-warning" style="margin-top: 12px; margin-bottom: 0;">
+                    ⚠️ All offers subject to inspection. Condition discrepancies may result in adjustment.
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div class="card">
+                    <div class="card-header">Seller Info</div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" class="form-control" placeholder="your@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone (for shipping updates)</label>
+                        <input type="tel" class="form-control" placeholder="(555) 123-4567">
+                    </div>
+                    <label style="display: flex; gap: 8px; margin-bottom: 16px;">
+                        <input type="checkbox" checked>
+                        <span style="font-size: 13px;">I agree to the terms and subject to inspection policy</span>
+                    </label>
+                    <button class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 16px;">Submit Selling List</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BUYER STOREFRONT SECTION -->
+    <div id="buyer" class="section">
+        <div class="header">
+            <div>
+                <h1>🎸 Buy from Us</h1>
+                <p style="color: var(--gray-500); font-size: 14px; margin-top: 4px;">Discover rare and classic vinyl records</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary">❤️ Wishlist (2)</button>
+                <button class="btn btn-primary">🛒 Cart (1)</button>
+                <button class="btn btn-secondary">Account</button>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="card">
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="Search for records, artists, or albums...">
+                <button class="btn btn-primary">Search</button>
+            </div>
+        </div>
+
+        <!-- Filters Sidebar -->
+        <div class="sidebar-layout">
+            <div class="sidebar">
+                <div class="sidebar-section">
+                    <div class="sidebar-title">Genre</div>
+                    <div class="sidebar-item active">All Genres</div>
+                    <div class="sidebar-item">Rock</div>
+                    <div class="sidebar-item">Jazz</div>
+                    <div class="sidebar-item">Classical</div>
+                    <div class="sidebar-item">Pop</div>
+                    <div class="sidebar-item">Electronic</div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-title">Condition</div>
+                    <div class="sidebar-item">Mint</div>
+                    <div class="sidebar-item active">Near Mint</div>
+                    <div class="sidebar-item">Very Good +</div>
+                    <div class="sidebar-item">Very Good</div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-title">Price Range</div>
+                    <input type="range" class="form-control" min="10" max="500" value="250">
+                    <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 13px; color: var(--gray-500);">
+                        <span>$10</span>
+                        <span>$250+</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-title">Sort By</div>
+                    <div class="sidebar-item">Newest Arrivals</div>
+                    <div class="sidebar-item">Price: Low to High</div>
+                    <div class="sidebar-item">Price: High to Low</div>
+                    <div class="sidebar-item">Most Popular</div>
+                    <div class="sidebar-item">Price Drop Recently</div>
+                </div>
+            </div>
+
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div style="font-size: 14px; color: var(--gray-500);">Showing 1-12 of 234 records</div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-secondary btn-sm">Grid View</button>
+                        <button class="btn btn-secondary btn-sm">List View</button>
+                    </div>
+                </div>
+
+                <div class="grid cols-3">
+                    <!-- Product Card 1 -->
+                    <div class="product-card">
+                        <div class="product-image">Album Cover</div>
+                        <div class="product-info">
+                            <div style="position: absolute; top: 12px; right: 12px; z-index: 10;">
+                                <button class="btn btn-sm" style="background: white; color: var(--danger); border: 1px solid var(--danger);">❤️</button>
+                            </div>
+                            <div class="product-title">Dark Side of the Moon</div>
+                            <div class="product-artist">Pink Floyd</div>
+                            <div class="product-details">
+                                <div style="color: var(--gray-600);">NM • UK 1973</div>
+                                <div style="margin-top: 4px;">
+                                    <span class="badge badge-success">In Stock (1)</span>
+                                </div>
+                            </div>
+                            <div class="product-price">$89.99</div>
+                            <div style="font-size: 12px; color: var(--gray-500); margin-bottom: 12px;">
+                                Was $99.99 <span class="badge badge-warning">-10%</span>
+                            </div>
+                            <button class="btn btn-primary" style="width: 100%;">Add to Cart</button>
+                        </div>
+                    </div>
+
+                    <!-- Product Card 2 -->
+                    <div class="product-card">
+                        <div class="product-image">Album Cover</div>
+                        <div class="product-info">
+                            <div class="product-title">Abbey Road</div>
+                            <div class="product-artist">The Beatles</div>
+                            <div class="product-details">
+                                <div style="color: var(--gray-600);">VG+ • US 1969</div>
+                                <div style="margin-top: 4px;">
+                                    <span class="badge badge-success">In Stock (3)</span>
+                                </div>
+                            </div>
+                            <div class="product-price">$49.50</div>
+                            <button class="btn btn-primary" style="width: 100%;">Add to Cart</button>
+                        </div>
+                    </div>
+
+                    <!-- Product Card 3 -->
+                    <div class="product-card">
+                        <div class="product-image">Album Cover</div>
+                        <div class="product-info">
+                            <div class="product-title">Led Zeppelin IV</div>
+                            <div class="product-artist">Led Zeppelin</div>
+                            <div class="product-details">
+                                <div style="color: var(--gray-600);">VG • UK 1971</div>
+                                <div style="margin-top: 4px;">
+                                    <span class="badge badge-danger">Low Stock (1)</span>
+                                </div>
+                            </div>
+                            <div class="product-price">$34.99</div>
+                            <button class="btn btn-primary" style="width: 100%;">Add to Cart</button>
+                        </div>
+                    </div>
+
+                    <!-- Product Card 4 -->
+                    <div class="product-card">
+                        <div class="product-image">Album Cover</div>
+                        <div class="product-info">
+                            <div class="product-title">Rumours</div>
+                            <div class="product-artist">Fleetwood Mac</div>
+                            <div class="product-details">
+                                <div style="color: var(--gray-600);">NM • US 1977</div>
+                                <div style="margin-top: 4px;">
+                                    <span class="badge badge-success">In Stock (2)</span>
+                                </div>
+                            </div>
+                            <div class="product-price">$59.99</div>
+                            <button class="btn btn-primary" style="width: 100%;">Add to Cart</button>
+                        </div>
+                    </div>
+
+                    <!-- Product Card 5 -->
+                    <div class="product-card">
+                        <div class="product-image">Album Cover</div>
+                        <div class="product-info">
+                            <div class="product-title">The White Album</div>
+                            <div class="product-artist">The Beatles</div>
+                            <div class="product-details">
+                                <div style="color: var(--gray-600);">VG+ • UK 1968 (Double)</div>
+                                <div style="margin-top: 4px;">
+                                    <span class="badge badge-success">In Stock (1)</span>
+                                </div>
+                            </div>
+                            <div class="product-price">$85.00</div>
+                            <button class="btn btn-primary" style="width: 100%;">Add to Cart</button>
+                        </div>
+                    </div>
+
+                    <!-- Product Card 6 -->
+                    <div class="product-card">
+                        <div class="product-image">Album Cover</div>
+                        <div class="product-info">
+                            <div class="product-title">Kind of Blue</div>
+                            <div class="product-artist">Miles Davis</div>
+                            <div class="product-details">
+                                <div style="color: var(--gray-600);">Mint • US 1959 (Original)</div>
+                                <div style="margin-top: 4px;">
+                                    <span class="badge badge-warning">Limited (1)</span>
+                                </div>
+                            </div>
+                            <div class="product-price">$199.99</div>
+                            <button class="btn btn-primary" style="width: 100%;">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div style="display: flex; justify-content: center; gap: 8px; margin-top: 32px;">
+                    <button class="btn btn-secondary">← Previous</button>
+                    <button class="btn btn-primary">1</button>
+                    <button class="btn btn-secondary">2</button>
+                    <button class="btn btn-secondary">3</button>
+                    <button class="btn btn-secondary">...</button>
+                    <button class="btn btn-secondary">20</button>
+                    <button class="btn btn-secondary">Next →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN CONSOLE SECTION -->
+    <div id="admin" class="section">
+        <div class="header">
+            <div>
+                <h1>⚙️ Admin Console</h1>
+                <p style="color: var(--gray-500); font-size: 14px; margin-top: 4px;">Manage catalog, pricing, and submissions</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary">Admin Settings</button>
+                <button class="btn btn-secondary">Logout</button>
+            </div>
+        </div>
+
+        <!-- Dashboard Stats -->
+        <div class="grid cols-4">
+            <div class="card">
+                <div style="font-size: 12px; color: var(--gray-500); margin-bottom: 8px;">PENDING SUBMISSIONS</div>
+                <div style="font-size: 32px; font-weight: 700; color: var(--warning);">12</div>
+                <div style="font-size: 13px; color: var(--gray-500); margin-top: 8px;">$2,450 total value</div>
+            </div>
+
+            <div class="card">
+                <div style="font-size: 12px; color: var(--gray-500); margin-bottom: 8px;">ACTIVE INVENTORY</div>
+                <div style="font-size: 32px; font-weight: 700; color: var(--primary);">284</div>
+                <div style="font-size: 13px; color: var(--gray-500); margin-top: 8px;">Live on storefront</div>
+            </div>
+
+            <div class="card">
+                <div style="font-size: 12px; color: var(--gray-500); margin-bottom: 8px;">SOLD THIS MONTH</div>
+                <div style="font-size: 32px; font-weight: 700; color: var(--success);">156</div>
+                <div style="font-size: 13px; color: var(--gray-500); margin-top: 8px;">$18,750 revenue</div>
+            </div>
+
+            <div class="card">
+                <div style="font-size: 12px; color: var(--gray-500); margin-bottom: 8px;">DATA SYNC ISSUES</div>
+                <div style="font-size: 32px; font-weight: 700; color: var(--danger);">3</div>
+                <div style="font-size: 13px; color: var(--gray-500); margin-top: 8px;">Missing market data</div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div style="display: flex; gap: 0; border-bottom: 2px solid var(--gray-200); margin-bottom: 24px; margin-top: 24px;">
+            <button class="nav-tab" style="border-bottom: 3px solid var(--primary); color: var(--primary);">📋 Submission Queue</button>
+            <button class="nav-tab">📦 Inventory Management</button>
+            <button class="nav-tab">💰 Pricing Policies</button>
+        </div>
+
+        <!-- Submission Queue -->
+        <div class="card">
+            <div class="card-header">Pending Seller Submissions</div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Submission</th>
+                        <th>Seller</th>
+                        <th>Items</th>
+                        <th>Estimated Value</th>
+                        <th>Status</th>
+                        <th>Submitted</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>#SUB-2024-1847</strong></td>
+                        <td>
+                            john.doe@email.com<br>
+                            <span style="font-size: 12px; color: var(--gray-500);">New seller</span>
+                        </td>
+                        <td>
+                            <div style="font-size: 13px;">4 records</div>
+                            <div style="font-size: 12px; color: var(--gray-500);">2 have pricing data issues</div>
+                        </td>
+                        <td><strong>$185.50</strong></td>
+                        <td><span class="badge badge-warning"><span class="status-dot pending"></span>Pending Review</span></td>
+                        <td style="font-size: 13px; color: var(--gray-500);">1 hour ago</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary">Review</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>#SUB-2024-1846</strong></td>
+                        <td>
+                            jane.smith@email.com<br>
+                            <span style="font-size: 12px; color: var(--gray-500);">Returning seller</span>
+                        </td>
+                        <td>
+                            <div style="font-size: 13px;">6 records</div>
+                            <div style="font-size: 12px; color: var(--gray-500);">All data complete</div>
+                        </td>
+                        <td><strong>$642.00</strong></td>
+                        <td><span class="badge badge-warning"><span class="status-dot pending"></span>Pending Review</span></td>
+                        <td style="font-size: 13px; color: var(--gray-500);">3 hours ago</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary">Review</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>#SUB-2024-1845</strong></td>
+                        <td>
+                            bob.williams@email.com<br>
+                            <span style="font-size: 12px; color: var(--gray-500);">New seller</span>
+                        </td>
+                        <td>
+                            <div style="font-size: 13px;">2 records</div>
+                            <div style="font-size: 12px; color: var(--gray-500);">1 duplicate flag</div>
+                        </td>
+                        <td><strong>$95.75</strong></td>
+                        <td><span class="badge badge-primary"><span class="status-dot pending"></span>Flagged</span></td>
+                        <td style="font-size: 13px; color: var(--gray-500);">6 hours ago</td>
+                        <td>
+                            <button class="btn btn-sm btn-secondary">Investigate</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Submission Detail Modal (inline) -->
+        <div class="card" style="margin-top: 32px; border: 2px solid var(--primary-light);">
+            <div class="card-header">Review Submission #SUB-2024-1847</div>
+            <div class="card-body">
+                <div class="grid cols-2" style="margin-bottom: 24px;">
+                    <div>
+                        <strong style="display: block; margin-bottom: 8px;">Seller Information</strong>
+                        <div style="font-size: 14px; line-height: 1.8;">
+                            Name: John Doe<br>
+                            Email: john.doe@email.com<br>
+                            Phone: (555) 123-4567<br>
+                            Preferred Payout: ACH Bank Transfer
+                        </div>
+                    </div>
+                    <div>
+                        <strong style="display: block; margin-bottom: 8px;">Submission Stats</strong>
+                        <div style="font-size: 14px; line-height: 1.8;">
+                            Total Items: 4<br>
+                            Est. Payout: $185.50<br>
+                            Submitted: Nov 29, 2024 2:15 PM<br>
+                            Expires: Dec 13, 2024
+                        </div>
+                    </div>
+                </div>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Record</th>
+                            <th>Seller Condition</th>
+                            <th>Offered Price</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <strong>Dark Side of the Moon</strong><br>
+                                <span style="font-size: 12px; color: var(--gray-500);">Pink Floyd • 1973 UK</span>
+                            </td>
+                            <td>Media: NM<br>Sleeve: NM</td>
+                            <td>$48.50</td>
+                            <td><span class="badge badge-success"><span class="status-dot active"></span>Ready</span></td>
+                            <td><button class="btn btn-sm btn-secondary">Edit</button></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>Abbey Road</strong><br>
+                                <span style="font-size: 12px; color: var(--gray-500);">The Beatles • 1969 US</span>
+                            </td>
+                            <td>Media: VG<br>Sleeve: VG+</td>
+                            <td>$37.00</td>
+                            <td><span class="badge badge-success"><span class="status-dot active"></span>Ready</span></td>
+                            <td><button class="btn btn-sm btn-secondary">Edit</button></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>Led Zeppelin IV</strong><br>
+                                <span style="font-size: 12px; color: var(--gray-500);">Led Zeppelin • 1971 UK</span>
+                            </td>
+                            <td>Media: NM<br>Sleeve: G</td>
+                            <td>$15.75</td>
+                            <td><span class="badge badge-danger"><span class="status-dot inactive"></span>No Data</span></td>
+                            <td><button class="btn btn-sm btn-secondary">Review</button></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>Rumours</strong><br>
+                                <span style="font-size: 12px; color: var(--gray-500);">Fleetwood Mac • 1977 US</span>
+                            </td>
+                            <td>Media: NM<br>Sleeve: NM</td>
+                            <td>$84.25</td>
+                            <td><span class="badge badge-success"><span class="status-dot active"></span>Ready</span></td>
+                            <td><button class="btn btn-sm btn-secondary">Edit</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div style="display: flex; gap: 12px; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--gray-200);">
+                    <button class="btn btn-success">✓ Accept Submission</button>
+                    <button class="btn btn-primary">Edit & Counter Offer</button>
+                    <button class="btn btn-danger">✕ Reject Submission</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Management Section -->
+        <div class="card" style="margin-top: 32px;">
+            <div class="card-header">Active Inventory - Sample Records</div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Record</th>
+                        <th>Media/Sleeve</th>
+                        <th>List Price</th>
+                        <th>Cost Basis</th>
+                        <th>Margin</th>
+                        <th>Stock</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <strong>Dark Side of the Moon</strong><br>
+                            <span style="font-size: 12px; color: var(--gray-500);">Pink Floyd • 1973</span>
+                        </td>
+                        <td>NM/NM</td>
+                        <td>$89.99</td>
+                        <td>$48.50</td>
+                        <td><strong>45.6%</strong></td>
+                        <td>1</td>
+                        <td><span class="badge badge-success"><span class="status-dot active"></span>Live</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>Abbey Road</strong><br>
+                            <span style="font-size: 12px; color: var(--gray-500);">The Beatles • 1969</span>
+                        </td>
+                        <td>VG+/VG+</td>
+                        <td>$49.50</td>
+                        <td>$37.00</td>
+                        <td><strong>25.7%</strong></td>
+                        <td>3</td>
+                        <td><span class="badge badge-success"><span class="status-dot active"></span>Live</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pricing Policies Section -->
+        <div class="card" style="margin-top: 32px;">
+            <div class="card-header">Pricing Policies</div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Policy Name</th>
+                        <th>Scope</th>
+                        <th>Buy Formula</th>
+                        <th>Sell Formula</th>
+                        <th>Last Updated</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Standard Global</strong></td>
+                        <td>All releases</td>
+                        <td>Median × 55%</td>
+                        <td>Median × 125%</td>
+                        <td>Nov 15, 2024</td>
+                        <td><button class="btn btn-sm btn-secondary">Edit</button></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Classic Rock Premium</strong></td>
+                        <td>Rock genre</td>
+                        <td>High × 60%</td>
+                        <td>High × 135%</td>
+                        <td>Nov 20, 2024</td>
+                        <td><button class="btn btn-sm btn-secondary">Edit</button></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Web Seller Bonus</strong></td>
+                        <td>Channel: Web</td>
+                        <td>Median × 58%</td>
+                        <td>Median × 125%</td>
+                        <td>Nov 10, 2024</td>
+                        <td><button class="btn btn-sm btn-secondary">Edit</button></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button class="btn btn-primary" style="margin-top: 16px;">+ Create New Policy</button>
+        </div>
+    </div>
+
+    <!-- INVENTORY MANAGER SECTION -->
+    <div id="inventory" class="section">
+        <div class="header">
+            <div>
+                <h1>📦 Inventory Manager</h1>
+                <p style="color: var(--gray-500); font-size: 14px; margin-top: 4px;">Manage catalog items, pricing, and storefront availability</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary">+ Add New Item</button>
+                <button class="btn btn-secondary">Bulk Actions</button>
+                <button class="btn btn-secondary">Export</button>
+            </div>
+        </div>
+
+        <!-- Inventory Stats -->
+        <div class="grid cols-5">
+            <div class="card">
+                <div style="font-size: 11px; color: var(--gray-500); margin-bottom: 6px; font-weight: 600;">DRAFT</div>
+                <div style="font-size: 24px; font-weight: 700; color: var(--accent);">18</div>
+            </div>
+            <div class="card">
+                <div style="font-size: 11px; color: var(--gray-500); margin-bottom: 6px; font-weight: 600;">LIVE</div>
+                <div style="font-size: 24px; font-weight: 700; color: var(--primary);">284</div>
+            </div>
+            <div class="card">
+                <div style="font-size: 11px; color: var(--gray-500); margin-bottom: 6px; font-weight: 600;">LOW STOCK</div>
+                <div style="font-size: 24px; font-weight: 700; color: var(--warning);">12</div>
+            </div>
+            <div class="card">
+                <div style="font-size: 11px; color: var(--gray-500); margin-bottom: 6px; font-weight: 600;">SOLD</div>
+                <div style="font-size: 24px; font-weight: 700; color: var(--success);">156</div>
+            </div>
+            <div class="card">
+                <div style="font-size: 11px; color: var(--gray-500); margin-bottom: 6px; font-weight: 600;">AVG MARGIN</div>
+                <div style="font-size: 24px; font-weight: 700; color: var(--primary);">34.2%</div>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="card" style="margin-top: 20px;">
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 12px; align-items: end;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label style="margin-bottom: 6px;">Search</label>
+                    <input type="text" class="form-control" placeholder="Title, artist, or catalog #...">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label style="margin-bottom: 6px;">Status</label>
+                    <select class="form-control">
+                        <option selected>All Status</option>
+                        <option>Draft</option>
+                        <option>Live</option>
+                        <option>Sold</option>
+                        <option>Archived</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label style="margin-bottom: 6px;">Condition</label>
+                    <select class="form-control">
+                        <option selected>All Conditions</option>
+                        <option>Mint / Mint</option>
+                        <option>NM / NM</option>
+                        <option>VG+ / VG+</option>
+                        <option>VG / VG</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-primary" style="flex: 1;">Filter</button>
+                    <button class="btn btn-secondary">Reset</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Table -->
+        <div class="card" style="margin-top: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--gray-200);">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="checkbox" style="cursor: pointer;">
+                    <span style="font-size: 13px; color: var(--gray-500);">Select all (10)</span>
+                </div>
+                <div style="font-size: 13px; color: var(--gray-500);">Showing 1-10 of 284 live items</div>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="table" style="font-size: 13px;">
+                    <thead>
+                        <tr>
+                            <th style="width: 30px;"><input type="checkbox" style="cursor: pointer;"></th>
+                            <th>Album</th>
+                            <th>Condition</th>
+                            <th>Stock</th>
+                            <th>Cost</th>
+                            <th>List Price</th>
+                            <th>Margin</th>
+                            <th>Status</th>
+                            <th>Last Updated</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="checkbox" style="cursor: pointer;"></td>
+                            <td>
+                                <div style="font-weight: 600;">Dark Side of the Moon</div>
+                                <div style="font-size: 12px; color: var(--gray-500);">Pink Floyd • 1973</div>
+                            </td>
+                            <td>
+                                <div style="font-size: 12px;">Media: NM</div>
+                                <div style="font-size: 12px;">Sleeve: NM</div>
+                            </td>
+                            <td>1</td>
+                            <td>$48.50</td>
+                            <td>$89.99</td>
+                            <td><strong>45.6%</strong></td>
+                            <td><span class="badge badge-success"><span class="status-dot active"></span>Live</span></td>
+                            <td style="font-size: 12px; color: var(--gray-500);">Nov 25</td>
+                            <td style="text-align: center;">
+                                <button class="btn btn-sm btn-secondary" onclick="alert('Edit item')">Edit</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" style="cursor: pointer;"></td>
+                            <td>
+                                <div style="font-weight: 600;">Abbey Road</div>
+                                <div style="font-size: 12px; color: var(--gray-500);">The Beatles • 1969</div>
+                            </td>
+                            <td>
+                                <div style="font-size: 12px;">Media: VG+</div>
+                                <div style="font-size: 12px;">Sleeve: VG+</div>
+                            </td>
+                            <td>
+                                <span class="badge badge-danger">3</span>
+                            </td>
+                            <td>$37.00</td>
+                            <td>$49.50</td>
+                            <td><strong>25.7%</strong></td>
+                            <td><span class="badge badge-success"><span class="status-dot active"></span>Live</span></td>
+                            <td style="font-size: 12px; color: var(--gray-500);">Nov 24</td>
+                            <td style="text-align: center;">
+                                <button class="btn btn-sm btn-secondary" onclick="alert('Edit item')">Edit</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" style="cursor: pointer;"></td>
+                            <td>
+                                <div style="font-weight: 600;">Led Zeppelin IV</div>
+                                <div style="font-size: 12px; color: var(--gray-500);">Led Zeppelin • 1971</div>
+                            </td>
+                            <td>
+                                <div style="font-size: 12px;">Media: NM</div>
+                                <div style="font-size: 12px;">Sleeve: G</div>
+                            </td>
+                            <td>
+                                <span class="badge badge-warning">1</span>
+                            </td>
+                            <td>$15.75</td>
+                            <td>$34.99</td>
+                            <td><strong>55.0%</strong></td>
+                            <td><span class="badge badge-success"><span class="status-dot active"></span>Live</span></td>
+                            <td style="font-size: 12px; color: var(--gray-500);">Nov 23</td>
+                            <td style="text-align: center;">
+                                <button class="btn btn-sm btn-secondary" onclick="alert('Edit item')">Edit</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" style="cursor: pointer;"></td>
+                            <td>
+                                <div style="font-weight: 600;">Rumours</div>
+                                <div style="font-size: 12px; color: var(--gray-500);">Fleetwood Mac • 1977</div>
+                            </td>
+                            <td>
+                                <div style="font-size: 12px;">Media: NM</div>
+                                <div style="font-size: 12px;">Sleeve: NM</div>
+                            </td>
+                            <td>2</td>
+                            <td>$42.00</td>
+                            <td>$59.99</td>
+                            <td><strong>42.9%</strong></td>
+                            <td><span class="badge badge-success"><span class="status-dot active"></span>Live</span></td>
+                            <td style="font-size: 12px; color: var(--gray-500);">Nov 22</td>
+                            <td style="text-align: center;">
+                                <button class="btn btn-sm btn-secondary" onclick="alert('Edit item')">Edit</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" style="cursor: pointer;"></td>
+                            <td>
+                                <div style="font-weight: 600;">The White Album</div>
+                                <div style="font-size: 12px; color: var(--gray-500);">The Beatles • 1968 (Double)</div>
+                            </td>
+                            <td>
+                                <div style="font-size: 12px;">Media: VG+</div>
+                                <div style="font-size: 12px;">Sleeve: VG+</div>
+                            </td>
+                            <td>1</td>
+                            <td>$48.00</td>
+                            <td>$85.00</td>
+                            <td><strong>43.5%</strong></td>
+                            <td><span class="badge badge-success"><span class="status-dot active"></span>Live</span></td>
+                            <td style="font-size: 12px; color: var(--gray-500);">Nov 20</td>
+                            <td style="text-align: center;">
+                                <button class="btn btn-sm btn-secondary" onclick="alert('Edit item')">Edit</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" style="cursor: pointer;"></td>
+                            <td>
+                                <div style="font-weight: 600;">Kind of Blue</div>
+                                <div style="font-size: 12px; color: var(--gray-500);">Miles Davis • 1959</div>
+                            </td>
+                            <td>
+                                <div style="font-size: 12px;">Media: Mint</div>
+                                <div style="font-size: 12px;">Sleeve: Mint</div>
+                            </td>
+                            <td>1</td>
+                            <td>$120.00</td>
+                            <td>$199.99</td>
+                            <td><strong>39.4%</strong></td>
+                            <td><span class="badge badge-success"><span class="status-dot active"></span>Live</span></td>
+                            <td style="font-size: 12px; color: var(--gray-500);">Nov 19</td>
+                            <td style="text-align: center;">
+                                <button class="btn btn-sm btn-secondary" onclick="alert('Edit item')">Edit</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--gray-200);">
+                <div style="font-size: 13px; color: var(--gray-500);">
+                    6 items selected
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-secondary btn-sm">← Previous</button>
+                    <button class="btn btn-primary btn-sm">1</button>
+                    <button class="btn btn-secondary btn-sm">2</button>
+                    <button class="btn btn-secondary btn-sm">3</button>
+                    <button class="btn btn-secondary btn-sm">Next →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Selected Items Bulk Actions -->
+        <div class="card" style="margin-top: 20px; border: 2px solid var(--accent);">
+            <div class="card-header">Bulk Actions for 6 Selected Items</div>
+            <div class="card-body">
+                <div class="grid cols-3">
+                    <div class="form-group">
+                        <label>Change Status To</label>
+                        <select class="form-control">
+                            <option>-- Select --</option>
+                            <option>Draft (Remove from storefront)</option>
+                            <option>Live (Publish to storefront)</option>
+                            <option>Archived (Hide permanently)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Adjust Price By</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="number" class="form-control" placeholder="+10" step="0.01">
+                            <select class="form-control" style="flex: 0.5;">
+                                <option selected>$</option>
+                                <option>%</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Apply Policy</label>
+                        <select class="form-control">
+                            <option>-- Select Policy --</option>
+                            <option>Standard Global</option>
+                            <option>Classic Rock Premium</option>
+                            <option>Web Seller Bonus</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 16px;">
+                    <button class="btn btn-primary">Apply Changes</button>
+                    <button class="btn btn-secondary">Clear Selection</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Item Detail Editor -->
+        <div class="card" style="margin-top: 32px; border: 2px solid var(--primary-light);">
+            <div class="card-header">Edit Item: Dark Side of the Moon</div>
+            <div class="card-body">
+                <div class="grid cols-2">
+                    <!-- Left Column: Basic Info -->
+                    <div>
+                        <div style="margin-bottom: 24px;">
+                            <div style="font-weight: 600; margin-bottom: 12px; font-size: 14px;">Album Cover</div>
+                            <div style="width: 100%; height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: var(--border-radius); display: flex; align-items: center; justify-content: center; color: white; margin-bottom: 12px;">
+                                Album Artwork
+                            </div>
+                            <button class="btn btn-secondary" style="width: 100%;">📸 Upload Image</button>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Title</label>
+                            <input type="text" class="form-control" value="Dark Side of the Moon">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Artist</label>
+                            <input type="text" class="form-control" value="Pink Floyd">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Release Date</label>
+                            <input type="text" class="form-control" value="1973">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Label & Catalog #</label>
+                            <input type="text" class="form-control" value="Harvest • SHVL 804">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Genre</label>
+                            <select class="form-control">
+                                <option selected>Rock</option>
+                                <option>Jazz</option>
+                                <option>Classical</option>
+                                <option>Pop</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Pricing & Conditions -->
+                    <div>
+                        <div class="form-group">
+                            <label>Media Condition</label>
+                            <select class="form-control">
+                                <option>Mint</option>
+                                <option selected>Near Mint</option>
+                                <option>Very Good +</option>
+                                <option>Very Good</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Sleeve Condition</label>
+                            <select class="form-control">
+                                <option>Mint</option>
+                                <option selected>Near Mint</option>
+                                <option>Very Good +</option>
+                                <option>Very Good</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row full">
+                            <div class="form-group">
+                                <label>Quantity in Stock</label>
+                                <input type="number" class="form-control" value="1" min="0">
+                            </div>
+                        </div>
+
+                        <div class="form-row full">
+                            <div class="form-group">
+                                <label>Cost Basis (what we paid)</label>
+                                <input type="number" class="form-control" value="48.50" step="0.01" placeholder="$">
+                            </div>
+                        </div>
+
+                        <div class="form-row full">
+                            <div class="form-group">
+                                <label>List Price (storefront price)</label>
+                                <input type="number" class="form-control" value="89.99" step="0.01" placeholder="$">
+                            </div>
+                        </div>
+
+                        <div style="background: var(--gray-100); padding: 12px; border-radius: var(--border-radius); margin-bottom: 16px;">
+                            <div style="font-size: 12px; color: var(--gray-500); margin-bottom: 4px;">Profit Margin</div>
+                            <div style="font-size: 20px; font-weight: 700; color: var(--success);">45.6%</div>
+                            <div style="font-size: 11px; color: var(--gray-500); margin-top: 4px;">($41.49 profit per unit)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Merchandising Section -->
+                <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--gray-200);">
+                    <div style="font-weight: 600; margin-bottom: 16px; font-size: 14px;">Storefront Details</div>
+
+                    <div class="form-group full">
+                        <label>Description (appears on product page)</label>
+                        <textarea class="form-control" rows="4" placeholder="Details about the album condition, pressing, any special notes...">1973 UK pressing in Near Mint condition. Original gatefold sleeve with poster and vinyl still sealed. A classic album in excellent condition.</textarea>
+                    </div>
+
+                    <div class="form-group full">
+                        <label>Tags/Categories</label>
+                        <input type="text" class="form-control" value="classic-rock, 1970s, original-pressing, sealed">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select class="form-control">
+                                <option>Draft</option>
+                                <option selected>Live (Visible on storefront)</option>
+                                <option>Sold</option>
+                                <option>Archived</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Days Listed</label>
+                            <input type="number" class="form-control" value="8" disabled style="background: var(--gray-100);">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pricing History -->
+                <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--gray-200);">
+                    <div style="font-weight: 600; margin-bottom: 16px; font-size: 14px;">Pricing History</div>
+                    <table class="table" style="font-size: 12px;">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Price</th>
+                                <th>Change</th>
+                                <th>Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Nov 25, 2024</td>
+                                <td>$89.99</td>
+                                <td>+$5.00</td>
+                                <td>Manual adjustment</td>
+                            </tr>
+                            <tr>
+                                <td>Nov 20, 2024</td>
+                                <td>$84.99</td>
+                                <td>Initial</td>
+                                <td>Created from submission</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="display: flex; gap: 12px; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--gray-200);">
+                    <button class="btn btn-success">✓ Save Changes</button>
+                    <button class="btn btn-primary">📋 Preview on Storefront</button>
+                    <button class="btn btn-secondary">← Cancel</button>
+                    <button class="btn btn-danger" style="margin-left: auto;">🗑️ Delete Item</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Analytics -->
+        <div class="grid cols-2" style="margin-top: 32px;">
+            <div class="card">
+                <div class="card-header">Recent Sales</div>
+                <table class="table" style="font-size: 12px;">
+                    <thead>
+                        <tr>
+                            <th>Album</th>
+                            <th>Price</th>
+                            <th>Days Listed</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <strong>The Wall</strong><br>
+                                <span style="color: var(--gray-500);">Pink Floyd</span>
+                            </td>
+                            <td>$79.99</td>
+                            <td>5 days</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>Physical Graffiti</strong><br>
+                                <span style="color: var(--gray-500);">Led Zeppelin</span>
+                            </td>
+                            <td>$64.50</td>
+                            <td>12 days</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>Fleetwood Mac</strong><br>
+                                <span style="color: var(--gray-500);">Fleetwood Mac</span>
+                            </td>
+                            <td>$54.99</td>
+                            <td>23 days</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Low Stock Alerts</div>
+                <table class="table" style="font-size: 12px;">
+                    <thead>
+                        <tr>
+                            <th>Album</th>
+                            <th>Stock</th>
+                            <th>Last Sale</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <strong>The Wall (UK)</strong><br>
+                                <span style="color: var(--gray-500);">Pink Floyd</span>
+                            </td>
+                            <td><span class="badge badge-warning">1</span></td>
+                            <td>2 days ago</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>Houses of Holy</strong><br>
+                                <span style="color: var(--gray-500);">Led Zeppelin</span>
+                            </td>
+                            <td><span class="badge badge-warning">1</span></td>
+                            <td>1 day ago</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>Appetite for Destruction</strong><br>
+                                <span style="color: var(--gray-500);">Guns N' Roses</span>
+                            </td>
+                            <td><span class="badge badge-danger">Out of Stock</span></td>
+                            <td>3 days ago</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRICING POLICY EDITOR SECTION -->
+    <div id="pricing-editor" class="section">
+        <div class="header">
+            <div>
+                <h1>💰 Pricing Policy Editor</h1>
+                <p style="color: var(--gray-500); font-size: 14px; margin-top: 4px;">Create and manage pricing formulas with condition-based adjustments</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary">← Back to Policies</button>
+            </div>
+        </div>
+
+        <!-- Policy Basic Info -->
+        <div class="card">
+            <div class="card-header">Policy Basic Information</div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Policy Name</label>
+                        <input type="text" class="form-control" value="Standard Global" placeholder="e.g., Classic Rock Premium">
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" class="form-control" placeholder="Optional notes about this policy">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Scope</label>
+                        <select class="form-control">
+                            <option selected>All Releases (Global)</option>
+                            <option>By Genre</option>
+                            <option>By Label</option>
+                            <option>By Acquisition Channel</option>
+                            <option>By Release Era</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select class="form-control">
+                            <option selected>Active</option>
+                            <option>Draft</option>
+                            <option>Archived</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Condition Curve Configuration -->
+        <div class="card">
+            <div class="card-header">Condition Grade Adjustments</div>
+            <div class="card-body">
+                <p style="font-size: 13px; color: var(--gray-500); margin-bottom: 16px;">Define percentage adjustments for each condition grade. These are applied multiplicatively to base prices.</p>
+
+                <div style="margin-bottom: 24px;">
+                    <div style="font-weight: 600; margin-bottom: 12px; font-size: 14px;">Media Condition Curve</div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Grade</th>
+                                <th style="width: 200px;">Description</th>
+                                <th style="width: 150px;">Adjustment %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Mint (M)</strong></td>
+                                <td>Perfect, unplayed condition</td>
+                                <td><input type="number" class="form-control" value="120" style="width: 100px;"> %</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Near Mint (NM)</strong></td>
+                                <td>Minimal signs of wear</td>
+                                <td><input type="number" class="form-control" value="100" style="width: 100px;"> %</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Very Good Plus (VG+)</strong></td>
+                                <td>Light wear, plays perfectly</td>
+                                <td><input type="number" class="form-control" value="75" style="width: 100px;"> %</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Very Good (VG)</strong></td>
+                                <td>Moderate wear visible</td>
+                                <td><input type="number" class="form-control" value="60" style="width: 100px;"> %</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Very Good Minus (VG-)</strong></td>
+                                <td>Significant wear but playable</td>
+                                <td><input type="number" class="form-control" value="45" style="width: 100px;"> %</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Good (G)</strong></td>
+                                <td>Heavy wear, may affect playback</td>
+                                <td><input type="number" class="form-control" value="25" style="width: 100px;"> %</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="margin-bottom: 24px;">
+                    <div style="font-weight: 600; margin-bottom: 12px; font-size: 14px;">Sleeve Condition Curve</div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Grade</th>
+                                <th style="width: 200px;">Description</th>
+                                <th style="width: 150px;">Adjustment %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Mint (M)</strong></td>
+                                <td>Perfect, no creases or wear</td>
+                                <td><input type="number" class="form-control" value="110" style="width: 100px;"> %</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Near Mint (NM)</strong></td>
+                                <td>Minimal storage wear only</td>
+                                <td><input type="number" class="form-control" value="100" style="width: 100px;"> %</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Very Good Plus (VG+)</strong></td>
+                                <td>Minor creases or edge wear</td>
+                                <td><input type="number" class="form-control" value="75" style="width: 100px;"> %</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Very Good (VG)</strong></td>
+                                <td>Obvious creases, fading</td>
+                                <td><input type="number" class="form-control" value="50" style="width: 100px;"> %</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Very Good Minus (VG-)</strong></td>
+                                <td>Heavy creasing, stains</td>
+                                <td><input type="number" class="form-control" value="35" style="width: 100px;"> %</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Good (G)</strong></td>
+                                <td>Severe damage, writing, water</td>
+                                <td><input type="number" class="form-control" value="15" style="width: 100px;"> %</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Media Weight (how much media condition affects pricing)</label>
+                        <input type="number" class="form-control" value="60" min="0" max="100"> %
+                    </div>
+                    <div class="form-group">
+                        <label>Sleeve Weight (how much sleeve condition affects pricing)</label>
+                        <input type="number" class="form-control" value="40" min="0" max="100"> %
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buy Formula Configuration -->
+        <div class="card">
+            <div class="card-header">Buy (Offer) Formula</div>
+            <div class="card-body">
+                <p style="font-size: 13px; color: var(--gray-500); margin-bottom: 16px;">Base offer = Market Stat × Buy Percentage × Condition Adjustment</p>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Market Data Source</label>
+                        <select class="form-control">
+                            <option selected>Hybrid (Average Discogs & eBay)</option>
+                            <option>Discogs (Primary) → eBay (Fallback)</option>
+                            <option>eBay (Primary) → Discogs (Fallback)</option>
+                            <option>Discogs Only</option>
+                            <option>eBay Only</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Price Statistic</label>
+                        <select class="form-control">
+                            <option>Low (Lowest sale)</option>
+                            <option selected>Median (Middle sale)</option>
+                            <option>High (Highest sale)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Buy Percentage (of market stat)</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="number" class="form-control" value="55" min="0" max="100">
+                            <span style="display: flex; align-items: center; color: var(--gray-500);">%</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Data Lookback Window</label>
+                        <select class="form-control">
+                            <option>30 days</option>
+                            <option selected>90 days</option>
+                            <option>180 days</option>
+                            <option>1 year</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Minimum Offer (floor)</label>
+                        <input type="number" class="form-control" value="5.00" step="0.25" placeholder="$">
+                    </div>
+                    <div class="form-group">
+                        <label>Maximum Offer (cap)</label>
+                        <input type="number" class="form-control" value="500.00" step="0.25" placeholder="$">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Round to Nearest</label>
+                        <select class="form-control">
+                            <option>$0.01</option>
+                            <option selected>$0.25</option>
+                            <option>$0.50</option>
+                            <option>$1.00</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Offer Valid For</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="number" class="form-control" value="14" min="1">
+                            <span style="display: flex; align-items: center; color: var(--gray-500);">days</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info" style="margin-top: 16px;">
+                    📝 <strong>Example calculation:</strong> Market stat $100 (median) × 55% = $55 base offer × 0.60 (VG media) × 0.75 (VG+ sleeve) = $24.75 final offer
+                </div>
+            </div>
+        </div>
+
+        <!-- Sell Formula Configuration -->
+        <div class="card">
+            <div class="card-header">Sell (List Price) Formula</div>
+            <div class="card-body">
+                <p style="font-size: 13px; color: var(--gray-500); margin-bottom: 16px;">List price = Market Stat × Sell Percentage × Condition Adjustment, adjusted for margin targets</p>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Market Data Source</label>
+                        <select class="form-control">
+                            <option selected>Hybrid (Average Discogs & eBay)</option>
+                            <option>Discogs (Primary) → eBay (Fallback)</option>
+                            <option>eBay (Primary) → Discogs (Fallback)</option>
+                            <option>Discogs Only</option>
+                            <option>eBay Only</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Price Statistic</label>
+                        <select class="form-control">
+                            <option>Low (Lowest sale)</option>
+                            <option selected>Median (Middle sale)</option>
+                            <option>High (Highest sale)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Sell Percentage (of market stat)</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="number" class="form-control" value="125" min="100">
+                            <span style="display: flex; align-items: center; color: var(--gray-500);">%</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Minimum Profit Margin (vs cost basis)</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="number" class="form-control" value="30" min="0" max="100">
+                            <span style="display: flex; align-items: center; color: var(--gray-500);">%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Minimum Price (floor)</label>
+                        <input type="number" class="form-control" value="10.00" step="0.25" placeholder="$">
+                    </div>
+                    <div class="form-group">
+                        <label>Maximum Price (cap)</label>
+                        <input type="number" class="form-control" value="999.99" step="0.25" placeholder="$">
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 16px; padding: 12px; background: var(--gray-100); border-radius: var(--border-radius);">
+                    <div style="font-weight: 600; margin-bottom: 8px; font-size: 13px;">Markdown Schedule (Optional)</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>After 30 days unsold, reduce by</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="number" class="form-control" value="10" min="0" max="100">
+                                <span style="display: flex; align-items: center; color: var(--gray-500);">%</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>After 60 days unsold, reduce by</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="number" class="form-control" value="20" min="0" max="100">
+                                <span style="display: flex; align-items: center; color: var(--gray-500);">%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info" style="margin-top: 16px;">
+                    📝 <strong>Example calculation:</strong> Market stat $100 (median) × 125% = $125 list suggestion × 0.60 (VG media) × 0.75 (VG+ sleeve) = $56.25 final list price (if margin ≥ 30%)
+                </div>
+            </div>
+        </div>
+
+        <!-- Channel-Specific Multipliers -->
+        <div class="card">
+            <div class="card-header">Channel-Specific Adjustments</div>
+            <div class="card-body">
+                <p style="font-size: 13px; color: var(--gray-500); margin-bottom: 16px;">Apply multipliers to buy/sell prices for different acquisition channels</p>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Channel</th>
+                            <th>Buy Multiplier</th>
+                            <th>Sell Multiplier</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Web Submission</strong></td>
+                            <td><input type="number" class="form-control" value="1.0" step="0.05" style="width: 100px;"></td>
+                            <td><input type="number" class="form-control" value="1.0" step="0.05" style="width: 100px;"></td>
+                            <td>Standard rates</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Store Walk-In</strong></td>
+                            <td><input type="number" class="form-control" value="0.95" step="0.05" style="width: 100px;"></td>
+                            <td><input type="number" class="form-control" value="1.0" step="0.05" style="width: 100px;"></td>
+                            <td>Lower buy offer (no shipping)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Bulk Collection Purchase</strong></td>
+                            <td><input type="number" class="form-control" value="0.85" step="0.05" style="width: 100px;"></td>
+                            <td><input type="number" class="form-control" value="1.0" step="0.05" style="width: 100px;"></td>
+                            <td>Discount for large lots</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Preview Section -->
+        <div class="card">
+            <div class="card-header">Preview: Example Calculations</div>
+            <div class="card-body">
+                <p style="font-size: 13px; color: var(--gray-500); margin-bottom: 16px;">How this policy would price a sample album under different conditions</p>
+
+                <div style="background: var(--gray-100); padding: 16px; border-radius: var(--border-radius); margin-bottom: 16px;">
+                    <div style="font-weight: 600; margin-bottom: 8px;">Sample Album: "Dark Side of the Moon" by Pink Floyd</div>
+                    <div style="font-size: 13px; color: var(--gray-600);">Market Data: Discogs Median = $85 | eBay Median = $92 | Hybrid = $88.50</div>
+                </div>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Media / Sleeve</th>
+                            <th>Buy Offer</th>
+                            <th>List Price</th>
+                            <th>Profit Margin</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background: rgba(16, 185, 129, 0.05);">
+                            <td><strong>Mint / Mint</strong><br><span style="font-size: 12px; color: var(--gray-500);">120% × 110%</span></td>
+                            <td><strong>$58.24</strong><br><span style="font-size: 12px; color: var(--gray-500);">$88.50 × 55% × 1.2 × 1.1</span></td>
+                            <td><strong>$146.91</strong><br><span style="font-size: 12px; color: var(--gray-500);">$88.50 × 125% × 1.2 × 1.1</span></td>
+                            <td>152%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Near Mint / Near Mint</strong><br><span style="font-size: 12px; color: var(--gray-500);">100% × 100%</span></td>
+                            <td><strong>$48.68</strong><br><span style="font-size: 12px; color: var(--gray-500);">$88.50 × 55% × 1.0 × 1.0</span></td>
+                            <td><strong>$110.63</strong><br><span style="font-size: 12px; color: var(--gray-500);">$88.50 × 125% × 1.0 × 1.0</span></td>
+                            <td>127%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Very Good / Very Good+</strong><br><span style="font-size: 12px; color: var(--gray-500);">60% × 75%</span></td>
+                            <td><strong>$21.91</strong><br><span style="font-size: 12px; color: var(--gray-500);">$88.50 × 55% × 0.6 × 0.75</span></td>
+                            <td><strong>$49.78</strong><br><span style="font-size: 12px; color: var(--gray-500);">$88.50 × 125% × 0.6 × 0.75</span></td>
+                            <td>127%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Good / Good</strong><br><span style="font-size: 12px; color: var(--gray-500);">25% × 15%</span></td>
+                            <td><strong>$5.86</strong><br><span style="font-size: 12px; color: var(--gray-500);">$88.50 × 55% × 0.25 × 0.15</span></td>
+                            <td><strong>$13.28</strong><br><span style="font-size: 12px; color: var(--gray-500);">Capped at minimum floor</span></td>
+                            <td>127%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div style="display: flex; gap: 12px; margin-top: 32px; margin-bottom: 32px;">
+            <button class="btn btn-success">✓ Save Policy</button>
+            <button class="btn btn-primary">📋 Preview in Queue</button>
+            <button class="btn btn-secondary">Reset to Default</button>
+            <button class="btn btn-secondary">← Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => section.classList.remove('active'));
+
+            // Remove active state from all tabs
+            const tabs = document.querySelectorAll('.nav-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            // Show selected section
+            document.getElementById(tabName).classList.add('active');
+
+            // Add active state to clicked tab
+            event.target.classList.add('active');
+
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
