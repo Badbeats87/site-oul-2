@@ -8,6 +8,8 @@ import logger, { logRequest } from '../config/logger.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 import healthRoutes from './routes/health.js';
+import catalogRoutes from './routes/catalog.js';
+import prisma from './utils/db.js';
 
 const app = express();
 
@@ -44,9 +46,11 @@ logger.info(`Environment: ${config.app.env}`);
 // Health check endpoint
 app.use('/api/v1/health', healthRoutes);
 
+// Catalog routes
+app.use('/api/v1/catalog', catalogRoutes);
+
 // TODO: Add other route groups
 // app.use('/api/v1/auth', authRoutes);
-// app.use('/api/v1/catalog', catalogRoutes);
 // app.use('/api/v1/pricing', pricingRoutes);
 // app.use('/api/v1/submissions', submissionRoutes);
 // app.use('/api/v1/inventory', inventoryRoutes);

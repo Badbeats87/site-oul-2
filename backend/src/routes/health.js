@@ -1,5 +1,6 @@
 import express from 'express';
 import config from '../../config/config.js';
+import prisma from '../utils/db.js';
 
 const router = express.Router();
 
@@ -25,19 +26,22 @@ router.get('/', (req, res) => {
  * GET /api/v1/health/ready
  * Readiness check (for Kubernetes/load balancers)
  */
-router.get('/ready', (req, res) => {
-  // TODO: Add database connection check
-  const isReady = true; // Placeholder
+router.get('/ready', async (req, res) => {
+  try {
+    // Test database connection
+    await prisma.$queryRaw`SELECT 1`;
 
-  if (isReady) {
     res.json({
       success: true,
-      data: { status: 'ready' },
+      data: { status: 'ready', database: 'connected' },
     });
-  } else {
+  } catch (error) {
     res.status(503).json({
       success: false,
-      error: { message: 'Service not ready', status: 503 },
+      error: {
+        message: 'Service not ready - database unavailable',
+        status: 503,
+      },
     });
   }
 });

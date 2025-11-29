@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// CATALOG ENTITIES
+// ============================================================================
+
+model Release {
+  id              String   @id @default(uuid()) @db.Uuid
+  title           String   @db.VarChar(500)
+  artist          String   @db.VarChar(500)
+  label           String?  @db.VarChar(255)
+  catalogNumber   String?  @map("catalog_number") @db.VarChar(100)
+  barcode         String?  @db.VarChar(50)
+  releaseYear     Int?     @map("release_year")
+  genre           String?  @db.VarChar(100)
+  coverArtUrl     String?  @map("cover_art_url") @db.VarChar(1000)
+  description     String?  @db.Text
+
+  // Timestamps
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  marketSnapshots   MarketSnapshot[]
+
+  // Indexes
+  @@index([artist, title])
+  @@index([barcode])
+  @@index([catalogNumber])
+  @@index([genre])
+  @@map("releases")
+}
+
+// ============================================================================
+// MARKET DATA
+// ============================================================================
+
+model MarketSnapshot {
+  id          String   @id @default(uuid()) @db.Uuid
+  releaseId   String   @map("release_id") @db.Uuid
+  source      MarketSource
+  statLow     Decimal? @map("stat_low") @db.Decimal(10, 2)
+  statMedian  Decimal? @map("stat_median") @db.Decimal(10, 2)
+  statHigh    Decimal? @map("stat_high") @db.Decimal(10, 2)
+  sampleSize  Int?     @map("sample_size")
+  fetchedAt   DateTime @map("fetched_at") @db.Timestamptz
+
+  // Timestamps
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  release     Release  @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([releaseId, fetchedAt(sort: Desc)])
+  @@index([source, fetchedAt(sort: Desc)])
+  @@map("market_snapshots")
+}
+
+enum MarketSource {
+  DISCOGS
+  EBAY
+  HYBRID
+  MANUAL
+}
+
+// ============================================================================
+// ADMIN USERS (for audit tracking)
+// ============================================================================
+
+model AdminUser {
+  id            String   @id @default(uuid()) @db.Uuid
+  email         String   @unique @db.VarChar(255)
+  name          String   @db.VarChar(255)
+  role          String   @db.VarChar(50)
+  isActive      Boolean  @default(true) @map("is_active")
+
+  // Timestamps
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  lastLoginAt   DateTime? @map("last_login_at") @db.Timestamptz
+
+  @@index([email])
+  @@map("admin_users")
+}

@@ -48,3 +48,5 @@ isolate-*.log
 
 # Heap dumps
 heapdump-*.json
+
+/src/generated/prisma
