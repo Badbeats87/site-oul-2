@@ -176,15 +176,30 @@ cp .env.example .env
 # View mockups
 open mockups.html
 
-# Start development server (when backend ready)
-npm run dev
+# Start local development server
+npm start
 
-# Run tests
-npm test
-
-# Build for production
-npm run build
+# Open in browser
+http://localhost:3000
 ```
+
+### Deployment
+
+The application is configured for automatic deployment to Railway with GitHub integration.
+
+**Live Application**:
+- https://vinyl-catalog-prod.railway.app (after Railway setup)
+
+**Setup Instructions**:
+See **[RAILWAY_SETUP.md](./RAILWAY_SETUP.md)** for quick 5-minute setup guide.
+
+**Full Deployment Documentation**:
+See **[DEPLOYMENT.md](./DEPLOYMENT.md)** for comprehensive deployment information.
+
+**How it works**:
+- Every push to `main` branch automatically deploys
+- Railway builds Docker image and deploys to production
+- No manual deployment steps needed
 
 ## Contributing
 
@@ -204,6 +219,10 @@ See [AGILE.md](./AGILE.md) for detailed workflow and branch naming conventions.
 - ✅ eBay marketplace integration (API specs)
 - ✅ Currency configuration framework
 - ✅ UI mockups for all user interfaces
+- ✅ Production-ready HTML/CSS pages for all interfaces
+- ✅ Comprehensive admin console with pricing policies and inventory management
+- ✅ Docker containerization for deployment
+- ✅ Railway CI/CD integration with automatic GitHub deployment
 
 ## In Progress
 
@@ -233,4 +252,4 @@ See [AGILE.md](./AGILE.md) for detailed workflow and branch naming conventions.
 
 ## Project Status
 
-🚀 **Kickoff Phase** - Architecture and UI mockups complete. Ready for backend development.
+🚀 **Frontend Complete** - Production-ready UI with admin console, pricing policies, and inventory management. Deployed to Railway with automatic GitHub CI/CD. Ready for backend API development.
