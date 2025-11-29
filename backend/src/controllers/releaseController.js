@@ -116,7 +116,7 @@ export const deleteRelease = async (req, res, next) => {
 
 export const searchReleases = async (req, res, next) => {
   try {
-    const { q } = req.query;
+    const { q, limit } = req.query;
 
     if (!q || q.length < 2) {
       return res.status(400).json({
@@ -128,11 +128,52 @@ export const searchReleases = async (req, res, next) => {
       });
     }
 
-    const results = await releaseService.search(q);
+    const results = await releaseService.search(q, limit ? parseInt(limit, 10) : 50);
 
     res.json({
       success: true,
       data: results,
+      requestId: req.id,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Autocomplete endpoint for fast type-ahead suggestions
+ * Returns matching values for specified field (title, artist, label)
+ */
+export const autocomplete = async (req, res, next) => {
+  try {
+    const { q, field = 'title', limit = 10 } = req.query;
+
+    if (!q || q.length < 1) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: 'Query parameter is required',
+          status: 400,
+        },
+      });
+    }
+
+    const validFields = ['title', 'artist', 'label', 'genre'];
+    if (!validFields.includes(field)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: `Field must be one of: ${validFields.join(', ')}`,
+          status: 400,
+        },
+      });
+    }
+
+    const suggestions = await releaseService.getAutocomplete(q, field, parseInt(limit, 10));
+
+    res.json({
+      success: true,
+      data: suggestions,
       requestId: req.id,
     });
   } catch (error) {

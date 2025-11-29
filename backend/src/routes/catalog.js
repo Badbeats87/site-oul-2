@@ -6,6 +6,7 @@ import {
   updateRelease,
   deleteRelease,
   searchReleases,
+  autocomplete,
 } from '../controllers/releaseController.js';
 
 const router = express.Router();
@@ -51,6 +52,12 @@ router.get('/', getAllReleases);
  *         schema:
  *           type: string
  *         description: Search query
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *         description: Maximum results
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -58,6 +65,43 @@ router.get('/', getAllReleases);
  *         description: Search results returned successfully
  */
 router.get('/search', searchReleases);
+
+/**
+ * @swagger
+ * /api/v1/catalog/autocomplete:
+ *   get:
+ *     summary: Get autocomplete suggestions
+ *     description: Get type-ahead suggestions for a field (title, artist, label, genre)
+ *     tags:
+ *       - Catalog
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Search query (minimum 1 character)
+ *       - in: query
+ *         name: field
+ *         schema:
+ *           type: string
+ *           enum: [title, artist, label, genre]
+ *           default: title
+ *         description: Field to autocomplete
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *           maximum: 100
+ *         description: Maximum suggestions
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Autocomplete suggestions returned successfully
+ */
+router.get('/autocomplete', autocomplete);
 
 /**
  * @swagger
