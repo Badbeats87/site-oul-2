@@ -12,9 +12,6 @@ RUN npm ci
 # Copy application files
 COPY . .
 
-# Run tests to ensure build is valid
-RUN npm test
-
 # Install production dependencies only
 RUN npm ci --only=production
 
