@@ -1,6 +1,10 @@
 import { PrismaClient } from '../../src/generated/prisma/index.js';
 import logger from '../../config/logger.js';
 
+if (!process.env.DATABASE_URL) {
+  logger.warn('DATABASE_URL environment variable is not set');
+}
+
 const prisma = new PrismaClient({
   log: [
     { level: 'error', emit: 'stdout' },
