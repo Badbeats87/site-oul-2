@@ -5,8 +5,45 @@ import prisma from '../utils/db.js';
 const router = express.Router();
 
 /**
- * GET /api/v1/health
- * Health check endpoint
+ * @swagger
+ * /api/v1/health:
+ *   get:
+ *     summary: Health check endpoint
+ *     description: Returns basic health status of the API server
+ *     tags:
+ *       - Health
+ *     responses:
+ *       200:
+ *         description: Server is healthy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     status:
+ *                       type: string
+ *                       example: healthy
+ *                     timestamp:
+ *                       type: string
+ *                       format: date-time
+ *                     uptime:
+ *                       type: number
+ *                       description: Server uptime in seconds
+ *                     environment:
+ *                       type: string
+ *                       example: development
+ *                     version:
+ *                       type: string
+ *                       example: 0.1.0
+ *                     requestId:
+ *                       type: string
+ *                       format: uuid
  */
 router.get('/', (req, res) => {
   res.json({
@@ -23,8 +60,18 @@ router.get('/', (req, res) => {
 });
 
 /**
- * GET /api/v1/health/ready
- * Readiness check (for Kubernetes/load balancers)
+ * @swagger
+ * /api/v1/health/ready:
+ *   get:
+ *     summary: Readiness probe
+ *     description: Checks if the API is ready to receive requests (database connected)
+ *     tags:
+ *       - Health
+ *     responses:
+ *       200:
+ *         description: Service is ready
+ *       503:
+ *         description: Service not ready - database unavailable
  */
 router.get('/ready', async (req, res) => {
   try {
@@ -47,8 +94,16 @@ router.get('/ready', async (req, res) => {
 });
 
 /**
- * GET /api/v1/health/live
- * Liveness check (for Kubernetes)
+ * @swagger
+ * /api/v1/health/live:
+ *   get:
+ *     summary: Liveness probe
+ *     description: Checks if the API process is running and responding to requests
+ *     tags:
+ *       - Health
+ *     responses:
+ *       200:
+ *         description: Service is alive
  */
 router.get('/live', (req, res) => {
   res.json({

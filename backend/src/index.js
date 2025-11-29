@@ -3,8 +3,10 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import { v4 as uuidv4 } from 'uuid';
+import swaggerUi from 'swagger-ui-express';
 import config from '../config/config.js';
 import logger, { logRequest } from '../config/logger.js';
+import { swaggerSpec } from '../config/swagger.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 import healthRoutes from './routes/health.js';
@@ -37,6 +39,13 @@ app.use((req, res, next) => {
   res.setHeader('X-Request-ID', req.id);
   next();
 });
+
+// ============================================================================
+// DOCUMENTATION (before authentication middleware)
+// ============================================================================
+
+// API documentation (available without authentication)
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Authentication middleware
 app.use(authenticate);
