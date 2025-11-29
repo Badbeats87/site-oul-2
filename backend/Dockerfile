@@ -6,7 +6,7 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install all dependencies (including dev for testing)
+# Install all dependencies (including dev for Prisma generation)
 RUN npm ci
 
 # Copy application files
@@ -15,8 +15,8 @@ COPY . .
 # Generate Prisma Client
 RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npx prisma generate
 
-# Install production dependencies only
-RUN npm ci --only=production
+# Remove dev dependencies, keep only production
+RUN npm prune --production
 
 # Production stage
 FROM node:18-alpine
