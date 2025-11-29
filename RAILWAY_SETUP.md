@@ -5,6 +5,10 @@
 - GitHub account with access to [Badbeats87/site-oul-2](https://github.com/Badbeats87/site-oul-2)
 - Railway account (sign up free at https://railway.app)
 
+## Need Authorization Help?
+
+See **[RAILWAY_AUTH.md](./RAILWAY_AUTH.md)** for complete step-by-step authorization guide with troubleshooting.
+
 ## 5-Minute Setup
 
 ### 1. Sign In to Railway
