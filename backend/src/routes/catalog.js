@@ -6,7 +6,9 @@ import {
   updateRelease,
   deleteRelease,
   searchReleases,
+  fullTextSearch,
   autocomplete,
+  searchByAlbumArtistLabel,
 } from '../controllers/releaseController.js';
 
 const router = express.Router();
@@ -65,6 +67,66 @@ router.get('/', getAllReleases);
  *         description: Search results returned successfully
  */
 router.get('/search', searchReleases);
+
+/**
+ * @swagger
+ * /api/v1/catalog/search/album-artist-label:
+ *   get:
+ *     summary: Optimized search by album/artist/label
+ *     description: Fast full-text search specifically for album title, artist, and label with optimized relevance ranking
+ *     tags:
+ *       - Catalog
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Search query (minimum 2 characters)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *           maximum: 200
+ *         description: Maximum results
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Search results returned successfully
+ */
+router.get('/search/album-artist-label', searchByAlbumArtistLabel);
+
+/**
+ * @swagger
+ * /api/v1/catalog/search/fulltext:
+ *   get:
+ *     summary: Full-text search using PostgreSQL tsvector
+ *     description: Perform fast full-text search across all text fields (title, artist, label, description, genre)
+ *     tags:
+ *       - Catalog
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Search query (minimum 2 characters)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *           maximum: 200
+ *         description: Maximum results
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Full-text search results returned successfully
+ */
+router.get('/search/fulltext', fullTextSearch);
 
 /**
  * @swagger

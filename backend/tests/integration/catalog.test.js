@@ -176,4 +176,169 @@ describe('Catalog API Integration Tests', () => {
       expect(response.body.success).toBe(false);
     });
   });
+
+  describe('GET /api/v1/catalog/search/album-artist-label', () => {
+    beforeAll(async () => {
+      // Create test releases for album/artist/label search
+      await prisma.release.create({
+        data: {
+          title: 'Pink Floyd Album',
+          artist: 'Pink Floyd',
+          label: 'Harvest Records',
+        },
+      });
+      await prisma.release.create({
+        data: {
+          title: 'Floyd Chronicles',
+          artist: 'Roger Waters',
+          label: 'Pink Label',
+        },
+      });
+    });
+
+    it('should search by album title', async () => {
+      const response = await request(app)
+        .get('/api/v1/catalog/search/album-artist-label')
+        .set('Authorization', getTestAuthHeader())
+        .query({ q: 'Pink Floyd Album' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toHaveProperty('query');
+      expect(response.body.data).toHaveProperty('results');
+      expect(response.body.data).toHaveProperty('searchType', 'album-artist-label');
+      expect(Array.isArray(response.body.data.results)).toBe(true);
+      expect(response.body.data.total).toBeGreaterThan(0);
+    });
+
+    it('should search by artist name', async () => {
+      const response = await request(app)
+        .get('/api/v1/catalog/search/album-artist-label')
+        .set('Authorization', getTestAuthHeader())
+        .query({ q: 'Pink Floyd' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.total).toBeGreaterThan(0);
+    });
+
+    it('should search by label', async () => {
+      const response = await request(app)
+        .get('/api/v1/catalog/search/album-artist-label')
+        .set('Authorization', getTestAuthHeader())
+        .query({ q: 'Harvest' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.total).toBeGreaterThan(0);
+    });
+
+    it('should return results with relevance ranking', async () => {
+      const response = await request(app)
+        .get('/api/v1/catalog/search/album-artist-label')
+        .set('Authorization', getTestAuthHeader())
+        .query({ q: 'Pink' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      if (response.body.data.results.length > 0) {
+        expect(response.body.data.results[0]).toHaveProperty('_relevance');
+        expect(typeof response.body.data.results[0]._relevance).toBe('number');
+      }
+    });
+
+    it('should fail with query less than 2 characters', async () => {
+      const response = await request(app)
+        .get('/api/v1/catalog/search/album-artist-label')
+        .set('Authorization', getTestAuthHeader())
+        .query({ q: 'a' });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+    });
+
+    it('should respect limit parameter', async () => {
+      const response = await request(app)
+        .get('/api/v1/catalog/search/album-artist-label')
+        .set('Authorization', getTestAuthHeader())
+        .query({ q: 'Album', limit: 1 });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.results.length).toBeLessThanOrEqual(1);
+    });
+  });
+
+  describe('GET /api/v1/catalog/search/fulltext', () => {
+    beforeAll(async () => {
+      // Create test releases for full-text search
+      await prisma.release.create({
+        data: {
+          title: 'The Dark Side',
+          artist: 'Prog Rock Band',
+          label: 'Experimental Records',
+          genre: 'Progressive Rock',
+          description: 'A masterpiece of progressive rock music',
+        },
+      });
+    });
+
+    it('should perform full-text search across all fields', async () => {
+      const response = await request(app)
+        .get('/api/v1/catalog/search/fulltext')
+        .set('Authorization', getTestAuthHeader())
+        .query({ q: 'progressive' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toHaveProperty('query');
+      expect(response.body.data).toHaveProperty('searchType', 'fulltext');
+      expect(Array.isArray(response.body.data.results)).toBe(true);
+    });
+
+    it('should search in description field', async () => {
+      const response = await request(app)
+        .get('/api/v1/catalog/search/fulltext')
+        .set('Authorization', getTestAuthHeader())
+        .query({ q: 'masterpiece' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should return results with relevance scores', async () => {
+      const response = await request(app)
+        .get('/api/v1/catalog/search/fulltext')
+        .set('Authorization', getTestAuthHeader())
+        .query({ q: 'Dark' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      if (response.body.data.results.length > 0) {
+        expect(response.body.data.results[0]).toHaveProperty('_relevance');
+        expect(typeof response.body.data.results[0]._relevance).toBe('number');
+      }
+    });
+
+    it('should fail with query less than 2 characters', async () => {
+      const response = await request(app)
+        .get('/api/v1/catalog/search/fulltext')
+        .set('Authorization', getTestAuthHeader())
+        .query({ q: 'a' });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+    });
+
+    it('should respect limit parameter', async () => {
+      const response = await request(app)
+        .get('/api/v1/catalog/search/fulltext')
+        .set('Authorization', getTestAuthHeader())
+        .query({ q: 'Rock', limit: 1 });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.results.length).toBeLessThanOrEqual(1);
+    });
+  });
 });
