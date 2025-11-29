@@ -39,6 +39,9 @@ model Release {
   @@index([barcode])
   @@index([catalogNumber])
   @@index([genre])
+  @@index([releaseYear])
+  @@index([createdAt])
+  @@index([genre, releaseYear])
   @@map("releases")
 }
 
