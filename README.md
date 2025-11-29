@@ -102,12 +102,17 @@ Navigate between sections using the top navigation tabs.
 
 ## Development Workflow
 
-See [AGILE.md](./AGILE.md) for:
-- Issue tracking and labeling system
-- Git workflow and branch naming conventions
-- Pull request requirements
-- Sprint planning process
-- Team communication protocols
+### Documentation
+- **[AGILE.md](./AGILE.md)** - Sprint planning, workflow, and team processes
+- **[.github/GITHUB_SETUP_GUIDE.md](.github/GITHUB_SETUP_GUIDE.md)** - Complete GitHub setup instructions
+- **[.github/CONTRIBUTING.md](.github/CONTRIBUTING.md)** - Comprehensive contribution guidelines
+- **[.github/QUICK_REFERENCE.md](.github/QUICK_REFERENCE.md)** - Quick command reference
+
+### Quick Links
+- **[Project Board](https://github.com/Badbeats87/site-oul-2/projects)** - Track work items and sprints
+- **[Issues](https://github.com/Badbeats87/site-oul-2/issues)** - Bug reports and feature requests
+- **[Discussions](https://github.com/Badbeats87/site-oul-2/discussions)** - Ask questions and share ideas
+- **[Wiki](https://github.com/Badbeats87/site-oul-2/wiki)** - Detailed documentation
 
 ## Product Specification
 

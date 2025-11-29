@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: GitHub Discussions
+    url: https://github.com/Badbeats87/site-oul-2/discussions
+    about: Ask questions, share ideas, and discuss the project
+  - name: Documentation
+    url: https://github.com/Badbeats87/site-oul-2/wiki
+    about: Read comprehensive project documentation
+  - name: Project Roadmap
+    url: https://github.com/Badbeats87/site-oul-2/milestones
+    about: View project milestones and upcoming features

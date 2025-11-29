@@ -1,0 +1,129 @@
+# Automatically label PRs based on file paths changed
+
+# Component labels
+'component: seller-site':
+  - 'apps/seller-site/**/*'
+  - 'packages/seller-*/**/*'
+  - 'src/seller/**/*'
+
+'component: buyer-storefront':
+  - 'apps/storefront/**/*'
+  - 'apps/buyer/**/*'
+  - 'packages/storefront-*/**/*'
+  - 'src/storefront/**/*'
+  - 'src/buyer/**/*'
+
+'component: admin-console':
+  - 'apps/admin/**/*'
+  - 'packages/admin-*/**/*'
+  - 'src/admin/**/*'
+
+'component: pricing-engine':
+  - 'packages/pricing/**/*'
+  - 'apps/api/src/pricing/**/*'
+  - 'src/pricing/**/*'
+  - '**/pricing/**/*'
+
+'component: api':
+  - 'apps/api/**/*'
+  - 'packages/api-*/**/*'
+  - 'src/api/**/*'
+  - '**/routes/**/*'
+  - '**/controllers/**/*'
+  - '**/services/**/*'
+
+'component: database':
+  - 'prisma/**/*'
+  - 'migrations/**/*'
+  - 'database/**/*'
+  - '**/*.sql'
+  - '**/schema.prisma'
+
+'component: integrations':
+  - '**/integrations/**/*'
+  - '**/discogs/**/*'
+  - '**/ebay/**/*'
+  - '**/external/**/*'
+
+'component: infrastructure':
+  - '.github/workflows/**/*'
+  - 'docker/**/*'
+  - 'Dockerfile*'
+  - 'docker-compose*.yml'
+  - 'k8s/**/*'
+  - 'terraform/**/*'
+  - '.circleci/**/*'
+  - 'scripts/deploy/**/*'
+
+# Domain labels
+'domain: pricing':
+  - '**/*pricing*/**/*'
+  - '**/*price*/**/*'
+  - '**/*discount*/**/*'
+  - '**/*condition*/**/*'
+
+'domain: inventory':
+  - '**/*inventory*/**/*'
+  - '**/*stock*/**/*'
+  - '**/*catalog*/**/*'
+
+'domain: submissions':
+  - '**/*submission*/**/*'
+  - '**/*seller*/**/*'
+  - '**/*quote*/**/*'
+
+'domain: catalog':
+  - '**/*catalog*/**/*'
+  - '**/*release*/**/*'
+  - '**/*search*/**/*'
+
+'domain: checkout':
+  - '**/*checkout*/**/*'
+  - '**/*cart*/**/*'
+  - '**/*payment*/**/*'
+  - '**/*order*/**/*'
+
+'domain: shipping':
+  - '**/*shipping*/**/*'
+  - '**/*fulfillment*/**/*'
+  - '**/*delivery*/**/*'
+
+'domain: notifications':
+  - '**/*notification*/**/*'
+  - '**/*email*/**/*'
+  - '**/*sms*/**/*'
+
+'domain: auth':
+  - '**/*auth*/**/*'
+  - '**/*login*/**/*'
+  - '**/*authentication*/**/*'
+
+# Type labels
+'type: documentation':
+  - '**/*.md'
+  - 'docs/**/*'
+  - '**/README*'
+  - '**/CHANGELOG*'
+
+'type: refactor':
+  - any: ['**/*refactor*/**/*']
+
+# Special labels
+'breaking-change':
+  - any:
+    - 'BREAKING*'
+    - '**/BREAKING*'
+
+'security':
+  - '**/*security*/**/*'
+  - '**/*auth*/**/*'
+  - '**/*crypt*/**/*'
+
+'performance':
+  - '**/*performance*/**/*'
+  - '**/*optimization*/**/*'
+  - '**/*cache*/**/*'
+
+'accessibility':
+  - '**/*a11y*/**/*'
+  - '**/*accessibility*/**/*'

@@ -1,0 +1,195 @@
+name: Epic
+description: Create a large feature that spans multiple issues
+title: "[EPIC] "
+labels: ["epic", "status: needs-info"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Epics are large features that span multiple issues and potentially multiple sprints.
+
+  - type: input
+    id: title
+    attributes:
+      label: Epic Title
+      description: A clear, concise title for this epic
+      placeholder: e.g., "Complete Pricing Engine Implementation"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Primary Component
+      description: Which component does this epic primarily affect?
+      options:
+        - Seller Site (Sell to Us)
+        - Buyer Storefront (Buy from Us)
+        - Admin Console
+        - Pricing Engine
+        - API/Backend
+        - Database
+        - External Integrations
+        - Infrastructure
+    validations:
+      required: true
+
+  - type: textarea
+    id: vision
+    attributes:
+      label: Epic Vision
+      description: What is the overall goal of this epic?
+      placeholder: Describe the big-picture goal and why this epic is important...
+    validations:
+      required: true
+
+  - type: textarea
+    id: user-stories
+    attributes:
+      label: User Stories
+      description: List the key user stories this epic addresses
+      placeholder: |
+        - As a [user type], I want [goal] so that [benefit]
+        - As a [user type], I want [goal] so that [benefit]
+      value: |
+        - As a
+        - As a
+        - As a
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: What is included (and what is NOT included) in this epic?
+      placeholder: |
+        **In Scope:**
+        -
+
+        **Out of Scope:**
+        -
+      value: |
+        **In Scope:**
+        -
+
+        **Out of Scope:**
+        -
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Epic Acceptance Criteria
+      description: How will we know this epic is complete?
+      placeholder: |
+        - [ ] Major deliverable 1
+        - [ ] Major deliverable 2
+        - [ ] Major deliverable 3
+      value: |
+        - [ ]
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+
+  - type: textarea
+    id: breakdown
+    attributes:
+      label: Initial Issue Breakdown
+      description: List the issues/tasks that make up this epic (can be refined later)
+      placeholder: |
+        - [ ] #123 - Task description
+        - [ ] Issue: Task description (not yet created)
+        - [ ] Issue: Task description (not yet created)
+      value: |
+        - [ ]
+        - [ ]
+        - [ ]
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this epic?
+      options:
+        - Critical
+        - High
+        - Medium
+        - Low
+    validations:
+      required: true
+
+  - type: dropdown
+    id: effort
+    attributes:
+      label: Estimated Effort
+      description: Overall effort for the entire epic
+      options:
+        - 1-2 sprints
+        - 3-4 sprints
+        - 5+ sprints
+    validations:
+      required: true
+
+  - type: input
+    id: milestone
+    attributes:
+      label: Target Milestone
+      description: Which milestone should this epic be completed by?
+      placeholder: e.g., v0.3 - Seller Site
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: What needs to be completed before this epic can start?
+      placeholder: |
+        - #123 - Dependency description
+        - External dependency description
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks and Assumptions
+      description: What are the key risks and assumptions?
+      placeholder: |
+        **Risks:**
+        -
+
+        **Assumptions:**
+        -
+
+  - type: textarea
+    id: success
+    attributes:
+      label: Success Metrics
+      description: How will we measure the success of this epic?
+      placeholder: |
+        - Metric 1: Target value
+        - Metric 2: Target value
+
+  - type: checkboxes
+    id: impact
+    attributes:
+      label: Impact Areas
+      description: Which areas will this epic impact?
+      options:
+        - label: User Experience (UX)
+        - label: Performance
+        - label: Security
+        - label: Scalability
+        - label: Business Logic
+        - label: Data Model
+        - label: External Integrations
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      options:
+        - label: I have defined clear acceptance criteria for the epic
+          required: true
+        - label: I have identified dependencies and blockers
+          required: true
+        - label: I have estimated the overall effort
+          required: true

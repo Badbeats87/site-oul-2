@@ -1,0 +1,135 @@
+# Auto-assign reviewers to pull requests
+# https://github.com/kentaro-m/auto-assign-action
+
+# Set to true to add reviewers to pull requests
+addReviewers: true
+
+# Set to true to add assignees to pull requests
+addAssignees: false
+
+# A list of reviewers to be added to pull requests (GitHub username)
+reviewers:
+  - teamlead
+  - backend-dev1
+  - frontend-dev1
+
+# A number of reviewers added to the pull request
+# Set to 0 to add all the reviewers (default: 0)
+numberOfReviewers: 2
+
+# A list of assignees, overrides reviewers if set
+# assignees:
+#   - assigneeA
+
+# A number of assignees to add to the pull request
+# Set to 0 to add all of the assignees.
+# Uses numberOfReviewers if unset.
+# numberOfAssignees: 2
+
+# A list of keywords to be skipped the process that add reviewers if pull requests include it
+skipKeywords:
+  - wip
+  - WIP
+  - "[WIP]"
+  - "[skip assign]"
+  - "do not review"
+
+# Auto-assign based on changed files
+useReviewGroups: true
+reviewGroups:
+  # Frontend team
+  frontend:
+    - frontend-dev1
+    - frontend-dev2
+    - ux-designer
+  # Backend team
+  backend:
+    - backend-dev1
+    - backend-dev2
+  # DevOps team
+  devops:
+    - devops-lead
+    - infrastructure-specialist
+  # Pricing specialists
+  pricing:
+    - pricing-specialist
+    - backend-dev1
+  # Admin and operations
+  admin:
+    - admin-dev
+    - backend-dev1
+  # Database specialists
+  database:
+    - database-specialist
+    - backend-dev1
+  # Integration specialists
+  integrations:
+    - integration-specialist
+    - data-specialist
+
+# Assign reviewers based on files changed
+useAssigneeGroups: false
+
+# File path patterns for review groups
+filePathPatterns:
+  # Frontend components
+  'apps/seller-site/**':
+    - frontend
+  'apps/storefront/**':
+    - frontend
+  'apps/buyer/**':
+    - frontend
+  'apps/admin/**':
+    - admin
+    - frontend
+
+  # Backend
+  'apps/api/**':
+    - backend
+  'src/api/**':
+    - backend
+  'src/services/**':
+    - backend
+
+  # Pricing engine - critical component
+  'packages/pricing/**':
+    - pricing
+  'src/pricing/**':
+    - pricing
+  '**/pricing/**':
+    - pricing
+
+  # Database
+  'prisma/**':
+    - database
+  'migrations/**':
+    - database
+  '**/*.sql':
+    - database
+
+  # Integrations
+  'src/integrations/**':
+    - integrations
+  '**/discogs/**':
+    - integrations
+  '**/ebay/**':
+    - integrations
+
+  # Infrastructure
+  '.github/workflows/**':
+    - devops
+  'docker/**':
+    - devops
+  'k8s/**':
+    - devops
+  'terraform/**':
+    - devops
+
+# Assign reviewers based on PR labels
+# This requires enabling the "Label" feature
+# reviewLabelPatterns:
+#   'priority: critical':
+#     - teamlead
+#   'security':
+#     - security-specialist
+#     - teamlead

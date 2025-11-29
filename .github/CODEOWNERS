@@ -1,0 +1,114 @@
+# CODEOWNERS file for Vinyl Catalog System
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global owners - will be requested for review on all PRs unless more specific rule matches
+*                                   @teamlead
+
+# Documentation
+*.md                                @tech-writer @teamlead
+/docs/**                            @tech-writer @teamlead
+README.md                           @teamlead
+CONTRIBUTING.md                     @teamlead
+product.md                          @teamlead @product-owner
+AGILE.md                            @teamlead @scrum-master
+
+# Frontend Components
+/apps/seller-site/**                @frontend-dev1 @frontend-dev2
+/apps/storefront/**                 @frontend-dev1 @ecommerce-specialist
+/apps/buyer/**                      @frontend-dev1 @ecommerce-specialist
+/apps/admin/**                      @admin-dev @frontend-dev1
+
+# Seller Site specific
+/apps/seller-site/src/components/quote/**    @frontend-dev1 @pricing-specialist
+/apps/seller-site/src/components/search/**   @frontend-dev1 @backend-dev1
+
+# Buyer Storefront specific
+/apps/storefront/src/components/cart/**      @ecommerce-specialist @frontend-dev1
+/apps/storefront/src/components/checkout/**  @ecommerce-specialist @payment-specialist
+/apps/storefront/src/components/product/**   @frontend-dev1 @ux-designer
+
+# Admin Console specific
+/apps/admin/src/components/pricing/**        @admin-dev @pricing-specialist
+/apps/admin/src/components/submissions/**    @admin-dev @backend-dev1
+/apps/admin/src/components/inventory/**      @admin-dev @inventory-specialist
+
+# Backend / API
+/apps/api/**                        @backend-dev1 @backend-dev2
+/src/api/**                         @backend-dev1 @backend-dev2
+/src/services/**                    @backend-dev1 @backend-dev2
+/src/controllers/**                 @backend-dev1 @backend-dev2
+/src/routes/**                      @backend-dev1 @backend-dev2
+/src/middleware/**                  @backend-dev1 @security-specialist
+
+# Pricing Engine - critical component
+/packages/pricing/**                @pricing-specialist @backend-dev1 @teamlead
+/src/pricing/**                     @pricing-specialist @backend-dev1 @teamlead
+/apps/api/src/pricing/**            @pricing-specialist @backend-dev1 @teamlead
+
+# Database
+/prisma/**                          @database-specialist @backend-dev1
+/migrations/**                      @database-specialist @backend-dev1
+/database/**                        @database-specialist @backend-dev1
+/prisma/schema.prisma               @database-specialist @backend-dev1 @teamlead
+**/*.sql                            @database-specialist @backend-dev1
+
+# External Integrations
+/src/integrations/**                @integration-specialist @backend-dev1
+/src/integrations/discogs/**        @integration-specialist @data-specialist
+/src/integrations/ebay/**           @integration-specialist @data-specialist
+/packages/integrations/**           @integration-specialist @backend-dev1
+
+# Specific integration files
+Discogs.postman_collection.json     @integration-specialist @data-specialist
+Ebay.postman_collection.json        @integration-specialist @data-specialist
+
+# Authentication & Security
+/src/auth/**                        @security-specialist @backend-dev1
+/src/middleware/auth/**             @security-specialist @backend-dev1
+/packages/auth/**                   @security-specialist @backend-dev1
+
+# Testing
+/tests/**                           @qa-lead @backend-dev1
+/test/**                            @qa-lead @backend-dev1
+**/*.test.ts                        @qa-lead
+**/*.test.js                        @qa-lead
+**/*.spec.ts                        @qa-lead
+**/*.spec.js                        @qa-lead
+/e2e/**                             @qa-lead @frontend-dev1
+
+# CI/CD and Infrastructure
+/.github/workflows/**               @devops-lead @teamlead
+/.github/GITHUB_SETUP_GUIDE.md      @devops-lead @teamlead
+/docker/**                          @devops-lead
+Dockerfile*                         @devops-lead
+docker-compose*.yml                 @devops-lead
+/k8s/**                             @devops-lead
+/terraform/**                       @devops-lead @infrastructure-specialist
+/scripts/deploy/**                  @devops-lead @backend-dev1
+
+# Configuration files
+/.env.example                       @devops-lead @backend-dev1
+/config/**                          @backend-dev1 @devops-lead
+*.config.js                         @devops-lead @backend-dev1
+*.config.ts                         @devops-lead @backend-dev1
+tsconfig*.json                      @backend-dev1 @frontend-dev1
+package.json                        @teamlead @devops-lead
+package-lock.json                   @devops-lead
+
+# UI/UX Design
+mockups.html                        @ux-designer @frontend-dev1
+/design/**                          @ux-designer @frontend-dev1
+**/*.css                            @frontend-dev1 @ux-designer
+**/*.scss                           @frontend-dev1 @ux-designer
+
+# GitHub specific
+/.github/CONTRIBUTING.md            @teamlead
+/.github/pull_request_template.md   @teamlead
+/.github/ISSUE_TEMPLATE/**          @teamlead @scrum-master
+/.github/CODEOWNERS                 @teamlead
+/.github/dependabot.yml             @devops-lead
+
+# Root level important files
+/README.md                          @teamlead
+/LICENSE                            @teamlead @legal
+/.gitignore                         @devops-lead
