@@ -36,7 +36,6 @@ coverage/
 
 # Docker
 .dockerignore
-Dockerfile
 
 # Temporary files
 tmp/
