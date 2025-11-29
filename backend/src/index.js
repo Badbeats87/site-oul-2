@@ -13,6 +13,7 @@ import healthRoutes from './routes/health.js';
 import authRoutes from './routes/auth.js';
 import catalogRoutes from './routes/catalog.js';
 import integrationsRoutes from './routes/integrations.js';
+import sellersRoutes from './routes/sellers.js';
 import { authenticate } from './middleware/authMiddleware.js';
 import prisma from './utils/db.js';
 
@@ -70,9 +71,11 @@ app.use('/api/v1/catalog', catalogRoutes);
 // Integration routes
 app.use('/api/v1/integrations', integrationsRoutes);
 
+// Sellers and submissions routes
+app.use('/api/v1/sellers', sellersRoutes);
+
 // TODO: Add other route groups
 // app.use('/api/v1/pricing', pricingRoutes);
-// app.use('/api/v1/submissions', submissionRoutes);
 // app.use('/api/v1/inventory', inventoryRoutes);
 // app.use('/api/v1/orders', orderRoutes);
 
