@@ -28,7 +28,11 @@ const config = {
   // Authentication
   auth: {
     jwtSecret: process.env.JWT_SECRET || 'dev-secret-key',
-    jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
+    jwtExpiresIn: process.env.JWT_EXPIRES_IN || '15m',
+    jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+    bcryptRounds: parseInt(process.env.BCRYPT_ROUNDS, 10) || 12,
+    maxLoginAttempts: parseInt(process.env.MAX_LOGIN_ATTEMPTS, 10) || 5,
+    loginCooldownMinutes: parseInt(process.env.LOGIN_COOLDOWN_MINUTES, 10) || 15,
   },
 
   // Logging
