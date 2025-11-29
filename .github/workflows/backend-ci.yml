@@ -87,6 +87,12 @@ jobs:
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/vinyl_catalog_test"
         run: npx prisma generate
 
+      - name: Run Database Migrations
+        working-directory: backend
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/vinyl_catalog_test"
+        run: npx prisma migrate deploy
+
       - name: Run tests
         working-directory: backend
         env:
