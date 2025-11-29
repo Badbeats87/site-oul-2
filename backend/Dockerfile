@@ -29,6 +29,9 @@ RUN apk add --no-cache dumb-init
 # Copy node_modules from builder
 COPY --from=builder /app/node_modules ./node_modules
 
+# Copy generated Prisma client from builder
+COPY --from=builder /app/src/generated/prisma ./src/generated/prisma
+
 # Copy application files
 COPY . .
 
