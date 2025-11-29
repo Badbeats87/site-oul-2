@@ -9,6 +9,7 @@ import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 import healthRoutes from './routes/health.js';
 import catalogRoutes from './routes/catalog.js';
+import { authenticate } from './middleware/authMiddleware.js';
 import prisma from './utils/db.js';
 
 const app = express();
@@ -35,6 +36,9 @@ app.use((req, res, next) => {
   res.setHeader('X-Request-ID', req.id);
   next();
 });
+
+// Authentication middleware
+app.use(authenticate);
 
 logger.info(`🚀 ${config.app.name} starting up...`);
 logger.info(`Environment: ${config.app.env}`);
