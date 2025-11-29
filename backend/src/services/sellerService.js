@@ -1,6 +1,7 @@
 import prisma from '../utils/db.js';
 import { ApiError } from '../middleware/errorHandler.js';
 import logger from '../../config/logger.js';
+import notificationService from './notificationService.js';
 
 class SellerService {
   /**
@@ -46,6 +47,14 @@ class SellerService {
         sellerId: seller.id,
         email: seller.sellerContact,
         name: seller.sellerName,
+      });
+
+      // Notify admins of new submission
+      await notificationService.notifyAdminNewSubmission({
+        submissionId: seller.id,
+        sellerName: seller.sellerName || seller.sellerContact,
+        itemCount: 0,
+        totalOffered: 0,
       });
 
       return {

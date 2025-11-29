@@ -3,8 +3,52 @@ import { ApiError } from '../middleware/errorHandler.js';
 import logger from '../../config/logger.js';
 import pricingService from './pricingService.js';
 import releaseService from './releaseService.js';
+import notificationService from './notificationService.js';
 
 class SubmissionService {
+  /**
+   * Helper method to track status changes and log to audit trail
+   * @param {string} submissionId - Submission ID
+   * @param {string} fromStatus - Previous status
+   * @param {string} toStatus - New status
+   * @param {string} changeReason - Reason for change
+   * @param {string} changedBy - User ID who made the change
+   */
+  async logStatusChange(submissionId, fromStatus, toStatus, changeReason, changedBy) {
+    try {
+      // Record audit entry
+      await prisma.submissionAudit.create({
+        data: {
+          submissionId,
+          fromStatus,
+          toStatus,
+          changeReason,
+          changedBy,
+        },
+      });
+
+      // Trigger notification
+      await notificationService.notifySubmissionStateChange({
+        submissionId,
+        fromStatus,
+        toStatus,
+        changeReason,
+      });
+
+      logger.info('Submission status changed', {
+        submissionId,
+        fromStatus,
+        toStatus,
+        changeReason,
+      });
+    } catch (error) {
+      logger.error('Error logging status change', {
+        submissionId,
+        error: error.message,
+      });
+    }
+  }
+
   /**
    * Create a new submission with items
    * Generates automatic quotes for each item using the pricing engine
@@ -303,12 +347,67 @@ class SubmissionService {
         },
       });
 
+      // Log status change if submission status changed
+      if (submissionStatus !== submission.status) {
+        await this.logStatusChange(
+          sellerId,
+          submission.status,
+          submissionStatus,
+          `Item ${itemId} ${action}`,
+          null
+        );
+      }
+
       logger.info('Submission item reviewed', { itemId, action, newStatus });
       return updated;
     } catch (error) {
       if (error instanceof ApiError) throw error;
       logger.error('Error reviewing submission item', { sellerId, itemId, error: error.message });
       throw new ApiError('Failed to review submission item', 500);
+    }
+  }
+
+  /**
+   * Get submission history and audit trail
+   * @param {string} submissionId - Submission ID
+   * @returns {Promise<Object>} Submission with audit history
+   */
+  async getSubmissionHistory(submissionId) {
+    try {
+      const submission = await prisma.sellerSubmission.findUnique({
+        where: { id: submissionId },
+        include: {
+          audits: {
+            orderBy: {
+              changedAt: 'desc',
+            },
+          },
+          items: {
+            include: {
+              release: {
+                select: {
+                  id: true,
+                  title: true,
+                  artist: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!submission) {
+        throw new ApiError('Submission not found', 404);
+      }
+
+      return submission;
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      logger.error('Error getting submission history', {
+        submissionId,
+        error: error.message,
+      });
+      throw new ApiError('Failed to get submission history', 500);
     }
   }
 }
