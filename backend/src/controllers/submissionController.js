@@ -109,3 +109,23 @@ export const reviewSubmissionItem = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * GET /api/v1/submissions/:sellerId/history
+ * Get submission audit trail and state change history
+ */
+export const getSubmissionHistory = async (req, res, next) => {
+  try {
+    const { sellerId } = req.params;
+
+    const history = await submissionService.getSubmissionHistory(sellerId);
+
+    res.json({
+      success: true,
+      data: history,
+      requestId: req.id,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
