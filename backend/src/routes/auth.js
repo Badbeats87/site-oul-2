@@ -35,68 +35,101 @@ const registerLimiter = rateLimit({
 // ============================================================================
 
 /**
- * POST /api/v1/auth/register
- * Register a new user (BUYER or SELLER role)
- *
- * Request body:
- * {
- *   "email": "user@example.com",
- *   "password": "SecurePassword123!",
- *   "name": "John Doe",
- *   "role": "BUYER" (optional, defaults to BUYER)
- * }
- *
- * Response:
- * {
- *   "success": true,
- *   "data": {
- *     "user": { id, email, name, role, isActive, createdAt, ... },
- *     "accessToken": "jwt_token",
- *     "refreshToken": "jwt_token"
- *   }
- * }
+ * @swagger
+ * /api/v1/auth/register:
+ *   post:
+ *     summary: Register a new user
+ *     description: Create a new user account with BUYER or SELLER role
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - name
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *                 description: Must be at least 8 chars with uppercase, lowercase, number, and special char
+ *               name:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *                 enum: [BUYER, SELLER]
+ *                 default: BUYER
+ *     responses:
+ *       201:
+ *         description: User registered successfully
+ *       429:
+ *         description: Too many registration attempts
  */
 router.post('/register', registerLimiter, register);
 
 /**
- * POST /api/v1/auth/login
- * Login user and return tokens
- *
- * Request body:
- * {
- *   "email": "user@example.com",
- *   "password": "SecurePassword123!"
- * }
- *
- * Response:
- * {
- *   "success": true,
- *   "data": {
- *     "user": { id, email, name, role, isActive, ... },
- *     "accessToken": "jwt_token",
- *     "refreshToken": "jwt_token"
- *   }
- * }
+ * @swagger
+ * /api/v1/auth/login:
+ *   post:
+ *     summary: Login user
+ *     description: Authenticate user and return access and refresh tokens
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *       401:
+ *         description: Invalid credentials
+ *       429:
+ *         description: Too many login attempts
  */
 router.post('/login', loginLimiter, login);
 
 /**
- * POST /api/v1/auth/refresh
- * Refresh access token using refresh token
- *
- * Request body:
- * {
- *   "refreshToken": "jwt_refresh_token"
- * }
- *
- * Response:
- * {
- *   "success": true,
- *   "data": {
- *     "accessToken": "new_jwt_token",
- *     "refreshToken": "new_jwt_refresh_token"
- *   }
- * }
+ * @swagger
+ * /api/v1/auth/refresh:
+ *   post:
+ *     summary: Refresh access token
+ *     description: Get a new access token using a valid refresh token
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refreshToken
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Token refreshed successfully
+ *       401:
+ *         description: Invalid or expired refresh token
  */
 router.post('/refresh', refresh);
 
