@@ -91,6 +91,7 @@ jobs:
         working-directory: backend
         env:
           NODE_ENV: test
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/vinyl_catalog_test"
           DB_HOST: localhost
           DB_PORT: 5432
           DB_NAME: vinyl_catalog_test
