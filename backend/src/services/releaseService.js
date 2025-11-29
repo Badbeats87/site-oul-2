@@ -485,6 +485,178 @@ class ReleaseService {
       throw new ApiError('Failed to search releases', 500);
     }
   }
+
+  /**
+   * Full-text search using PostgreSQL tsvector
+   * Searches across title, artist, label, description, and genre
+   * Results are ranked by relevance
+   * @param {string} query - Search query
+   * @param {number} limit - Maximum results
+   * @returns {Promise<Object>} Search results with relevance ranking
+   */
+  async fullTextSearch(query, limit = 50) {
+    try {
+      if (!query || query.trim().length === 0) {
+        throw new ApiError('Search query is required', 400);
+      }
+
+      if (limit > 200) {
+        throw new ApiError('Limit cannot exceed 200', 400);
+      }
+
+      const cacheKey = `release:fulltext:${query.toLowerCase()}:${limit}`;
+
+      // Try cache first (30 minute TTL for search)
+      const cached = getCached(cacheKey);
+      if (cached) {
+        logger.debug('Cache hit for full-text search', { query, limit });
+        return cached;
+      }
+
+      // Perform full-text search using PostgreSQL tsvector
+      const results = await prisma.$queryRaw`
+        SELECT
+          id,
+          title,
+          artist,
+          label,
+          catalog_number as "catalogNumber",
+          barcode,
+          release_year as "releaseYear",
+          genre,
+          cover_art_url as "coverArtUrl",
+          description,
+          created_at as "createdAt",
+          updated_at as "updatedAt",
+          ts_rank(search_vector, query) as relevance
+        FROM releases, plainto_tsquery('english', ${query}) as query
+        WHERE search_vector @@ query
+        ORDER BY relevance DESC, updated_at DESC
+        LIMIT ${limit}
+      `;
+
+      const totalResults = await prisma.$queryRaw`
+        SELECT COUNT(*)::int as count
+        FROM releases, plainto_tsquery('english', ${query}) as query
+        WHERE search_vector @@ query
+      `;
+
+      const result = {
+        query,
+        total: Number(totalResults[0]?.count || 0),
+        results: results.map(r => {
+          const { relevance, ...release } = r;
+          return {
+            ...release,
+            _relevance: Number(relevance),
+          };
+        }),
+        searchType: 'fulltext',
+        executedAt: new Date(),
+      };
+
+      // Cache the result (30 minute TTL)
+      setCached(cacheKey, result, 1800);
+      return result;
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      logger.error('Full-text search failed', { query, error: error.message });
+      throw new ApiError('Failed to perform full-text search', 500);
+    }
+  }
+
+  /**
+   * Optimized search for album/artist/label
+   * Uses PostgreSQL full-text search with optimized field weights
+   * for these specific fields to ensure fast, relevant results
+   * @param {string} query - Search query
+   * @param {number} limit - Maximum results
+   * @returns {Promise<Object>} Search results with relevance ranking
+   */
+  async searchByAlbumArtistLabel(query, limit = 50) {
+    try {
+      if (!query || query.trim().length === 0) {
+        throw new ApiError('Search query is required', 400);
+      }
+
+      if (limit > 200) {
+        throw new ApiError('Limit cannot exceed 200', 400);
+      }
+
+      const cacheKey = `release:search:album-artist-label:${query.toLowerCase()}:${limit}`;
+
+      // Try cache first (30 minute TTL for search)
+      const cached = getCached(cacheKey);
+      if (cached) {
+        logger.debug('Cache hit for album/artist/label search', { query, limit });
+        return cached;
+      }
+
+      // Perform optimized search across title (album), artist, and label
+      // This uses the full-text search vector but focuses on these three fields
+      const results = await prisma.$queryRaw`
+        SELECT
+          id,
+          title,
+          artist,
+          label,
+          catalog_number as "catalogNumber",
+          barcode,
+          release_year as "releaseYear",
+          genre,
+          cover_art_url as "coverArtUrl",
+          description,
+          created_at as "createdAt",
+          updated_at as "updatedAt",
+          ts_rank(
+            setweight(to_tsvector('english', COALESCE(title, '')), 'A') ||
+            setweight(to_tsvector('english', COALESCE(artist, '')), 'A') ||
+            setweight(to_tsvector('english', COALESCE(label, '')), 'B'),
+            plainto_tsquery('english', ${query})
+          ) as relevance
+        FROM releases
+        WHERE
+          (setweight(to_tsvector('english', COALESCE(title, '')), 'A') ||
+           setweight(to_tsvector('english', COALESCE(artist, '')), 'A') ||
+           setweight(to_tsvector('english', COALESCE(label, '')), 'B')) @@
+          plainto_tsquery('english', ${query})
+        ORDER BY relevance DESC, updated_at DESC
+        LIMIT ${limit}
+      `;
+
+      const totalResults = await prisma.$queryRaw`
+        SELECT COUNT(*)::int as count
+        FROM releases
+        WHERE
+          (setweight(to_tsvector('english', COALESCE(title, '')), 'A') ||
+           setweight(to_tsvector('english', COALESCE(artist, '')), 'A') ||
+           setweight(to_tsvector('english', COALESCE(label, '')), 'B')) @@
+          plainto_tsquery('english', ${query})
+      `;
+
+      const result = {
+        query,
+        total: Number(totalResults[0]?.count || 0),
+        results: results.map(r => {
+          const { relevance, ...release } = r;
+          return {
+            ...release,
+            _relevance: Number(relevance),
+          };
+        }),
+        searchType: 'album-artist-label',
+        executedAt: new Date(),
+      };
+
+      // Cache the result (30 minute TTL)
+      setCached(cacheKey, result, 1800);
+      return result;
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      logger.error('Album/artist/label search failed', { query, error: error.message });
+      throw new ApiError('Failed to search by album/artist/label', 500);
+    }
+  }
 }
 
 export default new ReleaseService();

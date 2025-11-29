@@ -180,3 +180,63 @@ export const autocomplete = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * Optimized search for album/artist/label using PostgreSQL full-text search
+ * Provides fast, relevant results specifically for these three fields
+ */
+export const searchByAlbumArtistLabel = async (req, res, next) => {
+  try {
+    const { q, limit } = req.query;
+
+    if (!q || q.length < 2) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: 'Search query must be at least 2 characters',
+          status: 400,
+        },
+      });
+    }
+
+    const results = await releaseService.searchByAlbumArtistLabel(q, limit ? parseInt(limit, 10) : 50);
+
+    res.json({
+      success: true,
+      data: results,
+      requestId: req.id,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Full-text search endpoint using PostgreSQL tsvector
+ * Searches across title, artist, label, description, and genre
+ */
+export const fullTextSearch = async (req, res, next) => {
+  try {
+    const { q, limit } = req.query;
+
+    if (!q || q.length < 2) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: 'Search query must be at least 2 characters',
+          status: 400,
+        },
+      });
+    }
+
+    const results = await releaseService.fullTextSearch(q, limit ? parseInt(limit, 10) : 50);
+
+    res.json({
+      success: true,
+      data: results,
+      requestId: req.id,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
