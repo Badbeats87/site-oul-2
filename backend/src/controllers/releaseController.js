@@ -141,6 +141,36 @@ export const searchReleases = async (req, res, next) => {
 };
 
 /**
+ * Full-text search endpoint using PostgreSQL tsvector
+ * Searches across title, artist, label, description, and genre
+ */
+export const fullTextSearch = async (req, res, next) => {
+  try {
+    const { q, limit } = req.query;
+
+    if (!q || q.length < 2) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: 'Search query must be at least 2 characters',
+          status: 400,
+        },
+      });
+    }
+
+    const results = await releaseService.fullTextSearch(q, limit ? parseInt(limit, 10) : 50);
+
+    res.json({
+      success: true,
+      data: results,
+      requestId: req.id,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * Autocomplete endpoint for fast type-ahead suggestions
  * Returns matching values for specified field (title, artist, label)
  */
