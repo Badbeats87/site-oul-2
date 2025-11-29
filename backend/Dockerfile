@@ -12,6 +12,9 @@ RUN npm ci
 # Copy application files
 COPY . .
 
+# Generate Prisma Client
+RUN npx prisma generate
+
 # Install production dependencies only
 RUN npm ci --only=production
 
