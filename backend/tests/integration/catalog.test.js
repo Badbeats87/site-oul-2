@@ -160,8 +160,10 @@ describe('Catalog API Integration Tests', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
-      expect(Array.isArray(response.body.data)).toBe(true);
-      expect(response.body.data.length).toBeGreaterThan(0);
+      expect(response.body.data).toHaveProperty('query');
+      expect(response.body.data).toHaveProperty('results');
+      expect(Array.isArray(response.body.data.results)).toBe(true);
+      expect(response.body.data.total).toBeGreaterThan(0);
     });
 
     it('should fail with query less than 2 characters', async () => {
