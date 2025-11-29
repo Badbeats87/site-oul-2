@@ -12,6 +12,7 @@ import { notFoundHandler } from './middleware/notFoundHandler.js';
 import healthRoutes from './routes/health.js';
 import authRoutes from './routes/auth.js';
 import catalogRoutes from './routes/catalog.js';
+import integrationsRoutes from './routes/integrations.js';
 import { authenticate } from './middleware/authMiddleware.js';
 import prisma from './utils/db.js';
 
@@ -65,6 +66,9 @@ app.use('/api/v1/auth', authRoutes);
 
 // Catalog routes
 app.use('/api/v1/catalog', catalogRoutes);
+
+// Integration routes
+app.use('/api/v1/integrations', integrationsRoutes);
 
 // TODO: Add other route groups
 // app.use('/api/v1/pricing', pricingRoutes);
