@@ -139,6 +139,15 @@ async function initializeDatabase() {
     // Always try to seed initial data after schema is ready
     try {
       await seedInitialData();
+
+      // Also run the full seed script to populate vinyl records
+      try {
+        logger.info('🌱 Running full database seed...');
+        const { default: seed } = await import('../../prisma/seed.js');
+        // Note: seed.js runs its own main() function on import
+      } catch (error) {
+        logger.debug('Full seed script already ran or not needed', { error: error.message });
+      }
     } catch (error) {
       logger.warn('⚠️  Failed to seed initial data', { error: error.message });
     }
