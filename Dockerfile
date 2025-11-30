@@ -17,8 +17,8 @@ COPY backend/config ./config
 # Generate Prisma Client
 RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npx prisma generate
 
-# Remove dev dependencies, keep only production
-RUN npm prune --production
+# Keep dev dependencies (needed for prisma CLI and seed script at runtime)
+# Skip pruning to avoid removing prisma CLI that we need for migrations and seeding
 
 # Production stage
 FROM node:18-alpine
@@ -62,5 +62,15 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
+# Create startup script that seeds database then starts server
+RUN echo '#!/bin/sh\n\
+set -e\n\
+echo "Running database migrations..."\n\
+npx prisma migrate deploy --skip-generate || true\n\
+echo "Seeding database..."\n\
+node prisma/seed.js || echo "Seeding failed or already seeded"\n\
+echo "Starting server..."\n\
+npm start\n' > /app/startup.sh && chmod +x /app/startup.sh
+
 # Start server
-CMD ["npm", "start"]
+CMD ["/app/startup.sh"]
