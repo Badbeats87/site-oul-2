@@ -10,11 +10,42 @@ import logger from '../../config/logger.js';
 class PaymentService {
   constructor() {
     const stripeKey = process.env.STRIPE_SECRET_KEY;
-    if (!stripeKey) {
-      logger.warn('STRIPE_SECRET_KEY not configured');
+
+    // Use mock Stripe in test mode
+    if (process.env.NODE_ENV === 'test') {
+      this.stripe = this.createMockStripe();
+      this.isMocked = true;
+    } else {
+      if (!stripeKey) {
+        logger.warn('STRIPE_SECRET_KEY not configured');
+      }
+      this.stripe = new Stripe(stripeKey);
+      this.isMocked = false;
     }
-    this.stripe = new Stripe(stripeKey);
+
     this.webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  }
+
+  /**
+   * Create a mock Stripe instance for testing
+   */
+  createMockStripe() {
+    return {
+      paymentIntents: {
+        create: async (params) => ({
+          id: `pi_test_${Math.random().toString(36).substr(2, 24)}`,
+          amount: params.amount,
+          currency: params.currency,
+          status: 'requires_payment_method',
+          client_secret: `pi_test_secret_${Math.random().toString(36).substr(2, 24)}`,
+          metadata: params.metadata || {},
+        }),
+        retrieve: async (id) => ({
+          id,
+          status: 'succeeded',
+        }),
+      },
+    };
   }
 
   /**
