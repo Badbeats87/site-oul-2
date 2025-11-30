@@ -444,7 +444,7 @@ class ReleaseService {
 
       const searchQuery = query.toLowerCase();
 
-      // Get all matching releases
+      // Get all matching releases with market data
       const releases = await prisma.release.findMany({
         where: {
           OR: [
@@ -455,6 +455,13 @@ class ReleaseService {
           ],
         },
         take: limit * 2, // Get more to sort by relevance
+        include: {
+          marketData: {
+            where: { source: 'DISCOGS' },
+            orderBy: { fetchedAt: 'desc' },
+            take: 1,
+          },
+        },
       });
 
       // Score and sort by relevance

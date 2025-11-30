@@ -105,16 +105,26 @@ const submitForm = {
         return;
       }
 
-      // Transform results to expected format
-      // Note: Pricing quotes are calculated server-side when items are submitted
-      // with specific conditions. Here we just show release information.
+      // Transform results and calculate estimated offers based on buyer pricing policy
       const transformedResults = results.map((release) => {
+        // Get lowest Discogs price as base
+        const marketData = release.marketData?.[0];
+        const lowestPrice = marketData?.statLow || marketData?.statMedian || 0;
+
+        // Calculate estimated offer: lowest_price × 55% (standard buyer percentage)
+        // For NM/NM condition (default)
+        let estimatedQuote = 0;
+        if (lowestPrice > 0) {
+          estimatedQuote = Math.round(lowestPrice * 0.55 * 100) / 100;
+        }
+
         return {
           id: release.id,
           title: release.title,
           artist: release.artist || 'Unknown Artist',
           year: release.year || 'N/A',
-          quote: '--', // Price calculated on submission based on condition
+          quote: estimatedQuote,
+          marketData: marketData,
           releaseData: release
         };
       });
@@ -133,11 +143,12 @@ const submitForm = {
     results.forEach(result => {
       const card = document.createElement('div');
       card.className = 'result-card';
+      const quoteDisplay = result.quote > 0 ? `$${result.quote.toFixed(2)}` : 'Needs Review';
       card.innerHTML = `
         <div class="result-card__title">${result.title}</div>
         <div class="result-card__artist">${result.artist} • ${result.year}</div>
         <button class="button button--secondary result-card__button">
-          Add to List
+          Estimate: ${quoteDisplay} → Add to List
         </button>
       `;
 
@@ -151,17 +162,50 @@ const submitForm = {
     this.elements.searchResults.style.display = 'block';
   },
 
+  calculateEstimatedQuote(record, mediaCondition = 'NM', sleeveCondition = 'NM') {
+    if (!record.marketData || record.marketData.statLow <= 0) {
+      return 0;
+    }
+
+    // Base offer: lowest Discogs price × 55% (buyer percentage)
+    const baseOffer = record.marketData.statLow * 0.55;
+
+    // Apply condition adjustments (simplified: NM = 100%, others adjusted accordingly)
+    const conditionMultipliers = {
+      'MINT': 1.15,
+      'M': 1.15,
+      'NM': 1.0,
+      'VG_PLUS': 0.80,
+      'VG+': 0.80,
+      'VG': 0.65,
+      'VG_MINUS': 0.50,
+      'VG-': 0.50,
+      'G': 0.30,
+    };
+
+    const mediaMultiplier = conditionMultipliers[mediaCondition] || 1.0;
+    const sleeveMultiplier = conditionMultipliers[sleeveCondition] || 1.0;
+
+    // Weighted average: 70% media, 30% sleeve (buyer emphasizes media condition)
+    const conditionAdjustment = (mediaMultiplier * 0.7) + (sleeveMultiplier * 0.3);
+    const estimatedQuote = baseOffer * conditionAdjustment;
+
+    return Math.round(estimatedQuote * 100) / 100;
+  },
+
   addRecordToSubmission(record) {
     const existingRecord = this.submission.records.find(r => r.id === record.id);
 
     if (existingRecord) {
       existingRecord.quantity += 1;
     } else {
+      const estimatedQuote = this.calculateEstimatedQuote(record, 'NM', 'NM');
       this.submission.records.push({
         ...record,
         quantity: 1,
         mediaCondition: 'NM',
-        sleeveCondition: 'NM'
+        sleeveCondition: 'NM',
+        quote: estimatedQuote
       });
     }
 
