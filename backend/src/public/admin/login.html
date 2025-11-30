@@ -3,126 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Admin login for Vinyl Catalog management system">
     <title>Admin Login - Vinyl Catalog</title>
     <link rel="stylesheet" href="../../styles/design-system.css">
-    <link rel="stylesheet" href="../../styles/admin.css">
-    <style>
-        body {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .login-container {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            padding: 40px;
-            width: 100%;
-            max-width: 400px;
-        }
-
-        .login-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .login-header h1 {
-            font-size: 28px;
-            margin: 20px 0 10px;
-            color: #333;
-        }
-
-        .login-header p {
-            color: #666;
-            font-size: 14px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 16px;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .submit-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .submit-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .error-message {
-            background: #fee;
-            color: #c33;
-            padding: 12px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            display: none;
-        }
-
-        .error-message.show {
-            display: block;
-        }
-
-        .back-link {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .back-link a {
-            color: #667eea;
-            text-decoration: none;
-            font-size: 14px;
-        }
-
-        .back-link a:hover {
-            text-decoration: underline;
-        }
-    </style>
+    <link rel="stylesheet" href="../../styles/login.css">
 </head>
 <body>
     <div class="login-container">
+        <!-- Login Header -->
         <div class="login-header">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width: 48px; height: 48px; color: #667eea;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-label="Vinyl Catalog">
                 <circle cx="12" cy="12" r="10"></circle>
                 <circle cx="12" cy="12" r="6"></circle>
                 <circle cx="12" cy="12" r="3"></circle>
@@ -131,22 +21,45 @@
             <p>Vinyl Catalog Management System</p>
         </div>
 
-        <form id="loginForm">
-            <div class="error-message" id="errorMessage"></div>
+        <!-- Login Form -->
+        <form id="loginForm" novalidate>
+            <!-- Error Alert Box -->
+            <div
+                class="error-message"
+                id="errorMessage"
+                role="alert"
+                aria-live="polite"
+                aria-atomic="true"
+                style="display: none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <div class="error-message-content">
+                    <span class="error-message-title" id="errorTitle">Login Failed</span>
+                    <span id="errorText"></span>
+                </div>
+            </div>
 
-            <div class="form-group">
-                <label for="email">Email</label>
+            <!-- Email Field -->
+            <div class="form-group" id="emailGroup">
+                <label for="email">Email Address</label>
                 <input
                     type="email"
                     id="email"
                     name="email"
-                    placeholder="admin@example.com"
+                    placeholder="admin@vinylcatalog.com"
                     required
                     autocomplete="email"
+                    aria-required="true"
+                    aria-describedby="emailError"
                 >
+                <span class="field-error" id="emailError"></span>
             </div>
 
-            <div class="form-group">
+            <!-- Password Field -->
+            <div class="form-group" id="passwordGroup">
                 <label for="password">Password</label>
                 <input
                     type="password"
@@ -155,19 +68,39 @@
                     placeholder="Enter your password"
                     required
                     autocomplete="current-password"
+                    aria-required="true"
+                    aria-describedby="passwordError"
                 >
+                <span class="field-error" id="passwordError"></span>
             </div>
 
-            <button type="submit" class="submit-btn" id="submitBtn">
-                Login
+            <!-- Forgot Password & Remember Me -->
+            <div class="form-help">
+                <label style="display: flex; align-items: center; gap: 0.5em; cursor: pointer;">
+                    <input type="checkbox" name="rememberMe" style="cursor: pointer;">
+                    <span>Remember me</span>
+                </label>
+                <a href="#" onclick="event.preventDefault(); alert('Password reset functionality coming soon');">
+                    Forgot password?
+                </a>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="submit-btn" id="submitBtn" aria-busy="false">
+                <span id="btnText">Login</span>
             </button>
         </form>
 
+        <!-- Back Link -->
         <div class="back-link">
-            <a href="../index.html">← Back to Site</a>
+            <a href="../index.html">
+                <span>←</span>
+                <span>Back to Site</span>
+            </a>
         </div>
     </div>
 
+    <!-- Scripts -->
     <script src="../../js/api-client.js"></script>
     <script src="../../js/auth.js"></script>
     <script src="../../js/login.js"></script>
