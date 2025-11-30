@@ -756,6 +756,230 @@ class InventoryService {
   }
 
   /**
+   * Apply pricing policy to inventory items
+   * @param {Object} options - Application options
+   * @param {string} options.policyId - Pricing policy ID to apply
+   * @param {Array} options.inventoryLotIds - Specific lot IDs to apply to (or use filters)
+   * @param {Object} options.filters - Filter options (status, condition, etc.) for partial application
+   * @param {boolean} options.dryRun - Preview changes without applying
+   * @returns {Promise<Object>} Results with price updates and affected items
+   */
+  async applyPricingPolicy(options = {}) {
+    try {
+      const { policyId, inventoryLotIds, filters = {}, dryRun = false } = options;
+
+      if (!policyId) {
+        throw new ApiError('Policy ID is required', 400);
+      }
+
+      // Fetch the pricing policy
+      const policy = await prisma.pricingPolicy.findUnique({
+        where: { id: policyId },
+      });
+
+      if (!policy) {
+        throw new ApiError('Pricing policy not found', 404);
+      }
+
+      if (!policy.isActive) {
+        throw new ApiError('Pricing policy is not active', 400);
+      }
+
+      // Build WHERE clause for inventory selection
+      const where = {};
+      if (inventoryLotIds && inventoryLotIds.length > 0) {
+        where.id = { in: inventoryLotIds };
+      } else {
+        // Apply filters if no specific IDs provided
+        if (filters.status) {
+          where.status = filters.status;
+        }
+        if (filters.conditions) {
+          const grades = Array.isArray(filters.conditions) ? filters.conditions : [filters.conditions];
+          where.OR = [
+            { conditionMedia: { in: grades } },
+            { conditionSleeve: { in: grades } },
+          ];
+        }
+      }
+
+      // Get inventory items to update with their releases
+      const inventoryLots = await prisma.inventoryLot.findMany({
+        where,
+        include: { release: true },
+      });
+
+      if (inventoryLots.length === 0) {
+        return {
+          applied: false,
+          dryRun: true,
+          message: 'No inventory items matched the criteria',
+          affectedCount: 0,
+          updates: [],
+        };
+      }
+
+      const updates = [];
+
+      for (const lot of inventoryLots) {
+        try {
+          // Calculate new sell price using the policy
+          const newListPrice = await pricingService.calculateSellPrice(
+            lot.release,
+            lot.conditionMedia,
+            lot.conditionSleeve,
+            policy
+          );
+
+          updates.push({
+            inventoryLotId: lot.id,
+            releaseId: lot.releaseId,
+            sku: lot.sku,
+            oldPrice: parseFloat(lot.listPrice),
+            newPrice: parseFloat(newListPrice),
+            priceDifference: parseFloat(newListPrice) - parseFloat(lot.listPrice),
+            priceDifferencePercent: ((parseFloat(newListPrice) - parseFloat(lot.listPrice)) / parseFloat(lot.listPrice) * 100).toFixed(2),
+          });
+        } catch (error) {
+          logger.error('Error calculating price for inventory lot', {
+            inventoryLotId: lot.id,
+            error: error.message,
+          });
+          updates.push({
+            inventoryLotId: lot.id,
+            error: `Failed to calculate price: ${error.message}`,
+          });
+        }
+      }
+
+      // If dry run, return preview without applying
+      if (dryRun) {
+        const successfulUpdates = updates.filter(u => !u.error);
+        const failedUpdates = updates.filter(u => u.error);
+
+        return {
+          applied: false,
+          dryRun: true,
+          policyId,
+          policyName: policy.name,
+          affectedCount: successfulUpdates.length,
+          updates: successfulUpdates,
+          errors: failedUpdates,
+          summary: {
+            totalItems: updates.length,
+            successfulCalculations: successfulUpdates.length,
+            failedCalculations: failedUpdates.length,
+            averagePriceChange: successfulUpdates.length > 0
+              ? (successfulUpdates.reduce((sum, u) => sum + u.priceDifference, 0) / successfulUpdates.length).toFixed(2)
+              : 0,
+          },
+        };
+      }
+
+      // Apply the price updates
+      const appliedUpdates = [];
+      const failedUpdates = [];
+
+      for (const update of updates) {
+        if (update.error) {
+          failedUpdates.push(update);
+          continue;
+        }
+
+        try {
+          const lot = inventoryLots.find(l => l.id === update.inventoryLotId);
+          await prisma.inventoryLot.update({
+            where: { id: update.inventoryLotId },
+            data: {
+              listPrice: update.newPrice,
+              internalNotes: `${lot.internalNotes || ''}\n[PRICE UPDATED by policy ${policy.name}] Old: $${update.oldPrice}, New: $${update.newPrice} - ${new Date().toISOString()}`,
+            },
+          });
+
+          appliedUpdates.push(update);
+        } catch (error) {
+          failedUpdates.push({
+            ...update,
+            error: `Failed to apply update: ${error.message}`,
+          });
+        }
+      }
+
+      logger.info('Pricing policy applied to inventory', {
+        policyId,
+        policyName: policy.name,
+        appliedCount: appliedUpdates.length,
+        failedCount: failedUpdates.length,
+        totalCount: updates.length,
+      });
+
+      return {
+        applied: true,
+        dryRun: false,
+        policyId,
+        policyName: policy.name,
+        affectedCount: appliedUpdates.length,
+        updates: appliedUpdates,
+        errors: failedUpdates,
+        summary: {
+          totalItems: updates.length,
+          appliedUpdates: appliedUpdates.length,
+          failedUpdates: failedUpdates.length,
+          averagePriceChange: appliedUpdates.length > 0
+            ? (appliedUpdates.reduce((sum, u) => sum + u.priceDifference, 0) / appliedUpdates.length).toFixed(2)
+            : 0,
+        },
+      };
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      logger.error('Error applying pricing policy to inventory', { error: error.message });
+      throw new ApiError('Failed to apply pricing policy', 500);
+    }
+  }
+
+  /**
+   * Get pricing history for an inventory lot
+   * @param {string} inventoryLotId - Inventory lot ID
+   * @returns {Promise<Array>} Pricing history entries
+   */
+  async getPricingHistory(inventoryLotId) {
+    try {
+      const lot = await prisma.inventoryLot.findUnique({
+        where: { id: inventoryLotId },
+      });
+
+      if (!lot) {
+        throw new ApiError('Inventory lot not found', 404);
+      }
+
+      // Parse history from internal notes (stored as text with timestamps)
+      const history = [];
+      const lines = (lot.internalNotes || '').split('\n');
+
+      for (const line of lines) {
+        if (line.includes('[PRICE UPDATED')) {
+          const match = line.match(/\[PRICE UPDATED by policy (.+?)\] Old: \$([0-9.]+), New: \$([0-9.]+) - (.+)/);
+          if (match) {
+            history.push({
+              type: 'PRICE_UPDATE',
+              policy: match[1],
+              oldPrice: parseFloat(match[2]),
+              newPrice: parseFloat(match[3]),
+              timestamp: match[4],
+            });
+          }
+        }
+      }
+
+      return history;
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      logger.error('Error getting pricing history', { inventoryLotId, error: error.message });
+      throw new ApiError('Failed to get pricing history', 500);
+    }
+  }
+
+  /**
    * Bulk update inventory prices
    * @param {Array} updates - Array of {inventoryLotId, listPrice, salePrice}
    * @returns {Promise<Object>} Results with successful and failed updates
