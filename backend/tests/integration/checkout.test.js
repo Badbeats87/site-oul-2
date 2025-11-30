@@ -11,29 +11,38 @@ describe('Checkout API Integration Tests', () => {
   let testBuyerEmail = `buyer-${Date.now()}@test.com`;
 
   beforeAll(async () => {
-    // Create test release
-    testRelease = await prisma.release.create({
-      data: {
-        title: 'Test Album',
-        artist: 'Test Artist',
-        genre: 'Rock',
-        releaseYear: 2020,
-        label: 'Test Label',
-        barcode: `TEST-${Date.now()}`,
-      },
-    });
+    try {
+      // Create test release
+      testRelease = await prisma.release.create({
+        data: {
+          title: 'Test Album',
+          artist: 'Test Artist',
+          genre: 'Rock',
+          releaseYear: 2020,
+          label: 'Test Label',
+          barcode: `TEST-${Date.now()}`,
+        },
+      });
+      expect(testRelease).toBeDefined();
+      expect(testRelease.id).toBeDefined();
 
-    // Create test inventory lot
-    testInventoryLot = await prisma.inventoryLot.create({
-      data: {
-        releaseId: testRelease.id,
-        status: 'LIVE',
-        conditionMedia: 'VG_PLUS',
-        conditionSleeve: 'VG',
-        costBasis: 10.00,
-        listPrice: 25.99,
-      },
-    });
+      // Create test inventory lot
+      testInventoryLot = await prisma.inventoryLot.create({
+        data: {
+          releaseId: testRelease.id,
+          status: 'LIVE',
+          conditionMedia: 'VG_PLUS',
+          conditionSleeve: 'VG',
+          costBasis: 10.00,
+          listPrice: 25.99,
+        },
+      });
+      expect(testInventoryLot).toBeDefined();
+      expect(testInventoryLot.id).toBeDefined();
+    } catch (error) {
+      console.error('Error in beforeAll:', error);
+      throw error;
+    }
   });
 
   afterEach(async () => {
