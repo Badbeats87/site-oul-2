@@ -108,8 +108,9 @@ const submitForm = {
       // Transform results and calculate estimated offers based on buyer pricing policy
       const transformedResults = results.map((release) => {
         // Get lowest Discogs price as base
-        const marketData = release.marketData?.[0];
-        const lowestPrice = marketData?.statLow || marketData?.statMedian || 0;
+        const marketSnapshot = release.marketSnapshots?.[0];
+        const lowestPrice = marketSnapshot?.statLow ? parseFloat(marketSnapshot.statLow) :
+                           marketSnapshot?.statMedian ? parseFloat(marketSnapshot.statMedian) : 0;
 
         // Calculate estimated offer: lowest_price × 55% (standard buyer percentage)
         // For NM/NM condition (default)
@@ -124,7 +125,7 @@ const submitForm = {
           artist: release.artist || 'Unknown Artist',
           year: release.year || 'N/A',
           quote: estimatedQuote,
-          marketData: marketData,
+          marketData: marketSnapshot,
           releaseData: release
         };
       });

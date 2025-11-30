@@ -456,9 +456,9 @@ class ReleaseService {
         },
         take: limit * 2, // Get more to sort by relevance
         include: {
-          marketData: {
+          marketSnapshots: {
             where: { source: 'DISCOGS' },
-            orderBy: { fetchedAt: 'desc' },
+            orderBy: { createdAt: 'desc' },
             take: 1,
           },
         },
