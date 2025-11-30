@@ -98,47 +98,23 @@ const submitForm = {
       }
 
       const data = await response.json();
-      let results = data.data || [];
+      const results = data.data?.results || data.data || [];
 
-      // Fallback to mock results for demo if no results found
       if (results.length === 0) {
-        console.warn('No results from API, using mock data for demo');
-        results = [
-          {
-            id: 'mock-1',
-            title: 'Dark Side of the Moon',
-            artists: [{ name: 'Pink Floyd' }],
-            year: 1973,
-            marketData: { median: 85 }
-          },
-          {
-            id: 'mock-2',
-            title: 'Abbey Road',
-            artists: [{ name: 'The Beatles' }],
-            year: 1969,
-            marketData: { median: 95 }
-          },
-          {
-            id: 'mock-3',
-            title: 'Led Zeppelin IV',
-            artists: [{ name: 'Led Zeppelin' }],
-            year: 1971,
-            marketData: { median: 75 }
-          }
-        ];
+        alert('No records found. Try a different search term.');
+        return;
       }
 
       // Transform results to expected format
+      // Note: Pricing quotes are calculated server-side when items are submitted
+      // with specific conditions. Here we just show release information.
       const transformedResults = results.map((release) => {
-        // Use median price from market data if available, otherwise use default
-        const medianPrice = release.marketData?.median || 25;
-
         return {
           id: release.id,
           title: release.title,
-          artist: release.artists?.[0]?.name || 'Unknown Artist',
+          artist: release.artist || 'Unknown Artist',
           year: release.year || 'N/A',
-          quote: Math.round(medianPrice * 0.55 * 100) / 100, // 55% of median as buyer offer
+          quote: '--', // Price calculated on submission based on condition
           releaseData: release
         };
       });
@@ -161,7 +137,7 @@ const submitForm = {
         <div class="result-card__title">${result.title}</div>
         <div class="result-card__artist">${result.artist} • ${result.year}</div>
         <button class="button button--secondary result-card__button">
-          Quote: $${result.quote.toFixed(2)}
+          Add to List
         </button>
       `;
 
