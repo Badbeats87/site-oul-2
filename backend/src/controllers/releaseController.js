@@ -164,36 +164,6 @@ export const searchReleases = async (req, res, next) => {
 };
 
 /**
- * Full-text search endpoint using PostgreSQL tsvector
- * Searches across title, artist, label, description, and genre
- */
-export const fullTextSearch = async (req, res, next) => {
-  try {
-    const { q, limit } = req.query;
-
-    if (!q || q.length < 2) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          message: 'Search query must be at least 2 characters',
-          status: 400,
-        },
-      });
-    }
-
-    const results = await releaseService.fullTextSearch(q, limit ? parseInt(limit, 10) : 50);
-
-    res.json({
-      success: true,
-      data: results,
-      requestId: req.id,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
  * Autocomplete endpoint for fast type-ahead suggestions
  * Returns matching values for specified field (title, artist, label)
  */
@@ -231,6 +201,110 @@ export const autocomplete = async (req, res, next) => {
     res.json({
       success: true,
       data: suggestions,
+      requestId: req.id,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Optimized search for album/artist/label using PostgreSQL full-text search
+ * Provides fast, relevant results specifically for these three fields
+ */
+export const searchByAlbumArtistLabel = async (req, res, next) => {
+  try {
+    const { q, limit } = req.query;
+
+    if (!q || q.length < 2) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: 'Search query must be at least 2 characters',
+          status: 400,
+        },
+      });
+    }
+
+    const results = await releaseService.searchByAlbumArtistLabel(q, limit ? parseInt(limit, 10) : 50);
+
+    res.json({
+      success: true,
+      data: results,
+      requestId: req.id,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Full-text search endpoint using PostgreSQL tsvector
+ * Searches across title, artist, label, description, and genre
+ */
+export const fullTextSearch = async (req, res, next) => {
+  try {
+    const { q, limit } = req.query;
+
+    if (!q || q.length < 2) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: 'Search query must be at least 2 characters',
+          status: 400,
+        },
+      });
+    }
+
+    const results = await releaseService.fullTextSearch(q, limit ? parseInt(limit, 10) : 50);
+
+    res.json({
+      success: true,
+      data: results,
+      requestId: req.id,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Faceted search with filters and aggregated category counts
+ * Supports genre, condition, price, and year filtering
+ */
+export const facetedSearch = async (req, res, next) => {
+  try {
+    const {
+      q,
+      genres,
+      conditions,
+      priceMin,
+      priceMax,
+      yearMin,
+      yearMax,
+      limit,
+      page,
+    } = req.query;
+
+    const filters = {
+      query: q,
+      genres: genres ? (Array.isArray(genres) ? genres : [genres]) : undefined,
+      conditions: conditions ? (Array.isArray(conditions) ? conditions : [conditions]) : undefined,
+      priceMin: priceMin ? parseFloat(priceMin) : undefined,
+      priceMax: priceMax ? parseFloat(priceMax) : undefined,
+      yearMin: yearMin ? parseInt(yearMin, 10) : undefined,
+      yearMax: yearMax ? parseInt(yearMax, 10) : undefined,
+    };
+
+    const results = await releaseService.facetedSearch(
+      filters,
+      limit ? parseInt(limit, 10) : 50,
+      page ? parseInt(page, 10) : 1
+    );
+
+    res.json({
+      success: true,
+      data: results,
       requestId: req.id,
     });
   } catch (error) {

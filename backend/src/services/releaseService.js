@@ -343,80 +343,6 @@ class ReleaseService {
    * @param {number} limit - Maximum results
    * @returns {Promise<Object>} Search results with relevance ranking
    */
-  async fullTextSearch(query, limit = 50) {
-    try {
-      if (!query || query.trim().length === 0) {
-        throw new ApiError('Search query is required', 400);
-      }
-
-      if (limit > 200) {
-        throw new ApiError('Limit cannot exceed 200', 400);
-      }
-
-      const cacheKey = `release:fulltext:${query.toLowerCase()}:${limit}`;
-
-      // Try cache first (30 minute TTL for search)
-      const cached = getCached(cacheKey);
-      if (cached) {
-        logger.debug('Cache hit for full-text search', { query, limit });
-        return cached;
-      }
-
-      // Perform full-text search using PostgreSQL tsvector
-      // The to_tsquery function converts the query to a search pattern
-      // The @@ operator performs the full-text search
-      // ts_rank calculates relevance score
-      const results = await prisma.$queryRaw`
-        SELECT
-          id,
-          title,
-          artist,
-          label,
-          "catalogNumber",
-          barcode,
-          "releaseYear",
-          genre,
-          "coverArtUrl",
-          description,
-          "createdAt",
-          "updatedAt",
-          ts_rank("search_vector", query) as relevance
-        FROM releases, plainto_tsquery('english', ${query}) as query
-        WHERE "search_vector" @@ query
-        ORDER BY relevance DESC, "updatedAt" DESC
-        LIMIT ${limit}
-      `;
-
-      const totalResults = await prisma.$queryRaw`
-        SELECT COUNT(*) as count
-        FROM releases, plainto_tsquery('english', ${query}) as query
-        WHERE "search_vector" @@ query
-      `;
-
-      const result = {
-        query,
-        total: totalResults[0]?.count || 0,
-        results: results.map(r => {
-          const { relevance, ...release } = r;
-          return {
-            ...release,
-            _relevance: Number(relevance),
-          };
-        }),
-        searchType: 'fulltext',
-        executedAt: new Date(),
-      };
-
-      // Cache the result (30 minute TTL)
-      setCached(cacheKey, result, 1800);
-      return result;
-    } catch (error) {
-      if (error instanceof ApiError) throw error;
-      logger.error('Full-text search failed', { query, error: error.message });
-      throw new ApiError('Failed to perform full-text search', 500);
-    }
-  }
-
   /**
    * Get autocomplete suggestions for a field
    * Optimized for fast type-ahead responses
@@ -594,6 +520,420 @@ class ReleaseService {
       if (error instanceof ApiError) throw error;
       logger.error('Error searching releases', { query, error: error.message });
       throw new ApiError('Failed to search releases', 500);
+    }
+  }
+
+  /**
+   * Full-text search using PostgreSQL tsvector
+   * Searches across title, artist, label, description, and genre
+   * Results are ranked by relevance
+   * @param {string} query - Search query
+   * @param {number} limit - Maximum results
+   * @returns {Promise<Object>} Search results with relevance ranking
+   */
+  async fullTextSearch(query, limit = 50) {
+    try {
+      if (!query || query.trim().length === 0) {
+        throw new ApiError('Search query is required', 400);
+      }
+
+      if (limit > 200) {
+        throw new ApiError('Limit cannot exceed 200', 400);
+      }
+
+      const cacheKey = `release:fulltext:${query.toLowerCase()}:${limit}`;
+
+      // Try cache first (30 minute TTL for search)
+      const cached = getCached(cacheKey);
+      if (cached) {
+        logger.debug('Cache hit for full-text search', { query, limit });
+        return cached;
+      }
+
+      // Perform full-text search using PostgreSQL tsvector
+      const results = await prisma.$queryRaw`
+        SELECT
+          id,
+          title,
+          artist,
+          label,
+          catalog_number as "catalogNumber",
+          barcode,
+          release_year as "releaseYear",
+          genre,
+          cover_art_url as "coverArtUrl",
+          description,
+          created_at as "createdAt",
+          updated_at as "updatedAt",
+          ts_rank(search_vector, query) as relevance
+        FROM releases, plainto_tsquery('english', ${query}) as query
+        WHERE search_vector @@ query
+        ORDER BY relevance DESC, updated_at DESC
+        LIMIT ${limit}
+      `;
+
+      const totalResults = await prisma.$queryRaw`
+        SELECT COUNT(*)::int as count
+        FROM releases, plainto_tsquery('english', ${query}) as query
+        WHERE search_vector @@ query
+      `;
+
+      const result = {
+        query,
+        total: Number(totalResults[0]?.count || 0),
+        results: results.map(r => {
+          const { relevance, ...release } = r;
+          return {
+            ...release,
+            _relevance: Number(relevance),
+          };
+        }),
+        searchType: 'fulltext',
+        executedAt: new Date(),
+      };
+
+      // Cache the result (30 minute TTL)
+      setCached(cacheKey, result, 1800);
+      return result;
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      logger.error('Full-text search failed', { query, error: error.message });
+      throw new ApiError('Failed to perform full-text search', 500);
+    }
+  }
+
+  /**
+   * Optimized search for album/artist/label
+   * Uses PostgreSQL full-text search with optimized field weights
+   * for these specific fields to ensure fast, relevant results
+   * @param {string} query - Search query
+   * @param {number} limit - Maximum results
+   * @returns {Promise<Object>} Search results with relevance ranking
+   */
+  async searchByAlbumArtistLabel(query, limit = 50) {
+    try {
+      if (!query || query.trim().length === 0) {
+        throw new ApiError('Search query is required', 400);
+      }
+
+      if (limit > 200) {
+        throw new ApiError('Limit cannot exceed 200', 400);
+      }
+
+      const cacheKey = `release:search:album-artist-label:${query.toLowerCase()}:${limit}`;
+
+      // Try cache first (30 minute TTL for search)
+      const cached = getCached(cacheKey);
+      if (cached) {
+        logger.debug('Cache hit for album/artist/label search', { query, limit });
+        return cached;
+      }
+
+      // Perform optimized search across title (album), artist, and label
+      // This uses the full-text search vector but focuses on these three fields
+      const results = await prisma.$queryRaw`
+        SELECT
+          id,
+          title,
+          artist,
+          label,
+          catalog_number as "catalogNumber",
+          barcode,
+          release_year as "releaseYear",
+          genre,
+          cover_art_url as "coverArtUrl",
+          description,
+          created_at as "createdAt",
+          updated_at as "updatedAt",
+          ts_rank(
+            setweight(to_tsvector('english', COALESCE(title, '')), 'A') ||
+            setweight(to_tsvector('english', COALESCE(artist, '')), 'A') ||
+            setweight(to_tsvector('english', COALESCE(label, '')), 'B'),
+            plainto_tsquery('english', ${query})
+          ) as relevance
+        FROM releases
+        WHERE
+          (setweight(to_tsvector('english', COALESCE(title, '')), 'A') ||
+           setweight(to_tsvector('english', COALESCE(artist, '')), 'A') ||
+           setweight(to_tsvector('english', COALESCE(label, '')), 'B')) @@
+          plainto_tsquery('english', ${query})
+        ORDER BY relevance DESC, updated_at DESC
+        LIMIT ${limit}
+      `;
+
+      const totalResults = await prisma.$queryRaw`
+        SELECT COUNT(*)::int as count
+        FROM releases
+        WHERE
+          (setweight(to_tsvector('english', COALESCE(title, '')), 'A') ||
+           setweight(to_tsvector('english', COALESCE(artist, '')), 'A') ||
+           setweight(to_tsvector('english', COALESCE(label, '')), 'B')) @@
+          plainto_tsquery('english', ${query})
+      `;
+
+      const result = {
+        query,
+        total: Number(totalResults[0]?.count || 0),
+        results: results.map(r => {
+          const { relevance, ...release } = r;
+          return {
+            ...release,
+            _relevance: Number(relevance),
+          };
+        }),
+        searchType: 'album-artist-label',
+        executedAt: new Date(),
+      };
+
+      // Cache the result (30 minute TTL)
+      setCached(cacheKey, result, 1800);
+      return result;
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      logger.error('Album/artist/label search failed', { query, error: error.message });
+      throw new ApiError('Failed to search by album/artist/label', 500);
+    }
+  }
+
+  /**
+   * Faceted search with filterable fields and category counts
+   * Supports filtering by genre, condition, price range with aggregated facets
+   * @param {Object} filters - Filter options
+   * @param {string} filters.query - Optional search query
+   * @param {string[]} filters.genres - Genre filter(s)
+   * @param {string[]} filters.conditions - Condition filter(s)
+   * @param {number} filters.priceMin - Minimum price
+   * @param {number} filters.priceMax - Maximum price
+   * @param {number} filters.yearMin - Minimum release year
+   * @param {number} filters.yearMax - Maximum release year
+   * @param {number} limit - Maximum results
+   * @param {number} page - Page number for pagination
+   * @returns {Promise<Object>} Search results with facets
+   */
+  async facetedSearch(filters = {}, limit = 50, page = 1) {
+    try {
+      const { query, genres, conditions, priceMin, priceMax, yearMin, yearMax } = filters;
+
+      if (limit > 200) {
+        throw new ApiError('Limit cannot exceed 200', 400);
+      }
+
+      const offset = (page - 1) * limit;
+
+      // Build WHERE clause for releases
+      const where = {};
+
+      // Text search filter
+      if (query && query.trim().length > 0) {
+        // Use raw query for full-text search
+        where.OR = [
+          { title: { contains: query, mode: 'insensitive' } },
+          { artist: { contains: query, mode: 'insensitive' } },
+          { label: { contains: query, mode: 'insensitive' } },
+        ];
+      }
+
+      // Genre filter
+      if (genres && genres.length > 0) {
+        where.genre = { in: genres };
+      }
+
+      // Year range filter
+      if (yearMin || yearMax) {
+        where.releaseYear = {};
+        if (yearMin) where.releaseYear.gte = yearMin;
+        if (yearMax) where.releaseYear.lte = yearMax;
+      }
+
+      // Fetch releases with inventory information
+      const releases = await prisma.release.findMany({
+        where,
+        take: limit,
+        skip: offset,
+        orderBy: { updatedAt: 'desc' },
+        include: {
+          inventoryLots: {
+            where: { status: 'LIVE' },
+            select: {
+              id: true,
+              listPrice: true,
+              conditionMedia: true,
+              conditionSleeve: true,
+            },
+          },
+        },
+      });
+
+      // Filter by price and condition after fetch (using inventory data)
+      let filteredReleases = releases;
+
+      if (priceMin || priceMax || (conditions && conditions.length > 0)) {
+        filteredReleases = releases.filter(release => {
+          // Check if release has any inventory
+          if (!release.inventoryLots || release.inventoryLots.length === 0) {
+            return false;
+          }
+
+          // Apply price filter
+          if (priceMin || priceMax) {
+            const hasMatchingPrice = release.inventoryLots.some(lot => {
+              const price = Number(lot.listPrice);
+              if (priceMin && price < priceMin) return false;
+              if (priceMax && price > priceMax) return false;
+              return true;
+            });
+            if (!hasMatchingPrice) return false;
+          }
+
+          // Apply condition filter
+          if (conditions && conditions.length > 0) {
+            const hasMatchingCondition = release.inventoryLots.some(lot =>
+              conditions.includes(lot.conditionMedia)
+            );
+            if (!hasMatchingCondition) return false;
+          }
+
+          return true;
+        });
+      }
+
+      // Count total matching releases
+      const totalCount = await prisma.release.count({ where });
+
+      // Build facets (aggregated counts per category)
+      const facets = await this._buildFacets(where);
+
+      // Format results with inventory stats
+      const resultsWithInventory = filteredReleases.map(release => {
+        const { inventoryLots, ...releaseData } = release;
+        
+        if (!inventoryLots || inventoryLots.length === 0) {
+          return {
+            ...releaseData,
+            inventory: {
+              available: false,
+              count: 0,
+              lowestPrice: null,
+              highestPrice: null,
+              conditions: [],
+            },
+          };
+        }
+
+        const prices = inventoryLots.map(lot => Number(lot.listPrice));
+        const conditions = [...new Set(inventoryLots.map(lot => lot.conditionMedia))];
+
+        return {
+          ...releaseData,
+          inventory: {
+            available: true,
+            count: inventoryLots.length,
+            lowestPrice: Math.min(...prices),
+            highestPrice: Math.max(...prices),
+            conditions,
+          },
+        };
+      });
+
+      return {
+        results: resultsWithInventory,
+        pagination: {
+          page,
+          limit,
+          total: totalCount,
+          totalPages: Math.ceil(totalCount / limit),
+        },
+        facets,
+        filters: filters,
+        executedAt: new Date(),
+      };
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      logger.error('Faceted search failed', { filters, error: error.message });
+      throw new ApiError('Failed to perform faceted search', 500);
+    }
+  }
+
+  /**
+   * Build facets (aggregated counts) for search results
+   * Provides counts for genres, conditions, price ranges, and years
+   * @param {Object} where - Base WHERE clause for filtering
+   * @returns {Promise<Object>} Facet counts
+   * @private
+   */
+  async _buildFacets(where) {
+    try {
+      // Genre facets
+      const genreFacets = await prisma.release.groupBy({
+        by: ['genre'],
+        where,
+        _count: true,
+        orderBy: { _count: { genre: 'desc' } },
+      });
+
+      // Year facets (grouped by decade)
+      const yearFacets = await prisma.release.groupBy({
+        by: ['releaseYear'],
+        where,
+        _count: true,
+        orderBy: { releaseYear: 'desc' },
+      });
+
+      // Condition facets (from inventory)
+      const conditionFacets = await prisma.inventoryLot.groupBy({
+        by: ['conditionMedia'],
+        where: { status: 'LIVE' },
+        _count: true,
+      });
+
+      // Price range facets
+      const priceRanges = [
+        { label: 'Under $10', min: 0, max: 10 },
+        { label: '$10 - $25', min: 10, max: 25 },
+        { label: '$25 - $50', min: 25, max: 50 },
+        { label: '$50 - $100', min: 50, max: 100 },
+        { label: 'Over $100', min: 100, max: Infinity },
+      ];
+
+      const priceFacets = await Promise.all(
+        priceRanges.map(async range => {
+          const count = await prisma.inventoryLot.count({
+            where: {
+              status: 'LIVE',
+              listPrice: {
+                gte: range.min,
+                ...(range.max !== Infinity && { lt: range.max }),
+              },
+            },
+          });
+          return { ...range, count };
+        })
+      );
+
+      return {
+        genres: genreFacets.map(f => ({
+          value: f.genre,
+          count: f._count,
+        })),
+        years: yearFacets.map(f => ({
+          value: f.releaseYear,
+          count: f._count,
+        })),
+        conditions: conditionFacets.map(f => ({
+          value: f.conditionMedia,
+          count: f._count,
+        })),
+        priceRanges: priceFacets,
+      };
+    } catch (error) {
+      logger.error('Failed to build facets', { error: error.message });
+      // Return empty facets on error
+      return {
+        genres: [],
+        years: [],
+        conditions: [],
+        priceRanges: [],
+      };
     }
   }
 }
