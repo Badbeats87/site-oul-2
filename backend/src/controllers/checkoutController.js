@@ -2,6 +2,7 @@ import checkoutService from '../services/checkoutService.js';
 import paymentService from '../services/paymentService.js';
 import orderService from '../services/orderService.js';
 import logger from '../../config/logger.js';
+import { ApiError } from '../middleware/errorHandler.js';
 
 /**
  * Checkout Controller
