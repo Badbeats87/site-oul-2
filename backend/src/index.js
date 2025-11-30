@@ -29,8 +29,8 @@ import { captureRawBody } from './middleware/rawBody.js';
 import prisma from './utils/db.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// From /app/src, go up one level to get to /app (where pages/, js/, styles/ are)
-const projectRoot = path.resolve(__dirname, '..');
+// Frontend assets are bundled in src/public directory
+const publicDir = path.join(__dirname, 'public');
 
 const app = express();
 
@@ -55,9 +55,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.static(path.join(projectRoot, 'pages'), staticOptions));
-app.use(express.static(path.join(projectRoot, 'js'), staticOptions));
-app.use(express.static(path.join(projectRoot, 'styles')));
+app.use(express.static(publicDir, staticOptions));
 
 // Request logging
 app.use(logRequest);
