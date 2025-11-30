@@ -54,12 +54,12 @@ class AuthManager {
       localStorage.removeItem('auth_token');
 
       // Redirect to login
-      window.location.href = '/admin/login.html';
+      window.location.href = '/pages/admin/login.html';
     } catch (error) {
       console.error('Logout error:', error);
       // Still clear state and redirect
       localStorage.removeItem('auth_token');
-      window.location.href = '/admin/login.html';
+      window.location.href = '/pages/admin/login.html';
     }
   }
 

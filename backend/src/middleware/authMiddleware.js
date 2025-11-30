@@ -69,7 +69,8 @@ export const authenticate = async (req, res, next) => {
     req.path.startsWith('/js/') ||
     req.path.endsWith('.html') ||
     req.path.endsWith('.css') ||
-    req.path.endsWith('.js');
+    req.path.endsWith('.js') ||
+    req.path === '/favicon.ico';
 
   if (isStaticFile) {
     return next();

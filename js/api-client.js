@@ -114,7 +114,7 @@ class APIClient {
    */
   handleUnauthorized() {
     localStorage.removeItem('auth_token');
-    window.location.href = '/admin/login.html';
+    window.location.href = '/pages/admin/login.html';
   }
 
   /**
