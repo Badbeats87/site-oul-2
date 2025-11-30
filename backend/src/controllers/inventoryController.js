@@ -134,6 +134,59 @@ export const getPricingHistory = async (req, res, next) => {
 };
 
 /**
+ * Get inventory analytics
+ */
+export const getInventoryAnalytics = async (req, res, next) => {
+  try {
+    const analytics = await inventoryService.getInventoryAnalytics();
+
+    res.json({
+      success: true,
+      data: analytics,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get low-stock alerts
+ */
+export const getLowStockAlerts = async (req, res, next) => {
+  try {
+    const { threshold = 3 } = req.query;
+
+    const alerts = await inventoryService.getLowStockAlerts(parseInt(threshold));
+
+    res.json({
+      success: true,
+      data: {
+        alerts,
+        threshold: parseInt(threshold),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Calculate sales velocity
+ */
+export const calculateSalesVelocity = async (req, res, next) => {
+  try {
+    const velocity = await inventoryService.calculateSalesVelocity();
+
+    res.json({
+      success: true,
+      data: velocity,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * Bulk update inventory prices
  */
 export const bulkUpdatePrices = async (req, res, next) => {
