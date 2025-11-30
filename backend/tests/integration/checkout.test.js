@@ -8,6 +8,7 @@ const authHeader = getTestAuthHeader();
 describe('Checkout API Integration Tests', () => {
   let testRelease;
   let testInventoryLot;
+  let testInventoryLot2;
   let testBuyerEmail = `buyer-${Date.now()}@test.com`;
 
   beforeAll(async () => {
@@ -39,6 +40,20 @@ describe('Checkout API Integration Tests', () => {
       });
       expect(testInventoryLot).toBeDefined();
       expect(testInventoryLot.id).toBeDefined();
+
+      // Create second test inventory lot for checkout initiate tests
+      testInventoryLot2 = await prisma.inventoryLot.create({
+        data: {
+          releaseId: testRelease.id,
+          status: 'LIVE',
+          conditionMedia: 'NM',
+          conditionSleeve: 'NM',
+          costBasis: 12.00,
+          listPrice: 29.99,
+        },
+      });
+      expect(testInventoryLot2).toBeDefined();
+      expect(testInventoryLot2.id).toBeDefined();
     } catch (error) {
       console.error('Error in beforeAll:', error);
       throw error;
@@ -49,7 +64,10 @@ describe('Checkout API Integration Tests', () => {
     // Clean up after each test to prevent holds from interfering with subsequent tests
     await prisma.inventoryHold.deleteMany({
       where: {
-        inventoryLotId: testInventoryLot.id,
+        OR: [
+          { inventoryLotId: testInventoryLot.id },
+          { inventoryLotId: testInventoryLot2.id },
+        ],
       },
     });
   });
@@ -85,10 +103,15 @@ describe('Checkout API Integration Tests', () => {
         },
       });
 
-      // Delete the test inventory lot
+      // Delete the test inventory lots
       if (testInventoryLot?.id) {
         await prisma.inventoryLot.deleteMany({
           where: { id: testInventoryLot.id },
+        });
+      }
+      if (testInventoryLot2?.id) {
+        await prisma.inventoryLot.deleteMany({
+          where: { id: testInventoryLot2.id },
         });
       }
 
@@ -488,7 +511,7 @@ describe('Checkout API Integration Tests', () => {
   describe('POST /api/v1/checkout/initiate', () => {
     let cartId;
 
-    beforeEach(async () => {
+    it('should initiate checkout with payment intent', async () => {
       // Verify test inventory lot exists
       expect(testInventoryLot).toBeDefined();
       expect(testInventoryLot.id).toBeDefined();
@@ -523,14 +546,6 @@ describe('Checkout API Integration Tests', () => {
           inventoryLotId: testInventoryLot.id,
         });
 
-      // Handle both 200 (new add) and 409 (duplicate) - if 409, that's an error in our setup
-      if (addItemResponse.status === 409) {
-        console.error('Item already in cart - test setup issue:', {
-          cartId,
-          inventoryLotId: testInventoryLot.id,
-          response: addItemResponse.body,
-        });
-      }
       expect(addItemResponse.status).toBe(200);
       expect(addItemResponse.body.success).toBe(true);
       expect(addItemResponse.body.data.items).toBeDefined();
@@ -547,9 +562,8 @@ describe('Checkout API Integration Tests', () => {
 
       expect(recalcResponse.status).toBe(200);
       expect(recalcResponse.body.success).toBe(true);
-    });
 
-    it('should initiate checkout with payment intent', async () => {
+      // Now initiate checkout
       const response = await request(app)
         .post('/api/v1/checkout/initiate')
         .set('Authorization', authHeader)
