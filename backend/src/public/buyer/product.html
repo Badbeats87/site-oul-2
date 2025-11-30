@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - Vinyl Catalog</title>
+    <link rel="stylesheet" href="../../styles/design-system.css">
+    <link rel="stylesheet" href="../../styles/product-detail.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar__container">
+            <a href="../index.html" class="navbar__logo">
+                <svg class="navbar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <circle cx="12" cy="12" r="6"></circle>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <span>Vinyl Catalog</span>
+            </a>
+            <div class="navbar__links">
+                <a href="index.html" class="nav-link">← Back to Catalog</a>
+                <a href="cart.html" class="nav-link">Cart (0)</a>
+                <a href="../index.html" class="nav-link">Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <div class="container">
+            <a href="../index.html">Home</a>
+            <span>/</span>
+            <a href="index.html">Catalog</a>
+            <span>/</span>
+            <span data-product-breadcrumb>Product</span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="page-content">
+        <div class="container">
+            <!-- Loading State -->
+            <div data-loading-state style="text-align: center; padding: 60px 20px;">
+                <p>Loading product details...</p>
+            </div>
+
+            <!-- Product Detail -->
+            <div class="product-detail" style="display: none;">
+                <div class="product-detail__container">
+                    <!-- Product Images -->
+                    <div class="product-detail__images">
+                        <div class="product-image-main">
+                            <img id="main-image" src="" alt="Album Cover" />
+                        </div>
+                        <div class="product-image-gallery" style="display: none;">
+                            <div class="image-thumb">
+                                <img src="" alt="Album Cover" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Info -->
+                    <div class="product-detail__info">
+                        <!-- Breadcrumb for mobile -->
+                        <div class="breadcrumb-mobile">
+                            <a href="index.html">← Back</a>
+                        </div>
+
+                        <!-- Title & Artist -->
+                        <h1 class="product-detail__title" data-product-title></h1>
+                        <p class="product-detail__artist" data-product-artist></p>
+
+                        <!-- Metadata -->
+                        <div class="product-detail__meta">
+                            <div class="meta-item">
+                                <span class="meta-label">Label:</span>
+                                <span data-product-label></span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Year:</span>
+                                <span data-product-year></span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Catalog #:</span>
+                                <span data-product-catalog></span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Barcode:</span>
+                                <span data-product-barcode></span>
+                            </div>
+                        </div>
+
+                        <!-- Condition & Grades -->
+                        <div class="product-detail__condition">
+                            <h3>Condition</h3>
+                            <div class="condition-grades">
+                                <div class="grade">
+                                    <span class="grade-label">Media:</span>
+                                    <span class="grade-value" data-product-condition-media></span>
+                                </div>
+                                <div class="grade">
+                                    <span class="grade-label">Sleeve:</span>
+                                    <span class="grade-value" data-product-condition-sleeve></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Market Data -->
+                        <div class="product-detail__market" data-market-data>
+                            <h3>Market Comparison</h3>
+                            <div class="market-stats">
+                                <div class="market-source discogs" style="display: none;">
+                                    <h4>Discogs Market</h4>
+                                    <div class="price-stat">
+                                        <span class="label">Low:</span>
+                                        <span class="value" data-discogs-low></span>
+                                    </div>
+                                    <div class="price-stat">
+                                        <span class="label">Median:</span>
+                                        <span class="value" data-discogs-median></span>
+                                    </div>
+                                    <div class="price-stat">
+                                        <span class="label">High:</span>
+                                        <span class="value" data-discogs-high></span>
+                                    </div>
+                                    <div class="price-stat text-muted" style="font-size: 0.85em;">
+                                        <span>Sample size: <span data-discogs-sample></span></span>
+                                    </div>
+                                </div>
+
+                                <div class="market-source ebay" style="display: none;">
+                                    <h4>eBay Sold</h4>
+                                    <div class="price-stat">
+                                        <span class="label">Average:</span>
+                                        <span class="value" data-ebay-avg></span>
+                                    </div>
+                                    <div class="price-stat">
+                                        <span class="label">Low:</span>
+                                        <span class="value" data-ebay-low></span>
+                                    </div>
+                                    <div class="price-stat">
+                                        <span class="label">High:</span>
+                                        <span class="value" data-ebay-high></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pricing & Availability -->
+                        <div class="product-detail__pricing">
+                            <div class="price-section">
+                                <div class="price-display">
+                                    <span class="price-label">Our Price:</span>
+                                    <span class="price-value" data-product-price></span>
+                                </div>
+                                <div class="price-comparison" data-price-comparison style="display: none;">
+                                    <span class="badge" data-price-badge></span>
+                                </div>
+                            </div>
+
+                            <div class="stock-section">
+                                <span class="stock-status" data-stock-status></span>
+                                <span class="stock-quantity" data-stock-quantity></span>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="product-detail__actions">
+                            <button class="button button--primary button--large" data-add-to-cart-btn>
+                                Add to Cart
+                            </button>
+                            <button class="button button--secondary button--large" data-wishlist-btn>
+                                ♡ Add to Wishlist
+                            </button>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="product-detail__description" data-product-description style="display: none;">
+                            <h3>About This Album</h3>
+                            <p></p>
+                        </div>
+
+                        <!-- Technical Details -->
+                        <div class="product-detail__specs">
+                            <h3>Details</h3>
+                            <dl>
+                                <dt>Format:</dt>
+                                <dd data-product-format>Vinyl LP</dd>
+                                <dt>Genre:</dt>
+                                <dd data-product-genre></dd>
+                                <dt>Media Condition:</dt>
+                                <dd data-product-media-full></dd>
+                                <dt>Sleeve Condition:</dt>
+                                <dd data-product-sleeve-full></dd>
+                                <dt>SKU:</dt>
+                                <dd data-product-sku></dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Related Products Section -->
+                <div class="product-detail__related">
+                    <h2>Related Releases</h2>
+                    <div class="products-grid" data-related-products>
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #999;">
+                            <p>Loading related products...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error State -->
+            <div data-error-state style="text-align: center; padding: 60px 20px; display: none;">
+                <p style="color: #c33; margin-bottom: 20px;" data-error-message></p>
+                <a href="index.html" class="button button--primary">Back to Catalog</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__content">
+                <div class="footer__section">
+                    <h4>Vinyl Catalog</h4>
+                    <p>Buy and sell vinyl records with confidence</p>
+                </div>
+                <div class="footer__section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="../seller/index.html">Sell Records</a></li>
+                        <li><a href="index.html">Buy Records</a></li>
+                        <li><a href="../index.html">Home</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer__bottom">
+                <p>&copy; 2024 Vinyl Catalog. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../js/api-client.js"></script>
+    <script src="../../js/product-detail.js"></script>
+    <script>
+        // Initialize product detail when page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (productDetailManager) {
+                await productDetailManager.initialize();
+            }
+        });
+    </script>
+</body>
+</html>
