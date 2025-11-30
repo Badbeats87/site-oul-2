@@ -1,9 +1,9 @@
-import axios from "axios";
-import { ApiError } from "../middleware/errorHandler.js";
-import logger from "../../config/logger.js";
-import { getOrSet, generateCacheKey } from "../utils/cache.js";
+import axios from 'axios';
+import { ApiError } from '../middleware/errorHandler.js';
+import logger from '../../config/logger.js';
+import { getOrSet, generateCacheKey } from '../utils/cache.js';
 
-const DISCOGS_API_BASE = "https://api.discogs.com";
+const DISCOGS_API_BASE = 'https://api.discogs.com';
 const DISCOGS_TOKEN = process.env.DISCOGS_API_TOKEN;
 
 /**
@@ -16,14 +16,14 @@ class DiscogsService {
       baseURL: DISCOGS_API_BASE,
       timeout: 10000,
       headers: {
-        "User-Agent": "VinylCatalogAPI/1.0",
+        'User-Agent': 'VinylCatalogAPI/1.0',
       },
     });
 
     // Add request interceptor for auth and rate limiting
     this.client.interceptors.request.use((config) => {
       if (DISCOGS_TOKEN) {
-        config.headers["Authorization"] = `Discogs token=${DISCOGS_TOKEN}`;
+        config.headers['Authorization'] = `Discogs token=${DISCOGS_TOKEN}`;
       }
       return config;
     });
@@ -33,11 +33,11 @@ class DiscogsService {
       (response) => response,
       (error) => {
         if (error.response?.status === 429) {
-          logger.warn("Discogs rate limit exceeded, backing off");
+          logger.warn('Discogs rate limit exceeded, backing off');
           // Could implement exponential backoff here
         }
         return Promise.reject(error);
-      },
+      }
     );
   }
 
@@ -55,15 +55,15 @@ class DiscogsService {
       const { query, barcode, year, page = 1 } = params;
 
       if (!query && !barcode) {
-        throw new ApiError("Either query or barcode is required", 400);
+        throw new ApiError('Either query or barcode is required', 400);
       }
 
-      const cacheKey = generateCacheKey("discogs", "search", params);
+      const cacheKey = generateCacheKey('discogs', 'search', params);
 
       return await getOrSet(
         cacheKey,
         async () => {
-          const searchParams = { type: "release", per_page: 20, page };
+          const searchParams = { type: 'release', per_page: 20, page };
 
           if (query) {
             searchParams.q = query;
@@ -75,7 +75,7 @@ class DiscogsService {
             searchParams.year = year;
           }
 
-          const response = await this.client.get("/database/search", {
+          const response = await this.client.get('/database/search', {
             params: searchParams,
           });
 
@@ -96,12 +96,12 @@ class DiscogsService {
             },
           };
         },
-        3600, // Cache for 1 hour
+        3600 // Cache for 1 hour
       );
     } catch (error) {
       if (error.isApiError) throw error;
-      logger.error("Discogs search failed", { error: error.message });
-      throw new ApiError("Failed to search Discogs", 500);
+      logger.error('Discogs search failed', { error: error.message });
+      throw new ApiError('Failed to search Discogs', 500);
     }
   }
 
@@ -112,11 +112,11 @@ class DiscogsService {
    */
   async getRelease(releaseId) {
     try {
-      if (!releaseId || typeof releaseId !== "number") {
-        throw new ApiError("Invalid release ID", 400);
+      if (!releaseId || typeof releaseId !== 'number') {
+        throw new ApiError('Invalid release ID', 400);
       }
 
-      const cacheKey = generateCacheKey("discogs", `release_${releaseId}`, {});
+      const cacheKey = generateCacheKey('discogs', `release_${releaseId}`, {});
 
       return await getOrSet(
         cacheKey,
@@ -164,15 +164,15 @@ class DiscogsService {
             uri: response.data.uri,
           };
         },
-        7200, // Cache for 2 hours
+        7200 // Cache for 2 hours
       );
     } catch (error) {
       if (error.isApiError) throw error;
-      logger.error("Failed to fetch Discogs release", {
+      logger.error('Failed to fetch Discogs release', {
         releaseId,
         error: error.message,
       });
-      throw new ApiError("Failed to fetch release metadata", 500);
+      throw new ApiError('Failed to fetch release metadata', 500);
     }
   }
 
@@ -183,11 +183,11 @@ class DiscogsService {
    */
   async getPriceStatistics(releaseId) {
     try {
-      if (!releaseId || typeof releaseId !== "number") {
-        throw new ApiError("Invalid release ID", 400);
+      if (!releaseId || typeof releaseId !== 'number') {
+        throw new ApiError('Invalid release ID', 400);
       }
 
-      const cacheKey = generateCacheKey("discogs", `prices_${releaseId}`, {});
+      const cacheKey = generateCacheKey('discogs', `prices_${releaseId}`, {});
 
       return await getOrSet(
         cacheKey,
@@ -196,13 +196,13 @@ class DiscogsService {
           const release = await this.getRelease(releaseId);
 
           if (!release) {
-            throw new ApiError("Release not found", 404);
+            throw new ApiError('Release not found', 404);
           }
 
           // Try to get price data from the community stats
           // Discogs includes price info in the marketplace stats
           const statsResponse = await this.client.get(
-            `/releases/${releaseId}/stats`,
+            `/releases/${releaseId}/stats`
           );
 
           const priceData = statsResponse.data.prices;
@@ -216,30 +216,30 @@ class DiscogsService {
             median: parseFloat(priceData.median) || null,
           };
         },
-        1800, // Cache for 30 minutes (prices change more frequently)
+        1800 // Cache for 30 minutes (prices change more frequently)
       );
     } catch (error) {
       if (error.isApiError) throw error;
 
       // If stats endpoint doesn't exist, return minimal data
       if (error.response?.status === 404) {
-        logger.debug("Price stats not available for release", { releaseId });
+        logger.debug('Price stats not available for release', { releaseId });
         return {
           release_id: releaseId,
-          currency: "USD",
+          currency: 'USD',
           lowest: null,
           highest: null,
           average: null,
           median: null,
-          note: "Price data not available",
+          note: 'Price data not available',
         };
       }
 
-      logger.error("Failed to fetch price statistics", {
+      logger.error('Failed to fetch price statistics', {
         releaseId,
         error: error.message,
       });
-      throw new ApiError("Failed to fetch price statistics", 500);
+      throw new ApiError('Failed to fetch price statistics', 500);
     }
   }
 
@@ -268,13 +268,13 @@ class DiscogsService {
               prices,
             };
           } catch (error) {
-            logger.warn("Failed to enrich search result", {
+            logger.warn('Failed to enrich search result', {
               resultId: result.id,
               error: error.message,
             });
             return result;
           }
-        }),
+        })
       );
 
       return {
@@ -283,8 +283,8 @@ class DiscogsService {
       };
     } catch (error) {
       if (error.isApiError) throw error;
-      logger.error("Enriched search failed", { error: error.message });
-      throw new ApiError("Failed to perform enriched search", 500);
+      logger.error('Enriched search failed', { error: error.message });
+      throw new ApiError('Failed to perform enriched search', 500);
     }
   }
 }

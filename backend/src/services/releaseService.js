@@ -1,13 +1,13 @@
-import prisma from "../utils/db.js";
-import { ApiError } from "../middleware/errorHandler.js";
-import logger from "../../config/logger.js";
+import prisma from '../utils/db.js';
+import { ApiError } from '../middleware/errorHandler.js';
+import logger from '../../config/logger.js';
 import {
   getCached,
   setCached,
   deleteCached,
   getOrSet,
-} from "../utils/cache.js";
-import inventoryService from "./inventoryService.js";
+} from '../utils/cache.js';
+import inventoryService from './inventoryService.js';
 
 class ReleaseService {
   /**
@@ -15,7 +15,7 @@ class ReleaseService {
    */
   generateListCacheKey(filters, pagination) {
     const key = JSON.stringify({ filters, pagination });
-    return `release:list:${Buffer.from(key).toString("base64")}`;
+    return `release:list:${Buffer.from(key).toString('base64')}`;
   }
 
   /**
@@ -23,7 +23,7 @@ class ReleaseService {
    */
   generateSearchCacheKey(query, filters, pagination) {
     const key = JSON.stringify({ query, filters, pagination });
-    return `release:search:${Buffer.from(key).toString("base64")}`;
+    return `release:search:${Buffer.from(key).toString('base64')}`;
   }
 
   /**
@@ -41,7 +41,7 @@ class ReleaseService {
     deleteCached(this.generateDetailCacheKey(releaseId));
 
     // Clear all search and list caches by pattern
-    logger.debug("Invalidated release caches", { releaseId });
+    logger.debug('Invalidated release caches', { releaseId });
   }
 
   /**
@@ -53,7 +53,7 @@ class ReleaseService {
 
     // Validate pagination limits
     if (limit > 1000) {
-      throw new ApiError("Limit cannot exceed 1000", 400);
+      throw new ApiError('Limit cannot exceed 1000', 400);
     }
 
     try {
@@ -62,7 +62,7 @@ class ReleaseService {
       // Try cache first (1 hour TTL for lists)
       const cached = getCached(cacheKey);
       if (cached) {
-        logger.debug("Cache hit for release list", { filters, pagination });
+        logger.debug('Cache hit for release list', { filters, pagination });
         return cached;
       }
 
@@ -79,7 +79,7 @@ class ReleaseService {
           include: {
             marketSnapshots: {
               take: 1,
-              orderBy: { fetchedAt: "desc" },
+              orderBy: { fetchedAt: 'desc' },
             },
           },
         }),
@@ -115,8 +115,8 @@ class ReleaseService {
       setCached(cacheKey, result, 3600);
       return result;
     } catch (error) {
-      logger.error("Error finding releases", { error: error.message });
-      throw new ApiError("Failed to find releases", 500);
+      logger.error('Error finding releases', { error: error.message });
+      throw new ApiError('Failed to find releases', 500);
     }
   }
 
@@ -128,10 +128,10 @@ class ReleaseService {
 
     // Text filters
     if (filters.artist) {
-      where.artist = { contains: filters.artist, mode: "insensitive" };
+      where.artist = { contains: filters.artist, mode: 'insensitive' };
     }
     if (filters.title) {
-      where.title = { contains: filters.title, mode: "insensitive" };
+      where.title = { contains: filters.title, mode: 'insensitive' };
     }
     if (filters.genre) {
       where.genre = filters.genre;
@@ -159,11 +159,11 @@ class ReleaseService {
    * Build Prisma orderBy from sort parameter
    */
   _buildOrderBy(sort) {
-    const defaultOrder = { createdAt: "desc" };
+    const defaultOrder = { createdAt: 'desc' };
     if (!sort) return defaultOrder;
 
-    const [field, direction] = sort.split("_");
-    const sortDir = direction === "desc" ? "desc" : "asc";
+    const [field, direction] = sort.split('_');
+    const sortDir = direction === 'desc' ? 'desc' : 'asc';
 
     const sortMap = {
       title: { title: sortDir },
@@ -181,7 +181,7 @@ class ReleaseService {
       const uuidRegex =
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (!uuidRegex.test(id)) {
-        throw new ApiError("Invalid release ID format", 404);
+        throw new ApiError('Invalid release ID format', 404);
       }
 
       const cacheKey = this.generateDetailCacheKey(id);
@@ -189,7 +189,7 @@ class ReleaseService {
       // Try cache first (2 hour TTL for details)
       const cached = getCached(cacheKey);
       if (cached) {
-        logger.debug("Cache hit for release detail", { id });
+        logger.debug('Cache hit for release detail', { id });
         return cached;
       }
 
@@ -197,14 +197,14 @@ class ReleaseService {
         where: { id },
         include: {
           marketSnapshots: {
-            orderBy: { fetchedAt: "desc" },
+            orderBy: { fetchedAt: 'desc' },
             take: 10,
           },
         },
       });
 
       if (!release) {
-        throw new ApiError("Release not found", 404);
+        throw new ApiError('Release not found', 404);
       }
 
       // Enhance with inventory data
@@ -220,8 +220,8 @@ class ReleaseService {
       return enhanced;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error finding release by ID", { id, error: error.message });
-      throw new ApiError("Failed to find release", 500);
+      logger.error('Error finding release by ID', { id, error: error.message });
+      throw new ApiError('Failed to find release', 500);
     }
   }
 
@@ -241,7 +241,7 @@ class ReleaseService {
 
       // Validate required fields
       if (!title || !artist) {
-        throw new ApiError("Title and artist are required", 400);
+        throw new ApiError('Title and artist are required', 400);
       }
 
       const release = await prisma.release.create({
@@ -259,15 +259,15 @@ class ReleaseService {
       });
 
       // Note: List caches will expire naturally; no need to invalidate all
-      logger.info("Release created", {
+      logger.info('Release created', {
         releaseId: release.id,
         title: release.title,
       });
       return release;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error creating release", { error: error.message });
-      throw new ApiError("Failed to create release", 500);
+      logger.error('Error creating release', { error: error.message });
+      throw new ApiError('Failed to create release', 500);
     }
   }
 
@@ -275,7 +275,7 @@ class ReleaseService {
     try {
       const release = await prisma.release.findUnique({ where: { id } });
       if (!release) {
-        throw new ApiError("Release not found", 404);
+        throw new ApiError('Release not found', 404);
       }
 
       const updated = await prisma.release.update({
@@ -298,12 +298,12 @@ class ReleaseService {
       // Invalidate caches for this release
       this.invalidateReleaseCaches(id);
 
-      logger.info("Release updated", { releaseId: updated.id });
+      logger.info('Release updated', { releaseId: updated.id });
       return updated;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error updating release", { id, error: error.message });
-      throw new ApiError("Failed to update release", 500);
+      logger.error('Error updating release', { id, error: error.message });
+      throw new ApiError('Failed to update release', 500);
     }
   }
 
@@ -313,12 +313,12 @@ class ReleaseService {
       const uuidRegex =
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (!uuidRegex.test(id)) {
-        throw new ApiError("Invalid release ID format", 404);
+        throw new ApiError('Invalid release ID format', 404);
       }
 
       const release = await prisma.release.findUnique({ where: { id } });
       if (!release) {
-        throw new ApiError("Release not found", 404);
+        throw new ApiError('Release not found', 404);
       }
 
       await prisma.release.delete({ where: { id } });
@@ -326,12 +326,12 @@ class ReleaseService {
       // Invalidate caches for this release
       this.invalidateReleaseCaches(id);
 
-      logger.info("Release deleted", { releaseId: id });
+      logger.info('Release deleted', { releaseId: id });
       return { id, deleted: true };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error deleting release", { id, error: error.message });
-      throw new ApiError("Failed to delete release", 500);
+      logger.error('Error deleting release', { id, error: error.message });
+      throw new ApiError('Failed to delete release', 500);
     }
   }
 
@@ -347,14 +347,14 @@ class ReleaseService {
    * Get autocomplete suggestions for a field
    * Optimized for fast type-ahead responses
    */
-  async getAutocomplete(query, field = "title", limit = 10) {
+  async getAutocomplete(query, field = 'title', limit = 10) {
     try {
       if (!query || query.trim().length === 0) {
-        throw new ApiError("Query is required", 400);
+        throw new ApiError('Query is required', 400);
       }
 
       if (limit > 100) {
-        throw new ApiError("Limit cannot exceed 100", 400);
+        throw new ApiError('Limit cannot exceed 100', 400);
       }
 
       const cacheKey = `release:autocomplete:${field}:${query.toLowerCase()}:${limit}`;
@@ -362,7 +362,7 @@ class ReleaseService {
       // Try cache first (1 hour TTL for autocomplete)
       const cached = getCached(cacheKey);
       if (cached) {
-        logger.debug("Cache hit for autocomplete", { query, field });
+        logger.debug('Cache hit for autocomplete', { query, field });
         return cached;
       }
 
@@ -370,13 +370,13 @@ class ReleaseService {
       const where = {};
       const searchField = field.toLowerCase();
 
-      if (!["title", "artist", "label", "genre"].includes(searchField)) {
-        throw new ApiError("Invalid field", 400);
+      if (!['title', 'artist', 'label', 'genre'].includes(searchField)) {
+        throw new ApiError('Invalid field', 400);
       }
 
       where[searchField] = {
         contains: query,
-        mode: "insensitive",
+        mode: 'insensitive',
       };
 
       // Get distinct values for the field matching query
@@ -385,7 +385,7 @@ class ReleaseService {
         select: { [searchField]: true },
         distinct: [searchField],
         take: limit,
-        orderBy: { [searchField]: "asc" },
+        orderBy: { [searchField]: 'asc' },
       });
 
       // Extract and format suggestions
@@ -409,12 +409,12 @@ class ReleaseService {
       return result;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error getting autocomplete suggestions", {
+      logger.error('Error getting autocomplete suggestions', {
         query,
         field,
         error: error.message,
       });
-      throw new ApiError("Failed to get suggestions", 500);
+      throw new ApiError('Failed to get suggestions', 500);
     }
   }
 
@@ -426,11 +426,11 @@ class ReleaseService {
   async search(query, limit = 50) {
     try {
       if (!query || query.trim().length === 0) {
-        throw new ApiError("Search query is required", 400);
+        throw new ApiError('Search query is required', 400);
       }
 
       if (limit > 200) {
-        throw new ApiError("Limit cannot exceed 200", 400);
+        throw new ApiError('Limit cannot exceed 200', 400);
       }
 
       const cacheKey = this.generateSearchCacheKey(query, {}, { limit });
@@ -438,7 +438,7 @@ class ReleaseService {
       // Try cache first (30 minute TTL for search)
       const cached = getCached(cacheKey);
       if (cached) {
-        logger.debug("Cache hit for search", { query, limit });
+        logger.debug('Cache hit for search', { query, limit });
         return cached;
       }
 
@@ -448,10 +448,10 @@ class ReleaseService {
       const releases = await prisma.release.findMany({
         where: {
           OR: [
-            { title: { contains: query, mode: "insensitive" } },
-            { artist: { contains: query, mode: "insensitive" } },
-            { label: { contains: query, mode: "insensitive" } },
-            { barcode: { contains: query, mode: "insensitive" } },
+            { title: { contains: query, mode: 'insensitive' } },
+            { artist: { contains: query, mode: 'insensitive' } },
+            { label: { contains: query, mode: 'insensitive' } },
+            { barcode: { contains: query, mode: 'insensitive' } },
           ],
         },
         take: limit * 2, // Get more to sort by relevance
@@ -518,8 +518,8 @@ class ReleaseService {
       return result;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error searching releases", { query, error: error.message });
-      throw new ApiError("Failed to search releases", 500);
+      logger.error('Error searching releases', { query, error: error.message });
+      throw new ApiError('Failed to search releases', 500);
     }
   }
 
@@ -534,11 +534,11 @@ class ReleaseService {
   async fullTextSearch(query, limit = 50) {
     try {
       if (!query || query.trim().length === 0) {
-        throw new ApiError("Search query is required", 400);
+        throw new ApiError('Search query is required', 400);
       }
 
       if (limit > 200) {
-        throw new ApiError("Limit cannot exceed 200", 400);
+        throw new ApiError('Limit cannot exceed 200', 400);
       }
 
       const cacheKey = `release:fulltext:${query.toLowerCase()}:${limit}`;
@@ -546,7 +546,7 @@ class ReleaseService {
       // Try cache first (30 minute TTL for search)
       const cached = getCached(cacheKey);
       if (cached) {
-        logger.debug("Cache hit for full-text search", { query, limit });
+        logger.debug('Cache hit for full-text search', { query, limit });
         return cached;
       }
 
@@ -588,7 +588,7 @@ class ReleaseService {
             _relevance: Number(relevance),
           };
         }),
-        searchType: "fulltext",
+        searchType: 'fulltext',
         executedAt: new Date(),
       };
 
@@ -597,8 +597,8 @@ class ReleaseService {
       return result;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Full-text search failed", { query, error: error.message });
-      throw new ApiError("Failed to perform full-text search", 500);
+      logger.error('Full-text search failed', { query, error: error.message });
+      throw new ApiError('Failed to perform full-text search', 500);
     }
   }
 
@@ -613,11 +613,11 @@ class ReleaseService {
   async searchByAlbumArtistLabel(query, limit = 50) {
     try {
       if (!query || query.trim().length === 0) {
-        throw new ApiError("Search query is required", 400);
+        throw new ApiError('Search query is required', 400);
       }
 
       if (limit > 200) {
-        throw new ApiError("Limit cannot exceed 200", 400);
+        throw new ApiError('Limit cannot exceed 200', 400);
       }
 
       const cacheKey = `release:search:album-artist-label:${query.toLowerCase()}:${limit}`;
@@ -625,7 +625,7 @@ class ReleaseService {
       // Try cache first (30 minute TTL for search)
       const cached = getCached(cacheKey);
       if (cached) {
-        logger.debug("Cache hit for album/artist/label search", {
+        logger.debug('Cache hit for album/artist/label search', {
           query,
           limit,
         });
@@ -684,7 +684,7 @@ class ReleaseService {
             _relevance: Number(relevance),
           };
         }),
-        searchType: "album-artist-label",
+        searchType: 'album-artist-label',
         executedAt: new Date(),
       };
 
@@ -693,11 +693,11 @@ class ReleaseService {
       return result;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Album/artist/label search failed", {
+      logger.error('Album/artist/label search failed', {
         query,
         error: error.message,
       });
-      throw new ApiError("Failed to search by album/artist/label", 500);
+      throw new ApiError('Failed to search by album/artist/label', 500);
     }
   }
 
@@ -729,7 +729,7 @@ class ReleaseService {
       } = filters;
 
       if (limit > 200) {
-        throw new ApiError("Limit cannot exceed 200", 400);
+        throw new ApiError('Limit cannot exceed 200', 400);
       }
 
       const offset = (page - 1) * limit;
@@ -741,9 +741,9 @@ class ReleaseService {
       if (query && query.trim().length > 0) {
         // Use raw query for full-text search
         where.OR = [
-          { title: { contains: query, mode: "insensitive" } },
-          { artist: { contains: query, mode: "insensitive" } },
-          { label: { contains: query, mode: "insensitive" } },
+          { title: { contains: query, mode: 'insensitive' } },
+          { artist: { contains: query, mode: 'insensitive' } },
+          { label: { contains: query, mode: 'insensitive' } },
         ];
       }
 
@@ -764,10 +764,10 @@ class ReleaseService {
         where,
         take: limit,
         skip: offset,
-        orderBy: { updatedAt: "desc" },
+        orderBy: { updatedAt: 'desc' },
         include: {
           inventoryLots: {
-            where: { status: "LIVE" },
+            where: { status: 'LIVE' },
             select: {
               id: true,
               listPrice: true,
@@ -802,7 +802,7 @@ class ReleaseService {
           // Apply condition filter
           if (conditions && conditions.length > 0) {
             const hasMatchingCondition = release.inventoryLots.some((lot) =>
-              conditions.includes(lot.conditionMedia),
+              conditions.includes(lot.conditionMedia)
             );
             if (!hasMatchingCondition) return false;
           }
@@ -865,8 +865,8 @@ class ReleaseService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Faceted search failed", { filters, error: error.message });
-      throw new ApiError("Failed to perform faceted search", 500);
+      logger.error('Faceted search failed', { filters, error: error.message });
+      throw new ApiError('Failed to perform faceted search', 500);
     }
   }
 
@@ -881,41 +881,41 @@ class ReleaseService {
     try {
       // Genre facets
       const genreFacets = await prisma.release.groupBy({
-        by: ["genre"],
+        by: ['genre'],
         where,
         _count: true,
-        orderBy: { _count: { genre: "desc" } },
+        orderBy: { _count: { genre: 'desc' } },
       });
 
       // Year facets (grouped by decade)
       const yearFacets = await prisma.release.groupBy({
-        by: ["releaseYear"],
+        by: ['releaseYear'],
         where,
         _count: true,
-        orderBy: { releaseYear: "desc" },
+        orderBy: { releaseYear: 'desc' },
       });
 
       // Condition facets (from inventory)
       const conditionFacets = await prisma.inventoryLot.groupBy({
-        by: ["conditionMedia"],
-        where: { status: "LIVE" },
+        by: ['conditionMedia'],
+        where: { status: 'LIVE' },
         _count: true,
       });
 
       // Price range facets
       const priceRanges = [
-        { label: "Under $10", min: 0, max: 10 },
-        { label: "$10 - $25", min: 10, max: 25 },
-        { label: "$25 - $50", min: 25, max: 50 },
-        { label: "$50 - $100", min: 50, max: 100 },
-        { label: "Over $100", min: 100, max: Infinity },
+        { label: 'Under $10', min: 0, max: 10 },
+        { label: '$10 - $25', min: 10, max: 25 },
+        { label: '$25 - $50', min: 25, max: 50 },
+        { label: '$50 - $100', min: 50, max: 100 },
+        { label: 'Over $100', min: 100, max: Infinity },
       ];
 
       const priceFacets = await Promise.all(
         priceRanges.map(async (range) => {
           const count = await prisma.inventoryLot.count({
             where: {
-              status: "LIVE",
+              status: 'LIVE',
               listPrice: {
                 gte: range.min,
                 ...(range.max !== Infinity && { lt: range.max }),
@@ -923,7 +923,7 @@ class ReleaseService {
             },
           });
           return { ...range, count };
-        }),
+        })
       );
 
       return {
@@ -942,7 +942,7 @@ class ReleaseService {
         priceRanges: priceFacets,
       };
     } catch (error) {
-      logger.error("Failed to build facets", { error: error.message });
+      logger.error('Failed to build facets', { error: error.message });
       // Return empty facets on error
       return {
         genres: [],

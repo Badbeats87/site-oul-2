@@ -1,5 +1,5 @@
-import releaseService from "../services/releaseService.js";
-import logger from "../../config/logger.js";
+import releaseService from '../services/releaseService.js';
+import logger from '../../config/logger.js';
 
 export const getAllReleases = async (req, res, next) => {
   try {
@@ -142,7 +142,7 @@ export const searchReleases = async (req, res, next) => {
       return res.status(400).json({
         success: false,
         error: {
-          message: "Search query must be at least 2 characters",
+          message: 'Search query must be at least 2 characters',
           status: 400,
         },
       });
@@ -150,7 +150,7 @@ export const searchReleases = async (req, res, next) => {
 
     const results = await releaseService.search(
       q,
-      limit ? parseInt(limit, 10) : 50,
+      limit ? parseInt(limit, 10) : 50
     );
 
     res.json({
@@ -169,24 +169,24 @@ export const searchReleases = async (req, res, next) => {
  */
 export const autocomplete = async (req, res, next) => {
   try {
-    const { q, field = "title", limit = 10 } = req.query;
+    const { q, field = 'title', limit = 10 } = req.query;
 
     if (!q || q.length < 1) {
       return res.status(400).json({
         success: false,
         error: {
-          message: "Query parameter is required",
+          message: 'Query parameter is required',
           status: 400,
         },
       });
     }
 
-    const validFields = ["title", "artist", "label", "genre"];
+    const validFields = ['title', 'artist', 'label', 'genre'];
     if (!validFields.includes(field)) {
       return res.status(400).json({
         success: false,
         error: {
-          message: `Field must be one of: ${validFields.join(", ")}`,
+          message: `Field must be one of: ${validFields.join(', ')}`,
           status: 400,
         },
       });
@@ -195,7 +195,7 @@ export const autocomplete = async (req, res, next) => {
     const suggestions = await releaseService.getAutocomplete(
       q,
       field,
-      parseInt(limit, 10),
+      parseInt(limit, 10)
     );
 
     res.json({
@@ -220,7 +220,7 @@ export const searchByAlbumArtistLabel = async (req, res, next) => {
       return res.status(400).json({
         success: false,
         error: {
-          message: "Search query must be at least 2 characters",
+          message: 'Search query must be at least 2 characters',
           status: 400,
         },
       });
@@ -228,7 +228,7 @@ export const searchByAlbumArtistLabel = async (req, res, next) => {
 
     const results = await releaseService.searchByAlbumArtistLabel(
       q,
-      limit ? parseInt(limit, 10) : 50,
+      limit ? parseInt(limit, 10) : 50
     );
 
     res.json({
@@ -253,7 +253,7 @@ export const fullTextSearch = async (req, res, next) => {
       return res.status(400).json({
         success: false,
         error: {
-          message: "Search query must be at least 2 characters",
+          message: 'Search query must be at least 2 characters',
           status: 400,
         },
       });
@@ -261,7 +261,7 @@ export const fullTextSearch = async (req, res, next) => {
 
     const results = await releaseService.fullTextSearch(
       q,
-      limit ? parseInt(limit, 10) : 50,
+      limit ? parseInt(limit, 10) : 50
     );
 
     res.json({
@@ -309,7 +309,7 @@ export const facetedSearch = async (req, res, next) => {
     const results = await releaseService.facetedSearch(
       filters,
       limit ? parseInt(limit, 10) : 50,
-      page ? parseInt(page, 10) : 1,
+      page ? parseInt(page, 10) : 1
     );
 
     res.json({

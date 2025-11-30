@@ -1,7 +1,7 @@
-import discogsService from "./discogsService.js";
-import ebayService from "./ebayService.js";
-import { ApiError } from "../middleware/errorHandler.js";
-import logger from "../../config/logger.js";
+import discogsService from './discogsService.js';
+import ebayService from './ebayService.js';
+import { ApiError } from '../middleware/errorHandler.js';
+import logger from '../../config/logger.js';
 
 /**
  * Pricing Engine for Vinyl Catalog
@@ -61,8 +61,8 @@ class PricingService {
       releaseId,
       mediaCondition,
       sleeveCondition,
-      marketSource = "HYBRID",
-      marketStatistic = "median",
+      marketSource = 'HYBRID',
+      marketStatistic = 'median',
       formula = {},
     } = params;
 
@@ -83,11 +83,11 @@ class PricingService {
       const marketStat = await this._getMarketStat(
         releaseId,
         marketSource,
-        marketStatistic,
+        marketStatistic
       );
 
       if (!marketStat) {
-        throw new ApiError("Market data not available for pricing", 404);
+        throw new ApiError('Market data not available for pricing', 404);
       }
 
       // Get condition curve
@@ -101,19 +101,19 @@ class PricingService {
         mediaCondition,
         sleeveCondition,
         curve,
-        weights,
+        weights
       );
       const rounded = this.roundToIncrement(
         adjustedPrice,
-        config.roundIncrement,
+        config.roundIncrement
       );
       const final = this.applyFloorAndCeiling(
         rounded,
         config.buyFloor,
-        config.buyCeiling,
+        config.buyCeiling
       );
 
-      logger.debug("Buy price calculated", {
+      logger.debug('Buy price calculated', {
         releaseId,
         conditions: { media: mediaCondition, sleeve: sleeveCondition },
         marketStat,
@@ -130,25 +130,25 @@ class PricingService {
           mediaCondition,
           sleeveCondition,
           mediaAdjustment: parseFloat(
-            (baseOffer * curve[mediaCondition] * weights.media).toFixed(2),
+            (baseOffer * curve[mediaCondition] * weights.media).toFixed(2)
           ),
           sleeveAdjustment: parseFloat(
-            (baseOffer * curve[sleeveCondition] * weights.sleeve).toFixed(2),
+            (baseOffer * curve[sleeveCondition] * weights.sleeve).toFixed(2)
           ),
           beforeRounding: parseFloat(adjustedPrice.toFixed(2)),
           afterRounding: parseFloat(rounded.toFixed(2)),
           floorApplied: final === config.buyFloor,
           ceilingApplied: final === config.buyCeiling,
         },
-        policyUsed: formula.policyId || "default",
+        policyUsed: formula.policyId || 'default',
       };
     } catch (error) {
       if (error.isApiError) throw error;
-      logger.error("Buy price calculation failed", {
+      logger.error('Buy price calculation failed', {
         releaseId,
         error: error.message,
       });
-      throw new ApiError("Failed to calculate buy price", 500);
+      throw new ApiError('Failed to calculate buy price', 500);
     }
   }
 
@@ -171,8 +171,8 @@ class PricingService {
       mediaCondition,
       sleeveCondition,
       costBasis,
-      marketSource = "HYBRID",
-      marketStatistic = "median",
+      marketSource = 'HYBRID',
+      marketStatistic = 'median',
       formula = {},
     } = params;
 
@@ -180,8 +180,8 @@ class PricingService {
       // Validate inputs
       if (!costBasis || costBasis < 0) {
         throw new ApiError(
-          "Valid cost basis is required for sell price calculation",
-          400,
+          'Valid cost basis is required for sell price calculation',
+          400
         );
       }
 
@@ -202,11 +202,11 @@ class PricingService {
       const marketStat = await this._getMarketStat(
         releaseId,
         marketSource,
-        marketStatistic,
+        marketStatistic
       );
 
       if (!marketStat) {
-        throw new ApiError("Market data not available for pricing", 404);
+        throw new ApiError('Market data not available for pricing', 404);
       }
 
       // Get condition curve
@@ -220,7 +220,7 @@ class PricingService {
         mediaCondition,
         sleeveCondition,
         curve,
-        weights,
+        weights
       );
       let rounded = this.roundToIncrement(adjustedPrice, config.roundIncrement);
 
@@ -233,14 +233,14 @@ class PricingService {
       const final = this.applyFloorAndCeiling(
         rounded,
         config.sellFloor,
-        config.sellCeiling,
+        config.sellCeiling
       );
 
       // Calculate margin
       const marginPercent =
         costBasis > 0 ? ((final - costBasis) / costBasis) * 100 : 0;
 
-      logger.debug("Sell price calculated", {
+      logger.debug('Sell price calculated', {
         releaseId,
         costBasis,
         conditions: { media: mediaCondition, sleeve: sleeveCondition },
@@ -267,15 +267,15 @@ class PricingService {
           floorApplied: final === config.sellFloor,
           ceilingApplied: final === config.sellCeiling,
         },
-        policyUsed: formula.policyId || "default",
+        policyUsed: formula.policyId || 'default',
       };
     } catch (error) {
       if (error.isApiError) throw error;
-      logger.error("Sell price calculation failed", {
+      logger.error('Sell price calculation failed', {
         releaseId,
         error: error.message,
       });
-      throw new ApiError("Failed to calculate sell price", 500);
+      throw new ApiError('Failed to calculate sell price', 500);
     }
   }
 
@@ -292,11 +292,11 @@ class PricingService {
     const { currentPrice, listedAt, costBasis, markdownSchedule } = params;
 
     if (!currentPrice || currentPrice < 0) {
-      throw new ApiError("Valid current price is required", 400);
+      throw new ApiError('Valid current price is required', 400);
     }
 
     if (!listedAt || !(listedAt instanceof Date)) {
-      throw new ApiError("Valid listedAt date is required", 400);
+      throw new ApiError('Valid listedAt date is required', 400);
     }
 
     // Calculate days listed
@@ -309,7 +309,7 @@ class PricingService {
 
     // Apply the highest applicable markdown
     for (const [days, discount] of Object.entries(schedule).sort(
-      (a, b) => parseInt(b[0]) - parseInt(a[0]),
+      (a, b) => parseInt(b[0]) - parseInt(a[0])
     )) {
       if (daysListed >= parseInt(days)) {
         discountPercent = discount;
@@ -347,7 +347,7 @@ class PricingService {
     mediaCondition,
     sleeveCondition,
     curve,
-    weights,
+    weights
   ) {
     const mediaWeights = weights || this.defaultWeights;
     const curve_ = curve || this.defaultConditionCurve;
@@ -420,25 +420,25 @@ class PricingService {
     try {
       const stat = statistic.toLowerCase();
 
-      if (source === "DISCOGS") {
+      if (source === 'DISCOGS') {
         const data = await discogsService.getPriceStatistics(
-          parseInt(releaseId),
+          parseInt(releaseId)
         );
         return data?.[stat] || null;
       }
 
-      if (source === "EBAY") {
+      if (source === 'EBAY') {
         const data = await ebayService.getPriceStatistics({ query: releaseId });
         return data?.[stat] || null;
       }
 
-      if (source === "HYBRID") {
+      if (source === 'HYBRID') {
         return await this._getHybridMarketStat(releaseId, stat);
       }
 
       return null;
     } catch (error) {
-      logger.warn("Failed to fetch market stat", {
+      logger.warn('Failed to fetch market stat', {
         releaseId,
         source,
         error: error.message,
@@ -460,11 +460,11 @@ class PricingService {
 
     try {
       const discogsData = await discogsService.getPriceStatistics(
-        parseInt(releaseId),
+        parseInt(releaseId)
       );
       discogsPrice = discogsData?.[statistic];
     } catch (error) {
-      logger.debug("Discogs data unavailable for hybrid pricing", {
+      logger.debug('Discogs data unavailable for hybrid pricing', {
         releaseId,
       });
     }
@@ -475,7 +475,7 @@ class PricingService {
       });
       ebayPrice = ebayData?.[statistic];
     } catch (error) {
-      logger.debug("eBay data unavailable for hybrid pricing", { releaseId });
+      logger.debug('eBay data unavailable for hybrid pricing', { releaseId });
     }
 
     // Return average if both available
@@ -495,19 +495,19 @@ class PricingService {
    */
   _validateCondition(condition) {
     const validConditions = [
-      "MINT",
-      "NM",
-      "VG_PLUS",
-      "VG",
-      "VG_MINUS",
-      "G",
-      "FAIR",
-      "POOR",
+      'MINT',
+      'NM',
+      'VG_PLUS',
+      'VG',
+      'VG_MINUS',
+      'G',
+      'FAIR',
+      'POOR',
     ];
     if (!validConditions.includes(condition)) {
       throw new ApiError(
-        `Invalid condition: ${condition}. Must be one of: ${validConditions.join(", ")}`,
-        400,
+        `Invalid condition: ${condition}. Must be one of: ${validConditions.join(', ')}`,
+        400
       );
     }
   }

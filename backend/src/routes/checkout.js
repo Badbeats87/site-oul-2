@@ -1,4 +1,4 @@
-import express from "express";
+import express from 'express';
 import {
   getCart,
   addToCart,
@@ -14,7 +14,7 @@ import {
   getOrders,
   getOrderHistory,
   getPaymentIntent,
-} from "../controllers/checkoutController.js";
+} from '../controllers/checkoutController.js';
 
 const router = express.Router();
 
@@ -54,7 +54,7 @@ const router = express.Router();
  *       400:
  *         description: Missing required parameters
  */
-router.get("/cart", getCart);
+router.get('/cart', getCart);
 
 /**
  * @swagger
@@ -77,7 +77,7 @@ router.get("/cart", getCart);
  *       404:
  *         description: Order not found
  */
-router.get("/cart/summary", getCartSummary);
+router.get('/cart/summary', getCartSummary);
 
 /**
  * @swagger
@@ -111,7 +111,7 @@ router.get("/cart/summary", getCartSummary);
  *       409:
  *         description: Item not available
  */
-router.post("/cart/items", addToCart);
+router.post('/cart/items', addToCart);
 
 /**
  * @swagger
@@ -146,7 +146,7 @@ router.post("/cart/items", addToCart);
  *       404:
  *         description: Item not found in cart
  */
-router.delete("/cart/items/:inventoryLotId", removeFromCart);
+router.delete('/cart/items/:inventoryLotId', removeFromCart);
 
 /**
  * @swagger
@@ -176,7 +176,7 @@ router.delete("/cart/items/:inventoryLotId", removeFromCart);
  *       200:
  *         description: Updated cart with recalculated totals
  */
-router.post("/cart/recalculate", recalculateCart);
+router.post('/cart/recalculate', recalculateCart);
 
 /**
  * @swagger
@@ -204,7 +204,7 @@ router.post("/cart/recalculate", recalculateCart);
  *       400:
  *         description: Cart validation failed with details
  */
-router.post("/cart/validate", validateCart);
+router.post('/cart/validate', validateCart);
 
 // ============================================================================
 // CHECKOUT FLOW
@@ -239,7 +239,7 @@ router.post("/cart/validate", validateCart);
  *       409:
  *         description: Unable to reserve items
  */
-router.post("/initiate", initiateCheckout);
+router.post('/initiate', initiateCheckout);
 
 /**
  * @swagger
@@ -267,7 +267,7 @@ router.post("/initiate", initiateCheckout);
  *       400:
  *         description: Order not in PAYMENT_CONFIRMED status
  */
-router.post("/complete", completeCheckout);
+router.post('/complete', completeCheckout);
 
 /**
  * @swagger
@@ -296,7 +296,7 @@ router.post("/complete", completeCheckout);
  *       200:
  *         description: Checkout cancelled
  */
-router.post("/cancel", cancelCheckout);
+router.post('/cancel', cancelCheckout);
 
 // ============================================================================
 // WEBHOOK
@@ -326,7 +326,7 @@ router.post("/cancel", cancelCheckout);
  *       401:
  *         description: Invalid webhook signature
  */
-router.post("/webhook", handleStripeWebhook);
+router.post('/webhook', handleStripeWebhook);
 
 // ============================================================================
 // ORDER MANAGEMENT
@@ -353,7 +353,7 @@ router.post("/webhook", handleStripeWebhook);
  *       404:
  *         description: Order not found
  */
-router.get("/orders/:orderId", getOrder);
+router.get('/orders/:orderId', getOrder);
 
 /**
  * @swagger
@@ -389,7 +389,7 @@ router.get("/orders/:orderId", getOrder);
  *       200:
  *         description: List of orders with pagination
  */
-router.get("/orders", getOrders);
+router.get('/orders', getOrders);
 
 /**
  * @swagger
@@ -410,7 +410,7 @@ router.get("/orders", getOrders);
  *       200:
  *         description: Order audit history
  */
-router.get("/orders/:orderId/history", getOrderHistory);
+router.get('/orders/:orderId/history', getOrderHistory);
 
 // ============================================================================
 // PAYMENT INTENT
@@ -436,6 +436,6 @@ router.get("/orders/:orderId/history", getOrderHistory);
  *       404:
  *         description: Payment intent not found
  */
-router.get("/payment-intent/:paymentIntentId", getPaymentIntent);
+router.get('/payment-intent/:paymentIntentId', getPaymentIntent);
 
 export default router;

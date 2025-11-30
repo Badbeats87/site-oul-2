@@ -1,5 +1,5 @@
-import sellerService from "../services/sellerService.js";
-import logger from "../../config/logger.js";
+import sellerService from '../services/sellerService.js';
+import logger from '../../config/logger.js';
 
 /**
  * POST /api/v1/sellers/register

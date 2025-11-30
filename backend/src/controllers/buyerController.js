@@ -1,5 +1,5 @@
-import buyerService from "../services/buyerService.js";
-import recommendationService from "../services/recommendationService.js";
+import buyerService from '../services/buyerService.js';
+import recommendationService from '../services/recommendationService.js';
 
 /**
  * List products with pagination and filtering
@@ -26,8 +26,8 @@ export const listProducts = async (req, res, next) => {
       maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
       limit: limit ? parseInt(limit) : 20,
       page: page ? parseInt(page) : 1,
-      sortBy: sortBy || "createdAt",
-      sortOrder: sortOrder || "desc",
+      sortBy: sortBy || 'createdAt',
+      sortOrder: sortOrder || 'desc',
     });
 
     res.json({
@@ -67,7 +67,7 @@ export const getRecommendations = async (req, res, next) => {
 
     const recommendations = await buyerService.getRecommendations(
       inventoryLotId,
-      parseInt(limit),
+      parseInt(limit)
     );
 
     res.json({
@@ -108,14 +108,14 @@ export const addToWishlist = async (req, res, next) => {
   try {
     const { inventoryLotId } = req.body;
     const buyerId =
-      req.session?.userId || req.headers["x-buyer-id"] || "anonymous";
+      req.session?.userId || req.headers['x-buyer-id'] || 'anonymous';
 
     const item = await buyerService.addToWishlist(buyerId, inventoryLotId);
 
     res.json({
       success: true,
       data: item,
-      message: "Added to wishlist",
+      message: 'Added to wishlist',
     });
   } catch (error) {
     next(error);
@@ -129,11 +129,11 @@ export const removeFromWishlist = async (req, res, next) => {
   try {
     const { inventoryLotId } = req.params;
     const buyerId =
-      req.session?.userId || req.headers["x-buyer-id"] || "anonymous";
+      req.session?.userId || req.headers['x-buyer-id'] || 'anonymous';
 
     const result = await buyerService.removeFromWishlist(
       buyerId,
-      inventoryLotId,
+      inventoryLotId
     );
 
     res.json({
@@ -151,7 +151,7 @@ export const removeFromWishlist = async (req, res, next) => {
 export const getSimilarItems = async (req, res, next) => {
   try {
     const { releaseId } = req.params;
-    const { limit = 5, variant = "control" } = req.query;
+    const { limit = 5, variant = 'control' } = req.query;
 
     const result = await recommendationService.getSimilarItems(releaseId, {
       limit: parseInt(limit),
@@ -176,7 +176,7 @@ export const getNewArrivals = async (req, res, next) => {
       limit = 10,
       daysBack = 30,
       genre = null,
-      variant = "control",
+      variant = 'control',
     } = req.query;
 
     const result = await recommendationService.getNewArrivals({
@@ -201,14 +201,14 @@ export const getNewArrivals = async (req, res, next) => {
 export const getPersonalizedRecommendations = async (req, res, next) => {
   try {
     const { wishlistItems } = req.body; // Array of inventory lot IDs
-    const { limit = 10, variant = "control" } = req.query;
+    const { limit = 10, variant = 'control' } = req.query;
 
     const result = await recommendationService.getPersonalizedRecommendations(
       wishlistItems || [],
       {
         limit: parseInt(limit),
         abVariant: variant,
-      },
+      }
     );
 
     res.json({
@@ -232,7 +232,7 @@ export const getRecommendationVariants = async (req, res, next) => {
       releaseId,
       {
         limit: parseInt(limit),
-      },
+      }
     );
 
     res.json({
@@ -251,7 +251,7 @@ export const recordRecommendationClick = async (req, res, next) => {
   try {
     const { recommendationTrackingId, variantName, itemId } = req.body;
     const buyerId =
-      req.session?.userId || req.headers["x-buyer-id"] || "anonymous";
+      req.session?.userId || req.headers['x-buyer-id'] || 'anonymous';
 
     const result = await recommendationService.recordRecommendationClick({
       recommendationTrackingId,

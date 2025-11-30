@@ -1,18 +1,18 @@
-import prisma from "../utils/db.js";
-import logger from "../../config/logger.js";
-import { ApiError } from "../middleware/errorHandler.js";
+import prisma from '../utils/db.js';
+import logger from '../../config/logger.js';
+import { ApiError } from '../middleware/errorHandler.js';
 import {
   hashPassword,
   verifyPassword,
   validatePasswordStrength,
-} from "../utils/passwordUtils.js";
+} from '../utils/passwordUtils.js';
 import {
   generateAccessToken,
   generateRefreshToken,
   verifyToken,
   decodeToken,
-} from "../utils/tokenUtils.js";
-import config from "../../config/config.js";
+} from '../utils/tokenUtils.js';
+import config from '../../config/config.js';
 
 class AuthService {
   /**
@@ -25,26 +25,26 @@ class AuthService {
    * @returns {Object} - User, accessToken, and refreshToken
    */
   async register(data) {
-    const { email, password, name, role = "BUYER" } = data;
+    const { email, password, name, role = 'BUYER' } = data;
 
     try {
       // Validate required fields
       if (!email || !password || !name) {
-        throw new ApiError("Email, password, and name are required", 400);
+        throw new ApiError('Email, password, and name are required', 400);
       }
 
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
-        throw new ApiError("Invalid email format", 400);
+        throw new ApiError('Invalid email format', 400);
       }
 
       // Validate password strength
       const passwordValidation = validatePasswordStrength(password);
       if (!passwordValidation.valid) {
         throw new ApiError(
-          `Password does not meet requirements: ${passwordValidation.errors.join("; ")}`,
-          400,
+          `Password does not meet requirements: ${passwordValidation.errors.join('; ')}`,
+          400
         );
       }
 
@@ -54,11 +54,11 @@ class AuthService {
       });
 
       if (existingUser) {
-        throw new ApiError("Email already registered", 409);
+        throw new ApiError('Email already registered', 409);
       }
 
       // Validate role (only BUYER and SELLER can self-register)
-      const validPublicRoles = ["BUYER", "SELLER"];
+      const validPublicRoles = ['BUYER', 'SELLER'];
       if (!validPublicRoles.includes(role)) {
         throw new ApiError(`Invalid role for registration: ${role}`, 400);
       }
@@ -77,7 +77,7 @@ class AuthService {
         },
       });
 
-      logger.info("User registered", { userId: user.id, email: user.email });
+      logger.info('User registered', { userId: user.id, email: user.email });
 
       // Generate tokens
       const { accessToken, refreshToken } = await this._generateTokenPair(user);
@@ -89,8 +89,8 @@ class AuthService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error registering user", { error: error.message });
-      throw new ApiError("User registration failed", 500);
+      logger.error('Error registering user', { error: error.message });
+      throw new ApiError('User registration failed', 500);
     }
   }
 
@@ -104,7 +104,7 @@ class AuthService {
     try {
       // Validate inputs
       if (!email || !password) {
-        throw new ApiError("Email and password are required", 400);
+        throw new ApiError('Email and password are required', 400);
       }
 
       // Find user by email
@@ -113,18 +113,18 @@ class AuthService {
       });
 
       if (!user) {
-        throw new ApiError("Invalid email or password", 401);
+        throw new ApiError('Invalid email or password', 401);
       }
 
       // Check if user is active
       if (!user.isActive) {
-        throw new ApiError("User account is inactive", 403);
+        throw new ApiError('User account is inactive', 403);
       }
 
       // Verify password
       const isPasswordValid = await verifyPassword(password, user.passwordHash);
       if (!isPasswordValid) {
-        throw new ApiError("Invalid email or password", 401);
+        throw new ApiError('Invalid email or password', 401);
       }
 
       // Update lastLoginAt
@@ -133,7 +133,7 @@ class AuthService {
         data: { lastLoginAt: new Date() },
       });
 
-      logger.info("User logged in", { userId: user.id, email: user.email });
+      logger.info('User logged in', { userId: user.id, email: user.email });
 
       // Generate tokens
       const { accessToken, refreshToken } = await this._generateTokenPair(user);
@@ -145,8 +145,8 @@ class AuthService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error logging in", { error: error.message });
-      throw new ApiError("Login failed", 500);
+      logger.error('Error logging in', { error: error.message });
+      throw new ApiError('Login failed', 500);
     }
   }
 
@@ -159,7 +159,7 @@ class AuthService {
     try {
       // Validate input
       if (!refreshTokenString) {
-        throw new ApiError("Refresh token is required", 400);
+        throw new ApiError('Refresh token is required', 400);
       }
 
       // Verify JWT signature and expiration
@@ -167,12 +167,12 @@ class AuthService {
       try {
         decoded = verifyToken(refreshTokenString);
       } catch (error) {
-        throw new ApiError("Invalid or expired refresh token", 401);
+        throw new ApiError('Invalid or expired refresh token', 401);
       }
 
       // Check token type
-      if (decoded.type !== "refresh") {
-        throw new ApiError("Invalid token type", 401);
+      if (decoded.type !== 'refresh') {
+        throw new ApiError('Invalid token type', 401);
       }
 
       // Check if refresh token exists and is not revoked
@@ -181,12 +181,12 @@ class AuthService {
       });
 
       if (!storedToken || storedToken.revokedAt || storedToken.replacedBy) {
-        throw new ApiError("Refresh token has been revoked", 401);
+        throw new ApiError('Refresh token has been revoked', 401);
       }
 
       // Check if token is expired
       if (new Date() > storedToken.expiresAt) {
-        throw new ApiError("Refresh token has expired", 401);
+        throw new ApiError('Refresh token has expired', 401);
       }
 
       // Get user
@@ -195,7 +195,7 @@ class AuthService {
       });
 
       if (!user || !user.isActive) {
-        throw new ApiError("User not found or inactive", 401);
+        throw new ApiError('User not found or inactive', 401);
       }
 
       // Generate new token pair
@@ -210,7 +210,7 @@ class AuthService {
         },
       });
 
-      logger.info("Tokens refreshed", { userId: user.id });
+      logger.info('Tokens refreshed', { userId: user.id });
 
       return {
         accessToken,
@@ -218,8 +218,8 @@ class AuthService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error refreshing token", { error: error.message });
-      throw new ApiError("Token refresh failed", 500);
+      logger.error('Error refreshing token', { error: error.message });
+      throw new ApiError('Token refresh failed', 500);
     }
   }
 
@@ -233,7 +233,7 @@ class AuthService {
     try {
       // Validate input
       if (!userId || !refreshTokenString) {
-        throw new ApiError("User ID and refresh token are required", 400);
+        throw new ApiError('User ID and refresh token are required', 400);
       }
 
       // Find and revoke the refresh token
@@ -243,8 +243,8 @@ class AuthService {
 
       if (!refreshToken || refreshToken.userId !== userId) {
         throw new ApiError(
-          "Refresh token not found or does not belong to user",
-          401,
+          'Refresh token not found or does not belong to user',
+          401
         );
       }
 
@@ -253,13 +253,13 @@ class AuthService {
         data: { revokedAt: new Date() },
       });
 
-      logger.info("User logged out", { userId });
+      logger.info('User logged out', { userId });
 
-      return { success: true, message: "Logged out successfully" };
+      return { success: true, message: 'Logged out successfully' };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error logging out", { error: error.message });
-      throw new ApiError("Logout failed", 500);
+      logger.error('Error logging out', { error: error.message });
+      throw new ApiError('Logout failed', 500);
     }
   }
 
@@ -272,7 +272,7 @@ class AuthService {
     try {
       // Validate input
       if (!userId) {
-        throw new ApiError("User ID is required", 400);
+        throw new ApiError('User ID is required', 400);
       }
 
       // Revoke all active refresh tokens
@@ -285,7 +285,7 @@ class AuthService {
         data: { revokedAt: new Date() },
       });
 
-      logger.info("User logged out from all devices", {
+      logger.info('User logged out from all devices', {
         userId,
         count: result.count,
       });
@@ -296,10 +296,10 @@ class AuthService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error logging out from all devices", {
+      logger.error('Error logging out from all devices', {
         error: error.message,
       });
-      throw new ApiError("Logout failed", 500);
+      throw new ApiError('Logout failed', 500);
     }
   }
 
@@ -313,14 +313,14 @@ class AuthService {
       const decoded = verifyToken(token);
 
       // Check token type
-      if (decoded.type !== "access") {
-        throw new ApiError("Invalid token type", 401);
+      if (decoded.type !== 'access') {
+        throw new ApiError('Invalid token type', 401);
       }
 
       return decoded;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      throw new ApiError("Token verification failed", 401);
+      throw new ApiError('Token verification failed', 401);
     }
   }
 
@@ -335,13 +335,13 @@ class AuthService {
     try {
       // Validate inputs
       if (!oldPassword || !newPassword) {
-        throw new ApiError("Old password and new password are required", 400);
+        throw new ApiError('Old password and new password are required', 400);
       }
 
       if (oldPassword === newPassword) {
         throw new ApiError(
-          "New password must be different from old password",
-          400,
+          'New password must be different from old password',
+          400
         );
       }
 
@@ -349,8 +349,8 @@ class AuthService {
       const passwordValidation = validatePasswordStrength(newPassword);
       if (!passwordValidation.valid) {
         throw new ApiError(
-          `New password does not meet requirements: ${passwordValidation.errors.join("; ")}`,
-          400,
+          `New password does not meet requirements: ${passwordValidation.errors.join('; ')}`,
+          400
         );
       }
 
@@ -360,16 +360,16 @@ class AuthService {
       });
 
       if (!user) {
-        throw new ApiError("User not found", 404);
+        throw new ApiError('User not found', 404);
       }
 
       // Verify old password
       const isPasswordValid = await verifyPassword(
         oldPassword,
-        user.passwordHash,
+        user.passwordHash
       );
       if (!isPasswordValid) {
-        throw new ApiError("Old password is incorrect", 401);
+        throw new ApiError('Old password is incorrect', 401);
       }
 
       // Hash new password
@@ -390,13 +390,13 @@ class AuthService {
         data: { revokedAt: new Date() },
       });
 
-      logger.info("User password changed", { userId });
+      logger.info('User password changed', { userId });
 
-      return { success: true, message: "Password changed successfully" };
+      return { success: true, message: 'Password changed successfully' };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error changing password", { error: error.message });
-      throw new ApiError("Password change failed", 500);
+      logger.error('Error changing password', { error: error.message });
+      throw new ApiError('Password change failed', 500);
     }
   }
 
