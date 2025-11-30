@@ -3,6 +3,8 @@ import app from '../../src/index.js';
 import prisma from '../../src/utils/db.js';
 import { getTestAuthHeader } from '../fixtures/tokens.js';
 
+const authHeader = getTestAuthHeader();
+
 describe('Checkout API Integration Tests', () => {
   let testRelease;
   let testInventoryLot;
@@ -28,9 +30,8 @@ describe('Checkout API Integration Tests', () => {
         status: 'LIVE',
         conditionMedia: 'VG_PLUS',
         conditionSleeve: 'VG',
-        notes: 'Test item',
-        price: 25.99,
-        quantity: 5,
+        costBasis: 10.00,
+        listPrice: 25.99,
       },
     });
   });
@@ -68,6 +69,7 @@ describe('Checkout API Integration Tests', () => {
     it('should create a new cart for guest buyer', async () => {
       const response = await request(app)
         .get('/api/v1/checkout/cart')
+        .set('Authorization', authHeader)
         .query({
           buyerEmail: testBuyerEmail,
           buyerName: 'Test Buyer',
