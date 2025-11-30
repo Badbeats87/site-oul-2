@@ -18,6 +18,9 @@ import adminRoutes from './routes/admin.js';
 import inventoryRoutes from './routes/inventory.js';
 import buyerRoutes from './routes/buyer.js';
 import checkoutRoutes from './routes/checkout.js';
+import shippingRoutes from './routes/shipping.js';
+import fulfillmentRoutes from './routes/fulfillment.js';
+import trackingRoutes from './routes/tracking.js';
 import { authenticate } from './middleware/authMiddleware.js';
 import { captureRawBody } from './middleware/rawBody.js';
 import prisma from './utils/db.js';
@@ -38,6 +41,7 @@ app.use(logRequest);
 
 // Capture raw body for webhook processing (must be before json())
 app.use('/api/v1/checkout/webhook', captureRawBody);
+app.use('/api/v1/webhooks', captureRawBody);
 
 // Body parsing
 app.use(express.json());
@@ -49,6 +53,16 @@ app.use((req, res, next) => {
   res.setHeader('X-Request-ID', req.id);
   next();
 });
+
+// ============================================================================
+// PUBLIC WEBHOOKS & TRACKING (before authentication middleware)
+// ============================================================================
+
+// Webhook endpoints (public, no auth required)
+app.use('/api/v1/webhooks', trackingRoutes);
+
+// Tracking endpoints (public, no auth required)
+app.use('/api/v1/tracking', trackingRoutes);
 
 // ============================================================================
 // DOCUMENTATION (before authentication middleware)
@@ -94,8 +108,15 @@ app.use('/api/v1/buyer', buyerRoutes);
 // Checkout and orders routes
 app.use('/api/v1/checkout', checkoutRoutes);
 
+// Shipping routes
+app.use('/api/v1/shipping', shippingRoutes);
+
+// Fulfillment routes
+app.use('/api/v1/fulfillment', fulfillmentRoutes);
+
 // TODO: Add other route groups
 // app.use('/api/v1/pricing', pricingRoutes);
+// Tracking routes are registered before authentication middleware for public access
 
 // ============================================================================
 // ERROR HANDLING
