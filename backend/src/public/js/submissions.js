@@ -118,6 +118,7 @@ class SubmissionsManager {
       this.renderSubmissions();
       this.showLoading(false);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to load submissions:', error);
       this.showError('Failed to load submissions: ' + error.message);
       this.showLoading(false);
@@ -134,8 +135,12 @@ class SubmissionsManager {
     if (this.submissions.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="7" style="text-align: center; padding: 40px; color: #999;">
-            No submissions found
+          <td colspan="7" class="empty-state">
+            <div class="empty-state-icon">📋</div>
+            <div class="empty-state-title">No submissions found</div>
+            <div class="empty-state-message">
+              Try adjusting your search or filters to find what you're looking for.
+            </div>
           </td>
         </tr>
       `;
@@ -146,23 +151,28 @@ class SubmissionsManager {
       .map(
         (submission) => `
       <tr>
-        <td><strong>${submission.id.substring(0, 8)}</strong></td>
-        <td>
-          ${submission.sellerContact || 'N/A'}<br>
-          <span class="text-muted">${submission.sellerName || 'Unknown'}</span>
+        <td data-label="Submission ID"><strong>${submission.id.substring(0, 8)}</strong></td>
+        <td data-label="Seller">
+          <div class="seller-info">
+            <span class="seller-name">${submission.sellerName || 'Unknown'}</span>
+            <a href="mailto:${submission.sellerContact}" class="seller-email">${submission.sellerContact || 'N/A'}</a>
+          </div>
         </td>
-        <td>
-          <strong>${submission.items?.length || 0} items</strong><br>
-          <span class="text-muted">${this.getItemStats(submission)}</span>
+        <td data-label="Items">
+          <div class="item-stats">
+            <span class="item-count">${submission.items?.length || 0} items</span>
+            <span class="item-breakdown">${this.getItemStats(submission)}</span>
+          </div>
         </td>
-        <td><strong>$${parseFloat(submission.totalOffered || 0).toFixed(2)}</strong></td>
-        <td>${this.getStatusBadge(submission.status)}</td>
-        <td><span class="text-muted">${this.formatDate(submission.createdAt)}</span></td>
-        <td>
+        <td data-label="Value"><strong>$${parseFloat(submission.totalOffered || 0).toFixed(2)}</strong></td>
+        <td data-label="Status">${this.getStatusBadge(submission.status)}</td>
+        <td data-label="Submitted"><span class="submission-date">${this.formatDate(submission.createdAt)}</span></td>
+        <td class="actions">
           <button
             class="button button--sm button--accent"
             data-submission-review-btn
             data-submission-id="${submission.id}"
+            aria-label="Review submission ${submission.id.substring(0, 8)}"
           >
             Review
           </button>
@@ -171,6 +181,84 @@ class SubmissionsManager {
     `
       )
       .join('');
+
+    this.renderPagination();
+  }
+
+  /**
+   * Render pagination controls
+   */
+  renderPagination() {
+    const container = document.querySelector('[data-submissions-container]');
+    if (!container) return;
+
+    // Remove existing pagination
+    const existingPagination = container.querySelector('.pagination');
+    if (existingPagination) {
+      existingPagination.remove();
+    }
+
+    if (this.pagination.total === 0) return;
+
+    const totalPages = Math.ceil(this.pagination.total / this.pagination.limit);
+    const startItem = (this.pagination.page - 1) * this.pagination.limit + 1;
+    const endItem = Math.min(
+      this.pagination.page * this.pagination.limit,
+      this.pagination.total
+    );
+
+    const pagination = document.createElement('div');
+    pagination.className = 'pagination';
+    pagination.innerHTML = `
+      <div class="pagination-info">
+        Showing ${startItem}-${endItem} of ${this.pagination.total}
+      </div>
+      <div class="pagination-controls">
+        <button
+          class="pagination-btn"
+          data-pagination-prev
+          ${this.pagination.page === 1 ? 'disabled' : ''}
+          aria-label="Previous page"
+        >
+          ← Previous
+        </button>
+        <span class="pagination-page">
+          Page <span data-current-page>${this.pagination.page}</span> of ${totalPages}
+        </span>
+        <button
+          class="pagination-btn"
+          data-pagination-next
+          ${this.pagination.page >= totalPages ? 'disabled' : ''}
+          aria-label="Next page"
+        >
+          Next →
+        </button>
+      </div>
+    `;
+
+    container.appendChild(pagination);
+
+    // Add pagination event listeners
+    pagination
+      .querySelector('[data-pagination-prev]')
+      ?.addEventListener('click', () => {
+        if (this.pagination.page > 1) {
+          this.pagination.page--;
+          this.loadSubmissions();
+        }
+      });
+
+    pagination
+      .querySelector('[data-pagination-next]')
+      ?.addEventListener('click', () => {
+        const totalPages = Math.ceil(
+          this.pagination.total / this.pagination.limit
+        );
+        if (this.pagination.page < totalPages) {
+          this.pagination.page++;
+          this.loadSubmissions();
+        }
+      });
   }
 
   /**
@@ -255,6 +343,7 @@ class SubmissionsManager {
 
       this.showLoading(false);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to load submission details:', error);
       this.showError('Failed to load submission details: ' + error.message);
       this.showLoading(false);
@@ -277,7 +366,11 @@ class SubmissionsManager {
           </div>
           <div class="detail-row">
             <span class="label">Email</span>
-            <span class="value">${submission.sellerContact || 'N/A'}</span>
+            <span class="value">
+              <a href="mailto:${submission.sellerContact}" style="color: var(--color-accent);">
+                ${submission.sellerContact || 'N/A'}
+              </a>
+            </span>
           </div>
           <div class="detail-row">
             <span class="label">Total Value</span>
@@ -299,6 +392,7 @@ class SubmissionsManager {
             class="button button--primary"
             data-submission-accept-btn
             data-submission-id="${submission.id}"
+            aria-label="Accept all items in this submission"
           >
             Accept All
           </button>
@@ -306,14 +400,9 @@ class SubmissionsManager {
             class="button button--secondary"
             data-submission-reject-btn
             data-submission-id="${submission.id}"
+            aria-label="Reject all items in this submission"
           >
             Reject All
-          </button>
-          <button
-            class="button button--secondary"
-            onclick="document.querySelector('[data-submission-details-modal]').style.display='none'"
-          >
-            Close
           </button>
         </div>
       </div>
@@ -328,6 +417,7 @@ class SubmissionsManager {
       return '<p>No items in this submission</p>';
     }
 
+    // eslint-disable-next-line indent
     return `
       <table class="table">
         <thead>
@@ -343,50 +433,55 @@ class SubmissionsManager {
         </thead>
         <tbody>
           ${submission.items
-            .map(
-              (item) => `
-            <tr>
-              <td>
-                <strong>${item.release?.title || 'Unknown'}</strong><br>
-                <span class="text-muted">${item.release?.artist || ''}</span>
-              </td>
-              <td>${item.sellerConditionMedia}/${item.sellerConditionSleeve}</td>
-              <td>${item.quantity}</td>
-              <td>$${parseFloat(item.autoOfferPrice || 0).toFixed(2)}</td>
-              <td>
-                ${item.counterOfferPrice ? `$${parseFloat(item.counterOfferPrice).toFixed(2)}` : '—'}
-              </td>
-              <td>${this.getStatusBadge(item.status)}</td>
-              <td>
-                <button
-                  class="button button--sm button--secondary"
-                  data-submission-item-quote
-                  data-submission-id="${submission.id}"
-                  data-item-id="${item.id}"
-                >
-                  Quote
-                </button>
-                <button
-                  class="button button--sm button--success"
-                  data-submission-item-accept
-                  data-submission-id="${submission.id}"
-                  data-item-id="${item.id}"
-                >
-                  ✓
-                </button>
-                <button
-                  class="button button--sm button--danger"
-                  data-submission-item-reject
-                  data-submission-id="${submission.id}"
-                  data-item-id="${item.id}"
-                >
-                  ✗
-                </button>
-              </td>
-            </tr>
-          `
-            )
-            .join('')}
+    .map(
+      (item) => `
+              <tr>
+                <td data-label="Album">
+                  <strong>${item.release?.title || 'Unknown'}</strong><br>
+                  <span class="text-muted">${item.release?.artist || ''}</span>
+                </td>
+                <td data-label="Condition">${item.sellerConditionMedia}/${item.sellerConditionSleeve}</td>
+                <td data-label="Qty">${item.quantity}</td>
+                <td data-label="Auto Offer">$${parseFloat(item.autoOfferPrice || 0).toFixed(2)}</td>
+                <td data-label="Counter Offer">
+                  ${item.counterOfferPrice ? `$${parseFloat(item.counterOfferPrice).toFixed(2)}` : '—'}
+                </td>
+                <td data-label="Status">${this.getStatusBadge(item.status)}</td>
+                <td data-label="Actions" class="item-actions">
+                  <button
+                    class="button button--sm button--secondary"
+                    data-submission-item-quote
+                    data-submission-id="${submission.id}"
+                    data-item-id="${item.id}"
+                    aria-label="Set quote for ${item.release?.title || 'item'}"
+                  >
+                    Quote
+                  </button>
+                  <button
+                    class="button button--sm button--success"
+                    data-submission-item-accept
+                    data-submission-id="${submission.id}"
+                    data-item-id="${item.id}"
+                    aria-label="Accept ${item.release?.title || 'item'}"
+                    title="Accept this item"
+                  >
+                    ✓ Accept
+                  </button>
+                  <button
+                    class="button button--sm button--danger"
+                    data-submission-item-reject
+                    data-submission-id="${submission.id}"
+                    data-item-id="${item.id}"
+                    aria-label="Reject ${item.release?.title || 'item'}"
+                    title="Reject this item"
+                  >
+                    ✗ Reject
+                  </button>
+                </td>
+              </tr>
+            `
+    )
+    .join('')}
         </tbody>
       </table>
     `;
@@ -407,6 +502,7 @@ class SubmissionsManager {
         'none';
       this.showLoading(false);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to accept submission:', error);
       this.showError('Failed to accept submission: ' + error.message);
       this.showLoading(false);
@@ -428,6 +524,7 @@ class SubmissionsManager {
         'none';
       this.showLoading(false);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to reject submission:', error);
       this.showError('Failed to reject submission: ' + error.message);
       this.showLoading(false);
@@ -452,6 +549,7 @@ class SubmissionsManager {
       this.renderDetailsModal(submission);
       this.showLoading(false);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to accept item:', error);
       this.showError('Failed to accept item: ' + error.message);
       this.showLoading(false);
@@ -476,6 +574,7 @@ class SubmissionsManager {
       this.renderDetailsModal(submission);
       this.showLoading(false);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to reject item:', error);
       this.showError('Failed to reject item: ' + error.message);
       this.showLoading(false);
@@ -522,6 +621,7 @@ class SubmissionsManager {
       this.renderDetailsModal(submission);
       this.showLoading(false);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to update quote:', error);
       this.showError('Failed to update quote: ' + error.message);
       this.showLoading(false);
@@ -534,7 +634,16 @@ class SubmissionsManager {
   showLoading(show) {
     const loader = document.querySelector('[data-loading]');
     if (loader) {
-      loader.style.display = show ? 'block' : 'none';
+      if (show) {
+        loader.innerHTML =
+          '<div class="loading-spinner"></div><div style="margin-top: 10px;">Loading...</div>';
+        loader.style.display = 'flex';
+        loader.style.flexDirection = 'column';
+        loader.style.alignItems = 'center';
+        loader.style.justifyContent = 'center';
+      } else {
+        loader.style.display = 'none';
+      }
     }
   }
 
@@ -544,9 +653,10 @@ class SubmissionsManager {
   showError(message) {
     const alertDiv = document.createElement('div');
     alertDiv.className = 'alert alert-danger';
-    alertDiv.textContent = message;
-    alertDiv.style.cssText =
-      'margin-bottom: 20px; padding: 12px; background: #fee; color: #c33; border-radius: 4px;';
+    alertDiv.innerHTML = `
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-content">${message}</div>
+    `;
 
     const container = document.querySelector('[data-submissions-container]');
     if (container) {
@@ -561,9 +671,10 @@ class SubmissionsManager {
   showSuccess(message) {
     const alertDiv = document.createElement('div');
     alertDiv.className = 'alert alert-success';
-    alertDiv.textContent = message;
-    alertDiv.style.cssText =
-      'margin-bottom: 20px; padding: 12px; background: #efe; color: #3c3; border-radius: 4px;';
+    alertDiv.innerHTML = `
+      <div class="alert-icon">✓</div>
+      <div class="alert-content">${message}</div>
+    `;
 
     const container = document.querySelector('[data-submissions-container]');
     if (container) {
@@ -574,4 +685,5 @@ class SubmissionsManager {
 }
 
 // Create global instance
+// eslint-disable-next-line no-unused-vars
 const submissionsManager = new SubmissionsManager(api);
