@@ -8,7 +8,7 @@
    ============================================================================ */
 
 :root {
-  /* Color Palette */
+  /* ========== SEMANTIC COLORS ========== */
   --color-primary: #1a1a1a;
   --color-secondary: #f5f5f5;
   --color-accent: #2563eb;
@@ -16,12 +16,37 @@
   --color-success: #059669;
   --color-warning: #d97706;
   --color-danger: #dc2626;
+  --color-info: #2563eb;
   --color-text: #1f2937;
   --color-text-light: #6b7280;
   --color-border: #e5e7eb;
   --color-bg: #ffffff;
 
-  /* Typography */
+  /* ========== STATUS COLORS ========== */
+  --color-status-live: #059669;
+  --color-status-live-bg: #d1fae5;
+  --color-status-sold: #4b5563;
+  --color-status-sold-bg: #f3f4f6;
+  --color-status-reserved: #92400e;
+  --color-status-reserved-bg: #fef3c7;
+
+  /* ========== NEUTRAL COLOR SCALE ========== */
+  --color-neutral-50: #f9fafb;
+  --color-neutral-100: #f3f4f6;
+  --color-neutral-200: #e5e7eb;
+  --color-neutral-300: #d1d5db;
+  --color-neutral-400: #9ca3af;
+  --color-neutral-500: #6b7280;
+  --color-neutral-600: #4b5563;
+  --color-neutral-700: #374151;
+  --color-neutral-800: #1f2937;
+  --color-neutral-900: #111827;
+
+  /* ========== STATE COLORS ========== */
+  --color-disabled: #d1d5db;
+  --color-disabled-bg: #f3f4f6;
+
+  /* ========== TYPOGRAPHY ========== */
   --font-family-base:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
     Arial, sans-serif;
@@ -41,7 +66,18 @@
   --font-size-4xl: 2.25rem;
   --font-size-5xl: 3rem;
 
-  /* Spacing */
+  /* ========== LINE HEIGHT ========== */
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+  --line-height-base: 1.6;
+
+  /* ========== LETTER SPACING ========== */
+  --letter-spacing-tight: -0.02em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.02em;
+
+  /* ========== SPACING SCALE ========== */
   --space-xs: 0.25rem;
   --space-sm: 0.5rem;
   --space-md: 1rem;
@@ -51,27 +87,53 @@
   --space-3xl: 4rem;
   --space-4xl: 6rem;
 
-  /* Border Radius */
+  /* ========== BORDER RADIUS ========== */
+  --radius-none: 0;
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
+  --radius-full: 9999px;
 
-  /* Shadows */
+  /* ========== SHADOWS / ELEVATIONS ========== */
+  --shadow-none: 0 0 0 0 transparent;
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 
-  /* Transitions */
+  /* ========== FOCUS STATES ========== */
+  --focus-outline-color: #2563eb;
+  --focus-outline-width: 2px;
+  --focus-outline-offset: 2px;
+  --focus-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+
+  /* ========== STATE OPACITY ========== */
+  --state-opacity-hover: 0.85;
+  --state-opacity-active: 0.75;
+  --state-opacity-disabled: 0.5;
+
+  /* ========== TRANSITIONS / ANIMATIONS ========== */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Z-index */
+  /* ========== Z-INDEX SCALE ========== */
+  --z-hide: -1;
+  --z-base: 0;
+  --z-sticky: 50;
   --z-dropdown: 100;
+  --z-navbar: 75;
   --z-modal: 1000;
+  --z-loading: 2000;
   --z-tooltip: 1100;
+
+  /* ========== RESPONSIVE BREAKPOINTS ========== */
+  --breakpoint-xs: 320px;
+  --breakpoint-sm: 480px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
 }
 
 /* ============================================================================
@@ -737,6 +799,76 @@ select {
 
 /* ============================================================================
    15. RESPONSIVE
+   ============================================================================ */
+
+/* ============================================================================
+   16. ANIMATIONS & KEYFRAMES
+   ============================================================================ */
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+/* Reduce motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================================
+   17. RESPONSIVE DESIGN
    ============================================================================ */
 
 @media (max-width: 768px) {
