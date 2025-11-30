@@ -156,7 +156,7 @@ class CheckoutService {
       }
 
       // Add item to cart (without reserving yet)
-      const orderItem = await prisma.orderItem.create({
+      await prisma.orderItem.create({
         data: {
           orderId,
           inventoryLotId,
@@ -165,13 +165,6 @@ class CheckoutService {
           releaseArtist: inventoryLot.release?.artist || '',
           conditionMedia: inventoryLot.conditionMedia,
           conditionSleeve: inventoryLot.conditionSleeve,
-        },
-        include: {
-          inventoryLot: {
-            include: {
-              release: true,
-            },
-          },
         },
       });
 
