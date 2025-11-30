@@ -150,7 +150,7 @@ export const changePassword = async (req, res, next) => {
     const result = await authService.changePassword(
       req.user.id,
       oldPassword,
-      newPassword
+      newPassword,
     );
 
     res.status(200).json({

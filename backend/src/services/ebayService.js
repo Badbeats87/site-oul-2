@@ -29,7 +29,7 @@ class EbayService {
           logger.warn('eBay rate limit exceeded, backing off');
         }
         return Promise.reject(error);
-      }
+      },
     );
   }
 
@@ -50,9 +50,9 @@ class EbayService {
         throw new ApiError('eBay API not configured', 503);
       }
 
-      const auth = Buffer.from(`${EBAY_CLIENT_ID}:${EBAY_CLIENT_SECRET}`).toString(
-        'base64'
-      );
+      const auth = Buffer.from(
+        `${EBAY_CLIENT_ID}:${EBAY_CLIENT_SECRET}`,
+      ).toString('base64');
 
       const response = await axios.post(
         'https://api.ebay.com/identity/v1/oauth2/token',
@@ -62,7 +62,7 @@ class EbayService {
             Authorization: `Basic ${auth}`,
             'Content-Type': 'application/x-www-form-urlencoded',
           },
-        }
+        },
       );
 
       this.accessToken = response.data.access_token;
@@ -105,17 +105,20 @@ class EbayService {
             filter.push(`categoryIds:{${category}}`);
           }
 
-          const response = await this.client.get('/buy/browse/v1/item_summary/search', {
-            params: {
-              q: query,
-              limit: Math.min(limit, 100), // eBay max is 100
-              offset,
-              sort: '-price',
+          const response = await this.client.get(
+            '/buy/browse/v1/item_summary/search',
+            {
+              params: {
+                q: query,
+                limit: Math.min(limit, 100), // eBay max is 100
+                offset,
+                sort: '-price',
+              },
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
             },
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
+          );
 
           return {
             results: (response.data.itemSummaries || []).map((item) => ({
@@ -133,7 +136,7 @@ class EbayService {
             offset,
           };
         },
-        3600 // Cache for 1 hour
+        3600, // Cache for 1 hour
       );
     } catch (error) {
       if (error.isApiError) throw error;
@@ -165,17 +168,20 @@ class EbayService {
           const token = await this.getAccessToken();
 
           // Search for completed/sold listings
-          const response = await this.client.get('/buy/browse/v1/item_summary/search', {
-            params: {
-              q: query,
-              limit: Math.min(limit, 100),
-              filter: 'buyingOptions:{AUCTION}',
-              sort: '-endDate',
+          const response = await this.client.get(
+            '/buy/browse/v1/item_summary/search',
+            {
+              params: {
+                q: query,
+                limit: Math.min(limit, 100),
+                filter: 'buyingOptions:{AUCTION}',
+                sort: '-endDate',
+              },
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
             },
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
+          );
 
           return {
             soldListings: (response.data.itemSummaries || []).map((item) => ({
@@ -189,7 +195,7 @@ class EbayService {
             total: response.data.total || 0,
           };
         },
-        1800 // Cache for 30 minutes (sold listings change more frequently)
+        1800, // Cache for 30 minutes (sold listings change more frequently)
       );
     } catch (error) {
       if (error.isApiError) throw error;
@@ -204,7 +210,9 @@ class EbayService {
         };
       }
 
-      logger.error('Failed to fetch eBay sold listings', { error: error.message });
+      logger.error('Failed to fetch eBay sold listings', {
+        error: error.message,
+      });
       throw new ApiError('Failed to fetch sold listings', 500);
     }
   }
@@ -278,7 +286,9 @@ class EbayService {
       };
     } catch (error) {
       if (error.isApiError) throw error;
-      logger.error('Failed to calculate eBay price statistics', { error: error.message });
+      logger.error('Failed to calculate eBay price statistics', {
+        error: error.message,
+      });
       throw new ApiError('Failed to calculate price statistics', 500);
     }
   }

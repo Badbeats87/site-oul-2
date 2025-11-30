@@ -44,7 +44,7 @@ class AuthService {
       if (!passwordValidation.valid) {
         throw new ApiError(
           `Password does not meet requirements: ${passwordValidation.errors.join('; ')}`,
-          400
+          400,
         );
       }
 
@@ -242,7 +242,10 @@ class AuthService {
       });
 
       if (!refreshToken || refreshToken.userId !== userId) {
-        throw new ApiError('Refresh token not found or does not belong to user', 401);
+        throw new ApiError(
+          'Refresh token not found or does not belong to user',
+          401,
+        );
       }
 
       await prisma.refreshToken.update({
@@ -282,7 +285,10 @@ class AuthService {
         data: { revokedAt: new Date() },
       });
 
-      logger.info('User logged out from all devices', { userId, count: result.count });
+      logger.info('User logged out from all devices', {
+        userId,
+        count: result.count,
+      });
 
       return {
         success: true,
@@ -290,7 +296,9 @@ class AuthService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error logging out from all devices', { error: error.message });
+      logger.error('Error logging out from all devices', {
+        error: error.message,
+      });
       throw new ApiError('Logout failed', 500);
     }
   }
@@ -331,7 +339,10 @@ class AuthService {
       }
 
       if (oldPassword === newPassword) {
-        throw new ApiError('New password must be different from old password', 400);
+        throw new ApiError(
+          'New password must be different from old password',
+          400,
+        );
       }
 
       // Validate new password strength
@@ -339,7 +350,7 @@ class AuthService {
       if (!passwordValidation.valid) {
         throw new ApiError(
           `New password does not meet requirements: ${passwordValidation.errors.join('; ')}`,
-          400
+          400,
         );
       }
 
@@ -353,7 +364,10 @@ class AuthService {
       }
 
       // Verify old password
-      const isPasswordValid = await verifyPassword(oldPassword, user.passwordHash);
+      const isPasswordValid = await verifyPassword(
+        oldPassword,
+        user.passwordHash,
+      );
       if (!isPasswordValid) {
         throw new ApiError('Old password is incorrect', 401);
       }
@@ -412,7 +426,8 @@ class AuthService {
 
     // Store refresh token in database with expiration
     const expiresAt = new Date();
-    const refreshExpiryDays = parseInt(config.auth.jwtRefreshExpiresIn, 10) || 7;
+    const refreshExpiryDays =
+      parseInt(config.auth.jwtRefreshExpiresIn, 10) || 7;
     expiresAt.setDate(expiresAt.getDate() + refreshExpiryDays);
 
     await prisma.refreshToken.create({

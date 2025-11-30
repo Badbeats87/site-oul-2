@@ -36,16 +36,17 @@ class InventoryService {
       }
 
       // Calculate statistics
-      const prices = inventoryLots.map(lot => Number(lot.listPrice));
+      const prices = inventoryLots.map((lot) => Number(lot.listPrice));
       const lowestPrice = Math.min(...prices);
       const highestPrice = Math.max(...prices);
       const averagePrice = prices.reduce((a, b) => a + b, 0) / prices.length;
 
       // Build condition breakdown
       const conditionBreakdown = {};
-      inventoryLots.forEach(lot => {
+      inventoryLots.forEach((lot) => {
         const condition = lot.conditionMedia;
-        conditionBreakdown[condition] = (conditionBreakdown[condition] || 0) + 1;
+        conditionBreakdown[condition] =
+          (conditionBreakdown[condition] || 0) + 1;
       });
 
       return {
@@ -57,7 +58,10 @@ class InventoryService {
         isAvailable: inventoryLots.length > 0,
       };
     } catch (error) {
-      logger.error('Error getting inventory stats', { releaseId, error: error.message });
+      logger.error('Error getting inventory stats', {
+        releaseId,
+        error: error.message,
+      });
       throw new ApiError('Failed to get inventory stats', 500);
     }
   }
@@ -91,7 +95,7 @@ class InventoryService {
       const statsMap = new Map();
 
       // Initialize all releases with empty stats
-      releaseIds.forEach(id => {
+      releaseIds.forEach((id) => {
         statsMap.set(id, {
           availableCount: 0,
           lowestPrice: null,
@@ -104,7 +108,7 @@ class InventoryService {
 
       // Group by releaseId and calculate stats
       const groupedByRelease = {};
-      inventoryLots.forEach(lot => {
+      inventoryLots.forEach((lot) => {
         if (!groupedByRelease[lot.releaseId]) {
           groupedByRelease[lot.releaseId] = [];
         }
@@ -113,15 +117,16 @@ class InventoryService {
 
       // Calculate stats for each release
       Object.entries(groupedByRelease).forEach(([releaseId, lots]) => {
-        const prices = lots.map(lot => Number(lot.listPrice));
+        const prices = lots.map((lot) => Number(lot.listPrice));
         const lowestPrice = Math.min(...prices);
         const highestPrice = Math.max(...prices);
         const averagePrice = prices.reduce((a, b) => a + b, 0) / prices.length;
 
         const conditionBreakdown = {};
-        lots.forEach(lot => {
+        lots.forEach((lot) => {
           const condition = lot.conditionMedia;
-          conditionBreakdown[condition] = (conditionBreakdown[condition] || 0) + 1;
+          conditionBreakdown[condition] =
+            (conditionBreakdown[condition] || 0) + 1;
         });
 
         statsMap.set(releaseId, {
@@ -136,7 +141,10 @@ class InventoryService {
 
       return statsMap;
     } catch (error) {
-      logger.error('Error batch loading inventory', { count: releaseIds?.length, error: error.message });
+      logger.error('Error batch loading inventory', {
+        count: releaseIds?.length,
+        error: error.message,
+      });
       throw new ApiError('Failed to load inventory', 500);
     }
   }
@@ -159,13 +167,16 @@ class InventoryService {
       });
 
       const result = {};
-      distribution.forEach(item => {
+      distribution.forEach((item) => {
         result[item.conditionMedia] = item._count;
       });
 
       return result;
     } catch (error) {
-      logger.error('Error getting condition distribution', { releaseId, error: error.message });
+      logger.error('Error getting condition distribution', {
+        releaseId,
+        error: error.message,
+      });
       throw new ApiError('Failed to get condition distribution', 500);
     }
   }
@@ -204,7 +215,7 @@ class InventoryService {
         },
       });
 
-      return inventoryLots.map(lot => ({
+      return inventoryLots.map((lot) => ({
         id: lot.id,
         releaseId: lot.releaseId,
         release: lot.release,
@@ -221,7 +232,10 @@ class InventoryService {
       }));
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error getting inventory by status', { status, error: error.message });
+      logger.error('Error getting inventory by status', {
+        status,
+        error: error.message,
+      });
       throw new ApiError('Failed to get inventory', 500);
     }
   }
@@ -262,15 +276,20 @@ class InventoryService {
         };
       }
 
-      const prices = lots.map(lot => Number(lot.listPrice)).sort((a, b) => a - b);
+      const prices = lots
+        .map((lot) => Number(lot.listPrice))
+        .sort((a, b) => a - b);
       const count = prices.length;
       const average = prices.reduce((a, b) => a + b, 0) / count;
-      const median = count % 2 === 0
-        ? (prices[count / 2 - 1] + prices[count / 2]) / 2
-        : prices[Math.floor(count / 2)];
+      const median =
+        count % 2 === 0
+          ? (prices[count / 2 - 1] + prices[count / 2]) / 2
+          : prices[Math.floor(count / 2)];
 
       // Calculate standard deviation
-      const variance = prices.reduce((acc, price) => acc + Math.pow(price - average, 2), 0) / count;
+      const variance =
+        prices.reduce((acc, price) => acc + Math.pow(price - average, 2), 0) /
+        count;
       const stdDev = Math.sqrt(variance);
 
       return {
@@ -282,7 +301,10 @@ class InventoryService {
         stdDev: parseFloat(stdDev.toFixed(2)),
       };
     } catch (error) {
-      logger.error('Error calculating price statistics', { filters, error: error.message });
+      logger.error('Error calculating price statistics', {
+        filters,
+        error: error.message,
+      });
       throw new ApiError('Failed to calculate price statistics', 500);
     }
   }
@@ -314,18 +336,19 @@ class InventoryService {
       if (item.status !== 'ACCEPTED') {
         throw new ApiError(
           `Cannot create inventory for item with status: ${item.status}`,
-          400
+          400,
         );
       }
 
       // Use final offer price as cost basis
-      const costBasis = item.finalOfferPrice || item.counterOfferPrice || item.autoOfferPrice;
+      const costBasis =
+        item.finalOfferPrice || item.counterOfferPrice || item.autoOfferPrice;
 
       // Calculate sell price using pricing service
       const sellPrice = await this.calculateSellPrice(
         item.release,
         item.sellerConditionMedia,
-        item.sellerConditionSleeve
+        item.sellerConditionSleeve,
       );
 
       // Create inventory lot
@@ -478,7 +501,7 @@ class InventoryService {
         release,
         conditionMedia,
         conditionSleeve,
-        policy.policy
+        policy.policy,
       );
 
       return sellPrice;
@@ -527,7 +550,9 @@ class InventoryService {
       }
 
       const validSortFields = ['createdAt', 'listPrice', 'soldAt', 'listedAt'];
-      const finalSortBy = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
+      const finalSortBy = validSortFields.includes(sortBy)
+        ? sortBy
+        : 'createdAt';
       const finalSortOrder = sortOrder === 'asc' ? 'asc' : 'desc';
 
       const where = {};
@@ -567,7 +592,7 @@ class InventoryService {
           { release: { title: { contains: search, mode: 'insensitive' } } },
           { release: { artist: { contains: search, mode: 'insensitive' } } },
           { release: { barcode: { contains: search, mode: 'insensitive' } } },
-          { sku: { contains: search, mode: 'insensitive' } }
+          { sku: { contains: search, mode: 'insensitive' } },
         );
       }
 
@@ -596,7 +621,7 @@ class InventoryService {
       ]);
 
       return {
-        inventory: lots.map(lot => ({
+        inventory: lots.map((lot) => ({
           id: lot.id,
           release: lot.release,
           sku: lot.sku,
@@ -653,10 +678,12 @@ class InventoryService {
       return {
         id: lot.id,
         release: lot.release,
-        submissionOrigin: lot.submissionItem ? {
-          submissionId: lot.submissionItem.submission.id,
-          sellerContact: lot.submissionItem.submission.sellerContact,
-        } : null,
+        submissionOrigin: lot.submissionItem
+          ? {
+            submissionId: lot.submissionItem.submission.id,
+            sellerContact: lot.submissionItem.submission.sellerContact,
+          }
+          : null,
         sku: lot.sku,
         condition: {
           media: lot.conditionMedia,
@@ -682,7 +709,10 @@ class InventoryService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error getting inventory detail', { inventoryLotId, error: error.message });
+      logger.error('Error getting inventory detail', {
+        inventoryLotId,
+        error: error.message,
+      });
       throw new ApiError('Failed to get inventory detail', 500);
     }
   }
@@ -703,10 +733,24 @@ class InventoryService {
         throw new ApiError('Inventory lot not found', 404);
       }
 
-      const { listPrice, salePrice, status, internalNotes, publicDescription, sku } = updates;
+      const {
+        listPrice,
+        salePrice,
+        status,
+        internalNotes,
+        publicDescription,
+        sku,
+      } = updates;
 
       // Validate status transitions
-      const validStatuses = ['DRAFT', 'LIVE', 'RESERVED', 'SOLD', 'REMOVED', 'RETURNED'];
+      const validStatuses = [
+        'DRAFT',
+        'LIVE',
+        'RESERVED',
+        'SOLD',
+        'REMOVED',
+        'RETURNED',
+      ];
       if (status && !validStatuses.includes(status)) {
         throw new ApiError(`Invalid status: ${status}`, 400);
       }
@@ -725,7 +769,8 @@ class InventoryService {
       if (salePrice !== undefined) updateData.salePrice = salePrice;
       if (status !== undefined) updateData.status = status;
       if (internalNotes !== undefined) updateData.internalNotes = internalNotes;
-      if (publicDescription !== undefined) updateData.publicDescription = publicDescription;
+      if (publicDescription !== undefined)
+        updateData.publicDescription = publicDescription;
       if (sku !== undefined) {
         // Check SKU uniqueness if provided
         const existingSku = await prisma.inventoryLot.findUnique({
@@ -761,7 +806,10 @@ class InventoryService {
       return this.getInventoryDetail(inventoryLotId);
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error updating inventory', { inventoryLotId, error: error.message });
+      logger.error('Error updating inventory', {
+        inventoryLotId,
+        error: error.message,
+      });
       throw new ApiError('Failed to update inventory', 500);
     }
   }
@@ -796,7 +844,10 @@ class InventoryService {
       return this.getInventoryDetail(inventoryLotId);
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error deleting inventory', { inventoryLotId, error: error.message });
+      logger.error('Error deleting inventory', {
+        inventoryLotId,
+        error: error.message,
+      });
       throw new ApiError('Failed to delete inventory', 500);
     }
   }
@@ -826,30 +877,36 @@ class InventoryService {
 
       // Status breakdown
       const byStatus = {};
-      allLots.forEach(lot => {
+      allLots.forEach((lot) => {
         byStatus[lot.status] = (byStatus[lot.status] || 0) + 1;
       });
 
       // Condition breakdown
       const byCondition = {};
-      allLots.forEach(lot => {
+      allLots.forEach((lot) => {
         const condition = lot.conditionMedia;
         byCondition[condition] = (byCondition[condition] || 0) + 1;
       });
 
       // Price statistics
-      const prices = allLots.map(lot => parseFloat(lot.listPrice));
+      const prices = allLots.map((lot) => parseFloat(lot.listPrice));
       const priceStats = {
-        average: parseFloat((prices.reduce((a, b) => a + b, 0) / prices.length).toFixed(2)),
+        average: parseFloat(
+          (prices.reduce((a, b) => a + b, 0) / prices.length).toFixed(2),
+        ),
         min: parseFloat(Math.min(...prices).toFixed(2)),
         max: parseFloat(Math.max(...prices).toFixed(2)),
-        median: parseFloat(prices.sort((a, b) => a - b)[Math.floor(prices.length / 2)].toFixed(2)),
+        median: parseFloat(
+          prices
+            .sort((a, b) => a - b)[Math.floor(prices.length / 2)]
+            .toFixed(2),
+        ),
         total: parseFloat(prices.reduce((a, b) => a + b, 0).toFixed(2)),
       };
 
       // Low stock alerts (less than 3 LIVE items per release)
       const releaseInventoryCounts = {};
-      allLots.forEach(lot => {
+      allLots.forEach((lot) => {
         if (lot.status === 'LIVE') {
           const key = lot.releaseId;
           releaseInventoryCounts[key] = (releaseInventoryCounts[key] || 0) + 1;
@@ -859,7 +916,9 @@ class InventoryService {
       const lowStockAlerts = [];
       Object.entries(releaseInventoryCounts).forEach(([releaseId, count]) => {
         if (count < 3) {
-          const release = allLots.find(l => l.releaseId === releaseId)?.release;
+          const release = allLots.find(
+            (l) => l.releaseId === releaseId,
+          )?.release;
           lowStockAlerts.push({
             releaseId,
             releaseTitle: release?.title,
@@ -873,10 +932,10 @@ class InventoryService {
 
       // Top performers (highest priced LIVE items)
       const topPerformers = allLots
-        .filter(lot => lot.status === 'LIVE')
+        .filter((lot) => lot.status === 'LIVE')
         .sort((a, b) => parseFloat(b.listPrice) - parseFloat(a.listPrice))
         .slice(0, 10)
-        .map(lot => ({
+        .map((lot) => ({
           id: lot.id,
           sku: lot.sku,
           releaseTitle: lot.release?.title,
@@ -884,7 +943,13 @@ class InventoryService {
           condition: `${lot.conditionMedia}/${lot.conditionSleeve}`,
           listPrice: parseFloat(lot.listPrice),
           costBasis: parseFloat(lot.costBasis),
-          margin: parseFloat(((parseFloat(lot.listPrice) - parseFloat(lot.costBasis)) / parseFloat(lot.costBasis) * 100).toFixed(2)),
+          margin: parseFloat(
+            (
+              ((parseFloat(lot.listPrice) - parseFloat(lot.costBasis)) /
+                parseFloat(lot.costBasis)) *
+              100
+            ).toFixed(2),
+          ),
         }));
 
       return {
@@ -896,7 +961,9 @@ class InventoryService {
         topPerformers,
       };
     } catch (error) {
-      logger.error('Error getting inventory analytics', { error: error.message });
+      logger.error('Error getting inventory analytics', {
+        error: error.message,
+      });
       throw new ApiError('Failed to get inventory analytics', 500);
     }
   }
@@ -915,8 +982,8 @@ class InventoryService {
       });
 
       const lowStockReleases = releaseInventory
-        .filter(group => group._count.id < threshold)
-        .map(group => group.releaseId);
+        .filter((group) => group._count.id < threshold)
+        .map((group) => group.releaseId);
 
       const alerts = await prisma.inventoryLot.findMany({
         where: {
@@ -927,7 +994,7 @@ class InventoryService {
       });
 
       const grouped = {};
-      alerts.forEach(lot => {
+      alerts.forEach((lot) => {
         const key = lot.releaseId;
         if (!grouped[key]) {
           grouped[key] = {
@@ -945,7 +1012,7 @@ class InventoryService {
         });
       });
 
-      return Object.values(grouped).map(group => ({
+      return Object.values(grouped).map((group) => ({
         ...group,
         stockCount: group.items.length,
         threshold,
@@ -982,7 +1049,7 @@ class InventoryService {
       const soldByCondition = {};
       let totalRevenue = 0;
 
-      soldItems.forEach(lot => {
+      soldItems.forEach((lot) => {
         const condition = lot.conditionMedia;
         soldByCondition[condition] = (soldByCondition[condition] || 0) + 1;
         totalRevenue += parseFloat(lot.salePrice || lot.listPrice);
@@ -990,7 +1057,7 @@ class InventoryService {
 
       // Top selling releases (by quantity sold)
       const releasesSold = {};
-      soldItems.forEach(lot => {
+      soldItems.forEach((lot) => {
         const key = lot.releaseId;
         if (!releasesSold[key]) {
           releasesSold[key] = {
@@ -1012,12 +1079,16 @@ class InventoryService {
       return {
         totalSold: soldItems.length,
         totalRevenue: parseFloat(totalRevenue.toFixed(2)),
-        averagePricePerItem: parseFloat((totalRevenue / soldItems.length).toFixed(2)),
+        averagePricePerItem: parseFloat(
+          (totalRevenue / soldItems.length).toFixed(2),
+        ),
         soldByCondition,
         topSelling,
       };
     } catch (error) {
-      logger.error('Error calculating sales velocity', { error: error.message });
+      logger.error('Error calculating sales velocity', {
+        error: error.message,
+      });
       throw new ApiError('Failed to calculate sales velocity', 500);
     }
   }
@@ -1033,7 +1104,12 @@ class InventoryService {
    */
   async applyPricingPolicy(options = {}) {
     try {
-      const { policyId, inventoryLotIds, filters = {}, dryRun = false } = options;
+      const {
+        policyId,
+        inventoryLotIds,
+        filters = {},
+        dryRun = false,
+      } = options;
 
       if (!policyId) {
         throw new ApiError('Policy ID is required', 400);
@@ -1062,7 +1138,9 @@ class InventoryService {
           where.status = filters.status;
         }
         if (filters.conditions) {
-          const grades = Array.isArray(filters.conditions) ? filters.conditions : [filters.conditions];
+          const grades = Array.isArray(filters.conditions)
+            ? filters.conditions
+            : [filters.conditions];
           where.OR = [
             { conditionMedia: { in: grades } },
             { conditionSleeve: { in: grades } },
@@ -1095,7 +1173,7 @@ class InventoryService {
             lot.release,
             lot.conditionMedia,
             lot.conditionSleeve,
-            policy
+            policy,
           );
 
           updates.push({
@@ -1104,8 +1182,13 @@ class InventoryService {
             sku: lot.sku,
             oldPrice: parseFloat(lot.listPrice),
             newPrice: parseFloat(newListPrice),
-            priceDifference: parseFloat(newListPrice) - parseFloat(lot.listPrice),
-            priceDifferencePercent: ((parseFloat(newListPrice) - parseFloat(lot.listPrice)) / parseFloat(lot.listPrice) * 100).toFixed(2),
+            priceDifference:
+              parseFloat(newListPrice) - parseFloat(lot.listPrice),
+            priceDifferencePercent: (
+              ((parseFloat(newListPrice) - parseFloat(lot.listPrice)) /
+                parseFloat(lot.listPrice)) *
+              100
+            ).toFixed(2),
           });
         } catch (error) {
           logger.error('Error calculating price for inventory lot', {
@@ -1121,8 +1204,8 @@ class InventoryService {
 
       // If dry run, return preview without applying
       if (dryRun) {
-        const successfulUpdates = updates.filter(u => !u.error);
-        const failedUpdates = updates.filter(u => u.error);
+        const successfulUpdates = updates.filter((u) => !u.error);
+        const failedUpdates = updates.filter((u) => u.error);
 
         return {
           applied: false,
@@ -1136,9 +1219,15 @@ class InventoryService {
             totalItems: updates.length,
             successfulCalculations: successfulUpdates.length,
             failedCalculations: failedUpdates.length,
-            averagePriceChange: successfulUpdates.length > 0
-              ? (successfulUpdates.reduce((sum, u) => sum + u.priceDifference, 0) / successfulUpdates.length).toFixed(2)
-              : 0,
+            averagePriceChange:
+              successfulUpdates.length > 0
+                ? (
+                  successfulUpdates.reduce(
+                    (sum, u) => sum + u.priceDifference,
+                    0,
+                  ) / successfulUpdates.length
+                ).toFixed(2)
+                : 0,
           },
         };
       }
@@ -1154,7 +1243,7 @@ class InventoryService {
         }
 
         try {
-          const lot = inventoryLots.find(l => l.id === update.inventoryLotId);
+          const lot = inventoryLots.find((l) => l.id === update.inventoryLotId);
           await prisma.inventoryLot.update({
             where: { id: update.inventoryLotId },
             data: {
@@ -1192,14 +1281,22 @@ class InventoryService {
           totalItems: updates.length,
           appliedUpdates: appliedUpdates.length,
           failedUpdates: failedUpdates.length,
-          averagePriceChange: appliedUpdates.length > 0
-            ? (appliedUpdates.reduce((sum, u) => sum + u.priceDifference, 0) / appliedUpdates.length).toFixed(2)
-            : 0,
+          averagePriceChange:
+            appliedUpdates.length > 0
+              ? (
+                appliedUpdates.reduce(
+                  (sum, u) => sum + u.priceDifference,
+                  0,
+                ) / appliedUpdates.length
+              ).toFixed(2)
+              : 0,
         },
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error applying pricing policy to inventory', { error: error.message });
+      logger.error('Error applying pricing policy to inventory', {
+        error: error.message,
+      });
       throw new ApiError('Failed to apply pricing policy', 500);
     }
   }
@@ -1225,7 +1322,9 @@ class InventoryService {
 
       for (const line of lines) {
         if (line.includes('[PRICE UPDATED')) {
-          const match = line.match(/\[PRICE UPDATED by policy (.+?)\] Old: \$([0-9.]+), New: \$([0-9.]+) - (.+)/);
+          const match = line.match(
+            /\[PRICE UPDATED by policy (.+?)\] Old: \$([0-9.]+), New: \$([0-9.]+) - (.+)/,
+          );
           if (match) {
             history.push({
               type: 'PRICE_UPDATE',
@@ -1241,7 +1340,10 @@ class InventoryService {
       return history;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error getting pricing history', { inventoryLotId, error: error.message });
+      logger.error('Error getting pricing history', {
+        inventoryLotId,
+        error: error.message,
+      });
       throw new ApiError('Failed to get pricing history', 500);
     }
   }

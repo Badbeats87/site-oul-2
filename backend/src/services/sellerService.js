@@ -162,11 +162,7 @@ class SellerService {
    */
   async listSellers(filters = {}) {
     try {
-      const {
-        status,
-        limit = 50,
-        page = 1,
-      } = filters;
+      const { status, limit = 50, page = 1 } = filters;
 
       if (limit > 500) {
         throw new ApiError('Limit cannot exceed 500', 400);
@@ -235,7 +231,10 @@ class SellerService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error getting seller quote', { sellerId, error: error.message });
+      logger.error('Error getting seller quote', {
+        sellerId,
+        error: error.message,
+      });
       throw new ApiError('Failed to get seller quote', 500);
     }
   }

@@ -469,6 +469,9 @@ router.post('/:submissionId/items/:itemId/reject', rejectSubmissionItem);
  *       404:
  *         description: Item not found
  */
-router.put('/:submissionId/items/:itemId/counter-offer', updateItemCounterOffer);
+router.put(
+  '/:submissionId/items/:itemId/counter-offer',
+  updateItemCounterOffer,
+);
 
 export default router;

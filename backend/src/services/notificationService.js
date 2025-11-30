@@ -30,7 +30,7 @@ class NotificationService {
       const message = this.buildNotificationMessage(
         fromStatus,
         toStatus,
-        changeReason
+        changeReason,
       );
 
       // TODO: Implement actual notification channels:
@@ -140,7 +140,8 @@ class NotificationService {
    */
   async notifyInventoryCreated(data) {
     try {
-      const { submissionId, sellerEmail, itemCount, totalInventoryValue } = data;
+      const { submissionId, sellerEmail, itemCount, totalInventoryValue } =
+        data;
 
       logger.info('Inventory creation notification', {
         submissionId,

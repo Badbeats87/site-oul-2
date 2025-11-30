@@ -14,7 +14,13 @@ class SubmissionService {
    * @param {string} changeReason - Reason for change
    * @param {string} changedBy - User ID who made the change
    */
-  async logStatusChange(submissionId, fromStatus, toStatus, changeReason, changedBy) {
+  async logStatusChange(
+    submissionId,
+    fromStatus,
+    toStatus,
+    changeReason,
+    changedBy,
+  ) {
     try {
       // Record audit entry
       await prisma.submissionAudit.create({
@@ -78,7 +84,7 @@ class SubmissionService {
       if (seller.status !== 'PENDING_REVIEW') {
         throw new ApiError(
           `Cannot add items to submission with status: ${seller.status}`,
-          400
+          400,
         );
       }
 
@@ -98,7 +104,7 @@ class SubmissionService {
         if (!releaseId || !conditionMedia || !conditionSleeve) {
           throw new ApiError(
             'releaseId, conditionMedia, and conditionSleeve are required',
-            400
+            400,
           );
         }
 
@@ -112,7 +118,7 @@ class SubmissionService {
         const quote = await pricingService.calculateBuyPrice(
           release,
           conditionMedia,
-          conditionSleeve
+          conditionSleeve,
         );
 
         const autoOfferPrice = Number(quote.finalPrice) * (quantity || 1);
@@ -169,7 +175,10 @@ class SubmissionService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error creating submission', { sellerId, error: error.message });
+      logger.error('Error creating submission', {
+        sellerId,
+        error: error.message,
+      });
       throw new ApiError('Failed to create submission', 500);
     }
   }
@@ -207,7 +216,10 @@ class SubmissionService {
       return submission;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error getting submission', { submissionId, error: error.message });
+      logger.error('Error getting submission', {
+        submissionId,
+        error: error.message,
+      });
       throw new ApiError('Failed to get submission', 500);
     }
   }
@@ -260,7 +272,11 @@ class SubmissionService {
       return updatedItem;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error updating item quote', { sellerId, itemId, error: error.message });
+      logger.error('Error updating item quote', {
+        sellerId,
+        itemId,
+        error: error.message,
+      });
       throw new ApiError('Failed to update item quote', 500);
     }
   }
@@ -291,9 +307,8 @@ class SubmissionService {
       }
 
       const newStatus = action === 'accept' ? 'ACCEPTED' : 'REJECTED';
-      const finalPrice = action === 'accept'
-        ? (item.counterOfferPrice || item.autoOfferPrice)
-        : 0;
+      const finalPrice =
+        action === 'accept' ? item.counterOfferPrice || item.autoOfferPrice : 0;
 
       await prisma.submissionItem.update({
         where: { id: itemId },
@@ -312,17 +327,18 @@ class SubmissionService {
       });
 
       const acceptedItems = submission.items.filter(
-        i => i.status === 'ACCEPTED' || (i.id === itemId && action === 'accept')
+        (i) =>
+          i.status === 'ACCEPTED' || (i.id === itemId && action === 'accept'),
       );
       const totalAccepted = acceptedItems.reduce(
         (sum, i) => sum + Number(i.finalOfferPrice || i.autoOfferPrice),
-        0
+        0,
       );
 
       // Determine overall submission status
       let submissionStatus = submission.status;
       const allItemsReviewed = submission.items.every(
-        i => ['ACCEPTED', 'REJECTED'].includes(i.status) || i.id === itemId
+        (i) => ['ACCEPTED', 'REJECTED'].includes(i.status) || i.id === itemId,
       );
 
       if (allItemsReviewed) {
@@ -354,7 +370,7 @@ class SubmissionService {
           submission.status,
           submissionStatus,
           `Item ${itemId} ${action}`,
-          null
+          null,
         );
       }
 
@@ -362,7 +378,11 @@ class SubmissionService {
       return updated;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error reviewing submission item', { sellerId, itemId, error: error.message });
+      logger.error('Error reviewing submission item', {
+        sellerId,
+        itemId,
+        error: error.message,
+      });
       throw new ApiError('Failed to review submission item', 500);
     }
   }

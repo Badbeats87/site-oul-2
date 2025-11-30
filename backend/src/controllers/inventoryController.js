@@ -49,7 +49,14 @@ export const getInventoryDetail = async (req, res, next) => {
 export const updateInventory = async (req, res, next) => {
   try {
     const { inventoryLotId } = req.params;
-    const { listPrice, salePrice, status, internalNotes, publicDescription, sku } = req.body;
+    const {
+      listPrice,
+      salePrice,
+      status,
+      internalNotes,
+      publicDescription,
+      sku,
+    } = req.body;
 
     const updated = await inventoryService.updateInventory(inventoryLotId, {
       listPrice,
@@ -77,7 +84,10 @@ export const deleteInventory = async (req, res, next) => {
     const { inventoryLotId } = req.params;
     const { reason } = req.body;
 
-    const deleted = await inventoryService.deleteInventory(inventoryLotId, reason);
+    const deleted = await inventoryService.deleteInventory(
+      inventoryLotId,
+      reason,
+    );
 
     res.json({
       success: true,
@@ -156,7 +166,9 @@ export const getLowStockAlerts = async (req, res, next) => {
   try {
     const { threshold = 3 } = req.query;
 
-    const alerts = await inventoryService.getLowStockAlerts(parseInt(threshold));
+    const alerts = await inventoryService.getLowStockAlerts(
+      parseInt(threshold),
+    );
 
     res.json({
       success: true,

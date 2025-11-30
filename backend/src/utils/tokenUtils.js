@@ -7,11 +7,9 @@ import config from '../../config/config.js';
  * @returns {string} - Signed JWT token
  */
 export function generateAccessToken(payload) {
-  return jwt.sign(
-    { ...payload, type: 'access' },
-    config.auth.jwtSecret,
-    { expiresIn: config.auth.jwtExpiresIn }
-  );
+  return jwt.sign({ ...payload, type: 'access' }, config.auth.jwtSecret, {
+    expiresIn: config.auth.jwtExpiresIn,
+  });
 }
 
 /**
@@ -20,11 +18,9 @@ export function generateAccessToken(payload) {
  * @returns {string} - Signed JWT token
  */
 export function generateRefreshToken(payload) {
-  return jwt.sign(
-    { ...payload, type: 'refresh' },
-    config.auth.jwtSecret,
-    { expiresIn: config.auth.jwtRefreshExpiresIn }
-  );
+  return jwt.sign({ ...payload, type: 'refresh' }, config.auth.jwtSecret, {
+    expiresIn: config.auth.jwtRefreshExpiresIn,
+  });
 }
 
 /**
