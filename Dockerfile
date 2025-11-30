@@ -9,18 +9,13 @@ COPY backend/package*.json ./
 # Install all dependencies (including dev for Prisma generation)
 RUN npm ci
 
-# Copy backend source code
+# Copy backend source code and frontend assets
 COPY backend/src ./src
 COPY backend/prisma ./prisma
 COPY backend/config ./config
-
-# Copy frontend assets
-COPY pages ./pages
-COPY js ./js
-COPY styles ./styles
-
-# Debug: Verify files are present
-RUN echo "=== App Contents ===" && ls -la /app/ && echo "=== Styles ===" && ls -la /app/styles/ && echo "=== JS ===" && ls -la /app/js/ && echo "=== Pages ===" && ls -la /app/pages/
+COPY backend/pages ./pages
+COPY backend/js ./js
+COPY backend/styles ./styles
 
 # Generate Prisma Client
 RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npx prisma generate
