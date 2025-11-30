@@ -1,40 +1,27 @@
 // Admin Console Interactions
-document.addEventListener('DOMContentLoaded', async function () {
-  // Verify authentication on page load (optional - allows demo without backend)
-  try {
-    const isAuthenticated = await auth.verifySession();
-    if (!isAuthenticated) {
-      // Redirect to login only if explicitly not authenticated
-      // In demo mode, allow access to show the interface
-      console.warn('Session verification failed - running in demo mode');
-    }
-  } catch (error) {
-    // If auth check fails (no backend), continue in demo mode
-    console.warn('Auth verification unavailable - running in demo mode:', error.message);
-  }
+document.addEventListener('DOMContentLoaded', function () {
+  console.log('Admin page loaded');
 
-  // Initialize UI
+  // Initialize UI - Core functionality that doesn't depend on backend
   initializeUserInfo();
   initializeTabSwitching();
   initializeLogout();
   initializeModals();
 
-  // Load dashboard stats
-  if (dashboardStats) {
-    try {
-      await dashboardStats.initialize();
-    } catch (error) {
+  console.log('Admin UI initialized');
+
+  // Load dashboard stats (optional - doesn't block page)
+  if (typeof dashboardStats !== 'undefined' && dashboardStats) {
+    dashboardStats.initialize().catch(error => {
       console.warn('Dashboard stats failed to load:', error.message);
-    }
+    });
   }
 
-  // Initialize submissions manager
-  if (submissionsManager) {
-    try {
-      await submissionsManager.initialize();
-    } catch (error) {
+  // Initialize submissions manager (optional - doesn't block page)
+  if (typeof submissionsManager !== 'undefined' && submissionsManager) {
+    submissionsManager.initialize().catch(error => {
       console.warn('Submissions manager failed to load:', error.message);
-    }
+    });
   }
 });
 
