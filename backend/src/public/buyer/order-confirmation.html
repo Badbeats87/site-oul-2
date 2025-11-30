@@ -1,117 +1,160 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Order Confirmation - Vinyl Catalog</title>
-    <link rel="stylesheet" href="../../styles/design-system.css">
-    <link rel="stylesheet" href="../../styles/buyer.css">
-</head>
-<body>
+    <link rel="stylesheet" href="../../styles/design-system.css" />
+    <link rel="stylesheet" href="../../styles/buyer.css" />
+  </head>
+  <body>
     <!-- Navigation -->
     <nav class="navbar">
-        <div class="navbar__container">
-            <a href="../index.html" class="navbar__logo">
-                <svg class="navbar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <circle cx="12" cy="12" r="6"></circle>
-                    <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-                <span>Vinyl Catalog</span>
-            </a>
-            <div class="navbar__links">
-                <a href="index.html" class="nav-link">Browse Records</a>
-                <a href="../index.html" class="nav-link">Home</a>
-            </div>
+      <div class="navbar__container">
+        <a href="../index.html" class="navbar__logo">
+          <svg
+            class="navbar__icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <circle cx="12" cy="12" r="6"></circle>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          <span>Vinyl Catalog</span>
+        </a>
+        <div class="navbar__links">
+          <a href="index.html" class="nav-link">Browse Records</a>
+          <a href="../index.html" class="nav-link">Home</a>
         </div>
+      </div>
     </nav>
 
     <!-- Main Content -->
     <main class="page-content">
-        <div class="container">
-            <!-- Success Message -->
-            <div style="text-align: center; padding: 80px 20px;">
-                <div style="margin-bottom: 30px;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 80px; height: 80px; margin: 0 auto; color: #22c55e;">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                </div>
+      <div class="container">
+        <!-- Success Message -->
+        <div style="text-align: center; padding: 80px 20px">
+          <div style="margin-bottom: 30px">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              style="width: 80px; height: 80px; margin: 0 auto; color: #22c55e"
+            >
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
 
-                <h1 style="font-size: 2em; margin-bottom: 20px; color: #1f2937;">Order Confirmed!</h1>
+          <h1 style="font-size: 2em; margin-bottom: 20px; color: #1f2937">
+            Order Confirmed!
+          </h1>
 
-                <p style="font-size: 1.1em; color: #666; margin-bottom: 30px;">
-                    Thank you for your order. Your vinyl records are on the way!
-                </p>
+          <p style="font-size: 1.1em; color: #666; margin-bottom: 30px">
+            Thank you for your order. Your vinyl records are on the way!
+          </p>
 
-                <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 30px; display: inline-block;">
-                    <p style="margin: 0 0 10px 0; color: #666;">
-                        <strong>Order Number:</strong>
-                    </p>
-                    <p style="margin: 0; font-size: 1.3em; font-weight: 600; color: #2563eb;" data-order-number>
-                        ORD-0000000000
-                    </p>
-                </div>
+          <div
+            style="
+              background: #f3f4f6;
+              padding: 20px;
+              border-radius: 8px;
+              margin-bottom: 30px;
+              display: inline-block;
+            "
+          >
+            <p style="margin: 0 0 10px 0; color: #666">
+              <strong>Order Number:</strong>
+            </p>
+            <p
+              style="
+                margin: 0;
+                font-size: 1.3em;
+                font-weight: 600;
+                color: #2563eb;
+              "
+              data-order-number
+            >
+              ORD-0000000000
+            </p>
+          </div>
 
-                <p style="color: #666; margin-bottom: 30px;">
-                    A confirmation email has been sent to <strong data-email-address>your email address</strong>
-                </p>
+          <p style="color: #666; margin-bottom: 30px">
+            A confirmation email has been sent to
+            <strong data-email-address>your email address</strong>
+          </p>
 
-                <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                    <a href="index.html" class="button button--primary">Continue Shopping</a>
-                    <a href="../index.html" class="button button--secondary">Return to Home</a>
-                </div>
+          <div
+            style="
+              display: flex;
+              gap: 15px;
+              justify-content: center;
+              flex-wrap: wrap;
+            "
+          >
+            <a href="index.html" class="button button--primary"
+              >Continue Shopping</a
+            >
+            <a href="../index.html" class="button button--secondary"
+              >Return to Home</a
+            >
+          </div>
 
-                <p style="color: #999; margin-top: 40px; font-size: 0.9em;">
-                    You can track your order status in your account dashboard.
-                </p>
-            </div>
+          <p style="color: #999; margin-top: 40px; font-size: 0.9em">
+            You can track your order status in your account dashboard.
+          </p>
         </div>
+      </div>
     </main>
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="container">
-            <div class="footer__content">
-                <div class="footer__section">
-                    <h4>Vinyl Catalog</h4>
-                    <p>Buy and sell vinyl records with confidence</p>
-                </div>
-                <div class="footer__section">
-                    <h4>Quick Links</h4>
-                    <ul>
-                        <li><a href="../seller/index.html">Sell Records</a></li>
-                        <li><a href="index.html">Buy Records</a></li>
-                        <li><a href="../index.html">Home</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer__bottom">
-                <p>&copy; 2024 Vinyl Catalog. All rights reserved.</p>
-            </div>
+      <div class="container">
+        <div class="footer__content">
+          <div class="footer__section">
+            <h4>Vinyl Catalog</h4>
+            <p>Buy and sell vinyl records with confidence</p>
+          </div>
+          <div class="footer__section">
+            <h4>Quick Links</h4>
+            <ul>
+              <li><a href="../seller/index.html">Sell Records</a></li>
+              <li><a href="index.html">Buy Records</a></li>
+              <li><a href="../index.html">Home</a></li>
+            </ul>
+          </div>
         </div>
+        <div class="footer__bottom">
+          <p>&copy; 2024 Vinyl Catalog. All rights reserved.</p>
+        </div>
+      </div>
     </footer>
 
     <script>
-        // Display order information from URL or localStorage
-        document.addEventListener('DOMContentLoaded', function() {
-            const params = new URLSearchParams(window.location.search);
-            const orderNumber = params.get('order');
+      // Display order information from URL or localStorage
+      document.addEventListener('DOMContentLoaded', function () {
+        const params = new URLSearchParams(window.location.search);
+        const orderNumber = params.get('order');
 
-            if (orderNumber) {
-                document.querySelector('[data-order-number]').textContent = orderNumber;
-            }
+        if (orderNumber) {
+          document.querySelector('[data-order-number]').textContent =
+            orderNumber;
+        }
 
-            // Try to get email from pending order
-            const pendingOrder = localStorage.getItem('pending_order');
-            if (pendingOrder) {
-                try {
-                    const orderData = JSON.parse(pendingOrder);
-                    document.querySelector('[data-email-address]').textContent = orderData.shipping.email;
-                } catch (e) {
-                    console.log('Could not parse pending order');
-                }
-            }
-        });
+        // Try to get email from pending order
+        const pendingOrder = localStorage.getItem('pending_order');
+        if (pendingOrder) {
+          try {
+            const orderData = JSON.parse(pendingOrder);
+            document.querySelector('[data-email-address]').textContent =
+              orderData.shipping.email;
+          } catch (e) {
+            console.log('Could not parse pending order');
+          }
+        }
+      });
     </script>
-</body>
+  </body>
 </html>

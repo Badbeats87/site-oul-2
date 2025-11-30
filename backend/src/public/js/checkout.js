@@ -9,9 +9,9 @@ class CheckoutManager {
     this.cart = [];
     this.formData = {};
     this.shippingCosts = {
-      standard: 10.00,
-      express: 25.00,
-      overnight: 45.00
+      standard: 10.0,
+      express: 25.0,
+      overnight: 45.0,
     };
     this.taxRate = 0.08;
     this.selectedShipping = 'standard';
@@ -48,7 +48,9 @@ class CheckoutManager {
     const form = document.querySelector('[data-checkout-form]');
 
     // Billing address checkbox
-    const sameAsBillingCheckbox = document.querySelector('input[name="sameAsBilling"]');
+    const sameAsBillingCheckbox = document.querySelector(
+      'input[name="sameAsBilling"]'
+    );
     if (sameAsBillingCheckbox) {
       sameAsBillingCheckbox.addEventListener('change', (e) => {
         const billingSection = document.getElementById('billing-section');
@@ -57,11 +59,13 @@ class CheckoutManager {
     }
 
     // Payment method selection
-    document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
-      radio.addEventListener('change', (e) => {
-        this.updatePaymentForm(e.target.value);
+    document
+      .querySelectorAll('input[name="paymentMethod"]')
+      .forEach((radio) => {
+        radio.addEventListener('change', (e) => {
+          this.updatePaymentForm(e.target.value);
+        });
       });
-    });
 
     // Form submission
     if (form) {
@@ -76,9 +80,12 @@ class CheckoutManager {
    * Update payment form based on selected method
    */
   updatePaymentForm(method) {
-    document.getElementById('credit-card-form').style.display = method === 'credit-card' ? 'block' : 'none';
-    document.getElementById('paypal-form').style.display = method === 'paypal' ? 'block' : 'none';
-    document.getElementById('bank-transfer-form').style.display = method === 'bank-transfer' ? 'block' : 'none';
+    document.getElementById('credit-card-form').style.display =
+      method === 'credit-card' ? 'block' : 'none';
+    document.getElementById('paypal-form').style.display =
+      method === 'paypal' ? 'block' : 'none';
+    document.getElementById('bank-transfer-form').style.display =
+      method === 'bank-transfer' ? 'block' : 'none';
   }
 
   /**
@@ -94,7 +101,9 @@ class CheckoutManager {
       return;
     }
 
-    itemsContainer.innerHTML = this.cart.map(item => `
+    itemsContainer.innerHTML = this.cart
+      .map(
+        (item) => `
       <div class="order-item">
         <div class="order-item__info">
           <div class="order-item__title">${this.escapeHtml(item.title || 'Unknown')}</div>
@@ -105,7 +114,9 @@ class CheckoutManager {
           $${(parseFloat(item.price || 0) * (item.quantity || 1)).toFixed(2)}
         </div>
       </div>
-    `).join('');
+    `
+      )
+      .join('');
 
     this.updateTotals();
   }
@@ -115,12 +126,15 @@ class CheckoutManager {
    */
   updateTotals() {
     const subtotal = this.getSubtotal();
-    const shipping = this.shippingCosts[this.selectedShipping] || this.shippingCosts.standard;
+    const shipping =
+      this.shippingCosts[this.selectedShipping] || this.shippingCosts.standard;
     const tax = subtotal * this.taxRate;
     const total = subtotal + shipping + tax;
 
-    document.querySelector('[data-subtotal]').textContent = `$${subtotal.toFixed(2)}`;
-    document.querySelector('[data-shipping]').textContent = `$${shipping.toFixed(2)}`;
+    document.querySelector('[data-subtotal]').textContent =
+      `$${subtotal.toFixed(2)}`;
+    document.querySelector('[data-shipping]').textContent =
+      `$${shipping.toFixed(2)}`;
     document.querySelector('[data-tax]').textContent = `$${tax.toFixed(2)}`;
     document.querySelector('[data-total]').textContent = `$${total.toFixed(2)}`;
   }
@@ -130,7 +144,7 @@ class CheckoutManager {
    */
   getSubtotal() {
     return this.cart.reduce((total, item) => {
-      return total + (parseFloat(item.price || 0) * (item.quantity || 1));
+      return total + parseFloat(item.price || 0) * (item.quantity || 1);
     }, 0);
   }
 
@@ -145,10 +159,14 @@ class CheckoutManager {
     }
 
     // Validate payment method
-    const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+    const paymentMethod = document.querySelector(
+      'input[name="paymentMethod"]:checked'
+    ).value;
 
     if (paymentMethod === 'credit-card') {
-      const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+      const cardNumber = document
+        .getElementById('cardNumber')
+        .value.replace(/\s/g, '');
       if (!/^\d{13,19}$/.test(cardNumber)) {
         this.showError('Invalid card number. Please enter 13-19 digits.');
         return false;
@@ -194,32 +212,42 @@ class CheckoutManager {
         city: data.city,
         state: data.state,
         zipcode: data.zipcode,
-        country: data.country
+        country: data.country,
       },
-      billing: data.sameAsBilling ? null : {
-        firstName: data.billingFirstName,
-        lastName: data.billingLastName,
-        address: data.billingAddress,
-        city: data.billingCity,
-        state: data.billingState,
-        zipcode: data.billingZipcode,
-        country: data.billingCountry
-      },
+      billing: data.sameAsBilling
+        ? null
+        : {
+            firstName: data.billingFirstName,
+            lastName: data.billingLastName,
+            address: data.billingAddress,
+            city: data.billingCity,
+            state: data.billingState,
+            zipcode: data.billingZipcode,
+            country: data.billingCountry,
+          },
       payment: {
         method: data.paymentMethod,
         cardholderName: data.cardholderName,
-        cardNumber: data.cardNumber ? data.cardNumber.replace(/\s/g, '').slice(-4) : null, // Only store last 4
-        saveCard: data.saveCard === 'on'
+        cardNumber: data.cardNumber
+          ? data.cardNumber.replace(/\s/g, '').slice(-4)
+          : null, // Only store last 4
+        saveCard: data.saveCard === 'on',
       },
       notes: data.orderNotes,
       subscribe: data.subscribe === 'on',
       cart: this.cart,
       totals: {
         subtotal: this.getSubtotal(),
-        shipping: this.shippingCosts[data.shippingMethod] || this.shippingCosts.standard,
+        shipping:
+          this.shippingCosts[data.shippingMethod] ||
+          this.shippingCosts.standard,
         tax: this.getSubtotal() * this.taxRate,
-        total: this.getSubtotal() + (this.shippingCosts[data.shippingMethod] || this.shippingCosts.standard) + (this.getSubtotal() * this.taxRate)
-      }
+        total:
+          this.getSubtotal() +
+          (this.shippingCosts[data.shippingMethod] ||
+            this.shippingCosts.standard) +
+          this.getSubtotal() * this.taxRate,
+      },
     };
   }
 
@@ -247,7 +275,8 @@ class CheckoutManager {
 
       // Redirect to order confirmation page
       setTimeout(() => {
-        window.location.href = 'order-confirmation.html?order=' + this.generateOrderNumber();
+        window.location.href =
+          'order-confirmation.html?order=' + this.generateOrderNumber();
       }, 1500);
     } catch (error) {
       console.error('Checkout error:', error);
@@ -278,7 +307,8 @@ class CheckoutManager {
    */
   showError(message) {
     const alertDiv = document.createElement('div');
-    alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #fee; color: #c33; padding: 12px 20px; border-radius: 4px; z-index: 1000;';
+    alertDiv.style.cssText =
+      'position: fixed; top: 20px; right: 20px; background: #fee; color: #c33; padding: 12px 20px; border-radius: 4px; z-index: 1000;';
     alertDiv.textContent = message;
     document.body.appendChild(alertDiv);
     setTimeout(() => alertDiv.remove(), 5000);
@@ -289,7 +319,8 @@ class CheckoutManager {
    */
   showSuccess(message) {
     const alertDiv = document.createElement('div');
-    alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #efe; color: #3c3; padding: 12px 20px; border-radius: 4px; z-index: 1000;';
+    alertDiv.style.cssText =
+      'position: fixed; top: 20px; right: 20px; background: #efe; color: #3c3; padding: 12px 20px; border-radius: 4px; z-index: 1000;';
     alertDiv.textContent = message;
     document.body.appendChild(alertDiv);
     setTimeout(() => alertDiv.remove(), 3000);
