@@ -26,7 +26,20 @@
           </svg>
           <span>Vinyl Catalog</span>
         </a>
-        <div class="navbar__links">
+        <!-- Hamburger Menu Toggle -->
+        <button
+          class="navbar__menu-toggle"
+          data-menu-toggle
+          aria-label="Toggle navigation menu"
+          aria-expanded="false"
+          title="Toggle menu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <div class="navbar__links" data-navbar-links>
           <a href="../index.html" class="nav-link">Back to Site</a>
           <span class="nav-separator">|</span>
 
@@ -409,6 +422,7 @@
       </div>
     </footer>
 
+    <script src="../../js/mobile-nav.js"></script>
     <script src="../../js/api-client.js"></script>
     <script src="../../js/auth.js"></script>
     <script src="../../js/dashboard-stats.js"></script>
