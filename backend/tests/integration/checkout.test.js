@@ -94,7 +94,7 @@ describe('Checkout API Integration Tests', () => {
 
       // Delete the test release
       if (testRelease?.id) {
-        await prisma.release.delete({
+        await prisma.release.deleteMany({
           where: { id: testRelease.id },
         });
       }
