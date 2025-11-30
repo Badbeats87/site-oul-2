@@ -493,19 +493,29 @@ class InventoryService {
   }
 
   /**
-   * List inventory with pagination and filtering
+   * List inventory with advanced filtering and analytics
    * @param {Object} filters - Filter options
    * @param {string} filters.status - Filter by status (LIVE, RESERVED, SOLD, DRAFT, REMOVED)
+   * @param {string|string[]} filters.conditions - Filter by condition grades
+   * @param {string} filters.genre - Filter by release genre
+   * @param {number} filters.minPrice - Minimum list price
+   * @param {number} filters.maxPrice - Maximum list price
+   * @param {string} filters.search - Search by album name, artist, or barcode
    * @param {number} filters.limit - Results per page
    * @param {number} filters.page - Page number
-   * @param {string} filters.sortBy - Sort field (createdAt, listPrice, soldAt)
+   * @param {string} filters.sortBy - Sort field (createdAt, listPrice, soldAt, listedAt)
    * @param {string} filters.sortOrder - Sort direction (asc, desc)
-   * @returns {Promise<Object>} Paginated inventory
+   * @returns {Promise<Object>} Paginated inventory with stats
    */
   async listInventory(filters = {}) {
     try {
       const {
         status,
+        conditions,
+        genre,
+        minPrice,
+        maxPrice,
+        search,
         limit = 50,
         page = 1,
         sortBy = 'createdAt',
@@ -523,6 +533,42 @@ class InventoryService {
       const where = {};
       if (status) {
         where.status = status;
+      }
+
+      // Condition filtering
+      if (conditions) {
+        const grades = Array.isArray(conditions) ? conditions : [conditions];
+        where.OR = [
+          { conditionMedia: { in: grades } },
+          { conditionSleeve: { in: grades } },
+        ];
+      }
+
+      // Price range filtering
+      if (minPrice !== undefined || maxPrice !== undefined) {
+        where.listPrice = {};
+        if (minPrice !== undefined) {
+          where.listPrice.gte = minPrice;
+        }
+        if (maxPrice !== undefined) {
+          where.listPrice.lte = maxPrice;
+        }
+      }
+
+      // Genre filtering via release relation
+      if (genre) {
+        where.release = { genre };
+      }
+
+      // Search by album, artist, or barcode
+      if (search) {
+        where.OR = where.OR || [];
+        where.OR.push(
+          { release: { title: { contains: search, mode: 'insensitive' } } },
+          { release: { artist: { contains: search, mode: 'insensitive' } } },
+          { release: { barcode: { contains: search, mode: 'insensitive' } } },
+          { sku: { contains: search, mode: 'insensitive' } }
+        );
       }
 
       const skip = (page - 1) * limit;
@@ -752,6 +798,227 @@ class InventoryService {
       if (error instanceof ApiError) throw error;
       logger.error('Error deleting inventory', { inventoryLotId, error: error.message });
       throw new ApiError('Failed to delete inventory', 500);
+    }
+  }
+
+  /**
+   * Get inventory analytics and summary statistics
+   * @param {Object} options - Analytics options
+   * @returns {Promise<Object>} Inventory statistics and alerts
+   */
+  async getInventoryAnalytics(options = {}) {
+    try {
+      // Get all inventory across all statuses
+      const allLots = await prisma.inventoryLot.findMany({
+        include: { release: true },
+      });
+
+      if (allLots.length === 0) {
+        return {
+          totalInventory: 0,
+          byStatus: {},
+          byCondition: {},
+          priceStats: {},
+          lowStockAlerts: [],
+          topPerformers: [],
+        };
+      }
+
+      // Status breakdown
+      const byStatus = {};
+      allLots.forEach(lot => {
+        byStatus[lot.status] = (byStatus[lot.status] || 0) + 1;
+      });
+
+      // Condition breakdown
+      const byCondition = {};
+      allLots.forEach(lot => {
+        const condition = lot.conditionMedia;
+        byCondition[condition] = (byCondition[condition] || 0) + 1;
+      });
+
+      // Price statistics
+      const prices = allLots.map(lot => parseFloat(lot.listPrice));
+      const priceStats = {
+        average: parseFloat((prices.reduce((a, b) => a + b, 0) / prices.length).toFixed(2)),
+        min: parseFloat(Math.min(...prices).toFixed(2)),
+        max: parseFloat(Math.max(...prices).toFixed(2)),
+        median: parseFloat(prices.sort((a, b) => a - b)[Math.floor(prices.length / 2)].toFixed(2)),
+        total: parseFloat(prices.reduce((a, b) => a + b, 0).toFixed(2)),
+      };
+
+      // Low stock alerts (less than 3 LIVE items per release)
+      const releaseInventoryCounts = {};
+      allLots.forEach(lot => {
+        if (lot.status === 'LIVE') {
+          const key = lot.releaseId;
+          releaseInventoryCounts[key] = (releaseInventoryCounts[key] || 0) + 1;
+        }
+      });
+
+      const lowStockAlerts = [];
+      Object.entries(releaseInventoryCounts).forEach(([releaseId, count]) => {
+        if (count < 3) {
+          const release = allLots.find(l => l.releaseId === releaseId)?.release;
+          lowStockAlerts.push({
+            releaseId,
+            releaseTitle: release?.title,
+            releaseArtist: release?.artist,
+            liveCount: count,
+            threshold: 3,
+            message: `Low stock: Only ${count} copy/copies available`,
+          });
+        }
+      });
+
+      // Top performers (highest priced LIVE items)
+      const topPerformers = allLots
+        .filter(lot => lot.status === 'LIVE')
+        .sort((a, b) => parseFloat(b.listPrice) - parseFloat(a.listPrice))
+        .slice(0, 10)
+        .map(lot => ({
+          id: lot.id,
+          sku: lot.sku,
+          releaseTitle: lot.release?.title,
+          releaseArtist: lot.release?.artist,
+          condition: `${lot.conditionMedia}/${lot.conditionSleeve}`,
+          listPrice: parseFloat(lot.listPrice),
+          costBasis: parseFloat(lot.costBasis),
+          margin: parseFloat(((parseFloat(lot.listPrice) - parseFloat(lot.costBasis)) / parseFloat(lot.costBasis) * 100).toFixed(2)),
+        }));
+
+      return {
+        totalInventory: allLots.length,
+        byStatus,
+        byCondition,
+        priceStats,
+        lowStockAlerts,
+        topPerformers,
+      };
+    } catch (error) {
+      logger.error('Error getting inventory analytics', { error: error.message });
+      throw new ApiError('Failed to get inventory analytics', 500);
+    }
+  }
+
+  /**
+   * Get low-stock alerts for inventory items
+   * @param {number} threshold - Stock threshold for alerts (default 3)
+   * @returns {Promise<Array>} Low-stock alert items
+   */
+  async getLowStockAlerts(threshold = 3) {
+    try {
+      const releaseInventory = await prisma.inventoryLot.groupBy({
+        by: ['releaseId'],
+        where: { status: 'LIVE' },
+        _count: { id: true },
+      });
+
+      const lowStockReleases = releaseInventory
+        .filter(group => group._count.id < threshold)
+        .map(group => group.releaseId);
+
+      const alerts = await prisma.inventoryLot.findMany({
+        where: {
+          releaseId: { in: lowStockReleases },
+          status: 'LIVE',
+        },
+        include: { release: true },
+      });
+
+      const grouped = {};
+      alerts.forEach(lot => {
+        const key = lot.releaseId;
+        if (!grouped[key]) {
+          grouped[key] = {
+            releaseId: lot.releaseId,
+            releaseTitle: lot.release.title,
+            releaseArtist: lot.release.artist,
+            items: [],
+          };
+        }
+        grouped[key].items.push({
+          inventoryId: lot.id,
+          sku: lot.sku,
+          condition: `${lot.conditionMedia}/${lot.conditionSleeve}`,
+          price: parseFloat(lot.listPrice),
+        });
+      });
+
+      return Object.values(grouped).map(group => ({
+        ...group,
+        stockCount: group.items.length,
+        threshold,
+      }));
+    } catch (error) {
+      logger.error('Error getting low-stock alerts', { error: error.message });
+      throw new ApiError('Failed to get low-stock alerts', 500);
+    }
+  }
+
+  /**
+   * Calculate inventory sales velocity (items sold over time)
+   * @returns {Promise<Object>} Sales velocity metrics
+   */
+  async calculateSalesVelocity() {
+    try {
+      // Get sold items
+      const soldItems = await prisma.inventoryLot.findMany({
+        where: { status: 'SOLD' },
+        include: { release: true },
+      });
+
+      if (soldItems.length === 0) {
+        return {
+          totalSold: 0,
+          totalRevenue: 0,
+          averagePricePerItem: 0,
+          soldByCondition: {},
+          topSelling: [],
+        };
+      }
+
+      // Sold by condition
+      const soldByCondition = {};
+      let totalRevenue = 0;
+
+      soldItems.forEach(lot => {
+        const condition = lot.conditionMedia;
+        soldByCondition[condition] = (soldByCondition[condition] || 0) + 1;
+        totalRevenue += parseFloat(lot.salePrice || lot.listPrice);
+      });
+
+      // Top selling releases (by quantity sold)
+      const releasesSold = {};
+      soldItems.forEach(lot => {
+        const key = lot.releaseId;
+        if (!releasesSold[key]) {
+          releasesSold[key] = {
+            releaseId: lot.releaseId,
+            title: lot.release.title,
+            artist: lot.release.artist,
+            quantity: 0,
+            revenue: 0,
+          };
+        }
+        releasesSold[key].quantity += 1;
+        releasesSold[key].revenue += parseFloat(lot.salePrice || lot.listPrice);
+      });
+
+      const topSelling = Object.values(releasesSold)
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 10);
+
+      return {
+        totalSold: soldItems.length,
+        totalRevenue: parseFloat(totalRevenue.toFixed(2)),
+        averagePricePerItem: parseFloat((totalRevenue / soldItems.length).toFixed(2)),
+        soldByCondition,
+        topSelling,
+      };
+    } catch (error) {
+      logger.error('Error calculating sales velocity', { error: error.message });
+      throw new ApiError('Failed to calculate sales velocity', 500);
     }
   }
 
