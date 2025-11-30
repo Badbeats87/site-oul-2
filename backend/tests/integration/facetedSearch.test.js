@@ -49,8 +49,25 @@ describe('Faceted Search API Integration Tests', () => {
   });
 
   afterAll(async () => {
-    // Clean up test data
+    // Clean up test data - delete in proper order to respect foreign key constraints
+    // Delete inventory holds first
     if (testReleases.length > 0) {
+      await prisma.inventoryHold.deleteMany({
+        where: {
+          inventoryLot: {
+            release: {
+              id: { in: testReleases.map(r => r.id) },
+            },
+          },
+        },
+      });
+      // Delete inventory lots
+      await prisma.inventoryLot.deleteMany({
+        where: {
+          releaseId: { in: testReleases.map(r => r.id) },
+        },
+      });
+      // Finally delete releases
       await prisma.release.deleteMany({
         where: {
           id: { in: testReleases.map(r => r.id) },
