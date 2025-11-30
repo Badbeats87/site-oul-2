@@ -29,7 +29,8 @@ async function startServer() {
 
 startServer();
 
-// Graceful shutdown
+// Graceful shutdown handler
+// Re-initializes database connection on restart
 process.on('SIGTERM', () => {
   logger.info('SIGTERM received, shutting down gracefully');
   cleanupExpiredReservationsJob.stop();
