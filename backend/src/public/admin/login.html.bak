@@ -1,10 +1,6 @@
 <!doctype html>
-<html lang="en" style="height: auto; overflow: auto;">
+<html lang="en">
   <head>
-    <style>
-      html { height: auto !important; overflow: auto !important; }
-      body { min-height: 100vh !important; overflow-y: auto !important; }
-    </style>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
@@ -15,7 +11,7 @@
     <link rel="stylesheet" href="../../styles/design-system.css" />
     <link rel="stylesheet" href="../../styles/login.css" />
   </head>
-  <body style="min-height: 100vh; overflow-y: auto;">
+  <body>
     <div class="login-container">
       <!-- Login Header -->
       <div class="login-header">

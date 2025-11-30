@@ -1,17 +1,13 @@
 <!doctype html>
-<html lang="en" style="height: auto; overflow: auto;">
+<html lang="en">
   <head>
-    <style>
-      html { height: auto !important; overflow: auto !important; }
-      body { min-height: 100vh !important; overflow-y: auto !important; }
-    </style>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Order Confirmation - Vinyl Catalog</title>
     <link rel="stylesheet" href="../../styles/design-system.css" />
     <link rel="stylesheet" href="../../styles/buyer.css" />
   </head>
-  <body style="min-height: 100vh; overflow-y: auto;">
+  <body>
     <!-- Navigation -->
     <nav class="navbar">
       <div class="navbar__container">
