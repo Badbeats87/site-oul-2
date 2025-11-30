@@ -444,7 +444,7 @@ class ReleaseService {
 
       const searchQuery = query.toLowerCase();
 
-      // Get all matching releases with market data
+      // Get all matching releases
       const releases = await prisma.release.findMany({
         where: {
           OR: [
@@ -455,13 +455,6 @@ class ReleaseService {
           ],
         },
         take: limit * 2, // Get more to sort by relevance
-        include: {
-          marketSnapshots: {
-            where: { source: 'DISCOGS' },
-            orderBy: { createdAt: 'desc' },
-            take: 1,
-          },
-        },
       });
 
       // Score and sort by relevance
@@ -513,10 +506,27 @@ class ReleaseService {
         .slice(0, limit)
         .map(({ _score, ...release }) => release);
 
+      // Fetch market data for top results
+      const resultsWithMarketData = await Promise.all(
+        sorted.map(async (release) => {
+          const marketSnapshot = await prisma.marketSnapshot.findFirst({
+            where: {
+              releaseId: release.id,
+              source: 'DISCOGS',
+            },
+            orderBy: { createdAt: 'desc' },
+          });
+          return {
+            ...release,
+            marketSnapshots: marketSnapshot ? [marketSnapshot] : [],
+          };
+        })
+      );
+
       const result = {
         query,
-        total: sorted.length,
-        results: sorted,
+        total: resultsWithMarketData.length,
+        results: resultsWithMarketData,
         executedAt: new Date(),
       };
 
