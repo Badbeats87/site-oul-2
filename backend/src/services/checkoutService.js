@@ -184,11 +184,14 @@ class CheckoutService {
             inventoryLotId,
           },
         });
-        logger.error('Failed to create inventory hold, item removed from cart', {
-          orderId,
-          inventoryLotId,
-          error: error.message,
-        });
+        logger.error(
+          'Failed to create inventory hold, item removed from cart',
+          {
+            orderId,
+            inventoryLotId,
+            error: error.message,
+          }
+        );
         throw error;
       }
 
@@ -239,9 +242,10 @@ class CheckoutService {
 
       // Release inventory hold for this item
       try {
-        const holds = await inventoryReservationService.getHoldsForInventory(
-          inventoryLotId
-        );
+        const holds =
+          await inventoryReservationService.getHoldsForInventory(
+            inventoryLotId
+          );
         const holdForThisOrder = holds.find((h) => h.orderId === orderId);
         if (holdForThisOrder) {
           await inventoryReservationService.releaseHold(
@@ -421,7 +425,7 @@ class CheckoutService {
         tax: parseFloat(updatedOrder.tax),
         shipping: parseFloat(updatedOrder.shipping),
         total: parseFloat(updatedOrder.total),
-        items: updatedOrder.items.map(item => ({
+        items: updatedOrder.items.map((item) => ({
           ...item,
           priceAtPurchase: parseFloat(item.priceAtPurchase),
         })),
@@ -684,9 +688,10 @@ class CheckoutService {
 
           // Convert hold to sale
           try {
-            const holds = await inventoryReservationService.getHoldsForInventory(
-              item.inventoryLotId
-            );
+            const holds =
+              await inventoryReservationService.getHoldsForInventory(
+                item.inventoryLotId
+              );
             const holdForThisOrder = holds.find((h) => h.orderId === orderId);
             if (holdForThisOrder) {
               await inventoryReservationService.convertHoldToSale(
