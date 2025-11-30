@@ -88,6 +88,8 @@ describe('Submissions Service - Integration Tests', () => {
     await prisma.submissionItem.deleteMany({});
     await prisma.submissionAudit.deleteMany({});
     await prisma.sellerSubmission.deleteMany({});
+    await prisma.orderItem.deleteMany({});
+    await prisma.order.deleteMany({});
     await prisma.marketSnapshot.deleteMany({});
     await prisma.releasePricingPolicy.deleteMany({});
     // Delete inventory lots before releases
