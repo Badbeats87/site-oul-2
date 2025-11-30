@@ -195,36 +195,38 @@ class BuyerProductsManager {
 
     grid.innerHTML = this.products.map(product => `
       <div class="product-card">
-        <div class="product-card__image">
-          ${product.coverArtUrl ?
-            `<img src="${product.coverArtUrl}" alt="${product.title}" style="width: 100%; height: 100%; object-fit: cover;">` :
-            `<svg viewBox="0 0 240 240" fill="none">
-              <rect width="240" height="240" fill="#e5e7eb"/>
-              <text x="120" y="120" text-anchor="middle" dominant-baseline="middle" font-size="18" fill="#9ca3af">Album Cover</text>
-            </svg>`
-          }
-          ${product.isNew ? '<div class="product-card__badge product-card__badge--new">New</div>' : ''}
-          ${product.isRare ? '<div class="product-card__badge product-card__badge--rare">Rare</div>' : ''}
-          ${product.lowStock ? '<div class="product-card__badge product-card__badge--low">Low Stock</div>' : ''}
-        </div>
-        <div class="product-card__content">
-          <h3 class="product-card__title">${this.escapeHtml(product.title || 'Unknown')}</h3>
-          <p class="product-card__artist">${this.escapeHtml(product.artist || '')}</p>
-          <div class="product-card__meta">
-            <span>${product.condition || 'N/A'} • ${product.releaseYear || 'N/A'}</span>
-            <span class="badge ${product.inStock ? 'badge--success' : 'badge--danger'}">
-              ${product.inStock ? (product.quantity > 1 ? `In Stock (${product.quantity})` : 'In Stock') : 'Out of Stock'}
-            </span>
+        <a href="product.html?id=${product.id}" style="text-decoration: none; color: inherit;">
+          <div class="product-card__image">
+            ${product.coverArtUrl ?
+              `<img src="${product.coverArtUrl}" alt="${product.title}" style="width: 100%; height: 100%; object-fit: cover;">` :
+              `<svg viewBox="0 0 240 240" fill="none">
+                <rect width="240" height="240" fill="#e5e7eb"/>
+                <text x="120" y="120" text-anchor="middle" dominant-baseline="middle" font-size="18" fill="#9ca3af">Album Cover</text>
+              </svg>`
+            }
+            ${product.isNew ? '<div class="product-card__badge product-card__badge--new">New</div>' : ''}
+            ${product.isRare ? '<div class="product-card__badge product-card__badge--rare">Rare</div>' : ''}
+            ${product.lowStock ? '<div class="product-card__badge product-card__badge--low">Low Stock</div>' : ''}
           </div>
-          <div class="product-card__price">
-            <span class="price-current">$${parseFloat(product.price || 0).toFixed(2)}</span>
-            ${product.originalPrice && product.originalPrice !== product.price ?
-              `<span class="price-original">$${parseFloat(product.originalPrice).toFixed(2)}</span>` : ''}
+          <div class="product-card__content">
+            <h3 class="product-card__title">${this.escapeHtml(product.title || 'Unknown')}</h3>
+            <p class="product-card__artist">${this.escapeHtml(product.artist || '')}</p>
+            <div class="product-card__meta">
+              <span>${product.condition || 'N/A'} • ${product.releaseYear || 'N/A'}</span>
+              <span class="badge ${product.inStock ? 'badge--success' : 'badge--danger'}">
+                ${product.inStock ? (product.quantity > 1 ? `In Stock (${product.quantity})` : 'In Stock') : 'Out of Stock'}
+              </span>
+            </div>
+            <div class="product-card__price">
+              <span class="price-current">$${parseFloat(product.price || 0).toFixed(2)}</span>
+              ${product.originalPrice && product.originalPrice !== product.price ?
+                `<span class="price-original">$${parseFloat(product.originalPrice).toFixed(2)}</span>` : ''}
+            </div>
           </div>
-          <button class="button button--accent button--block" data-product-id="${product.id}" data-add-to-cart>
-            ${product.inStock ? 'Add to Cart' : 'Out of Stock'}
-          </button>
-        </div>
+        </a>
+        <button class="button button--accent button--block" data-product-id="${product.id}" data-add-to-cart>
+          ${product.inStock ? 'Add to Cart' : 'Out of Stock'}
+        </button>
       </div>
     `).join('');
 
