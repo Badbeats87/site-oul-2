@@ -498,21 +498,29 @@ describe('Checkout API Integration Tests', () => {
 
       cartId = cartResponse.body.data.id;
 
-      await request(app)
+      // Add item to cart with validation
+      const addItemResponse = await request(app)
         .post('/api/v1/checkout/cart/items')
         .set('Authorization', authHeader)
         .send({
           orderId: cartId,
           inventoryLotId: testInventoryLot.id,
-        });
+        })
+        .expect(200);
 
-      await request(app)
+      expect(addItemResponse.body.success).toBe(true);
+
+      // Recalculate cart
+      const recalcResponse = await request(app)
         .post('/api/v1/checkout/cart/recalculate')
         .set('Authorization', authHeader)
         .send({
           orderId: cartId,
           shippingMethod: 'STANDARD',
-        });
+        })
+        .expect(200);
+
+      expect(recalcResponse.body.success).toBe(true);
     });
 
     it('should initiate checkout with payment intent', async () => {
