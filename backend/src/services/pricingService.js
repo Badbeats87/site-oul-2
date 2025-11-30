@@ -2,6 +2,7 @@ import discogsService from './discogsService.js';
 import ebayService from './ebayService.js';
 import { ApiError } from '../middleware/errorHandler.js';
 import logger from '../../config/logger.js';
+import prisma from '../utils/db.js';
 
 /**
  * Pricing Engine for Vinyl Catalog
@@ -42,6 +43,118 @@ class PricingService {
         60: 0.2,
       },
     };
+
+    // Policy cache to avoid repeated database queries
+    this.policyCache = new Map();
+    this.policyCacheTTL = 5 * 60 * 1000; // 5 minutes
+  }
+
+  /**
+   * Fetch active pricing policy by type (BUYER or SELLER)
+   * @param {string} policyType - 'BUYER' or 'SELLER'
+   * @param {Object} context - Optional context { genre, label, channel }
+   * @returns {Promise<Object|null>} Pricing policy or null if not found
+   */
+  async getActivePricingPolicy(policyType, context = {}) {
+    try {
+      const cacheKey = `${policyType}:${JSON.stringify(context)}`;
+
+      // Check cache
+      if (this.policyCache.has(cacheKey)) {
+        const cached = this.policyCache.get(cacheKey);
+        if (Date.now() - cached.timestamp < this.policyCacheTTL) {
+          return cached.data;
+        }
+        this.policyCache.delete(cacheKey);
+      }
+
+      // Fetch from database
+      const policy = await prisma.pricingPolicy.findFirst({
+        where: {
+          isActive: true,
+          scope: policyType,
+          // TODO: Add scope-specific filters (genre, label, channel)
+        },
+        orderBy: {
+          version: 'desc',
+        },
+      });
+
+      // Cache the result
+      if (policy) {
+        this.policyCache.set(cacheKey, {
+          data: policy,
+          timestamp: Date.now(),
+        });
+      }
+
+      return policy || null;
+    } catch (error) {
+      logger.warn('Failed to fetch pricing policy', {
+        policyType,
+        context,
+        error: error.message,
+      });
+      return null;
+    }
+  }
+
+  /**
+   * Get buyer pricing formula with database policy overrides
+   * @param {Object} context - Optional context for policy selection
+   * @returns {Promise<Object>} Buyer formula configuration
+   */
+  async getBuyerFormula(context = {}) {
+    const policy = await this.getActivePricingPolicy('BUYER', context);
+
+    if (policy && policy.buyFormula) {
+      return {
+        ...this.defaults,
+        ...policy.buyFormula,
+        policyId: policy.id,
+        conditionCurve: policy.conditionCurve || this.defaultConditionCurve,
+        weights: policy.buyFormula.weights || this.defaultWeights,
+      };
+    }
+
+    return {
+      ...this.defaults,
+      conditionCurve: this.defaultConditionCurve,
+      weights: this.defaultWeights,
+    };
+  }
+
+  /**
+   * Get seller pricing formula with database policy overrides
+   * @param {Object} context - Optional context for policy selection
+   * @returns {Promise<Object>} Seller formula configuration
+   */
+  async getSellerFormula(context = {}) {
+    const policy = await this.getActivePricingPolicy('SELLER', context);
+
+    if (policy && policy.sellFormula) {
+      return {
+        ...this.defaults,
+        ...policy.sellFormula,
+        policyId: policy.id,
+        conditionCurve: policy.conditionCurve || this.defaultConditionCurve,
+        weights: policy.sellFormula.weights || this.defaultWeights,
+      };
+    }
+
+    return {
+      ...this.defaults,
+      conditionCurve: this.defaultConditionCurve,
+      weights: this.defaultWeights,
+    };
+  }
+
+  /**
+   * Clear policy cache (call after policy updates)
+   */
+  clearPolicyCache() {
+    this.policyCache.clear();
+    logger.info('Pricing policy cache cleared');
   }
 
   /**
