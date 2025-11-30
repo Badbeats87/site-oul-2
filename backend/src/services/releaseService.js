@@ -313,6 +313,88 @@ class ReleaseService {
   }
 
   /**
+   * Full-text search using PostgreSQL tsvector
+   * Searches across title, artist, label, description, and genre
+   * Results are ranked by relevance
+   * @param {string} query - Search query
+   * @param {number} limit - Maximum results
+   * @returns {Promise<Object>} Search results with relevance ranking
+   */
+  async fullTextSearch(query, limit = 50) {
+    try {
+      if (!query || query.trim().length === 0) {
+        throw new ApiError('Search query is required', 400);
+      }
+
+      if (limit > 200) {
+        throw new ApiError('Limit cannot exceed 200', 400);
+      }
+
+      const cacheKey = `release:fulltext:${query.toLowerCase()}:${limit}`;
+
+      // Try cache first (30 minute TTL for search)
+      const cached = getCached(cacheKey);
+      if (cached) {
+        logger.debug('Cache hit for full-text search', { query, limit });
+        return cached;
+      }
+
+      // Perform full-text search using PostgreSQL tsvector
+      // The to_tsquery function converts the query to a search pattern
+      // The @@ operator performs the full-text search
+      // ts_rank calculates relevance score
+      const results = await prisma.$queryRaw`
+        SELECT
+          id,
+          title,
+          artist,
+          label,
+          "catalogNumber",
+          barcode,
+          "releaseYear",
+          genre,
+          "coverArtUrl",
+          description,
+          "createdAt",
+          "updatedAt",
+          ts_rank("search_vector", query) as relevance
+        FROM releases, plainto_tsquery('english', ${query}) as query
+        WHERE "search_vector" @@ query
+        ORDER BY relevance DESC, "updatedAt" DESC
+        LIMIT ${limit}
+      `;
+
+      const totalResults = await prisma.$queryRaw`
+        SELECT COUNT(*) as count
+        FROM releases, plainto_tsquery('english', ${query}) as query
+        WHERE "search_vector" @@ query
+      `;
+
+      const result = {
+        query,
+        total: totalResults[0]?.count || 0,
+        results: results.map(r => {
+          const { relevance, ...release } = r;
+          return {
+            ...release,
+            _relevance: Number(relevance),
+          };
+        }),
+        searchType: 'fulltext',
+        executedAt: new Date(),
+      };
+
+      // Cache the result (30 minute TTL)
+      setCached(cacheKey, result, 1800);
+      return result;
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      logger.error('Full-text search failed', { query, error: error.message });
+      throw new ApiError('Failed to perform full-text search', 500);
+    }
+  }
+
+  /**
    * Get autocomplete suggestions for a field
    * Optimized for fast type-ahead responses
    */
