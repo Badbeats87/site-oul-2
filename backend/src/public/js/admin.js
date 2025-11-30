@@ -10,6 +10,16 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Initialize UI
     initializeTabSwitching();
     initializeLogout();
+
+    // Load dashboard stats
+    if (dashboardStats) {
+        await dashboardStats.initialize();
+    }
+
+    // Initialize submissions manager
+    if (submissionsManager) {
+        await submissionsManager.initialize();
+    }
 });
 
 /**
