@@ -29,6 +29,7 @@ import { captureRawBody } from './middleware/rawBody.js';
 import prisma from './utils/db.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// From /backend/src, go up two levels to get to project root (where pages/, js/, styles/ are)
 const projectRoot = path.resolve(__dirname, '../..');
 
 const app = express();
@@ -44,10 +45,22 @@ app.use(compression());
 
 // Serve static files (pages, styles, js)
 // Configure to serve index.html for directory requests
+const pagesDir = path.join(projectRoot, 'pages');
+const jsDir = path.join(projectRoot, 'js');
+const stylesDir = path.join(projectRoot, 'styles');
+
+logger.info('Static file paths:', {
+  __dirname,
+  projectRoot,
+  pagesDir,
+  jsDir,
+  stylesDir,
+});
+
 const staticOptions = { index: ['index.html'] };
-app.use(express.static(path.join(projectRoot, 'pages'), staticOptions));
-app.use(express.static(path.join(projectRoot, 'js'), staticOptions));
-app.use(express.static(path.join(projectRoot, 'styles')));
+app.use(express.static(pagesDir, staticOptions));
+app.use(express.static(jsDir, staticOptions));
+app.use(express.static(stylesDir));
 
 // Request logging
 app.use(logRequest);
