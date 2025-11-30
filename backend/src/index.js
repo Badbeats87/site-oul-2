@@ -16,6 +16,7 @@ import authRoutes from './routes/auth.js';
 import catalogRoutes from './routes/catalog.js';
 import integrationsRoutes from './routes/integrations.js';
 import sellersRoutes from './routes/sellers.js';
+import submissionsRoutes from './routes/submissions.js';
 import adminRoutes from './routes/admin.js';
 import inventoryRoutes from './routes/inventory.js';
 import buyerRoutes from './routes/buyer.js';
@@ -116,6 +117,9 @@ app.use('/api/v1/integrations', integrationsRoutes);
 
 // Sellers and submissions routes
 app.use('/api/v1/sellers', sellersRoutes);
+
+// Submissions routes (separate from sellers)
+app.use('/api/v1/submissions', submissionsRoutes);
 
 // Admin routes
 app.use('/api/v1/admin/submissions', adminRoutes);
