@@ -89,7 +89,7 @@ async function main() {
     const createdReleases = [];
     for (const releaseData of releases) {
       // Check if release already exists by barcode
-      let release = await prisma.release.findUnique({
+      let release = await prisma.release.findFirst({
         where: { barcode: releaseData.barcode },
       });
 
@@ -105,32 +105,42 @@ async function main() {
       console.log(`✅ Release: ${release.title} by ${release.artist}`);
     }
 
-    // Seed sample market snapshots for first release
-    if (createdReleases.length > 0) {
-      const firstRelease = createdReleases[0];
+    // Seed sample market snapshots for all releases
+    const marketData = [
+      { releaseId: 0, statLow: 50.0, statMedian: 100.0, statHigh: 200.0, sampleSize: 15 },
+      { releaseId: 1, statLow: 75.0, statMedian: 150.0, statHigh: 300.0, sampleSize: 22 },
+      { releaseId: 2, statLow: 60.0, statMedian: 125.0, statHigh: 250.0, sampleSize: 18 },
+      { releaseId: 3, statLow: 40.0, statMedian: 90.0, statHigh: 180.0, sampleSize: 12 },
+      { releaseId: 4, statLow: 30.0, statMedian: 70.0, statHigh: 150.0, sampleSize: 10 },
+    ];
+
+    for (const market of marketData) {
+      const release = createdReleases[market.releaseId];
+      if (!release) continue;
 
       // Check if snapshot already exists
       const existingSnapshot = await prisma.marketSnapshot.findFirst({
         where: {
-          releaseId: firstRelease.id,
+          releaseId: release.id,
           source: 'DISCOGS',
         },
       });
 
       if (!existingSnapshot) {
-        const snapshot = await prisma.marketSnapshot.create({
+        await prisma.marketSnapshot.create({
           data: {
             id: uuidv4(),
-            releaseId: firstRelease.id,
+            releaseId: release.id,
             source: 'DISCOGS',
-            statLow: 50.0,
-            statMedian: 100.0,
-            statHigh: 200.0,
-            sampleSize: 15,
+            statLow: market.statLow,
+            statMedian: market.statMedian,
+            statHigh: market.statHigh,
+            sampleSize: market.sampleSize,
+            fetchedAt: new Date(),
             createdAt: new Date(),
           },
         });
-        console.log(`✅ Market snapshot created for ${firstRelease.title}`);
+        console.log(`✅ Market snapshot created for ${release.title}`);
       }
     }
 
