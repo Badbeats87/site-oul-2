@@ -198,9 +198,17 @@
 
 /* Page Content */
 
+main {
+  display: block;
+  width: 100%;
+  min-height: auto;
+}
+
 .page-content {
-  min-height: 60vh;
+  min-height: auto;
   padding: var(--space-3xl) 0;
+  width: 100%;
+  overflow: visible;
 }
 
 /* Dashboard Stats */
