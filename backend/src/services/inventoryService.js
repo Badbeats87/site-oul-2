@@ -336,7 +336,7 @@ class InventoryService {
       if (item.status !== 'ACCEPTED') {
         throw new ApiError(
           `Cannot create inventory for item with status: ${item.status}`,
-          400,
+          400
         );
       }
 
@@ -348,7 +348,7 @@ class InventoryService {
       const sellPrice = await this.calculateSellPrice(
         item.release,
         item.sellerConditionMedia,
-        item.sellerConditionSleeve,
+        item.sellerConditionSleeve
       );
 
       // Create inventory lot
@@ -501,7 +501,7 @@ class InventoryService {
         release,
         conditionMedia,
         conditionSleeve,
-        policy.policy,
+        policy.policy
       );
 
       return sellPrice;
@@ -592,7 +592,7 @@ class InventoryService {
           { release: { title: { contains: search, mode: 'insensitive' } } },
           { release: { artist: { contains: search, mode: 'insensitive' } } },
           { release: { barcode: { contains: search, mode: 'insensitive' } } },
-          { sku: { contains: search, mode: 'insensitive' } },
+          { sku: { contains: search, mode: 'insensitive' } }
         );
       }
 
@@ -680,9 +680,9 @@ class InventoryService {
         release: lot.release,
         submissionOrigin: lot.submissionItem
           ? {
-            submissionId: lot.submissionItem.submission.id,
-            sellerContact: lot.submissionItem.submission.sellerContact,
-          }
+              submissionId: lot.submissionItem.submission.id,
+              sellerContact: lot.submissionItem.submission.sellerContact,
+            }
           : null,
         sku: lot.sku,
         condition: {
@@ -892,14 +892,12 @@ class InventoryService {
       const prices = allLots.map((lot) => parseFloat(lot.listPrice));
       const priceStats = {
         average: parseFloat(
-          (prices.reduce((a, b) => a + b, 0) / prices.length).toFixed(2),
+          (prices.reduce((a, b) => a + b, 0) / prices.length).toFixed(2)
         ),
         min: parseFloat(Math.min(...prices).toFixed(2)),
         max: parseFloat(Math.max(...prices).toFixed(2)),
         median: parseFloat(
-          prices
-            .sort((a, b) => a - b)[Math.floor(prices.length / 2)]
-            .toFixed(2),
+          prices.sort((a, b) => a - b)[Math.floor(prices.length / 2)].toFixed(2)
         ),
         total: parseFloat(prices.reduce((a, b) => a + b, 0).toFixed(2)),
       };
@@ -917,7 +915,7 @@ class InventoryService {
       Object.entries(releaseInventoryCounts).forEach(([releaseId, count]) => {
         if (count < 3) {
           const release = allLots.find(
-            (l) => l.releaseId === releaseId,
+            (l) => l.releaseId === releaseId
           )?.release;
           lowStockAlerts.push({
             releaseId,
@@ -948,7 +946,7 @@ class InventoryService {
               ((parseFloat(lot.listPrice) - parseFloat(lot.costBasis)) /
                 parseFloat(lot.costBasis)) *
               100
-            ).toFixed(2),
+            ).toFixed(2)
           ),
         }));
 
@@ -1080,7 +1078,7 @@ class InventoryService {
         totalSold: soldItems.length,
         totalRevenue: parseFloat(totalRevenue.toFixed(2)),
         averagePricePerItem: parseFloat(
-          (totalRevenue / soldItems.length).toFixed(2),
+          (totalRevenue / soldItems.length).toFixed(2)
         ),
         soldByCondition,
         topSelling,
@@ -1173,7 +1171,7 @@ class InventoryService {
             lot.release,
             lot.conditionMedia,
             lot.conditionSleeve,
-            policy,
+            policy
           );
 
           updates.push({
@@ -1222,11 +1220,11 @@ class InventoryService {
             averagePriceChange:
               successfulUpdates.length > 0
                 ? (
-                  successfulUpdates.reduce(
-                    (sum, u) => sum + u.priceDifference,
-                    0,
-                  ) / successfulUpdates.length
-                ).toFixed(2)
+                    successfulUpdates.reduce(
+                      (sum, u) => sum + u.priceDifference,
+                      0
+                    ) / successfulUpdates.length
+                  ).toFixed(2)
                 : 0,
           },
         };
@@ -1284,11 +1282,11 @@ class InventoryService {
           averagePriceChange:
             appliedUpdates.length > 0
               ? (
-                appliedUpdates.reduce(
-                  (sum, u) => sum + u.priceDifference,
-                  0,
-                ) / appliedUpdates.length
-              ).toFixed(2)
+                  appliedUpdates.reduce(
+                    (sum, u) => sum + u.priceDifference,
+                    0
+                  ) / appliedUpdates.length
+                ).toFixed(2)
               : 0,
         },
       };
@@ -1323,7 +1321,7 @@ class InventoryService {
       for (const line of lines) {
         if (line.includes('[PRICE UPDATED')) {
           const match = line.match(
-            /\[PRICE UPDATED by policy (.+?)\] Old: \$([0-9.]+), New: \$([0-9.]+) - (.+)/,
+            /\[PRICE UPDATED by policy (.+?)\] Old: \$([0-9.]+), New: \$([0-9.]+) - (.+)/
           );
           if (match) {
             history.push({
@@ -1510,7 +1508,7 @@ class InventoryService {
       if (lot.status !== 'RESERVED') {
         throw new ApiError(
           `Cannot release inventory with status: ${lot.status}`,
-          400,
+          400
         );
       }
 
@@ -1566,7 +1564,7 @@ class InventoryService {
       if (lot.status !== 'RESERVED') {
         throw new ApiError(
           `Cannot mark as sold with status: ${lot.status}`,
-          400,
+          400
         );
       }
 
@@ -1630,7 +1628,10 @@ class InventoryService {
 
       for (const lot of expiredLots) {
         try {
-          await this.releaseReservation(lot.id, 'Checkout timeout - 15 minutes expired');
+          await this.releaseReservation(
+            lot.id,
+            'Checkout timeout - 15 minutes expired'
+          );
           results.releasedCount += 1;
         } catch (error) {
           results.errors.push({

@@ -97,7 +97,11 @@ router.get('/orders/ready-to-ship', requireRole('ADMIN'), getOrdersReadyToShip);
  *       404:
  *         description: Order not found
  */
-router.post('/orders/:orderId/prepare', requireRole('ADMIN'), prepareOrderForShipment);
+router.post(
+  '/orders/:orderId/prepare',
+  requireRole('ADMIN'),
+  prepareOrderForShipment
+);
 
 /**
  * @swagger
@@ -191,7 +195,11 @@ router.get('/shipments/:shipmentId', requireRole('ADMIN'), getShipmentDetail);
  *       404:
  *         description: Shipment not found
  */
-router.post('/shipments/:shipmentId/approve', requireRole('ADMIN'), approveShipment);
+router.post(
+  '/shipments/:shipmentId/approve',
+  requireRole('ADMIN'),
+  approveShipment
+);
 
 /**
  * @swagger
@@ -226,7 +234,11 @@ router.post('/shipments/:shipmentId/approve', requireRole('ADMIN'), approveShipm
  *       404:
  *         description: Shipment not found
  */
-router.post('/shipments/:shipmentId/reject', requireRole('ADMIN'), rejectShipment);
+router.post(
+  '/shipments/:shipmentId/reject',
+  requireRole('ADMIN'),
+  rejectShipment
+);
 
 /**
  * @swagger
@@ -254,7 +266,11 @@ router.post('/shipments/:shipmentId/reject', requireRole('ADMIN'), rejectShipmen
  *       200:
  *         description: Batch approval completed with breakdown
  */
-router.post('/shipments/batch/approve', requireRole('ADMIN'), batchApproveShipments);
+router.post(
+  '/shipments/batch/approve',
+  requireRole('ADMIN'),
+  batchApproveShipments
+);
 
 /**
  * @swagger

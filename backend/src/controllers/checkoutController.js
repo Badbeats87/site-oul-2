@@ -49,7 +49,10 @@ export async function addToCart(req, res, next) {
       throw new ApiError('orderId and inventoryLotId are required', 400);
     }
 
-    const updatedCart = await checkoutService.addToCart(orderId, inventoryLotId);
+    const updatedCart = await checkoutService.addToCart(
+      orderId,
+      inventoryLotId
+    );
 
     logger.info('Item added to cart via API', {
       orderId,
@@ -410,7 +413,8 @@ export async function getPaymentIntent(req, res, next) {
       throw new ApiError('paymentIntentId is required', 400);
     }
 
-    const details = await paymentService.getPaymentIntentDetails(paymentIntentId);
+    const details =
+      await paymentService.getPaymentIntentDetails(paymentIntentId);
 
     res.json({
       success: true,

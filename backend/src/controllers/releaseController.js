@@ -150,7 +150,7 @@ export const searchReleases = async (req, res, next) => {
 
     const results = await releaseService.search(
       q,
-      limit ? parseInt(limit, 10) : 50,
+      limit ? parseInt(limit, 10) : 50
     );
 
     res.json({
@@ -195,7 +195,7 @@ export const autocomplete = async (req, res, next) => {
     const suggestions = await releaseService.getAutocomplete(
       q,
       field,
-      parseInt(limit, 10),
+      parseInt(limit, 10)
     );
 
     res.json({
@@ -226,7 +226,10 @@ export const searchByAlbumArtistLabel = async (req, res, next) => {
       });
     }
 
-    const results = await releaseService.searchByAlbumArtistLabel(q, limit ? parseInt(limit, 10) : 50);
+    const results = await releaseService.searchByAlbumArtistLabel(
+      q,
+      limit ? parseInt(limit, 10) : 50
+    );
 
     res.json({
       success: true,
@@ -256,7 +259,10 @@ export const fullTextSearch = async (req, res, next) => {
       });
     }
 
-    const results = await releaseService.fullTextSearch(q, limit ? parseInt(limit, 10) : 50);
+    const results = await releaseService.fullTextSearch(
+      q,
+      limit ? parseInt(limit, 10) : 50
+    );
 
     res.json({
       success: true,
@@ -289,7 +295,11 @@ export const facetedSearch = async (req, res, next) => {
     const filters = {
       query: q,
       genres: genres ? (Array.isArray(genres) ? genres : [genres]) : undefined,
-      conditions: conditions ? (Array.isArray(conditions) ? conditions : [conditions]) : undefined,
+      conditions: conditions
+        ? Array.isArray(conditions)
+          ? conditions
+          : [conditions]
+        : undefined,
       priceMin: priceMin ? parseFloat(priceMin) : undefined,
       priceMax: priceMax ? parseFloat(priceMax) : undefined,
       yearMin: yearMin ? parseInt(yearMin, 10) : undefined,

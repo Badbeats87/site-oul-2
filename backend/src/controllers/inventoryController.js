@@ -86,7 +86,7 @@ export const deleteInventory = async (req, res, next) => {
 
     const deleted = await inventoryService.deleteInventory(
       inventoryLotId,
-      reason,
+      reason
     );
 
     res.json({
@@ -167,7 +167,7 @@ export const getLowStockAlerts = async (req, res, next) => {
     const { threshold = 3 } = req.query;
 
     const alerts = await inventoryService.getLowStockAlerts(
-      parseInt(threshold),
+      parseInt(threshold)
     );
 
     res.json({

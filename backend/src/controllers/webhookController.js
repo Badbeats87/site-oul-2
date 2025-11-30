@@ -16,9 +16,10 @@ export async function receiveCarrierWebhook(req, res, next) {
     const { headers, body } = req;
 
     // Get signature from header (varies by carrier)
-    const signature = headers['x-carrier-signature']
-      || headers['stripe-signature']
-      || headers['shippo-signature'];
+    const signature =
+      headers['x-carrier-signature'] ||
+      headers['stripe-signature'] ||
+      headers['shippo-signature'];
 
     if (!signature) {
       logger.warn('Webhook received without signature');
@@ -29,7 +30,7 @@ export async function receiveCarrierWebhook(req, res, next) {
     if (signature) {
       const isValid = await shippingService.validateWebhookSignature(
         signature,
-        body,
+        body
       );
 
       if (!isValid) {

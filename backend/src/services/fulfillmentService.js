@@ -26,11 +26,7 @@ class FulfillmentService {
    */
   async getOrdersReadyToShip(filters = {}) {
     try {
-      const {
-        limit = 50,
-        page = 1,
-        sortBy = 'createdAt',
-      } = filters;
+      const { limit = 50, page = 1, sortBy = 'createdAt' } = filters;
 
       const skip = (page - 1) * limit;
 
@@ -113,7 +109,10 @@ class FulfillmentService {
       }
 
       // Create shipment
-      const shipment = await shippingService.createShipment(orderId, shippingMethod);
+      const shipment = await shippingService.createShipment(
+        orderId,
+        shippingMethod
+      );
 
       logger.info('Order prepared for shipment', {
         orderId,
@@ -197,7 +196,9 @@ class FulfillmentService {
           const shipment = await this.prepareOrderForShipment(orderId);
 
           // Generate label
-          const label = await shippingService.generateShippingLabel(shipment.id);
+          const label = await shippingService.generateShippingLabel(
+            shipment.id
+          );
 
           results.successful.push({
             orderId,
@@ -687,11 +688,7 @@ class FulfillmentService {
    */
   async getShipmentsByStatus(status, filters = {}) {
     try {
-      const {
-        limit = 50,
-        page = 1,
-        sortBy = 'createdAt',
-      } = filters;
+      const { limit = 50, page = 1, sortBy = 'createdAt' } = filters;
 
       const skip = (page - 1) * limit;
 

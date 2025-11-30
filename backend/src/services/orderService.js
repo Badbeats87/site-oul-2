@@ -194,8 +194,12 @@ class OrderService {
           data: {
             status: newStatus,
             // Update relevant timestamps based on new status
-            ...(newStatus === 'PAYMENT_PENDING' && { checkoutStartedAt: new Date() }),
-            ...(newStatus === 'PAYMENT_CONFIRMED' && { paymentConfirmedAt: new Date() }),
+            ...(newStatus === 'PAYMENT_PENDING' && {
+              checkoutStartedAt: new Date(),
+            }),
+            ...(newStatus === 'PAYMENT_CONFIRMED' && {
+              paymentConfirmedAt: new Date(),
+            }),
             ...(newStatus === 'SHIPPED' && { shippedAt: new Date() }),
             ...(newStatus === 'DELIVERED' && { deliveredAt: new Date() }),
           },
@@ -251,7 +255,7 @@ class OrderService {
     if (!validTransitions.includes(toStatus)) {
       throw new ApiError(
         `Cannot transition from ${fromStatus} to ${toStatus}`,
-        400,
+        400
       );
     }
   }
@@ -424,7 +428,9 @@ class OrderService {
           orderId,
           fromStatus: 'PROCESSING',
           toStatus: 'SHIPPED',
-          changeReason: trackingNumber ? `Shipped with tracking ${trackingNumber}` : 'Order shipped',
+          changeReason: trackingNumber
+            ? `Shipped with tracking ${trackingNumber}`
+            : 'Order shipped',
           changedBy: adminId,
         },
       });

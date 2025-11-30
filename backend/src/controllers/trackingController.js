@@ -89,7 +89,8 @@ export async function getTrackingBatch(req, res, next) {
 
     for (const trackingNumber of trackingNumbers) {
       try {
-        const tracking = await shippingService.getTrackingHistory(trackingNumber);
+        const tracking =
+          await shippingService.getTrackingHistory(trackingNumber);
         results.push(tracking);
       } catch (error) {
         errors.push({

@@ -172,7 +172,7 @@ export const requireRole = (minRole) => {
           requiredRole: minRole,
           method: req.method,
           path: req.path,
-        },
+        }
       );
 
       return res.status(403).json({
@@ -232,7 +232,7 @@ export const requirePermission = (permission) => {
           requiredPermission: permission,
           method: req.method,
           path: req.path,
-        },
+        }
       );
 
       return res.status(403).json({

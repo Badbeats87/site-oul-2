@@ -30,7 +30,7 @@ class NotificationService {
       const message = this.buildNotificationMessage(
         fromStatus,
         toStatus,
-        changeReason,
+        changeReason
       );
 
       // TODO: Implement actual notification channels:
@@ -321,8 +321,14 @@ class NotificationService {
    */
   async notifyTrackingUpdate(data) {
     try {
-      const { buyerEmail, orderNumber, trackingNumber, status, location, message } =
-        data;
+      const {
+        buyerEmail,
+        orderNumber,
+        trackingNumber,
+        status,
+        location,
+        message,
+      } = data;
 
       logger.info('Tracking update notification', {
         buyerEmail,
@@ -354,8 +360,14 @@ class NotificationService {
    */
   async notifyDeliveryException(data) {
     try {
-      const { buyerEmail, orderNumber, trackingNumber, exceptionType, details, contactInfo } =
-        data;
+      const {
+        buyerEmail,
+        orderNumber,
+        trackingNumber,
+        exceptionType,
+        details,
+        contactInfo,
+      } = data;
 
       logger.info('Delivery exception notification', {
         buyerEmail,

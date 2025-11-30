@@ -29,7 +29,7 @@ class EbayService {
           logger.warn('eBay rate limit exceeded, backing off');
         }
         return Promise.reject(error);
-      },
+      }
     );
   }
 
@@ -51,7 +51,7 @@ class EbayService {
       }
 
       const auth = Buffer.from(
-        `${EBAY_CLIENT_ID}:${EBAY_CLIENT_SECRET}`,
+        `${EBAY_CLIENT_ID}:${EBAY_CLIENT_SECRET}`
       ).toString('base64');
 
       const response = await axios.post(
@@ -62,7 +62,7 @@ class EbayService {
             Authorization: `Basic ${auth}`,
             'Content-Type': 'application/x-www-form-urlencoded',
           },
-        },
+        }
       );
 
       this.accessToken = response.data.access_token;
@@ -117,7 +117,7 @@ class EbayService {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
-            },
+            }
           );
 
           return {
@@ -136,7 +136,7 @@ class EbayService {
             offset,
           };
         },
-        3600, // Cache for 1 hour
+        3600 // Cache for 1 hour
       );
     } catch (error) {
       if (error.isApiError) throw error;
@@ -180,7 +180,7 @@ class EbayService {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
-            },
+            }
           );
 
           return {
@@ -195,7 +195,7 @@ class EbayService {
             total: response.data.total || 0,
           };
         },
-        1800, // Cache for 30 minutes (sold listings change more frequently)
+        1800 // Cache for 30 minutes (sold listings change more frequently)
       );
     } catch (error) {
       if (error.isApiError) throw error;

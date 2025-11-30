@@ -44,7 +44,7 @@ class AuthService {
       if (!passwordValidation.valid) {
         throw new ApiError(
           `Password does not meet requirements: ${passwordValidation.errors.join('; ')}`,
-          400,
+          400
         );
       }
 
@@ -244,7 +244,7 @@ class AuthService {
       if (!refreshToken || refreshToken.userId !== userId) {
         throw new ApiError(
           'Refresh token not found or does not belong to user',
-          401,
+          401
         );
       }
 
@@ -341,7 +341,7 @@ class AuthService {
       if (oldPassword === newPassword) {
         throw new ApiError(
           'New password must be different from old password',
-          400,
+          400
         );
       }
 
@@ -350,7 +350,7 @@ class AuthService {
       if (!passwordValidation.valid) {
         throw new ApiError(
           `New password does not meet requirements: ${passwordValidation.errors.join('; ')}`,
-          400,
+          400
         );
       }
 
@@ -366,7 +366,7 @@ class AuthService {
       // Verify old password
       const isPasswordValid = await verifyPassword(
         oldPassword,
-        user.passwordHash,
+        user.passwordHash
       );
       if (!isPasswordValid) {
         throw new ApiError('Old password is incorrect', 401);

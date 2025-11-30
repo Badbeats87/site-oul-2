@@ -47,10 +47,13 @@ export async function prepareOrderForShipment(req, res, next) {
 
     const result = await fulfillmentService.prepareOrderForShipment(
       orderId,
-      shippingMethod,
+      shippingMethod
     );
 
-    logger.info('Order prepared for shipment via API', { orderId, shippingMethod });
+    logger.info('Order prepared for shipment via API', {
+      orderId,
+      shippingMethod,
+    });
 
     res.json({
       success: true,
@@ -108,7 +111,10 @@ export async function approveShipment(req, res, next) {
       throw new ApiError('Admin ID required', 401);
     }
 
-    const result = await fulfillmentService.approveShipment(shipmentId, adminId);
+    const result = await fulfillmentService.approveShipment(
+      shipmentId,
+      adminId
+    );
 
     logger.info('Shipment approved via API', { shipmentId, adminId });
 
@@ -143,7 +149,7 @@ export async function rejectShipment(req, res, next) {
     const result = await fulfillmentService.rejectShipment(
       shipmentId,
       adminId,
-      reason,
+      reason
     );
 
     logger.info('Shipment rejected via API', { shipmentId, adminId, reason });
@@ -177,7 +183,7 @@ export async function batchApproveShipments(req, res, next) {
 
     const result = await fulfillmentService.batchApproveShipments(
       shipmentIds,
-      adminId,
+      adminId
     );
 
     logger.info('Batch shipments approved via API', {
@@ -217,7 +223,7 @@ export async function markAsPacked(req, res, next) {
     const result = await fulfillmentService.markAsPacked(
       shipmentId,
       adminId,
-      packageDetails,
+      packageDetails
     );
 
     logger.info('Shipment marked as packed via API', { shipmentId, adminId });
@@ -282,7 +288,7 @@ export async function batchMarkAsShipped(req, res, next) {
 
     const result = await fulfillmentService.batchMarkAsShipped(
       shipmentIds,
-      adminId,
+      adminId
     );
 
     logger.info('Batch shipments marked as shipped via API', {

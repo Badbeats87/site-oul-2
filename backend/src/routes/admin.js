@@ -471,7 +471,7 @@ router.post('/:submissionId/items/:itemId/reject', rejectSubmissionItem);
  */
 router.put(
   '/:submissionId/items/:itemId/counter-offer',
-  updateItemCounterOffer,
+  updateItemCounterOffer
 );
 
 export default router;

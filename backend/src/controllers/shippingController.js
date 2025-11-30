@@ -13,7 +13,8 @@ import { ApiError } from '../middleware/errorHandler.js';
  */
 export async function calculateShippingRates(req, res, next) {
   try {
-    const { originAddress, destinationAddress, items, shippingMethod } = req.body;
+    const { originAddress, destinationAddress, items, shippingMethod } =
+      req.body;
 
     if (!destinationAddress) {
       throw new ApiError('destinationAddress is required', 400);
@@ -26,7 +27,7 @@ export async function calculateShippingRates(req, res, next) {
     const rates = await shippingService.calculateShippingRates(
       originAddress,
       destinationAddress,
-      { items, shippingMethod },
+      { items, shippingMethod }
     );
 
     logger.info('Shipping rates calculated via API', {
@@ -277,18 +278,15 @@ export async function createShippingRate(req, res, next) {
     } = req.body;
 
     if (
-      !zoneId
-      || !shippingMethod
-      || !carrier
-      || baseRate === undefined
-      || perOzRate === undefined
-      || minWeightOz === undefined
-      || maxWeightOz === undefined
+      !zoneId ||
+      !shippingMethod ||
+      !carrier ||
+      baseRate === undefined ||
+      perOzRate === undefined ||
+      minWeightOz === undefined ||
+      maxWeightOz === undefined
     ) {
-      throw new ApiError(
-        'All rate parameters are required',
-        400,
-      );
+      throw new ApiError('All rate parameters are required', 400);
     }
 
     const rate = await shippingService.createShippingRate({
@@ -306,7 +304,10 @@ export async function createShippingRate(req, res, next) {
       isActive: isActive !== false,
     });
 
-    logger.info('Shipping rate created via API', { rateId: rate.id, shippingMethod });
+    logger.info('Shipping rate created via API', {
+      rateId: rate.id,
+      shippingMethod,
+    });
 
     res.json({
       success: true,

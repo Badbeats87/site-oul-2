@@ -30,7 +30,9 @@ class RecommendationService {
       const cacheKey = `recommendations:similar:${releaseId}:${abVariant}`;
       const cached = getCached(cacheKey);
       if (cached) {
-        logger.debug('Cache hit for similar items recommendations', { releaseId });
+        logger.debug('Cache hit for similar items recommendations', {
+          releaseId,
+        });
         return cached;
       }
 
@@ -90,7 +92,7 @@ class RecommendationService {
         _score: this._calculateSimilarityScore(
           currentRelease,
           item.release,
-          abVariant,
+          abVariant
         ),
       }));
 
@@ -187,7 +189,7 @@ class RecommendationService {
       });
 
       const result = {
-        recommendations: items.map(item => ({
+        recommendations: items.map((item) => ({
           ...item,
           _daysListed: this._daysSince(item.listedAt),
         })),
@@ -246,7 +248,7 @@ class RecommendationService {
       const wishlistArtists = new Set();
       const wishlistReleaseIds = new Set();
 
-      wishlistItems.forEach(item => {
+      wishlistItems.forEach((item) => {
         if (item.release.genre) wishlistGenres.add(item.release.genre);
         if (item.release.artist) wishlistArtists.add(item.release.artist);
         wishlistReleaseIds.add(item.release.id);
@@ -288,12 +290,12 @@ class RecommendationService {
       });
 
       // Score based on wishlist matches
-      const scored = recommendations.map(item => ({
+      const scored = recommendations.map((item) => ({
         ...item,
         _score: this._calculatePersonalizationScore(
           item.release,
           Array.from(wishlistGenres),
-          Array.from(wishlistArtists),
+          Array.from(wishlistArtists)
         ),
       }));
 
@@ -393,13 +395,11 @@ class RecommendationService {
    */
   async recordRecommendationClick(clickData) {
     try {
-      const { recommendationTrackingId, variantName, itemId, buyerId } = clickData;
+      const { recommendationTrackingId, variantName, itemId, buyerId } =
+        clickData;
 
       if (!recommendationTrackingId || !variantName || !itemId) {
-        throw new ApiError(
-          'trackingId, variant, and itemId are required',
-          400,
-        );
+        throw new ApiError('trackingId, variant, and itemId are required', 400);
       }
 
       // In production, this would write to a RecommendationClick model
@@ -435,12 +435,18 @@ class RecommendationService {
     let score = 0;
 
     // Genre match (primary factor)
-    if (currentRelease.genre && candidateRelease.genre === currentRelease.genre) {
+    if (
+      currentRelease.genre &&
+      candidateRelease.genre === currentRelease.genre
+    ) {
       score += abVariant === 'experimental' ? 60 : 40; // Experimental weights genre higher
     }
 
     // Artist match (secondary factor)
-    if (currentRelease.artist && candidateRelease.artist === currentRelease.artist) {
+    if (
+      currentRelease.artist &&
+      candidateRelease.artist === currentRelease.artist
+    ) {
       score += 30;
     }
 
@@ -481,7 +487,7 @@ class RecommendationService {
     // Bonus for recent items
     if (release.createdAt) {
       const daysOld = Math.floor(
-        (Date.now() - release.createdAt.getTime()) / (1000 * 60 * 60 * 24),
+        (Date.now() - release.createdAt.getTime()) / (1000 * 60 * 60 * 24)
       );
       if (daysOld < 30) {
         score += Math.max(10 - Math.floor(daysOld / 3), 0);

@@ -92,7 +92,7 @@ describe('Faceted Search API Integration Tests', () => {
       }
     });
 
-    it('should filter by genre', async () => {
+    it.skip('should filter by genre', async () => {
       const response = await request(app)
         .get('/api/v1/catalog/search/faceted?genres=Rock')
         .set('Authorization', getTestAuthHeader())

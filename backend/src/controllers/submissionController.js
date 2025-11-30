@@ -22,7 +22,7 @@ export const createSubmission = async (req, res, next) => {
 
     const submission = await submissionService.createSubmission(
       sellerId,
-      items,
+      items
     );
 
     res.status(201).json({
@@ -100,7 +100,7 @@ export const reviewSubmissionItem = async (req, res, next) => {
     const submission = await submissionService.reviewSubmissionItem(
       sellerId,
       itemId,
-      action,
+      action
     );
 
     res.json({
