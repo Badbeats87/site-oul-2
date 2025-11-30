@@ -2,6 +2,7 @@ import prisma from '../utils/db.js';
 import { ApiError } from '../middleware/errorHandler.js';
 import logger from '../../config/logger.js';
 import submissionService from './submissionService.js';
+import inventoryService from './inventoryService.js';
 
 class AdminSubmissionService {
   /**
@@ -161,6 +162,23 @@ class AdminSubmissionService {
         'Bulk acceptance by admin',
         adminId
       );
+
+      // Create inventory records for accepted items
+      let inventoryResult = null;
+      try {
+        inventoryResult = await inventoryService.createFromSubmission(submissionId);
+        logger.info('Inventory created from accepted submission', {
+          submissionId,
+          inventoryCount: inventoryResult.itemCount,
+          totalValue: inventoryResult.totalInventoryValue,
+        });
+      } catch (error) {
+        logger.error('Warning: Failed to create inventory from submission', {
+          submissionId,
+          error: error.message,
+        });
+        // Don't fail the acceptance if inventory creation fails - seller was already accepted
+      }
 
       return this.getSubmissionDetail(submissionId);
     } catch (error) {

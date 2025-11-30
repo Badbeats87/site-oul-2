@@ -131,6 +131,38 @@ class NotificationService {
   }
 
   /**
+   * Notify seller about inventory creation from accepted submission
+   * @param {Object} data - Inventory data
+   * @param {string} data.submissionId - Submission ID
+   * @param {string} data.sellerEmail - Seller email
+   * @param {number} data.itemCount - Number of items converted to inventory
+   * @param {number} data.totalInventoryValue - Total value of created inventory
+   */
+  async notifyInventoryCreated(data) {
+    try {
+      const { submissionId, sellerEmail, itemCount, totalInventoryValue } = data;
+
+      logger.info('Inventory creation notification', {
+        submissionId,
+        sellerEmail,
+        itemCount,
+        totalInventoryValue,
+      });
+
+      // TODO: Send email to seller confirming inventory creation
+      // Message could include:
+      // - Number of items accepted and added to inventory
+      // - Total value of the accepted items
+      // - Next steps for tracking/selling
+    } catch (error) {
+      logger.error('Error sending inventory notification', {
+        submissionId: data.submissionId,
+        error: error.message,
+      });
+    }
+  }
+
+  /**
    * Notify admin of new submission
    * @param {Object} data - Submission data
    * @param {string} data.submissionId - Submission ID
