@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Vinyl Catalog</title>
+    <link rel="stylesheet" href="../../styles/design-system.css">
+    <link rel="stylesheet" href="../../styles/buyer.css">
+    <link rel="stylesheet" href="../../styles/checkout.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar__container">
+            <a href="../index.html" class="navbar__logo">
+                <svg class="navbar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <circle cx="12" cy="12" r="6"></circle>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <span>Vinyl Catalog</span>
+            </a>
+            <div class="navbar__links">
+                <a href="cart.html" class="nav-link">← Back to Cart</a>
+                <a href="../index.html" class="nav-link">Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <div class="container">
+            <a href="../index.html">Home</a>
+            <span>/</span>
+            <a href="index.html">Catalog</a>
+            <span>/</span>
+            <a href="cart.html">Cart</a>
+            <span>/</span>
+            <span>Checkout</span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="page-content">
+        <div class="container">
+            <h1 class="checkout-title">Checkout</h1>
+
+            <!-- Checkout Progress -->
+            <div class="checkout-progress">
+                <div class="progress-step progress-step--active">
+                    <span class="progress-number">1</span>
+                    <span class="progress-label">Shipping</span>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step">
+                    <span class="progress-number">2</span>
+                    <span class="progress-label">Payment</span>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step">
+                    <span class="progress-number">3</span>
+                    <span class="progress-label">Review</span>
+                </div>
+            </div>
+
+            <div class="checkout-layout">
+                <!-- Checkout Form -->
+                <div class="checkout-form">
+                    <form id="checkout-form" data-checkout-form>
+                        <!-- Shipping Address Section -->
+                        <section class="form-section">
+                            <h2 class="section-title">Shipping Address</h2>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="firstName">First Name *</label>
+                                    <input type="text" id="firstName" name="firstName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="lastName">Last Name *</label>
+                                    <input type="text" id="lastName" name="lastName" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email">Email Address *</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="phone">Phone Number *</label>
+                                <input type="tel" id="phone" name="phone" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="address">Street Address *</label>
+                                <input type="text" id="address" name="address" required>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="city">City *</label>
+                                    <input type="text" id="city" name="city" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="state">State/Province *</label>
+                                    <input type="text" id="state" name="state" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="zipcode">ZIP/Postal Code *</label>
+                                    <input type="text" id="zipcode" name="zipcode" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="country">Country *</label>
+                                    <input type="text" id="country" name="country" value="United States">
+                                </div>
+                            </div>
+
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="sameAsBilling" checked>
+                                <span>Billing address same as shipping</span>
+                            </label>
+                        </section>
+
+                        <!-- Billing Address Section -->
+                        <section class="form-section" id="billing-section" style="display: none;">
+                            <h2 class="section-title">Billing Address</h2>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="billingFirstName">First Name *</label>
+                                    <input type="text" id="billingFirstName" name="billingFirstName">
+                                </div>
+                                <div class="form-group">
+                                    <label for="billingLastName">Last Name *</label>
+                                    <input type="text" id="billingLastName" name="billingLastName">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="billingAddress">Street Address *</label>
+                                <input type="text" id="billingAddress" name="billingAddress">
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="billingCity">City *</label>
+                                    <input type="text" id="billingCity" name="billingCity">
+                                </div>
+                                <div class="form-group">
+                                    <label for="billingState">State/Province *</label>
+                                    <input type="text" id="billingState" name="billingState">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="billingZipcode">ZIP/Postal Code *</label>
+                                    <input type="text" id="billingZipcode" name="billingZipcode">
+                                </div>
+                                <div class="form-group">
+                                    <label for="billingCountry">Country *</label>
+                                    <input type="text" id="billingCountry" name="billingCountry">
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Payment Information Section -->
+                        <section class="form-section">
+                            <h2 class="section-title">Payment Information</h2>
+
+                            <div class="payment-methods">
+                                <label class="payment-option">
+                                    <input type="radio" name="paymentMethod" value="credit-card" checked>
+                                    <span>Credit/Debit Card</span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="paymentMethod" value="paypal">
+                                    <span>PayPal</span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="paymentMethod" value="bank-transfer">
+                                    <span>Bank Transfer</span>
+                                </label>
+                            </div>
+
+                            <!-- Credit Card Form -->
+                            <div id="credit-card-form" class="payment-form">
+                                <div class="form-group">
+                                    <label for="cardholderName">Cardholder Name *</label>
+                                    <input type="text" id="cardholderName" name="cardholderName">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="cardNumber">Card Number *</label>
+                                    <input type="text" id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456">
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="expiry">Expiry Date *</label>
+                                        <input type="text" id="expiry" name="expiry" placeholder="MM/YY">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="cvv">CVV *</label>
+                                        <input type="text" id="cvv" name="cvv" placeholder="123" maxlength="4">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PayPal Info -->
+                            <div id="paypal-form" class="payment-form" style="display: none;">
+                                <p style="color: #666; margin: 0;">
+                                    You will be redirected to PayPal to complete your payment securely.
+                                </p>
+                            </div>
+
+                            <!-- Bank Transfer Info -->
+                            <div id="bank-transfer-form" class="payment-form" style="display: none;">
+                                <p style="color: #666; margin: 0;">
+                                    Instructions for bank transfer will be provided after order confirmation.
+                                </p>
+                            </div>
+
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="saveCard" checked>
+                                <span>Save this card for future purchases</span>
+                            </label>
+                        </section>
+
+                        <!-- Additional Info -->
+                        <section class="form-section">
+                            <h2 class="section-title">Additional Information</h2>
+
+                            <div class="form-group">
+                                <label for="orderNotes">Order Notes (optional)</label>
+                                <textarea id="orderNotes" name="orderNotes" rows="4" placeholder="Any special instructions for your order..."></textarea>
+                            </div>
+
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="subscribe">
+                                <span>Subscribe to our newsletter for deals and updates</span>
+                            </label>
+
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="agreeTerms" required>
+                                <span>I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a> *</span>
+                            </label>
+                        </section>
+                    </form>
+                </div>
+
+                <!-- Order Summary Sidebar -->
+                <div class="checkout-summary">
+                    <div class="summary-box">
+                        <h3 class="summary-title">Order Summary</h3>
+
+                        <!-- Order Items -->
+                        <div class="order-items" data-order-items>
+                            <!-- Items populated by JavaScript -->
+                        </div>
+
+                        <div class="summary-divider"></div>
+
+                        <!-- Totals -->
+                        <div class="summary-totals">
+                            <div class="summary-row">
+                                <span>Subtotal:</span>
+                                <span data-subtotal>$0.00</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Shipping:</span>
+                                <span data-shipping>$10.00</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Tax:</span>
+                                <span data-tax>$0.00</span>
+                            </div>
+
+                            <div class="summary-divider summary-divider--small"></div>
+
+                            <div class="summary-row summary-total">
+                                <span>Total:</span>
+                                <span data-total>$0.00</span>
+                            </div>
+                        </div>
+
+                        <!-- Security Info -->
+                        <div class="security-info">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            </svg>
+                            <span>Your payment information is secure and encrypted</span>
+                        </div>
+
+                        <!-- Place Order Button -->
+                        <button type="submit" form="checkout-form" class="button button--primary button--large button--block" data-place-order-btn>
+                            Place Order
+                        </button>
+
+                        <!-- Back to Cart -->
+                        <a href="cart.html" class="button button--secondary button--large button--block">
+                            Back to Cart
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__content">
+                <div class="footer__section">
+                    <h4>Vinyl Catalog</h4>
+                    <p>Buy and sell vinyl records with confidence</p>
+                </div>
+                <div class="footer__section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="../seller/index.html">Sell Records</a></li>
+                        <li><a href="index.html">Buy Records</a></li>
+                        <li><a href="../index.html">Home</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer__bottom">
+                <p>&copy; 2024 Vinyl Catalog. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../js/api-client.js"></script>
+    <script src="../../js/checkout.js"></script>
+    <script>
+        // Initialize checkout when page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (checkoutManager) {
+                await checkoutManager.initialize();
+            }
+        });
+    </script>
+</body>
+</html>
