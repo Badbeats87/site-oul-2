@@ -569,8 +569,9 @@ describe('Checkout API Integration Tests', () => {
 
   describe('Error handling', () => {
     it('should handle invalid order ID gracefully', async () => {
+      // Use an invalid UUID format (not proper UUID)
       const response = await request(app)
-        .get('/api/v1/checkout/orders/invalid-id')
+        .get('/api/v1/checkout/orders/not-a-uuid')
         .set('Authorization', authHeader)
         .expect(400);
 

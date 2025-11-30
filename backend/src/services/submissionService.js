@@ -4,8 +4,17 @@ import logger from '../../config/logger.js';
 import pricingService from './pricingService.js';
 import releaseService from './releaseService.js';
 import notificationService from './notificationService.js';
+import { v4 as isUuid } from 'uuid';
 
 class SubmissionService {
+  /**
+   * Validate UUID format
+   * @param {string} id - ID to validate
+   * @returns {boolean}
+   */
+  isValidUuid(id) {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+  }
   /**
    * Helper method to track status changes and log to audit trail
    * @param {string} submissionId - Submission ID
@@ -190,6 +199,11 @@ class SubmissionService {
    */
   async getSubmission(submissionId) {
     try {
+      // Validate UUID format
+      if (!this.isValidUuid(submissionId)) {
+        throw new ApiError('Invalid submission ID format', 400);
+      }
+
       const submission = await prisma.sellerSubmission.findUnique({
         where: { id: submissionId },
         include: {
