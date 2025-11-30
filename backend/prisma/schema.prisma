@@ -324,6 +324,7 @@ model InventoryLot {
   // Relations
   release           Release          @relation(fields: [releaseId], references: [id], onDelete: Restrict)
   submissionItem    SubmissionItem?  @relation(fields: [submissionItemId], references: [id], onDelete: SetNull)
+  orderItems        OrderItem[]
 
   // Indexes
   @@index([releaseId, status])
@@ -350,6 +351,118 @@ enum VinylCondition {
   G           // Good
   FAIR
   POOR
+}
+
+// ============================================================================
+// ORDERS & CHECKOUT
+// ============================================================================
+
+enum OrderStatus {
+  CART                // Initial state - items in cart
+  PAYMENT_PENDING     // Payment intent created, awaiting confirmation
+  PAYMENT_CONFIRMED   // Payment successful
+  PROCESSING          // Order being prepared for shipment
+  SHIPPED             // Order shipped to customer
+  DELIVERED           // Order delivered
+  CANCELLED           // Order cancelled
+  PAYMENT_FAILED      // Payment failed
+  REFUNDED            // Order refunded
+}
+
+model Order {
+  id                     String      @id @default(uuid()) @db.Uuid
+  orderNumber            String      @unique @db.VarChar(50)
+
+  // Buyer Information (guest checkout supported)
+  buyerEmail             String      @db.VarChar(255)
+  buyerName              String?     @db.VarChar(255)
+  buyerId                String?     @db.Uuid
+
+  // Order Status
+  status                 OrderStatus @default(CART)
+
+  // Pricing
+  subtotal               Decimal     @db.Decimal(10, 2)
+  tax                    Decimal     @default(0) @db.Decimal(10, 2)
+  shipping               Decimal     @default(0) @db.Decimal(10, 2)
+  total                  Decimal     @db.Decimal(10, 2)
+
+  // Payment
+  stripePaymentIntentId  String?     @unique @map("stripe_payment_intent_id") @db.VarChar(255)
+  stripePaymentStatus    String?     @map("stripe_payment_status") @db.VarChar(50)
+  paymentMethod          String?     @map("payment_method") @db.VarChar(50)
+
+  // Shipping Address
+  shippingAddress        Json?
+
+  // Metadata
+  sessionId              String?     @db.VarChar(255)
+  ipAddress              String?     @db.VarChar(50)
+  userAgent              String?     @db.VarChar(500)
+
+  // Timestamps
+  createdAt              DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt              DateTime    @updatedAt @map("updated_at") @db.Timestamptz
+  checkoutStartedAt      DateTime?   @map("checkout_started_at") @db.Timestamptz
+  paymentConfirmedAt     DateTime?   @map("payment_confirmed_at") @db.Timestamptz
+  shippedAt              DateTime?   @map("shipped_at") @db.Timestamptz
+  deliveredAt            DateTime?   @map("delivered_at") @db.Timestamptz
+
+  // Relations
+  items                  OrderItem[]
+  audits                 OrderAudit[]
+
+  // Indexes
+  @@index([buyerEmail])
+  @@index([status, createdAt(sort: Desc)])
+  @@index([stripePaymentIntentId])
+  @@index([sessionId])
+  @@map("orders")
+}
+
+model OrderItem {
+  id                 String         @id @default(uuid()) @db.Uuid
+  orderId            String         @map("order_id") @db.Uuid
+  inventoryLotId     String         @map("inventory_lot_id") @db.Uuid
+
+  // Snapshot pricing (preserve historical prices)
+  priceAtPurchase    Decimal        @map("price_at_purchase") @db.Decimal(10, 2)
+
+  // Product snapshot
+  releaseTitle       String         @map("release_title") @db.VarChar(500)
+  releaseArtist      String         @map("release_artist") @db.VarChar(500)
+  conditionMedia     VinylCondition @map("condition_media")
+  conditionSleeve    VinylCondition @map("condition_sleeve")
+
+  // Timestamps
+  createdAt          DateTime       @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  order              Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  inventoryLot       InventoryLot   @relation(fields: [inventoryLotId], references: [id], onDelete: Restrict)
+
+  // Indexes
+  @@index([orderId])
+  @@index([inventoryLotId])
+  @@map("order_items")
+}
+
+model OrderAudit {
+  id           String      @id @default(uuid()) @db.Uuid
+  orderId      String      @map("order_id") @db.Uuid
+  fromStatus   OrderStatus @map("from_status")
+  toStatus     OrderStatus @map("to_status")
+  changeReason String?     @map("change_reason") @db.VarChar(255)
+  changedBy    String?     @map("changed_by") @db.Uuid
+  changedAt    DateTime    @default(now()) @map("changed_at") @db.Timestamptz
+
+  // Relations
+  order        Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([orderId, changedAt(sort: Desc)])
+  @@index([changedAt(sort: Desc)])
+  @@map("order_audits")
 }
 
 // ============================================================================
