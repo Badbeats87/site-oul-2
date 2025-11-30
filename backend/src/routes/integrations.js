@@ -1,20 +1,20 @@
-import express from "express";
+import express from 'express';
 import {
   discogsLimiter,
   ebayLimiter,
-} from "../middleware/integrationRateLimiter.js";
+} from '../middleware/integrationRateLimiter.js';
 import {
   searchDiscogs,
   getDiscogsRelease,
   getDiscogsPrices,
   searchDiscogsEnriched,
-} from "../controllers/discogsController.js";
+} from '../controllers/discogsController.js';
 import {
   searchEbay,
   getSoldListingsEbay,
   getPricesEbay,
   searchEbayEnriched,
-} from "../controllers/ebayController.js";
+} from '../controllers/ebayController.js';
 
 const router = express.Router();
 
@@ -57,7 +57,7 @@ const router = express.Router();
  *       400:
  *         description: Missing required parameters
  */
-router.get("/discogs/search", discogsLimiter, searchDiscogs);
+router.get('/discogs/search', discogsLimiter, searchDiscogs);
 
 /**
  * @swagger
@@ -90,7 +90,7 @@ router.get("/discogs/search", discogsLimiter, searchDiscogs);
  *       200:
  *         description: Enriched search results with metadata and pricing
  */
-router.get("/discogs/search-enriched", discogsLimiter, searchDiscogsEnriched);
+router.get('/discogs/search-enriched', discogsLimiter, searchDiscogsEnriched);
 
 /**
  * @swagger
@@ -116,7 +116,7 @@ router.get("/discogs/search-enriched", discogsLimiter, searchDiscogsEnriched);
  *       404:
  *         description: Release not found
  */
-router.get("/discogs/releases/:id", discogsLimiter, getDiscogsRelease);
+router.get('/discogs/releases/:id', discogsLimiter, getDiscogsRelease);
 
 /**
  * @swagger
@@ -140,7 +140,7 @@ router.get("/discogs/releases/:id", discogsLimiter, getDiscogsRelease);
  *       200:
  *         description: Price statistics
  */
-router.get("/discogs/prices/:id", discogsLimiter, getDiscogsPrices);
+router.get('/discogs/prices/:id', discogsLimiter, getDiscogsPrices);
 
 // ============================================================================
 // eBay Integration Routes
@@ -185,7 +185,7 @@ router.get("/discogs/prices/:id", discogsLimiter, getDiscogsPrices);
  *       400:
  *         description: Missing required parameters
  */
-router.get("/ebay/search", ebayLimiter, searchEbay);
+router.get('/ebay/search', ebayLimiter, searchEbay);
 
 /**
  * @swagger
@@ -214,7 +214,7 @@ router.get("/ebay/search", ebayLimiter, searchEbay);
  *       200:
  *         description: Sold listings
  */
-router.get("/ebay/sold-listings", ebayLimiter, getSoldListingsEbay);
+router.get('/ebay/sold-listings', ebayLimiter, getSoldListingsEbay);
 
 /**
  * @swagger
@@ -238,7 +238,7 @@ router.get("/ebay/sold-listings", ebayLimiter, getSoldListingsEbay);
  *       200:
  *         description: Price statistics
  */
-router.get("/ebay/prices", ebayLimiter, getPricesEbay);
+router.get('/ebay/prices', ebayLimiter, getPricesEbay);
 
 /**
  * @swagger
@@ -262,6 +262,6 @@ router.get("/ebay/prices", ebayLimiter, getPricesEbay);
  *       200:
  *         description: Enriched search results with pricing
  */
-router.get("/ebay/search-enriched", ebayLimiter, searchEbayEnriched);
+router.get('/ebay/search-enriched', ebayLimiter, searchEbayEnriched);
 
 export default router;

@@ -1,10 +1,10 @@
-import logger from "../../config/logger.js";
+import logger from '../../config/logger.js';
 
 /**
  * Global error handling middleware
  */
 export const errorHandler = (error, req, res, next) => {
-  const requestId = req.id || "unknown";
+  const requestId = req.id || 'unknown';
 
   // Log the error
   logger.error(`[${requestId}] Error: ${error.message}`, {
@@ -14,7 +14,7 @@ export const errorHandler = (error, req, res, next) => {
 
   // Default error response
   const status = error.status || 500;
-  const message = error.message || "Internal Server Error";
+  const message = error.message || 'Internal Server Error';
 
   // Send error response
   res.status(status).json({
@@ -23,7 +23,7 @@ export const errorHandler = (error, req, res, next) => {
       message,
       status,
       requestId,
-      ...(process.env.NODE_ENV === "development" && { stack: error.stack }),
+      ...(process.env.NODE_ENV === 'development' && { stack: error.stack }),
     },
   });
 };
@@ -35,6 +35,6 @@ export class ApiError extends Error {
   constructor(message, status = 500) {
     super(message);
     this.status = status;
-    this.name = "ApiError";
+    this.name = 'ApiError';
   }
 }

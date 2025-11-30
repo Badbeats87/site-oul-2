@@ -1,8 +1,8 @@
-import prisma from "../utils/db.js";
-import { ApiError } from "../middleware/errorHandler.js";
-import logger from "../../config/logger.js";
-import submissionService from "./submissionService.js";
-import inventoryService from "./inventoryService.js";
+import prisma from '../utils/db.js';
+import { ApiError } from '../middleware/errorHandler.js';
+import logger from '../../config/logger.js';
+import submissionService from './submissionService.js';
+import inventoryService from './inventoryService.js';
 
 class AdminSubmissionService {
   /**
@@ -33,25 +33,25 @@ class AdminSubmissionService {
         maxValue,
         limit = 50,
         page = 1,
-        sortBy = "createdAt",
-        sortOrder = "desc",
+        sortBy = 'createdAt',
+        sortOrder = 'desc',
       } = filters;
 
       if (limit > 500) {
-        throw new ApiError("Limit cannot exceed 500", 400);
+        throw new ApiError('Limit cannot exceed 500', 400);
       }
 
       // Validate sort field to prevent injection
       const validSortFields = [
-        "createdAt",
-        "totalOffered",
-        "totalAccepted",
-        "updatedAt",
+        'createdAt',
+        'totalOffered',
+        'totalAccepted',
+        'updatedAt',
       ];
       const finalSortBy = validSortFields.includes(sortBy)
         ? sortBy
-        : "createdAt";
-      const finalSortOrder = sortOrder === "asc" ? "asc" : "desc";
+        : 'createdAt';
+      const finalSortOrder = sortOrder === 'asc' ? 'asc' : 'desc';
 
       // Build WHERE clause dynamically
       const where = {};
@@ -64,8 +64,8 @@ class AdminSubmissionService {
       // Seller search (email or name - case insensitive)
       if (sellerSearch) {
         where.OR = [
-          { sellerContact: { contains: sellerSearch, mode: "insensitive" } },
-          { sellerName: { contains: sellerSearch, mode: "insensitive" } },
+          { sellerContact: { contains: sellerSearch, mode: 'insensitive' } },
+          { sellerName: { contains: sellerSearch, mode: 'insensitive' } },
         ];
       }
 
@@ -156,8 +156,8 @@ class AdminSubmissionService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error getting submission queue", { error: error.message });
-      throw new ApiError("Failed to get submission queue", 500);
+      logger.error('Error getting submission queue', { error: error.message });
+      throw new ApiError('Failed to get submission queue', 500);
     }
   }
 
@@ -186,24 +186,24 @@ class AdminSubmissionService {
             },
           },
           audits: {
-            orderBy: { changedAt: "desc" },
+            orderBy: { changedAt: 'desc' },
             take: 10,
           },
         },
       });
 
       if (!submission) {
-        throw new ApiError("Submission not found", 404);
+        throw new ApiError('Submission not found', 404);
       }
 
       return submission;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error getting submission detail", {
+      logger.error('Error getting submission detail', {
         submissionId,
         error: error.message,
       });
-      throw new ApiError("Failed to get submission detail", 500);
+      throw new ApiError('Failed to get submission detail', 500);
     }
   }
 
@@ -222,7 +222,7 @@ class AdminSubmissionService {
       });
 
       if (!submission) {
-        throw new ApiError("Submission not found", 404);
+        throw new ApiError('Submission not found', 404);
       }
 
       // Accept all items
@@ -231,7 +231,7 @@ class AdminSubmissionService {
         await submissionService.reviewSubmissionItem(
           submissionId,
           itemId,
-          "accept",
+          'accept',
         );
       }
 
@@ -241,7 +241,7 @@ class AdminSubmissionService {
           where: { id: submissionId },
           data: {
             sellerNotes:
-              (submission.sellerNotes || "") +
+              (submission.sellerNotes || '') +
               `\n[Admin: ${new Date().toISOString()}] ${notes}`,
           },
         });
@@ -251,8 +251,8 @@ class AdminSubmissionService {
       await submissionService.logStatusChange(
         submissionId,
         submission.status,
-        "ACCEPTED",
-        "Bulk acceptance by admin",
+        'ACCEPTED',
+        'Bulk acceptance by admin',
         adminId,
       );
 
@@ -261,13 +261,13 @@ class AdminSubmissionService {
       try {
         inventoryResult =
           await inventoryService.createFromSubmission(submissionId);
-        logger.info("Inventory created from accepted submission", {
+        logger.info('Inventory created from accepted submission', {
           submissionId,
           inventoryCount: inventoryResult.itemCount,
           totalValue: inventoryResult.totalInventoryValue,
         });
       } catch (error) {
-        logger.error("Warning: Failed to create inventory from submission", {
+        logger.error('Warning: Failed to create inventory from submission', {
           submissionId,
           error: error.message,
         });
@@ -277,11 +277,11 @@ class AdminSubmissionService {
       return this.getSubmissionDetail(submissionId);
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error accepting submission", {
+      logger.error('Error accepting submission', {
         submissionId,
         error: error.message,
       });
-      throw new ApiError("Failed to accept submission", 500);
+      throw new ApiError('Failed to accept submission', 500);
     }
   }
 
@@ -301,7 +301,7 @@ class AdminSubmissionService {
       });
 
       if (!submission) {
-        throw new ApiError("Submission not found", 404);
+        throw new ApiError('Submission not found', 404);
       }
 
       // Reject all items
@@ -310,17 +310,17 @@ class AdminSubmissionService {
         await submissionService.reviewSubmissionItem(
           submissionId,
           itemId,
-          "reject",
+          'reject',
         );
       }
 
       // Update with rejection notes
-      const fullNotes = `[REJECTED: ${reason || "No reason provided"}] ${notes || ""}`;
+      const fullNotes = `[REJECTED: ${reason || 'No reason provided'}] ${notes || ''}`;
       await prisma.sellerSubmission.update({
         where: { id: submissionId },
         data: {
           sellerNotes:
-            (submission.sellerNotes || "") +
+            (submission.sellerNotes || '') +
             `\n[Admin: ${new Date().toISOString()}] ${fullNotes}`,
         },
       });
@@ -329,19 +329,19 @@ class AdminSubmissionService {
       await submissionService.logStatusChange(
         submissionId,
         submission.status,
-        "REJECTED",
-        `Bulk rejection by admin: ${reason || "No reason"}`,
+        'REJECTED',
+        `Bulk rejection by admin: ${reason || 'No reason'}`,
         adminId,
       );
 
       return this.getSubmissionDetail(submissionId);
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error rejecting submission", {
+      logger.error('Error rejecting submission', {
         submissionId,
         error: error.message,
       });
-      throw new ApiError("Failed to reject submission", 500);
+      throw new ApiError('Failed to reject submission', 500);
     }
   }
 
@@ -361,7 +361,7 @@ class AdminSubmissionService {
       });
 
       if (!submission) {
-        throw new ApiError("Submission not found", 404);
+        throw new ApiError('Submission not found', 404);
       }
 
       // Validate all items exist in submission
@@ -374,7 +374,7 @@ class AdminSubmissionService {
           );
         }
         if (item.counterOfferPrice < 0) {
-          throw new ApiError("Counter-offer price cannot be negative", 400);
+          throw new ApiError('Counter-offer price cannot be negative', 400);
         }
       }
 
@@ -392,7 +392,7 @@ class AdminSubmissionService {
       // Update submission status to COUNTER_OFFERED
       await prisma.sellerSubmission.update({
         where: { id: submissionId },
-        data: { status: "COUNTER_OFFERED" },
+        data: { status: 'COUNTER_OFFERED' },
       });
 
       // Add admin notes
@@ -401,7 +401,7 @@ class AdminSubmissionService {
           where: { id: submissionId },
           data: {
             sellerNotes:
-              (submission.sellerNotes || "") +
+              (submission.sellerNotes || '') +
               `\n[Admin: ${new Date().toISOString()}] Counter-offer: ${notes}`,
           },
         });
@@ -411,12 +411,12 @@ class AdminSubmissionService {
       await submissionService.logStatusChange(
         submissionId,
         submission.status,
-        "COUNTER_OFFERED",
+        'COUNTER_OFFERED',
         `Counter-offers created for ${items.length} items`,
         adminId,
       );
 
-      logger.info("Counter-offers created", {
+      logger.info('Counter-offers created', {
         submissionId,
         itemCount: items.length,
         totalCounterOffered,
@@ -425,11 +425,11 @@ class AdminSubmissionService {
       return this.getSubmissionDetail(submissionId);
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error creating counter-offer", {
+      logger.error('Error creating counter-offer', {
         submissionId,
         error: error.message,
       });
-      throw new ApiError("Failed to create counter-offer", 500);
+      throw new ApiError('Failed to create counter-offer', 500);
     }
   }
 
@@ -446,7 +446,7 @@ class AdminSubmissionService {
       const result = await submissionService.reviewSubmissionItem(
         submissionId,
         itemId,
-        "accept",
+        'accept',
       );
 
       if (notes) {
@@ -454,22 +454,22 @@ class AdminSubmissionService {
           where: { id: submissionId },
           data: {
             sellerNotes:
-              (result.sellerNotes || "") +
+              (result.sellerNotes || '') +
               `\n[Admin: ${new Date().toISOString()}] Item accepted: ${notes}`,
           },
         });
       }
 
-      logger.info("Item accepted", { submissionId, itemId });
+      logger.info('Item accepted', { submissionId, itemId });
       return result;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error accepting item", {
+      logger.error('Error accepting item', {
         submissionId,
         itemId,
         error: error.message,
       });
-      throw new ApiError("Failed to accept item", 500);
+      throw new ApiError('Failed to accept item', 500);
     }
   }
 
@@ -487,29 +487,29 @@ class AdminSubmissionService {
       const result = await submissionService.reviewSubmissionItem(
         submissionId,
         itemId,
-        "reject",
+        'reject',
       );
 
-      const fullNotes = `Item rejected: ${reason || "No reason"} - ${notes || ""}`;
+      const fullNotes = `Item rejected: ${reason || 'No reason'} - ${notes || ''}`;
       await prisma.sellerSubmission.update({
         where: { id: submissionId },
         data: {
           sellerNotes:
-            (result.sellerNotes || "") +
+            (result.sellerNotes || '') +
             `\n[Admin: ${new Date().toISOString()}] ${fullNotes}`,
         },
       });
 
-      logger.info("Item rejected", { submissionId, itemId, reason });
+      logger.info('Item rejected', { submissionId, itemId, reason });
       return result;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error rejecting item", {
+      logger.error('Error rejecting item', {
         submissionId,
         itemId,
         error: error.message,
       });
-      throw new ApiError("Failed to reject item", 500);
+      throw new ApiError('Failed to reject item', 500);
     }
   }
 
@@ -547,13 +547,13 @@ class AdminSubmissionService {
           where: { id: submissionId },
           data: {
             sellerNotes:
-              (submission.sellerNotes || "") +
+              (submission.sellerNotes || '') +
               `\n[Admin: ${new Date().toISOString()}] Counter-offer updated to $${counterOfferPrice}: ${notes}`,
           },
         });
       }
 
-      logger.info("Counter-offer updated", {
+      logger.info('Counter-offer updated', {
         submissionId,
         itemId,
         counterOfferPrice,
@@ -561,12 +561,12 @@ class AdminSubmissionService {
       return await this.getSubmissionDetail(submissionId);
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error updating counter-offer", {
+      logger.error('Error updating counter-offer', {
         submissionId,
         itemId,
         error: error.message,
       });
-      throw new ApiError("Failed to update counter-offer", 500);
+      throw new ApiError('Failed to update counter-offer', 500);
     }
   }
 
@@ -584,26 +584,26 @@ class AdminSubmissionService {
       });
 
       if (!submission) {
-        throw new ApiError("Submission not found", 404);
+        throw new ApiError('Submission not found', 404);
       }
 
       const timestamp = new Date().toISOString();
-      const fullNotes = `${submission.sellerNotes || ""}\n[Admin: ${timestamp}] ${notes}`;
+      const fullNotes = `${submission.sellerNotes || ''}\n[Admin: ${timestamp}] ${notes}`;
 
       const updated = await prisma.sellerSubmission.update({
         where: { id: submissionId },
         data: { sellerNotes: fullNotes },
       });
 
-      logger.info("Submission notes updated", { submissionId, adminId });
+      logger.info('Submission notes updated', { submissionId, adminId });
       return updated;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error updating notes", {
+      logger.error('Error updating notes', {
         submissionId,
         error: error.message,
       });
-      throw new ApiError("Failed to update submission notes", 500);
+      throw new ApiError('Failed to update submission notes', 500);
     }
   }
 
@@ -618,7 +618,7 @@ class AdminSubmissionService {
         where: { id: submissionId },
         include: {
           audits: {
-            orderBy: { changedAt: "desc" },
+            orderBy: { changedAt: 'desc' },
           },
           items: {
             include: {
@@ -635,17 +635,17 @@ class AdminSubmissionService {
       });
 
       if (!submission) {
-        throw new ApiError("Submission not found", 404);
+        throw new ApiError('Submission not found', 404);
       }
 
       return submission;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error getting audit trail", {
+      logger.error('Error getting audit trail', {
         submissionId,
         error: error.message,
       });
-      throw new ApiError("Failed to get audit trail", 500);
+      throw new ApiError('Failed to get audit trail', 500);
     }
   }
 }

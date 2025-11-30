@@ -1,18 +1,18 @@
-import express from "express";
+import express from 'express';
 import {
   registerSeller,
   getSellerById,
   updateSeller,
   listSellers,
   getSellerQuote,
-} from "../controllers/sellerController.js";
+} from '../controllers/sellerController.js';
 import {
   createSubmission,
   getSubmission,
   updateItemQuote,
   reviewSubmissionItem,
   getSubmissionHistory,
-} from "../controllers/submissionController.js";
+} from '../controllers/submissionController.js';
 
 const router = express.Router();
 
@@ -52,7 +52,7 @@ const router = express.Router();
  *       400:
  *         description: Invalid request data
  */
-router.post("/register", registerSeller);
+router.post('/register', registerSeller);
 
 /**
  * @swagger
@@ -85,7 +85,7 @@ router.post("/register", registerSeller);
  *       200:
  *         description: List of sellers
  */
-router.get("/", listSellers);
+router.get('/', listSellers);
 
 /**
  * @swagger
@@ -135,8 +135,8 @@ router.get("/", listSellers);
  *       404:
  *         description: Seller not found
  */
-router.get("/:id", getSellerById);
-router.put("/:id", updateSeller);
+router.get('/:id', getSellerById);
+router.put('/:id', updateSeller);
 
 /**
  * @swagger
@@ -159,7 +159,7 @@ router.put("/:id", updateSeller);
  *       404:
  *         description: Seller not found
  */
-router.get("/:id/quote", getSellerQuote);
+router.get('/:id/quote', getSellerQuote);
 
 // ============================================================================
 // SUBMISSION ENDPOINTS
@@ -235,8 +235,8 @@ router.get("/:id/quote", getSellerQuote);
  *       404:
  *         description: Submission not found
  */
-router.post("/:sellerId", createSubmission);
-router.get("/:sellerId", getSubmission);
+router.post('/:sellerId', createSubmission);
+router.get('/:sellerId', getSubmission);
 
 /**
  * @swagger
@@ -277,7 +277,7 @@ router.get("/:sellerId", getSubmission);
  *       404:
  *         description: Item not found
  */
-router.put("/:sellerId/items/:itemId", updateItemQuote);
+router.put('/:sellerId/items/:itemId', updateItemQuote);
 
 /**
  * @swagger
@@ -320,7 +320,7 @@ router.put("/:sellerId/items/:itemId", updateItemQuote);
  *       404:
  *         description: Item not found
  */
-router.post("/:sellerId/items/:itemId/review", reviewSubmissionItem);
+router.post('/:sellerId/items/:itemId/review', reviewSubmissionItem);
 
 /**
  * @swagger
@@ -343,6 +343,6 @@ router.post("/:sellerId/items/:itemId/review", reviewSubmissionItem);
  *       404:
  *         description: Submission not found
  */
-router.get("/:sellerId/history", getSubmissionHistory);
+router.get('/:sellerId/history', getSubmissionHistory);
 
 export default router;
