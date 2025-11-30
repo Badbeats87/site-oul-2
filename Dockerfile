@@ -13,6 +13,7 @@ RUN npm ci
 COPY backend/src ./src
 COPY backend/prisma ./prisma
 COPY backend/config ./config
+COPY backend/scripts ./scripts
 
 # Generate Prisma Client
 RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npx prisma generate
@@ -39,6 +40,9 @@ COPY --from=builder /app/config ./config
 # Copy generated Prisma client from builder
 COPY --from=builder /app/src/generated/prisma ./src/generated/prisma
 
+# Copy startup script from builder
+COPY --from=builder /app/scripts ./scripts
+
 # Copy package.json
 COPY backend/package.json ./
 
@@ -62,15 +66,8 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
-# Create startup script that seeds database then starts server
-RUN echo '#!/bin/sh\n\
-set -e\n\
-echo "Running database migrations..."\n\
-npx prisma migrate deploy --skip-generate || true\n\
-echo "Seeding database..."\n\
-node prisma/seed.js || echo "Seeding failed or already seeded"\n\
-echo "Starting server..."\n\
-npm start\n' > /app/startup.sh && chmod +x /app/startup.sh
+# Make startup script executable
+RUN chmod +x /app/scripts/startup.sh
 
-# Start server
-CMD ["/app/startup.sh"]
+# Start server with startup script
+CMD ["/app/scripts/startup.sh"]
