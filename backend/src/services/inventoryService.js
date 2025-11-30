@@ -1,6 +1,8 @@
 import prisma from '../utils/db.js';
 import { ApiError } from '../middleware/errorHandler.js';
 import logger from '../../config/logger.js';
+import pricingService from './pricingService.js';
+import notificationService from './notificationService.js';
 
 /**
  * Inventory Service
@@ -282,6 +284,211 @@ class InventoryService {
     } catch (error) {
       logger.error('Error calculating price statistics', { filters, error: error.message });
       throw new ApiError('Failed to calculate price statistics', 500);
+    }
+  }
+
+  /**
+   * Create inventory record from accepted submission item
+   * @param {string} submissionItemId - Submission item ID
+   * @param {Object} options - Creation options
+   * @param {string} options.channel - Sales channel (optional)
+   * @returns {Promise<Object>} Created inventory lot
+   */
+  async createFromSubmissionItem(submissionItemId, options = {}) {
+    try {
+      const { channel = 'direct' } = options;
+
+      // Get submission item with release and submission info
+      const item = await prisma.submissionItem.findUnique({
+        where: { id: submissionItemId },
+        include: {
+          release: true,
+          submission: true,
+        },
+      });
+
+      if (!item) {
+        throw new ApiError('Submission item not found', 404);
+      }
+
+      if (item.status !== 'ACCEPTED') {
+        throw new ApiError(
+          `Cannot create inventory for item with status: ${item.status}`,
+          400
+        );
+      }
+
+      // Use final offer price as cost basis
+      const costBasis = item.finalOfferPrice || item.counterOfferPrice || item.autoOfferPrice;
+
+      // Calculate sell price using pricing service
+      const sellPrice = await this.calculateSellPrice(
+        item.release,
+        item.sellerConditionMedia,
+        item.sellerConditionSleeve
+      );
+
+      // Create inventory lot
+      const inventoryLot = await prisma.inventoryLot.create({
+        data: {
+          releaseId: item.releaseId,
+          submissionItemId: item.id,
+          conditionMedia: item.sellerConditionMedia,
+          conditionSleeve: item.sellerConditionSleeve,
+          costBasis,
+          listPrice: sellPrice,
+          channel,
+          status: 'DRAFT',
+          internalNotes: `Auto-created from submission by seller: ${item.submission.sellerContact}`,
+        },
+        include: {
+          release: true,
+        },
+      });
+
+      // Update submission item status to CONVERTED_TO_INVENTORY
+      await prisma.submissionItem.update({
+        where: { id: submissionItemId },
+        data: {
+          status: 'CONVERTED_TO_INVENTORY',
+        },
+      });
+
+      logger.info('Inventory created from submission item', {
+        inventoryLotId: inventoryLot.id,
+        submissionItemId,
+        releaseId: item.releaseId,
+        costBasis: Number(costBasis),
+        listPrice: Number(sellPrice),
+      });
+
+      return inventoryLot;
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      logger.error('Error creating inventory from submission', {
+        submissionItemId,
+        error: error.message,
+      });
+      throw new ApiError('Failed to create inventory record', 500);
+    }
+  }
+
+  /**
+   * Create inventory records for entire submission
+   * @param {string} submissionId - Submission ID
+   * @param {Object} options - Creation options
+   * @returns {Promise<Object>} Result with created inventory records
+   */
+  async createFromSubmission(submissionId, options = {}) {
+    try {
+      const { channel = 'direct' } = options;
+
+      // Get submission with all accepted items
+      const submission = await prisma.sellerSubmission.findUnique({
+        where: { id: submissionId },
+        include: {
+          items: {
+            where: { status: 'ACCEPTED' },
+            include: { release: true },
+          },
+        },
+      });
+
+      if (!submission) {
+        throw new ApiError('Submission not found', 404);
+      }
+
+      if (submission.items.length === 0) {
+        throw new ApiError('No accepted items in submission', 400);
+      }
+
+      const createdInventory = [];
+      let totalInventoryValue = 0;
+
+      // Create inventory for each accepted item
+      for (const item of submission.items) {
+        try {
+          const lot = await this.createFromSubmissionItem(item.id, { channel });
+          createdInventory.push(lot);
+          totalInventoryValue += Number(lot.listPrice);
+        } catch (error) {
+          logger.error('Failed to create inventory for item', {
+            itemId: item.id,
+            error: error.message,
+          });
+          // Continue with next item instead of failing entire operation
+        }
+      }
+
+      // Send seller notification
+      await notificationService.notifyInventoryCreated({
+        submissionId,
+        sellerEmail: submission.sellerContact,
+        itemCount: createdInventory.length,
+        totalInventoryValue,
+      });
+
+      logger.info('Inventory created from submission', {
+        submissionId,
+        itemCount: createdInventory.length,
+        totalValue: totalInventoryValue,
+      });
+
+      return {
+        submissionId,
+        inventoryLots: createdInventory,
+        itemCount: createdInventory.length,
+        totalInventoryValue,
+      };
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      logger.error('Error creating inventory from submission', {
+        submissionId,
+        error: error.message,
+      });
+      throw new ApiError('Failed to create inventory from submission', 500);
+    }
+  }
+
+  /**
+   * Calculate sell price for inventory item
+   * @param {Object} release - Release object with pricing info
+   * @param {string} conditionMedia - Media condition
+   * @param {string} conditionSleeve - Sleeve condition
+   * @returns {Promise<number>} Calculated sell price
+   */
+  async calculateSellPrice(release, conditionMedia, conditionSleeve) {
+    try {
+      // Get pricing policy for this release
+      const policy = await prisma.releasePricingPolicy.findFirst({
+        where: {
+          releaseId: release.id,
+          isActive: true,
+        },
+        include: { policy: true },
+        orderBy: { priority: 'asc' },
+      });
+
+      if (!policy) {
+        throw new ApiError('No active pricing policy found for release', 400);
+      }
+
+      // Calculate sell price using pricing service
+      const sellPrice = await pricingService.calculateSellPrice(
+        release,
+        conditionMedia,
+        conditionSleeve,
+        policy.policy
+      );
+
+      return sellPrice;
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      logger.error('Error calculating sell price', {
+        releaseId: release.id,
+        error: error.message,
+      });
+      throw new ApiError('Failed to calculate sell price', 500);
     }
   }
 }
