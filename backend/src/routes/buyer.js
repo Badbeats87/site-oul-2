@@ -6,6 +6,11 @@ import {
   searchProducts,
   addToWishlist,
   removeFromWishlist,
+  getSimilarItems,
+  getNewArrivals,
+  getPersonalizedRecommendations,
+  getRecommendationVariants,
+  recordRecommendationClick,
 } from '../controllers/buyerController.js';
 
 const router = express.Router();
@@ -221,5 +226,181 @@ router.post('/wishlist', addToWishlist);
  *         description: Item not found in wishlist
  */
 router.delete('/wishlist/:inventoryLotId', removeFromWishlist);
+
+// ============================================================================
+// RECOMMENDATIONS & DISCOVERY
+// ============================================================================
+
+/**
+ * @swagger
+ * /api/v1/buyer/recommendations/similar/{releaseId}:
+ *   get:
+ *     summary: Get similar items recommendations
+ *     description: Get similar products based on genre, artist, and release era using weighted scoring
+ *     tags:
+ *       - Recommendations
+ *     parameters:
+ *       - in: path
+ *         name: releaseId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 5
+ *           maximum: 50
+ *       - in: query
+ *         name: variant
+ *         schema:
+ *           type: string
+ *           enum: [control, experimental]
+ *           default: control
+ *         description: A/B test variant
+ *     responses:
+ *       200:
+ *         description: Similar items recommendations with scores
+ */
+router.get('/recommendations/similar/:releaseId', getSimilarItems);
+
+/**
+ * @swagger
+ * /api/v1/buyer/recommendations/new-arrivals:
+ *   get:
+ *     summary: Get new arrivals recommendations
+ *     description: Get recently listed products with optional genre filtering
+ *     tags:
+ *       - Recommendations
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *           maximum: 100
+ *       - in: query
+ *         name: daysBack
+ *         schema:
+ *           type: integer
+ *           default: 30
+ *         description: How many days back to look for new arrivals
+ *       - in: query
+ *         name: genre
+ *         schema:
+ *           type: string
+ *         description: Optional genre filter
+ *       - in: query
+ *         name: variant
+ *         schema:
+ *           type: string
+ *           enum: [control, experimental]
+ *           default: control
+ *     responses:
+ *       200:
+ *         description: Recently listed products
+ */
+router.get('/recommendations/new-arrivals', getNewArrivals);
+
+/**
+ * @swagger
+ * /api/v1/buyer/recommendations/personalized:
+ *   post:
+ *     summary: Get personalized recommendations
+ *     description: Get personalized recommendations based on buyer's wishlist
+ *     tags:
+ *       - Recommendations
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *           maximum: 100
+ *       - in: query
+ *         name: variant
+ *         schema:
+ *           type: string
+ *           enum: [control, experimental]
+ *           default: control
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               wishlistItems:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: uuid
+ *                 description: Array of inventory lot IDs from wishlist
+ *     responses:
+ *       200:
+ *         description: Personalized recommendations
+ */
+router.post('/recommendations/personalized', getPersonalizedRecommendations);
+
+/**
+ * @swagger
+ * /api/v1/buyer/recommendations/variants/{releaseId}:
+ *   get:
+ *     summary: Get A/B test recommendation variants
+ *     description: Get multiple recommendation algorithms for A/B testing
+ *     tags:
+ *       - Recommendations
+ *     parameters:
+ *       - in: path
+ *         name: releaseId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 5
+ *           maximum: 50
+ *     responses:
+ *       200:
+ *         description: Multiple recommendation variants for A/B testing
+ */
+router.get('/recommendations/variants/:releaseId', getRecommendationVariants);
+
+/**
+ * @swagger
+ * /api/v1/buyer/recommendations/click:
+ *   post:
+ *     summary: Record recommendation click
+ *     description: Track when a recommendation is clicked for conversion analysis
+ *     tags:
+ *       - Recommendations
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - recommendationTrackingId
+ *               - variantName
+ *               - itemId
+ *             properties:
+ *               recommendationTrackingId:
+ *                 type: string
+ *               variantName:
+ *                 type: string
+ *                 enum: [control, experimental]
+ *               itemId:
+ *                 type: string
+ *                 format: uuid
+ *     responses:
+ *       200:
+ *         description: Click recorded successfully
+ */
+router.post('/recommendations/click', recordRecommendationClick);
 
 export default router;
