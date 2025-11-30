@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "start": "npx prisma generate && npx prisma migrate deploy && node src/server.js",
+    "start": "npx prisma generate && npx prisma migrate deploy --skip-generate || npx prisma db push --skip-generate && node src/server.js",
     "dev": "nodemon src/server.js",
     "lint": "eslint src/",
     "format": "prettier --write src/",
