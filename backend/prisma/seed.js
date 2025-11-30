@@ -1,5 +1,6 @@
 import { PrismaClient } from '../src/generated/prisma/index.js';
 import bcrypt from 'bcrypt';
+import { v4 as uuidv4 } from 'uuid';
 
 const prisma = new PrismaClient();
 
@@ -85,33 +86,52 @@ async function main() {
       },
     ];
 
+    const createdReleases = [];
     for (const releaseData of releases) {
-      const release = await prisma.release.upsert({
-        where: { id: `release-${releaseData.barcode}` },
-        update: {},
-        create: {
-          ...releaseData,
-          id: `release-${releaseData.barcode}`,
-        },
+      // Check if release already exists by barcode
+      let release = await prisma.release.findUnique({
+        where: { barcode: releaseData.barcode },
       });
-      console.log(`✅ Release created: ${release.title} by ${release.artist}`);
+
+      if (!release) {
+        release = await prisma.release.create({
+          data: {
+            id: uuidv4(),
+            ...releaseData,
+          },
+        });
+      }
+      createdReleases.push(release);
+      console.log(`✅ Release: ${release.title} by ${release.artist}`);
     }
 
-    // Seed sample market snapshots
-    const firstRelease = await prisma.release.findFirst();
-    if (firstRelease) {
-      const snapshot = await prisma.marketSnapshot.create({
-        data: {
+    // Seed sample market snapshots for first release
+    if (createdReleases.length > 0) {
+      const firstRelease = createdReleases[0];
+
+      // Check if snapshot already exists
+      const existingSnapshot = await prisma.marketSnapshot.findFirst({
+        where: {
           releaseId: firstRelease.id,
           source: 'DISCOGS',
-          statLow: 50.0,
-          statMedian: 100.0,
-          statHigh: 200.0,
-          sampleSize: 15,
-          fetchedAt: new Date(),
         },
       });
-      console.log(`✅ Market snapshot created for ${firstRelease.title}`);
+
+      if (!existingSnapshot) {
+        const snapshot = await prisma.marketSnapshot.create({
+          data: {
+            id: uuidv4(),
+            releaseId: firstRelease.id,
+            source: 'DISCOGS',
+            statLow: 50.0,
+            statMedian: 100.0,
+            statHigh: 200.0,
+            sampleSize: 15,
+            createdAt: new Date(),
+          },
+        });
+        console.log(`✅ Market snapshot created for ${firstRelease.title}`);
+      }
     }
 
     console.log('✅ Database seed completed successfully!');

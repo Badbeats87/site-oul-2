@@ -25,6 +25,7 @@ import reservationRoutes from './routes/reservations.js';
 import shippingRoutes from './routes/shipping.js';
 import fulfillmentRoutes from './routes/fulfillment.js';
 import trackingRoutes from './routes/tracking.js';
+import pricingRoutes from './routes/pricing.js';
 import { authenticate } from './middleware/authMiddleware.js';
 import { captureRawBody } from './middleware/rawBody.js';
 import prisma from './utils/db.js';
@@ -142,8 +143,10 @@ app.use('/api/v1/shipping', shippingRoutes);
 // Fulfillment routes
 app.use('/api/v1/fulfillment', fulfillmentRoutes);
 
+// Admin pricing policy routes
+app.use('/api/v1/admin/pricing', pricingRoutes);
+
 // TODO: Add other route groups
-// app.use('/api/v1/pricing', pricingRoutes);
 // Tracking routes are registered before authentication middleware for public access
 
 // ============================================================================

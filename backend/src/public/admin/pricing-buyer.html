@@ -507,5 +507,227 @@
 
     <script src="../../js/mobile-nav.js"></script>
     <script src="../../js/active-states.js"></script>
+
+    <script>
+      /**
+       * Buyer Pricing Policy Manager
+       * Handles loading and saving pricing policies
+       */
+      const buyerPricingManager = {
+        policyType: 'BUYER',
+        authToken: null,
+
+        init() {
+          this.cacheAuthToken();
+          this.bindEvents();
+          this.loadPolicy();
+        },
+
+        cacheAuthToken() {
+          this.authToken = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+        },
+
+        bindEvents() {
+          // Save Policy button
+          document.querySelector('.button--success')?.addEventListener('click', () => this.savePolicy());
+
+          // Reset to Default button
+          document.querySelector('.button--secondary:nth-of-type(3)')?.addEventListener('click', () => this.resetToDefault());
+        },
+
+        async loadPolicy() {
+          try {
+            if (!this.authToken) {
+              console.log('Not authenticated, showing default values');
+              return;
+            }
+
+            const response = await fetch(`/api/v1/admin/pricing/${this.policyType}`, {
+              headers: {
+                'Authorization': `Bearer ${this.authToken}`,
+              },
+            });
+
+            if (!response.ok) {
+              console.warn('Failed to load policy:', response.status);
+              return;
+            }
+
+            const data = await response.json();
+            if (data.data) {
+              this.populateForm(data.data);
+            }
+          } catch (error) {
+            console.error('Error loading policy:', error);
+          }
+        },
+
+        populateForm(policy) {
+          // Policy name
+          document.querySelector('input[placeholder="e.g., Classic Rock Premium"]').value = policy.name || 'Standard Global';
+
+          // Media condition curve
+          const mediaInputs = document.querySelectorAll('.condition-table:nth-of-type(1) .input-percentage');
+          const mediaConditions = ['MINT', 'NM', 'VG_PLUS', 'VG', 'VG_MINUS', 'G'];
+          mediaInputs.forEach((input, idx) => {
+            const condition = mediaConditions[idx];
+            if (policy.conditionCurve?.[condition]) {
+              input.value = policy.conditionCurve[condition] * 100;
+            }
+          });
+
+          // Sleeve condition curve
+          const sleeveInputs = document.querySelectorAll('.condition-table:nth-of-type(2) .input-percentage');
+          sleeveInputs.forEach((input, idx) => {
+            const condition = mediaConditions[idx];
+            if (policy.conditionCurve?.[`SLEEVE_${condition}`]) {
+              input.value = policy.conditionCurve[`SLEEVE_${condition}`] * 100;
+            }
+          });
+
+          // Weights
+          document.querySelectorAll('.input-with-unit input')[0].value = policy.buyFormula?.mediaWeight * 100 || 70;
+          document.querySelectorAll('.input-with-unit input')[1].value = policy.buyFormula?.sleeveWeight * 100 || 30;
+
+          // Buy percentage
+          document.querySelectorAll('.form-group input[type="number"]')[4].value = policy.buyFormula?.buyPercentage * 100 || 55;
+
+          // Min/Max offers
+          document.querySelectorAll('.form-group input[type="number"]')[5].value = policy.minOffer || 5.00;
+          document.querySelectorAll('.form-group input[type="number"]')[6].value = policy.maxOffer || 500.00;
+
+          // Offer valid for
+          document.querySelectorAll('.form-group input[type="number"]')[7].value = policy.offerExpiryDays || 14;
+
+          // Channel multipliers
+          const channelInputs = document.querySelectorAll('.table:last-of-type .input-small');
+          const multipliers = policy.buyFormula?.channelMultipliers || { WEB: 1.0, WALK_IN: 0.95, BULK: 0.85 };
+          channelInputs[0].value = multipliers.WEB || 1.0;
+          channelInputs[1].value = multipliers.WALK_IN || 0.95;
+          channelInputs[2].value = multipliers.BULK || 0.85;
+        },
+
+        async savePolicy() {
+          try {
+            if (!this.authToken) {
+              alert('Not authenticated. Please log in first.');
+              return;
+            }
+
+            // Collect form data
+            const policyName = document.querySelector('input[placeholder="e.g., Classic Rock Premium"]').value;
+
+            // Media condition curve
+            const mediaConditions = ['MINT', 'NM', 'VG_PLUS', 'VG', 'VG_MINUS', 'G'];
+            const mediaInputs = document.querySelectorAll('.condition-table:nth-of-type(1) .input-percentage');
+            const mediaConditionCurve = {};
+            mediaInputs.forEach((input, idx) => {
+              mediaConditionCurve[mediaConditions[idx]] = parseFloat(input.value) / 100;
+            });
+
+            // Sleeve condition curve
+            const sleeveInputs = document.querySelectorAll('.condition-table:nth-of-type(2) .input-percentage');
+            const sleeveConditionCurve = {};
+            sleeveInputs.forEach((input, idx) => {
+              sleeveConditionCurve[`SLEEVE_${mediaConditions[idx]}`] = parseFloat(input.value) / 100;
+            });
+
+            const conditionCurve = { ...mediaConditionCurve, ...sleeveConditionCurve };
+
+            // Buy formula
+            const buyPercentage = parseFloat(document.querySelectorAll('.form-group input[type="number"]')[4].value) / 100;
+            const mediaWeight = parseFloat(document.querySelectorAll('.input-with-unit input')[0].value) / 100;
+            const sleeveWeight = parseFloat(document.querySelectorAll('.input-with-unit input')[1].value) / 100;
+
+            const channelInputs = document.querySelectorAll('.table:last-of-type .input-small');
+            const buyFormula = {
+              buyPercentage,
+              mediaWeight,
+              sleeveWeight,
+              priceStatistic: 'MEDIAN', // From form select
+              channelMultipliers: {
+                WEB: parseFloat(channelInputs[0].value),
+                WALK_IN: parseFloat(channelInputs[1].value),
+                BULK: parseFloat(channelInputs[2].value),
+              },
+            };
+
+            // Sell formula (same structure for consistency)
+            const sellFormula = {
+              sellPercentage: 1.0, // Not used in buyer policy
+              mediaWeight,
+              sleeveWeight,
+            };
+
+            const minOffer = parseFloat(document.querySelectorAll('.form-group input[type="number"]')[5].value);
+            const maxOffer = parseFloat(document.querySelectorAll('.form-group input[type="number"]')[6].value);
+            const offerExpiryDays = parseInt(document.querySelectorAll('.form-group input[type="number"]')[7].value);
+
+            const payload = {
+              name: policyName || 'Standard Global',
+              buyFormula,
+              sellFormula,
+              conditionCurve,
+              minOffer,
+              maxOffer,
+              offerExpiryDays,
+            };
+
+            // Send to API
+            const response = await fetch(`/api/v1/admin/pricing/${this.policyType}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.authToken}`,
+              },
+              body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+              const error = await response.json();
+              throw new Error(error.error?.message || 'Failed to save policy');
+            }
+
+            const result = await response.json();
+            alert(`✓ Policy saved successfully!\nVersion: ${result.data.version}`);
+          } catch (error) {
+            console.error('Error saving policy:', error);
+            alert(`Error: ${error.message}`);
+          }
+        },
+
+        resetToDefault() {
+          if (confirm('Reset all values to defaults?')) {
+            this.populateForm({
+              name: 'Standard Global',
+              buyFormula: {
+                buyPercentage: 0.55,
+                mediaWeight: 0.70,
+                sleeveWeight: 0.30,
+                channelMultipliers: { WEB: 1.0, WALK_IN: 0.95, BULK: 0.85 },
+              },
+              conditionCurve: {
+                MINT: 1.15,
+                NM: 1.0,
+                VG_PLUS: 0.80,
+                VG: 0.65,
+                VG_MINUS: 0.50,
+                G: 0.30,
+              },
+              minOffer: 5.00,
+              maxOffer: 500.00,
+              offerExpiryDays: 14,
+            });
+          }
+        },
+      };
+
+      // Initialize when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => buyerPricingManager.init());
+      } else {
+        buyerPricingManager.init();
+      }
+    </script>
   </body>
 </html>
