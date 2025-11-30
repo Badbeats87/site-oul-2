@@ -6,8 +6,6 @@
     <title>Admin Console - Vinyl Catalog</title>
     <link rel="stylesheet" href="../../styles/design-system.css" />
     <link rel="stylesheet" href="../../styles/admin.css" />
-    <link rel="stylesheet" href="../../styles/submissions.css" />
-    <link rel="stylesheet" href="../../styles/inventory.css" />
   </head>
   <body>
     <!-- Navigation -->
@@ -26,52 +24,10 @@
           </svg>
           <span>Vinyl Catalog</span>
         </a>
-        <!-- Hamburger Menu Toggle -->
-        <button
-          class="navbar__menu-toggle"
-          data-menu-toggle
-          aria-label="Toggle navigation menu"
-          aria-expanded="false"
-          title="Toggle menu"
-        >
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-
-        <div class="navbar__links" data-navbar-links>
+        <div class="navbar__links">
           <a href="../index.html" class="nav-link">Back to Site</a>
-          <span class="nav-separator">|</span>
-
-          <!-- User Info -->
-          <div class="user-info">
-            <div class="user-info__avatar" data-user-avatar>A</div>
-            <div class="user-info__details">
-              <div class="user-info__name" data-user-name>Loading...</div>
-              <div class="user-info__role" data-user-role>Admin</div>
-            </div>
-          </div>
-
-          <!-- Logout Button -->
-          <button
-            class="nav-link button button--sm button--danger"
-            data-logout-btn
-            title="Logout from admin console"
-            aria-label="Logout"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              style="width: 16px; height: 16px"
-            >
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <polyline points="16 17 21 12 16 7"></polyline>
-              <line x1="21" y1="12" x2="9" y2="12"></line>
-            </svg>
-            <span>Logout</span>
-          </button>
+          <a href="settings.html" class="nav-link">Settings</a>
+          <a href="pricing-editor.html" class="nav-link">Pricing</a>
         </div>
       </div>
     </nav>
@@ -131,41 +87,32 @@
           <div class="tab-header" role="tablist" aria-label="Admin sections">
             <button
               class="tab-btn tab-btn--active"
+              onclick="switchTab(0)"
               role="tab"
               aria-selected="true"
-              aria-controls="submissions-panel"
-              id="submissions-tab"
             >
               Submissions
             </button>
             <button
               class="tab-btn"
+              onclick="switchTab(1)"
               role="tab"
               aria-selected="false"
-              aria-controls="inventory-panel"
-              id="inventory-tab"
             >
               Inventory
             </button>
             <button
               class="tab-btn"
+              onclick="switchTab(2)"
               role="tab"
               aria-selected="false"
-              aria-controls="analytics-panel"
-              id="analytics-tab"
             >
               Analytics
             </button>
           </div>
 
           <!-- Submissions Tab -->
-          <div
-            class="tab-panel tab-panel--active"
-            id="submissions-panel"
-            role="tabpanel"
-            aria-labelledby="submissions-tab"
-            data-submissions-container
-          >
+          <div class="tab-panel tab-panel--active" id="tab-0">
             <div class="section-header">
               <h2>Submission Queue</h2>
               <div class="section-actions">
@@ -173,20 +120,8 @@
                   type="text"
                   placeholder="Search submissions..."
                   class="search-input"
-                  data-submissions-search
                   style="width: 250px"
                 />
-                <select
-                  class="filter-select"
-                  data-submissions-status-filter
-                  style="width: 150px"
-                >
-                  <option value="all">All Status</option>
-                  <option value="PENDING_REVIEW">Pending Review</option>
-                  <option value="ACCEPTED">Accepted</option>
-                  <option value="REJECTED">Rejected</option>
-                  <option value="PARTIALLY_ACCEPTED">Partially Accepted</option>
-                </select>
               </div>
             </div>
 
@@ -200,14 +135,32 @@
                     <th>Value</th>
                     <th>Status</th>
                     <th>Submitted</th>
-                    <th></th>
                   </tr>
                 </thead>
-                <tbody data-submissions-tbody>
+                <tbody>
                   <tr>
-                    <td colspan="7" style="text-align: center; padding: 40px">
-                      Loading...
-                    </td>
+                    <td>SUB-2024-001</td>
+                    <td>John Collector</td>
+                    <td>5</td>
+                    <td>$245.50</td>
+                    <td><span class="badge badge--info">Pending Review</span></td>
+                    <td>Nov 28, 2024</td>
+                  </tr>
+                  <tr>
+                    <td>SUB-2024-002</td>
+                    <td>Record Enthusiast</td>
+                    <td>3</td>
+                    <td>$128.75</td>
+                    <td><span class="badge badge--success">Accepted</span></td>
+                    <td>Nov 27, 2024</td>
+                  </tr>
+                  <tr>
+                    <td>SUB-2024-003</td>
+                    <td>Vinyl Collector Pro</td>
+                    <td>8</td>
+                    <td>$542.00</td>
+                    <td><span class="badge badge--warning">In Review</span></td>
+                    <td>Nov 26, 2024</td>
                   </tr>
                 </tbody>
               </table>
@@ -215,33 +168,16 @@
           </div>
 
           <!-- Inventory Tab -->
-          <div
-            class="tab-panel"
-            id="inventory-panel"
-            role="tabpanel"
-            aria-labelledby="inventory-tab"
-            data-inventory-container
-          >
+          <div class="tab-panel" id="tab-1">
             <div class="section-header">
               <h2>Inventory Management</h2>
               <div class="section-actions">
                 <input
                   type="text"
-                  placeholder="Search..."
+                  placeholder="Search inventory..."
                   class="search-input"
-                  data-inventory-search
                   style="width: 250px"
                 />
-                <select
-                  class="filter-select"
-                  data-inventory-status-filter
-                  style="width: 150px"
-                >
-                  <option value="all">All Status</option>
-                  <option value="LIVE">LIVE</option>
-                  <option value="SOLD">SOLD</option>
-                  <option value="RESERVED">RESERVED</option>
-                </select>
               </div>
             </div>
 
@@ -251,18 +187,41 @@
                   <tr>
                     <th>Record</th>
                     <th>Condition</th>
-                    <th>Status</th>
-                    <th>Cost</th>
+                    <th>Stock</th>
                     <th>List Price</th>
-                    <th>Margin</th>
-                    <th></th>
+                    <th>Status</th>
                   </tr>
                 </thead>
-                <tbody data-inventory-tbody>
+                <tbody>
                   <tr>
-                    <td colspan="7" style="text-align: center; padding: 40px">
-                      Loading...
+                    <td>
+                      <strong>Dark Side of the Moon</strong><br />
+                      <span style="color: #666; font-size: 0.9em">Pink Floyd</span>
                     </td>
+                    <td><span class="badge badge--success">NM / NM</span></td>
+                    <td>1</td>
+                    <td>$89.99</td>
+                    <td><span class="badge">LIVE</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>Abbey Road</strong><br />
+                      <span style="color: #666; font-size: 0.9em">The Beatles</span>
+                    </td>
+                    <td><span class="badge badge--info">VG+ / VG+</span></td>
+                    <td>3</td>
+                    <td>$49.50</td>
+                    <td><span class="badge">LIVE</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>Rumours</strong><br />
+                      <span style="color: #666; font-size: 0.9em">Fleetwood Mac</span>
+                    </td>
+                    <td><span class="badge badge--success">M / M</span></td>
+                    <td>1</td>
+                    <td>$89.99</td>
+                    <td><span class="badge badge--warning">LOW STOCK</span></td>
                   </tr>
                 </tbody>
               </table>
@@ -270,20 +229,51 @@
           </div>
 
           <!-- Analytics Tab -->
-          <div
-            class="tab-panel"
-            id="analytics-panel"
-            role="tabpanel"
-            aria-labelledby="analytics-tab"
-            data-analytics-container
-          >
+          <div class="tab-panel" id="tab-2">
             <div class="section-header">
               <h2>Analytics & Reports</h2>
             </div>
 
-            <div data-analytics-overview></div>
-            <div data-analytics-low-stock style="margin-top: 30px"></div>
-            <div data-analytics-sales style="margin-top: 30px"></div>
+            <div style="padding: 20px; background: #f5f5f5; border-radius: 8px; margin-bottom: 20px;">
+              <h3>Key Metrics</h3>
+              <ul style="line-height: 2;">
+                <li>Total Revenue (Month): $18,750</li>
+                <li>Average Order Value: $120.28</li>
+                <li>Items Sold: 156</li>
+                <li>Customer Satisfaction: 4.8/5</li>
+                <li>Inventory Turnover: 2.3x</li>
+              </ul>
+            </div>
+
+            <div style="padding: 20px; background: #f5f5f5; border-radius: 8px;">
+              <h3>Top Performing Items</h3>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Album</th>
+                    <th>Units Sold</th>
+                    <th>Revenue</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Dark Side of the Moon</td>
+                    <td>12</td>
+                    <td>$1,079.88</td>
+                  </tr>
+                  <tr>
+                    <td>Abbey Road</td>
+                    <td>8</td>
+                    <td>$396.00</td>
+                  </tr>
+                  <tr>
+                    <td>Rumours</td>
+                    <td>6</td>
+                    <td>$539.94</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -298,18 +288,13 @@
             </a>
             <a href="inventory.html" class="action-card">
               <div class="action-card__icon">📦</div>
-              <h3>Low Stock</h3>
-              <p>Check 8 items running low</p>
+              <h3>Inventory</h3>
+              <p>Manage catalog items</p>
             </a>
             <a href="pricing-editor.html" class="action-card">
               <div class="action-card__icon">💰</div>
-              <h3>Update Prices</h3>
+              <h3>Pricing</h3>
               <p>Adjust pricing policies</p>
-            </a>
-            <a href="#" class="action-card">
-              <div class="action-card__icon">📊</div>
-              <h3>Analytics</h3>
-              <p>View sales reports</p>
             </a>
             <a href="settings.html" class="action-card">
               <div class="action-card__icon">⚙️</div>
@@ -320,89 +305,6 @@
         </section>
       </div>
     </main>
-
-    <!-- Submission Details Modal -->
-    <div
-      class="modal-backdrop"
-      data-submission-details-modal
-      style="display: none"
-    >
-      <div
-        class="modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="submission-modal-title"
-      >
-        <div class="modal__header">
-          <h2 id="submission-modal-title">Submission Details</h2>
-          <button
-            class="modal__close"
-            aria-label="Close submission details"
-            data-close-submission-modal
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-        <div class="modal__body" data-submission-details-body></div>
-      </div>
-    </div>
-
-    <!-- Inventory Edit Modal -->
-    <div class="modal-backdrop" data-inventory-edit-modal style="display: none">
-      <div
-        class="modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="inventory-modal-title"
-      >
-        <div class="modal__header">
-          <h2 id="inventory-modal-title">Edit Inventory Item</h2>
-          <button
-            class="modal__close"
-            aria-label="Close inventory editor"
-            data-close-inventory-modal
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-        <div class="modal__body" data-inventory-edit-modal-body></div>
-      </div>
-    </div>
-
-    <!-- Loading Indicator -->
-    <div
-      data-loading
-      style="
-        display: none;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(0, 0, 0, 0.7);
-        color: white;
-        padding: 20px 40px;
-        border-radius: 8px;
-        z-index: 2000;
-      "
-    >
-      Loading...
-    </div>
 
     <!-- Footer -->
     <footer class="footer">
@@ -427,14 +329,30 @@
       </div>
     </footer>
 
-    <script src="../../js/mobile-nav.js"></script>
-    <script src="../../js/active-states.js"></script>
-    <script src="../../js/api-client.js"></script>
-    <script src="../../js/auth.js"></script>
-    <script src="../../js/dashboard-stats.js"></script>
-    <script src="../../js/submissions.js"></script>
-    <script src="../../js/inventory.js"></script>
-    <script src="../../js/analytics.js"></script>
-    <script src="../../js/admin.js"></script>
+    <!-- Simple Tab Switching Script -->
+    <script>
+      function switchTab(index) {
+        // Hide all tabs
+        const tabs = document.querySelectorAll('.tab-panel');
+        tabs.forEach(tab => tab.classList.remove('tab-panel--active'));
+
+        // Remove active from all buttons
+        const buttons = document.querySelectorAll('.tab-btn');
+        buttons.forEach(btn => {
+          btn.classList.remove('tab-btn--active');
+          btn.setAttribute('aria-selected', 'false');
+        });
+
+        // Show selected tab
+        const selectedTab = document.getElementById('tab-' + index);
+        if (selectedTab) {
+          selectedTab.classList.add('tab-panel--active');
+        }
+
+        // Mark button as active
+        buttons[index].classList.add('tab-btn--active');
+        buttons[index].setAttribute('aria-selected', 'true');
+      }
+    </script>
   </body>
 </html>
