@@ -58,6 +58,18 @@ export const authenticate = async (req, res, next) => {
     return next();
   }
 
+  // Allow static files without authentication
+  // Admin dashboard, styles, and client-side JS
+  if (req.path.startsWith('/admin/') ||
+      req.path.startsWith('/pages/') ||
+      req.path.startsWith('/styles/') ||
+      req.path.startsWith('/js/') ||
+      req.path.endsWith('.html') ||
+      req.path.endsWith('.css') ||
+      req.path.endsWith('.js')) {
+    return next();
+  }
+
   // Allow public auth endpoints without authentication
   // Check both possible path formats (/api/v1/auth/... and /auth/...)
   const isPublicAuthEndpoint =
