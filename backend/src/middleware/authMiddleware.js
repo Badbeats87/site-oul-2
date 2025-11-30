@@ -60,7 +60,9 @@ export const authenticate = async (req, res, next) => {
 
   // Allow static files without authentication
   // Admin dashboard, styles, and client-side JS
-  if (req.path.startsWith('/admin/') ||
+  if (req.path === '/admin' ||
+      req.path === '/admin/' ||
+      req.path.startsWith('/admin/') ||
       req.path.startsWith('/pages/') ||
       req.path.startsWith('/styles/') ||
       req.path.startsWith('/js/') ||

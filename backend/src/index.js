@@ -43,8 +43,10 @@ app.use(cors(config.cors));
 app.use(compression());
 
 // Serve static files (pages, styles, js)
-app.use(express.static(path.join(projectRoot, 'pages')));
-app.use(express.static(path.join(projectRoot, 'js')));
+// Configure to serve index.html for directory requests
+const staticOptions = { index: ['index.html'] };
+app.use(express.static(path.join(projectRoot, 'pages'), staticOptions));
+app.use(express.static(path.join(projectRoot, 'js'), staticOptions));
 app.use(express.static(path.join(projectRoot, 'styles')));
 
 // Request logging
