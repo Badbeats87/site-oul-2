@@ -115,11 +115,11 @@ class SubmissionService {
         }
 
         // Generate automatic quote using pricing engine
-        const quote = await pricingService.calculateBuyPrice(
-          release,
-          conditionMedia,
-          conditionSleeve
-        );
+        const quote = await pricingService.calculateBuyPrice({
+          releaseId: release.id,
+          mediaCondition: conditionMedia,
+          sleeveCondition: conditionSleeve,
+        });
 
         const autoOfferPrice = Number(quote.finalPrice) * (quantity || 1);
         totalOffered += autoOfferPrice;
