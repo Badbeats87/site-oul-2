@@ -25,7 +25,10 @@ export async function createHold(inventoryLotId, options = {}) {
 
   // Must have either orderId or sessionId (for guest carts)
   if (!orderId && !sessionId) {
-    throw new ApiError(400, 'Either orderId or sessionId is required for hold creation');
+    throw new ApiError(
+      400,
+      'Either orderId or sessionId is required for hold creation'
+    );
   }
 
   try {
@@ -110,7 +113,10 @@ export async function releaseHold(holdId, reason = null, releasedBy = null) {
     }
 
     if (hold.holdStatus !== 'ACTIVE') {
-      throw new ApiError(400, `Cannot release hold with status: ${hold.holdStatus}`);
+      throw new ApiError(
+        400,
+        `Cannot release hold with status: ${hold.holdStatus}`
+      );
     }
 
     const now = new Date();
@@ -148,7 +154,11 @@ export async function releaseHold(holdId, reason = null, releasedBy = null) {
 /**
  * Convert a hold to a completed sale (order confirmed)
  */
-export async function convertHoldToSale(holdId, reason = 'Order payment confirmed', convertedBy = null) {
+export async function convertHoldToSale(
+  holdId,
+  reason = 'Order payment confirmed',
+  convertedBy = null
+) {
   try {
     const hold = await prisma.inventoryHold.findUnique({
       where: { id: holdId },
@@ -162,7 +172,10 @@ export async function convertHoldToSale(holdId, reason = 'Order payment confirme
     }
 
     if (hold.holdStatus !== 'ACTIVE') {
-      throw new ApiError(400, `Cannot convert hold with status: ${hold.holdStatus}`);
+      throw new ApiError(
+        400,
+        `Cannot convert hold with status: ${hold.holdStatus}`
+      );
     }
 
     // Update inventory lot status to RESERVED (pending sale)
@@ -179,7 +192,13 @@ export async function convertHoldToSale(holdId, reason = 'Order payment confirme
     });
 
     // Create audit entry
-    await createHoldAudit(holdId, 'ACTIVE', 'CONVERTED_TO_SALE', reason, convertedBy);
+    await createHoldAudit(
+      holdId,
+      'ACTIVE',
+      'CONVERTED_TO_SALE',
+      reason,
+      convertedBy
+    );
 
     logger.info('Inventory hold converted to sale', {
       holdId,
@@ -388,7 +407,11 @@ export async function getHoldStatistics() {
 /**
  * Release all holds for an order (order cancelled)
  */
-export async function releaseAllHoldsForOrder(orderId, reason = 'Order cancelled', releasedBy = null) {
+export async function releaseAllHoldsForOrder(
+  orderId,
+  reason = 'Order cancelled',
+  releasedBy = null
+) {
   try {
     const holds = await getHoldsForOrder(orderId);
 
@@ -413,7 +436,13 @@ export async function releaseAllHoldsForOrder(orderId, reason = 'Order cancelled
 /**
  * Create an audit entry for hold status change
  */
-async function createHoldAudit(holdId, fromStatus, toStatus, reason = null, changedBy = null) {
+async function createHoldAudit(
+  holdId,
+  fromStatus,
+  toStatus,
+  reason = null,
+  changedBy = null
+) {
   try {
     await prisma.inventoryHoldAudit.create({
       data: {

@@ -190,7 +190,10 @@ router.get('/session/:sessionId', reservationController.getSessionReservations);
  *       200:
  *         description: Hold history retrieved
  */
-router.get('/holds/:holdId/history', reservationController.getReservationHistory);
+router.get(
+  '/holds/:holdId/history',
+  reservationController.getReservationHistory
+);
 
 /**
  * @swagger

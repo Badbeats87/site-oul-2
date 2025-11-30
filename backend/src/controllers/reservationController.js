@@ -11,7 +11,13 @@ import * as inventoryReservationService from '../services/inventoryReservationSe
  */
 export async function createReservation(req, res, next) {
   try {
-    const { inventoryLotId, orderId, sessionId, quantity = 1, durationMinutes } = req.body;
+    const {
+      inventoryLotId,
+      orderId,
+      sessionId,
+      quantity = 1,
+      durationMinutes,
+    } = req.body;
 
     // Validation
     if (!inventoryLotId) {
@@ -128,7 +134,8 @@ export async function checkReservation(req, res, next) {
     }
 
     // Check for active holds
-    const holds = await inventoryReservationService.getHoldsForInventory(inventoryLotId);
+    const holds =
+      await inventoryReservationService.getHoldsForInventory(inventoryLotId);
     const hasHold = holds.length > 0;
 
     res.status(200).json({
@@ -220,7 +227,8 @@ export async function getSessionReservations(req, res, next) {
     }
 
     // Get holds for session
-    const holds = await inventoryReservationService.getHoldsForSession(sessionId);
+    const holds =
+      await inventoryReservationService.getHoldsForSession(sessionId);
 
     res.status(200).json({
       success: true,
@@ -270,7 +278,8 @@ export async function getReservationHistory(req, res, next) {
     }
 
     // Get audit history
-    const history = await inventoryReservationService.getHoldAuditHistory(holdId);
+    const history =
+      await inventoryReservationService.getHoldAuditHistory(holdId);
 
     res.status(200).json({
       success: true,
