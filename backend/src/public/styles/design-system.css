@@ -302,6 +302,9 @@ code {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 var(--space-xl);
+  width: 100%;
+  min-height: auto;
+  overflow: visible;
 }
 
 @media (max-width: 768px) {
