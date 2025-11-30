@@ -61,39 +61,46 @@ const submitForm = {
     });
   },
 
-  performSearch() {
+  async performSearch() {
     const query = this.elements.searchInput.value.trim();
     if (!query) {
       alert('Please enter a search term');
       return;
     }
 
-    // Mock search results - in real implementation, this would call an API
-    const mockResults = [
-      {
-        id: 1,
-        title: 'Dark Side of the Moon',
-        artist: 'Pink Floyd',
-        year: 1973,
-        quote: 24.22
-      },
-      {
-        id: 2,
-        title: 'Abbey Road',
-        artist: 'The Beatles',
-        year: 1969,
-        quote: 49.50
-      },
-      {
-        id: 3,
-        title: 'Led Zeppelin IV',
-        artist: 'Led Zeppelin',
-        year: 1971,
-        quote: 34.99
-      }
-    ];
+    try {
+      // Call catalog search API
+      const response = await fetch(
+        `/api/v1/catalog/search?q=${encodeURIComponent(query)}&limit=10`
+      );
 
-    this.displaySearchResults(mockResults);
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const results = data.data || [];
+
+      // Transform results to expected format
+      const transformedResults = results.map((release) => {
+        // Use median price from market data if available, otherwise use default
+        const medianPrice = release.marketData?.median || 25;
+
+        return {
+          id: release.id,
+          title: release.title,
+          artist: release.artists?.[0]?.name || 'Unknown Artist',
+          year: release.year || 'N/A',
+          quote: Math.round(medianPrice * 0.55 * 100) / 100, // 55% of median as buyer offer
+          releaseData: release
+        };
+      });
+
+      this.displaySearchResults(transformedResults);
+    } catch (error) {
+      console.error('Search error:', error);
+      alert('Search failed. Please try again.');
+    }
   },
 
   displaySearchResults(results) {
@@ -271,10 +278,8 @@ const submitForm = {
     this.elements.reviewTotalAmount.textContent = `$${totalAmount.toFixed(2)}`;
   },
 
-  submitForm() {
+  async submitForm() {
     // Get form values
-    const formData = new FormData();
-
     const name = document.querySelector('.shipping-form input[placeholder="John Collector"]')?.value;
     const email = document.querySelector('.shipping-form input[placeholder="your@email.com"]')?.value;
 
@@ -283,17 +288,75 @@ const submitForm = {
       return;
     }
 
-    // In a real application, this would submit to an API
-    console.log('Form submission:', {
-      records: this.submission.records,
-      email: email,
-      name: name
-    });
+    if (this.submission.records.length === 0) {
+      alert('Please add at least one record to your submission');
+      return;
+    }
 
-    // Move to completion step
-    this.currentStep = 4;
-    this.showStep(this.currentStep);
-    this.updateProgressIndicator();
+    try {
+      // Step 1: Register or get seller account
+      const sellerResponse = await fetch('/api/v1/sellers/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          notes: 'Seller submission from web form'
+        })
+      });
+
+      if (!sellerResponse.ok) {
+        throw new Error(`Seller registration failed: ${sellerResponse.statusText}`);
+      }
+
+      const sellerData = await sellerResponse.json();
+      const sellerId = sellerData.data.id;
+
+      // Step 2: Submit the records
+      const items = this.submission.records.map(record => ({
+        releaseId: record.id,
+        quantity: record.quantity,
+        conditionMedia: record.mediaCondition || 'NM',
+        conditionSleeve: record.sleeveCondition || 'NM'
+      }));
+
+      const submissionResponse = await fetch(
+        `/api/v1/submissions/${sellerId}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ items })
+        }
+      );
+
+      if (!submissionResponse.ok) {
+        throw new Error(`Submission failed: ${submissionResponse.statusText}`);
+      }
+
+      const submissionData = await submissionResponse.json();
+
+      // Store submission info for confirmation page
+      localStorage.setItem('pending_submission', JSON.stringify({
+        sellerId,
+        submissionId: submissionData.data.id,
+        email,
+        name,
+        totalAmount: this.submission.records.reduce((sum, r) => sum + (r.quote * r.quantity), 0),
+        timestamp: new Date().toISOString()
+      }));
+
+      // Move to completion step
+      this.currentStep = 4;
+      this.showStep(this.currentStep);
+      this.updateProgressIndicator();
+    } catch (error) {
+      console.error('Submission error:', error);
+      alert(`Submission failed: ${error.message}`);
+    }
   }
 };
 
