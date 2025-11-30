@@ -1,4 +1,5 @@
 import { PrismaClient } from '../src/generated/prisma/index.js';
+import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
@@ -6,6 +7,10 @@ async function main() {
   console.log('Starting database seed...');
 
   try {
+    // Hash password for admin user
+    // Password: Admin123!
+    const passwordHash = await bcrypt.hash('Admin123!', 12);
+
     // Seed admin user
     const admin = await prisma.adminUser.upsert({
       where: { email: 'admin@vinylcatalog.com' },
@@ -14,9 +19,12 @@ async function main() {
         email: 'admin@vinylcatalog.com',
         name: 'System Admin',
         role: 'SUPER_ADMIN',
+        passwordHash,
       },
     });
     console.log('✅ Admin user created:', admin.email);
+    console.log('   Email: admin@vinylcatalog.com');
+    console.log('   Password: Admin123!');
 
     // Seed sample releases
     const releases = [
