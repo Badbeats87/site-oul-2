@@ -5,6 +5,7 @@ import compression from 'compression';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { existsSync } from 'fs';
 import swaggerUi from 'swagger-ui-express';
 import config from '../config/config.js';
 import logger, { logRequest } from '../config/logger.js';
@@ -45,10 +46,23 @@ app.use(compression());
 
 // Serve static files (pages, styles, js)
 // Configure to serve index.html for directory requests
+const pagesPath = path.join(projectRoot, 'pages');
+const jsPath = path.join(projectRoot, 'js');
+const stylesPath = path.join(projectRoot, 'styles');
+
+logger.info('Checking static file directories:', {
+  pagesPath,
+  pagesExists: existsSync(pagesPath),
+  jsPath,
+  jsExists: existsSync(jsPath),
+  stylesPath,
+  stylesExists: existsSync(stylesPath),
+});
+
 const staticOptions = { index: ['index.html'] };
-app.use(express.static(path.join(projectRoot, 'pages'), staticOptions));
-app.use(express.static(path.join(projectRoot, 'js'), staticOptions));
-app.use(express.static(path.join(projectRoot, 'styles')));
+app.use(express.static(pagesPath, staticOptions));
+app.use(express.static(jsPath, staticOptions));
+app.use(express.static(stylesPath));
 
 // Request logging
 app.use(logRequest);
