@@ -5,8 +5,8 @@
  */
 
 import prisma from '../utils/db.js';
-import logger from '../utils/logger.js';
-import ApiError from '../errors/apiError.js';
+import logger from '../../config/logger.js';
+import { ApiError } from '../middleware/errorHandler.js';
 
 const HOLD_DURATION_MINUTES = 30; // How long holds last before expiring
 
