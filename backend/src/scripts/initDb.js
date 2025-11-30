@@ -30,8 +30,8 @@ async function initializeDatabase() {
     // Primary method: Use prisma db push (most reliable)
     // This pushes the current schema directly to the database without migration files
     try {
-      logger.info('⏳ Attempting: npx prisma db push --skip-generate');
-      execSync('npx prisma db push --skip-generate', {
+      logger.info('⏳ Attempting: npx prisma db push');
+      execSync('npx prisma db push', {
         cwd: backendDir,
         stdio: 'inherit',
         env: { ...process.env },
@@ -46,8 +46,8 @@ async function initializeDatabase() {
 
     // Fallback: Try migrate deploy
     try {
-      logger.info('⏳ Attempting: npx prisma migrate deploy --skip-generate');
-      execSync('npx prisma migrate deploy --skip-generate', {
+      logger.info('⏳ Attempting: npx prisma migrate deploy');
+      execSync('npx prisma migrate deploy', {
         cwd: backendDir,
         stdio: 'inherit',
         env: { ...process.env },
