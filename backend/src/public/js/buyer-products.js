@@ -14,12 +14,12 @@ class BuyerProductsManager {
       conditions: [],
       minPrice: 0,
       maxPrice: 10000,
-      sort: 'newest'
+      sort: 'newest',
     };
     this.pagination = {
       page: 1,
       limit: 12,
-      total: 0
+      total: 0,
     };
   }
 
@@ -47,7 +47,7 @@ class BuyerProductsManager {
 
     // Genre filter (radio buttons)
     const genreRadios = document.querySelectorAll('input[name="genre"]');
-    genreRadios.forEach(radio => {
+    genreRadios.forEach((radio) => {
       radio.addEventListener('change', (e) => {
         this.filters.genre = e.target.value;
         this.pagination.page = 1;
@@ -56,12 +56,14 @@ class BuyerProductsManager {
     });
 
     // Condition filter (checkboxes)
-    const conditionCheckboxes = document.querySelectorAll('.filter-options input[type="checkbox"]');
-    conditionCheckboxes.forEach(checkbox => {
+    const conditionCheckboxes = document.querySelectorAll(
+      '.filter-options input[type="checkbox"]'
+    );
+    conditionCheckboxes.forEach((checkbox) => {
       checkbox.addEventListener('change', () => {
         this.filters.conditions = Array.from(conditionCheckboxes)
-          .filter(cb => cb.checked)
-          .map(cb => cb.value);
+          .filter((cb) => cb.checked)
+          .map((cb) => cb.value);
         this.pagination.page = 1;
         this.loadProducts();
       });
@@ -84,12 +86,15 @@ class BuyerProductsManager {
     }
 
     // Sort select
-    const sortSelect = document.querySelector('.filter-section:nth-child(5) .filter-select');
+    const sortSelect = document.querySelector(
+      '.filter-section:nth-child(5) .filter-select'
+    );
     if (sortSelect) {
       sortSelect.addEventListener('change', (e) => {
         const sortValue = e.target.value;
         if (sortValue.includes('Price: Low')) this.filters.sort = 'price_asc';
-        else if (sortValue.includes('Price: High')) this.filters.sort = 'price_desc';
+        else if (sortValue.includes('Price: High'))
+          this.filters.sort = 'price_desc';
         else if (sortValue.includes('Popular')) this.filters.sort = 'popular';
         else this.filters.sort = 'newest';
         this.pagination.page = 1;
@@ -99,9 +104,9 @@ class BuyerProductsManager {
 
     // View toggle buttons
     const viewBtns = document.querySelectorAll('.view-btn');
-    viewBtns.forEach(btn => {
+    viewBtns.forEach((btn) => {
       btn.addEventListener('click', (e) => {
-        viewBtns.forEach(b => b.classList.remove('view-btn--active'));
+        viewBtns.forEach((b) => b.classList.remove('view-btn--active'));
         e.target.classList.add('view-btn--active');
       });
     });
@@ -114,7 +119,10 @@ class BuyerProductsManager {
           this.pagination.page--;
           this.loadProducts();
           this.scrollToProducts();
-        } else if (text === 'Next →' && this.pagination.page < this.getTotalPages()) {
+        } else if (
+          text === 'Next →' &&
+          this.pagination.page < this.getTotalPages()
+        ) {
           this.pagination.page++;
           this.loadProducts();
           this.scrollToProducts();
@@ -137,7 +145,7 @@ class BuyerProductsManager {
       // Build query parameters
       const params = {
         page: this.pagination.page,
-        limit: this.pagination.limit
+        limit: this.pagination.limit,
       };
 
       if (this.filters.search) {
@@ -193,13 +201,16 @@ class BuyerProductsManager {
       return;
     }
 
-    grid.innerHTML = this.products.map(product => `
+    grid.innerHTML = this.products
+      .map(
+        (product) => `
       <div class="product-card">
         <a href="product.html?id=${product.id}" style="text-decoration: none; color: inherit;">
           <div class="product-card__image">
-            ${product.coverArtUrl ?
-              `<img src="${product.coverArtUrl}" alt="${product.title}" style="width: 100%; height: 100%; object-fit: cover;">` :
-              `<svg viewBox="0 0 240 240" fill="none">
+            ${
+              product.coverArtUrl
+                ? `<img src="${product.coverArtUrl}" alt="${product.title}" style="width: 100%; height: 100%; object-fit: cover;">`
+                : `<svg viewBox="0 0 240 240" fill="none">
                 <rect width="240" height="240" fill="#e5e7eb"/>
                 <text x="120" y="120" text-anchor="middle" dominant-baseline="middle" font-size="18" fill="#9ca3af">Album Cover</text>
               </svg>`
@@ -219,8 +230,11 @@ class BuyerProductsManager {
             </div>
             <div class="product-card__price">
               <span class="price-current">$${parseFloat(product.price || 0).toFixed(2)}</span>
-              ${product.originalPrice && product.originalPrice !== product.price ?
-                `<span class="price-original">$${parseFloat(product.originalPrice).toFixed(2)}</span>` : ''}
+              ${
+                product.originalPrice && product.originalPrice !== product.price
+                  ? `<span class="price-original">$${parseFloat(product.originalPrice).toFixed(2)}</span>`
+                  : ''
+              }
             </div>
           </div>
         </a>
@@ -228,10 +242,12 @@ class BuyerProductsManager {
           ${product.inStock ? 'Add to Cart' : 'Out of Stock'}
         </button>
       </div>
-    `).join('');
+    `
+      )
+      .join('');
 
     // Add cart event listeners
-    document.querySelectorAll('[data-add-to-cart]').forEach(btn => {
+    document.querySelectorAll('[data-add-to-cart]').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         const productId = e.target.dataset.productId;
         this.addToCart(productId);
@@ -246,7 +262,10 @@ class BuyerProductsManager {
     const resultsInfo = document.querySelector('.results-info');
     if (resultsInfo) {
       const start = (this.pagination.page - 1) * this.pagination.limit + 1;
-      const end = Math.min(start + this.pagination.limit - 1, this.pagination.total);
+      const end = Math.min(
+        start + this.pagination.limit - 1,
+        this.pagination.total
+      );
       resultsInfo.innerHTML = `
         <p>Showing <strong>${start}–${end}</strong> of <strong>${this.pagination.total}</strong> records</p>
       `;
@@ -257,11 +276,17 @@ class BuyerProductsManager {
     const paginationContainer = document.querySelector('.pagination');
     if (paginationContainer) {
       const buttons = paginationContainer.querySelectorAll('button');
-      buttons.forEach(btn => {
+      buttons.forEach((btn) => {
         const text = btn.textContent.trim();
         if (!isNaN(parseInt(text))) {
-          btn.classList.toggle('button--accent', parseInt(text) === this.pagination.page);
-          btn.classList.toggle('button--secondary', parseInt(text) !== this.pagination.page);
+          btn.classList.toggle(
+            'button--accent',
+            parseInt(text) === this.pagination.page
+          );
+          btn.classList.toggle(
+            'button--secondary',
+            parseInt(text) !== this.pagination.page
+          );
         }
       });
     }
@@ -279,14 +304,14 @@ class BuyerProductsManager {
    */
   async addToCart(productId) {
     try {
-      const product = this.products.find(p => p.id === productId);
+      const product = this.products.find((p) => p.id === productId);
       if (!product) return;
 
       // Get current cart from localStorage
       const cart = JSON.parse(localStorage.getItem('cart') || '[]');
 
       // Check if product already in cart
-      const existingItem = cart.find(item => item.id === productId);
+      const existingItem = cart.find((item) => item.id === productId);
       if (existingItem) {
         existingItem.quantity = (existingItem.quantity || 1) + 1;
       } else {
@@ -295,7 +320,7 @@ class BuyerProductsManager {
           title: product.title,
           artist: product.artist,
           price: product.price,
-          quantity: 1
+          quantity: 1,
         });
       }
 
@@ -350,7 +375,8 @@ class BuyerProductsManager {
    */
   showError(message) {
     const alertDiv = document.createElement('div');
-    alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #fee; color: #c33; padding: 12px 20px; border-radius: 4px; z-index: 1000;';
+    alertDiv.style.cssText =
+      'position: fixed; top: 20px; right: 20px; background: #fee; color: #c33; padding: 12px 20px; border-radius: 4px; z-index: 1000;';
     alertDiv.textContent = message;
     document.body.appendChild(alertDiv);
     setTimeout(() => alertDiv.remove(), 5000);
@@ -361,7 +387,8 @@ class BuyerProductsManager {
    */
   showSuccess(message) {
     const alertDiv = document.createElement('div');
-    alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #efe; color: #3c3; padding: 12px 20px; border-radius: 4px; z-index: 1000;';
+    alertDiv.style.cssText =
+      'position: fixed; top: 20px; right: 20px; background: #efe; color: #3c3; padding: 12px 20px; border-radius: 4px; z-index: 1000;';
     alertDiv.textContent = message;
     document.body.appendChild(alertDiv);
     setTimeout(() => alertDiv.remove(), 3000);

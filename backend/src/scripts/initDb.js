@@ -68,12 +68,16 @@ async function initializeDatabase() {
         stdio: 'pipe', // Capture output instead of inheriting
         env: { ...process.env },
         timeout: 120000,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
       });
-      logger.info('✅ Database schema initialized successfully', { output: output.substring(0, 500) });
+      logger.info('✅ Database schema initialized successfully', {
+        output: output.substring(0, 500),
+      });
       return true;
     } catch (error) {
-      logger.warn(`⚠️  prisma db push failed: ${error.message}`, { stderr: error.stderr?.substring(0, 500) });
+      logger.warn(`⚠️  prisma db push failed: ${error.message}`, {
+        stderr: error.stderr?.substring(0, 500),
+      });
       // Continue to next method
     }
 
@@ -85,12 +89,17 @@ async function initializeDatabase() {
         stdio: 'pipe',
         env: { ...process.env },
         timeout: 120000,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
       });
-      logger.info('✅ Database schema initialized successfully with migrate deploy', { output: output.substring(0, 500) });
+      logger.info(
+        '✅ Database schema initialized successfully with migrate deploy',
+        { output: output.substring(0, 500) }
+      );
       return true;
     } catch (error) {
-      logger.warn(`⚠️  prisma migrate deploy failed: ${error.message}`, { stderr: error.stderr?.substring(0, 500) });
+      logger.warn(`⚠️  prisma migrate deploy failed: ${error.message}`, {
+        stderr: error.stderr?.substring(0, 500),
+      });
     }
 
     // Last resort: Try db push without flags
@@ -102,9 +111,11 @@ async function initializeDatabase() {
         stdio: 'pipe',
         env: { ...process.env },
         timeout: 120000,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
       });
-      logger.info('✅ Database schema initialized', { output: output.substring(0, 500) });
+      logger.info('✅ Database schema initialized', {
+        output: output.substring(0, 500),
+      });
       return true;
     } catch (error) {
       logger.warn(`⚠️  Final attempt failed: ${error.message}`);
@@ -112,7 +123,7 @@ async function initializeDatabase() {
 
     // If all methods failed, log warning but don't crash
     logger.error('⚠️  All database initialization methods failed', {
-      error: 'Could not sync database schema'
+      error: 'Could not sync database schema',
     });
     // Don't throw - let the application try to start anyway
     // The database might be manually initialized or there might be other issues

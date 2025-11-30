@@ -10,7 +10,7 @@ class DashboardStatsManager {
       pendingSubmissions: 0,
       liveInventory: 0,
       soldThisMonth: 0,
-      dataIssues: 0
+      dataIssues: 0,
     };
   }
 
@@ -38,7 +38,7 @@ class DashboardStatsManager {
       // Load pending submissions count
       const submissionsData = await this.api.get('/admin/submissions', {
         status: 'PENDING_REVIEW',
-        limit: 1
+        limit: 1,
       });
       this.stats.pendingSubmissions = submissionsData.total || 0;
 
@@ -56,9 +56,10 @@ class DashboardStatsManager {
       this.stats.dataIssues = analyticsData.dataIssues || 0;
 
       // Load sales velocity to get sold this month
-      const salesData = await this.api.get('/inventory/analytics/sales-velocity');
+      const salesData = await this.api.get(
+        '/inventory/analytics/sales-velocity'
+      );
       this.stats.soldThisMonth = salesData.totalSold || 0;
-
     } catch (error) {
       console.error('Error loading individual stats:', error);
       throw error;
@@ -74,23 +75,28 @@ class DashboardStatsManager {
     if (statCards.length >= 4) {
       // Pending Submissions
       const pendingCard = statCards[0];
-      pendingCard.querySelector('.stat-card__value').textContent = this.stats.pendingSubmissions;
+      pendingCard.querySelector('.stat-card__value').textContent =
+        this.stats.pendingSubmissions;
 
       // Live Inventory
       const liveCard = statCards[1];
-      liveCard.querySelector('.stat-card__value').textContent = this.stats.liveInventory;
+      liveCard.querySelector('.stat-card__value').textContent =
+        this.stats.liveInventory;
 
       // Sold This Month
       const soldCard = statCards[2];
-      soldCard.querySelector('.stat-card__value').textContent = this.stats.soldThisMonth;
+      soldCard.querySelector('.stat-card__value').textContent =
+        this.stats.soldThisMonth;
 
       // Data Issues
       const issuesCard = statCards[3];
-      issuesCard.querySelector('.stat-card__value').textContent = this.stats.dataIssues;
+      issuesCard.querySelector('.stat-card__value').textContent =
+        this.stats.dataIssues;
 
       // Update meta text if needed
       if (this.stats.dataIssues > 0) {
-        issuesCard.querySelector('.stat-card__meta').textContent = this.stats.dataIssues + ' items need attention';
+        issuesCard.querySelector('.stat-card__meta').textContent =
+          this.stats.dataIssues + ' items need attention';
       } else {
         issuesCard.querySelector('.stat-card__meta').textContent = 'All good';
       }
@@ -114,9 +120,12 @@ class DashboardStatsManager {
     const alertDiv = document.createElement('div');
     alertDiv.className = 'alert alert-danger';
     alertDiv.textContent = message;
-    alertDiv.style.cssText = 'margin-bottom: 20px; padding: 12px; background: #fee; color: #c33; border-radius: 4px;';
+    alertDiv.style.cssText =
+      'margin-bottom: 20px; padding: 12px; background: #fee; color: #c33; border-radius: 4px;';
 
-    const container = document.querySelector('.dashboard-stats') || document.querySelector('.page-content');
+    const container =
+      document.querySelector('.dashboard-stats') ||
+      document.querySelector('.page-content');
     if (container) {
       container.insertBefore(alertDiv, container.firstChild);
       setTimeout(() => alertDiv.remove(), 5000);

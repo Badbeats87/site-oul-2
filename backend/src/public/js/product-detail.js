@@ -33,10 +33,7 @@ class ProductDetailManager {
       }
 
       // Load market data in parallel
-      await Promise.all([
-        this.loadMarketData(),
-        this.loadRelatedProducts()
-      ]);
+      await Promise.all([this.loadMarketData(), this.loadRelatedProducts()]);
 
       this.renderProductDetail();
       this.setupEventListeners();
@@ -78,22 +75,31 @@ class ProductDetailManager {
       // Try to load market data from Discogs if barcode is available
       if (this.product.barcode) {
         try {
-          const discogsData = await this.api.get('/integrations/discogs/search-enriched', {
-            barcode: this.product.barcode
-          });
+          const discogsData = await this.api.get(
+            '/integrations/discogs/search-enriched',
+            {
+              barcode: this.product.barcode,
+            }
+          );
 
-          if (discogsData && discogsData.results && discogsData.results.length > 0) {
+          if (
+            discogsData &&
+            discogsData.results &&
+            discogsData.results.length > 0
+          ) {
             const release = discogsData.results[0];
 
             // Try to get price data
-            const priceData = await this.api.get(`/integrations/discogs/prices/${release.id}`);
+            const priceData = await this.api.get(
+              `/integrations/discogs/prices/${release.id}`
+            );
             if (priceData) {
               this.marketData = {
                 source: 'DISCOGS',
                 low: priceData.statLow,
                 median: priceData.statMedian,
                 high: priceData.statHigh,
-                sampleSize: priceData.sampleSize
+                sampleSize: priceData.sampleSize,
               };
             }
           }
@@ -118,12 +124,12 @@ class ProductDetailManager {
     try {
       const response = await this.api.get('/buyer/products', {
         search: this.product.artist,
-        limit: 6
+        limit: 6,
       });
 
       // Filter out current product
       this.relatedProducts = (response.products || [])
-        .filter(p => p.id !== this.product.id)
+        .filter((p) => p.id !== this.product.id)
         .slice(0, 6);
     } catch (error) {
       console.warn('Failed to load related products:', error);
@@ -139,15 +145,22 @@ class ProductDetailManager {
     document.querySelector('.product-detail').style.display = 'block';
 
     // Update title and breadcrumb
-    document.querySelector('[data-product-breadcrumb]').textContent = this.product.title || 'Product';
-    document.querySelector('[data-product-title]').textContent = this.product.title || 'Unknown';
-    document.querySelector('[data-product-artist]').textContent = this.product.artist || '';
+    document.querySelector('[data-product-breadcrumb]').textContent =
+      this.product.title || 'Product';
+    document.querySelector('[data-product-title]').textContent =
+      this.product.title || 'Unknown';
+    document.querySelector('[data-product-artist]').textContent =
+      this.product.artist || '';
 
     // Update metadata
-    document.querySelector('[data-product-label]').textContent = this.product.label || 'N/A';
-    document.querySelector('[data-product-year]').textContent = this.product.releaseYear || 'N/A';
-    document.querySelector('[data-product-catalog]').textContent = this.product.catalogNumber || 'N/A';
-    document.querySelector('[data-product-barcode]').textContent = this.product.barcode || 'N/A';
+    document.querySelector('[data-product-label]').textContent =
+      this.product.label || 'N/A';
+    document.querySelector('[data-product-year]').textContent =
+      this.product.releaseYear || 'N/A';
+    document.querySelector('[data-product-catalog]').textContent =
+      this.product.catalogNumber || 'N/A';
+    document.querySelector('[data-product-barcode]').textContent =
+      this.product.barcode || 'N/A';
 
     // Update condition grades
     document.querySelector('[data-product-condition-media]').textContent =
@@ -179,12 +192,14 @@ class ProductDetailManager {
     }
 
     // Update specs
-    document.querySelector('[data-product-genre]').textContent = this.product.genre || 'N/A';
+    document.querySelector('[data-product-genre]').textContent =
+      this.product.genre || 'N/A';
     document.querySelector('[data-product-media-full]').textContent =
       this.formatConditionFull(this.product.conditionMedia);
     document.querySelector('[data-product-sleeve-full]').textContent =
       this.formatConditionFull(this.product.conditionSleeve);
-    document.querySelector('[data-product-sku]').textContent = this.product.sku || this.product.id;
+    document.querySelector('[data-product-sku]').textContent =
+      this.product.sku || this.product.id;
 
     // Render market data
     this.renderMarketData();
@@ -291,16 +306,20 @@ class ProductDetailManager {
     const container = document.querySelector('[data-related-products]');
 
     if (this.relatedProducts.length === 0) {
-      container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #999;"><p>No related products found</p></div>';
+      container.innerHTML =
+        '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #999;"><p>No related products found</p></div>';
       return;
     }
 
-    container.innerHTML = this.relatedProducts.map(product => `
+    container.innerHTML = this.relatedProducts
+      .map(
+        (product) => `
       <div class="product-card">
         <div class="product-card__image">
-          ${product.coverArtUrl ?
-            `<img src="${product.coverArtUrl}" alt="${product.title}" style="width: 100%; height: 100%; object-fit: cover;">` :
-            `<svg viewBox="0 0 240 240" fill="none">
+          ${
+            product.coverArtUrl
+              ? `<img src="${product.coverArtUrl}" alt="${product.title}" style="width: 100%; height: 100%; object-fit: cover;">`
+              : `<svg viewBox="0 0 240 240" fill="none">
               <rect width="240" height="240" fill="#e5e7eb"/>
               <text x="120" y="120" text-anchor="middle" dominant-baseline="middle" font-size="18" fill="#9ca3af">Album Cover</text>
             </svg>`
@@ -327,7 +346,9 @@ class ProductDetailManager {
           </a>
         </div>
       </div>
-    `).join('');
+    `
+      )
+      .join('');
   }
 
   /**
@@ -361,7 +382,7 @@ class ProductDetailManager {
       const cart = JSON.parse(localStorage.getItem('cart') || '[]');
 
       // Check if product already in cart
-      const existingItem = cart.find(item => item.id === this.product.id);
+      const existingItem = cart.find((item) => item.id === this.product.id);
       if (existingItem) {
         existingItem.quantity = (existingItem.quantity || 1) + 1;
       } else {
@@ -371,7 +392,7 @@ class ProductDetailManager {
           artist: this.product.artist,
           price: this.product.price,
           quantity: 1,
-          image: this.product.coverArtUrl
+          image: this.product.coverArtUrl,
         });
       }
 
@@ -392,7 +413,7 @@ class ProductDetailManager {
       const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
 
       // Check if already in wishlist
-      if (wishlist.find(item => item.id === this.product.id)) {
+      if (wishlist.find((item) => item.id === this.product.id)) {
         this.showError('Already in wishlist');
         return;
       }
@@ -402,7 +423,7 @@ class ProductDetailManager {
         title: this.product.title,
         artist: this.product.artist,
         price: this.product.price,
-        addedAt: new Date().toISOString()
+        addedAt: new Date().toISOString(),
       });
 
       localStorage.setItem('wishlist', JSON.stringify(wishlist));
@@ -430,14 +451,14 @@ class ProductDetailManager {
    */
   formatCondition(code) {
     const map = {
-      'MINT': 'Mint',
-      'NM': 'Near Mint',
-      'VG_PLUS': 'Very Good+',
-      'VG': 'Very Good',
-      'VG_MINUS': 'Very Good-',
-      'G': 'Good',
-      'FAIR': 'Fair',
-      'POOR': 'Poor'
+      MINT: 'Mint',
+      NM: 'Near Mint',
+      VG_PLUS: 'Very Good+',
+      VG: 'Very Good',
+      VG_MINUS: 'Very Good-',
+      G: 'Good',
+      FAIR: 'Fair',
+      POOR: 'Poor',
     };
     return map[code] || code;
   }
@@ -447,14 +468,14 @@ class ProductDetailManager {
    */
   formatConditionFull(code) {
     const descriptions = {
-      'MINT': 'Mint (M) - Perfect condition, unplayed',
-      'NM': 'Near Mint (NM) - Nearly perfect, minimal signs of play',
-      'VG_PLUS': 'Very Good Plus (VG+) - Well cared for with light wear',
-      'VG': 'Very Good (VG) - Surface marks and/or audible defects',
-      'VG_MINUS': 'Very Good Minus (VG-) - Significant wear and damage',
-      'G': 'Good (G) - Heavy wear, plays through but with issues',
-      'FAIR': 'Fair - Damaged but still playable',
-      'POOR': 'Poor - Severely damaged, barely playable'
+      MINT: 'Mint (M) - Perfect condition, unplayed',
+      NM: 'Near Mint (NM) - Nearly perfect, minimal signs of play',
+      VG_PLUS: 'Very Good Plus (VG+) - Well cared for with light wear',
+      VG: 'Very Good (VG) - Surface marks and/or audible defects',
+      VG_MINUS: 'Very Good Minus (VG-) - Significant wear and damage',
+      G: 'Good (G) - Heavy wear, plays through but with issues',
+      FAIR: 'Fair - Damaged but still playable',
+      POOR: 'Poor - Severely damaged, barely playable',
     };
     return descriptions[code] || 'Unknown condition';
   }
@@ -497,7 +518,8 @@ class ProductDetailManager {
    */
   showSuccess(message) {
     const alertDiv = document.createElement('div');
-    alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #efe; color: #3c3; padding: 12px 20px; border-radius: 4px; z-index: 1000;';
+    alertDiv.style.cssText =
+      'position: fixed; top: 20px; right: 20px; background: #efe; color: #3c3; padding: 12px 20px; border-radius: 4px; z-index: 1000;';
     alertDiv.textContent = message;
     document.body.appendChild(alertDiv);
     setTimeout(() => alertDiv.remove(), 3000);
