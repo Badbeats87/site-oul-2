@@ -22,6 +22,7 @@
             <div class="navbar__links">
                 <a href="../index.html" class="nav-link">Back to Site</a>
                 <span class="nav-link">Admin</span>
+                <button class="nav-link button button--sm button--secondary" data-logout-btn>Logout</button>
             </div>
         </div>
     </nav>
@@ -69,19 +70,27 @@
                 <div class="tab-header">
                     <button class="tab-btn tab-btn--active">Submissions</button>
                     <button class="tab-btn">Inventory</button>
-                    <button class="tab-btn">Pricing</button>
+                    <button class="tab-btn">Analytics</button>
                 </div>
 
                 <!-- Submissions Tab -->
-                <div class="tab-panel tab-panel--active">
+                <div class="tab-panel tab-panel--active" data-submissions-container>
                     <div class="section-header">
                         <h2>Submission Queue</h2>
                         <div class="section-actions">
-                            <input type="text" placeholder="Search submissions..." class="search-input" style="width: 250px;">
-                            <select class="filter-select" style="width: 150px;">
-                                <option>All Status</option>
-                                <option>Pending</option>
-                                <option>Flagged</option>
+                            <input
+                                type="text"
+                                placeholder="Search submissions..."
+                                class="search-input"
+                                data-submissions-search
+                                style="width: 250px;"
+                            >
+                            <select class="filter-select" data-submissions-status-filter style="width: 150px;">
+                                <option value="all">All Status</option>
+                                <option value="PENDING_REVIEW">Pending Review</option>
+                                <option value="ACCEPTED">Accepted</option>
+                                <option value="REJECTED">Rejected</option>
+                                <option value="PARTIALLY_ACCEPTED">Partially Accepted</option>
                             </select>
                         </div>
                     </div>
@@ -99,51 +108,9 @@
                                     <th></th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody data-submissions-tbody>
                                 <tr>
-                                    <td><strong>#SUB-2024-1847</strong></td>
-                                    <td>
-                                        john.doe@email.com<br>
-                                        <span class="text-muted">New seller</span>
-                                    </td>
-                                    <td>
-                                        <strong>4 records</strong><br>
-                                        <span class="text-muted">2 need review</span>
-                                    </td>
-                                    <td><strong>$185.50</strong></td>
-                                    <td><span class="badge badge--warning">Pending</span></td>
-                                    <td><span class="text-muted">1h ago</span></td>
-                                    <td><button class="button button--sm button--accent">Review</button></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>#SUB-2024-1846</strong></td>
-                                    <td>
-                                        jane.smith@email.com<br>
-                                        <span class="text-muted">Returning seller</span>
-                                    </td>
-                                    <td>
-                                        <strong>6 records</strong><br>
-                                        <span class="text-muted">All complete</span>
-                                    </td>
-                                    <td><strong>$642.00</strong></td>
-                                    <td><span class="badge badge--warning">Pending</span></td>
-                                    <td><span class="text-muted">3h ago</span></td>
-                                    <td><button class="button button--sm button--accent">Review</button></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>#SUB-2024-1845</strong></td>
-                                    <td>
-                                        bob.williams@email.com<br>
-                                        <span class="text-muted">New seller</span>
-                                    </td>
-                                    <td>
-                                        <strong>2 records</strong><br>
-                                        <span class="text-muted">1 duplicate flag</span>
-                                    </td>
-                                    <td><strong>$95.75</strong></td>
-                                    <td><span class="badge badge--danger">Flagged</span></td>
-                                    <td><span class="text-muted">6h ago</span></td>
-                                    <td><button class="button button--sm button--secondary">Investigate</button></td>
+                                    <td colspan="7" style="text-align: center; padding: 40px;">Loading...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -151,11 +118,23 @@
                 </div>
 
                 <!-- Inventory Tab -->
-                <div class="tab-panel">
+                <div class="tab-panel" data-inventory-container>
                     <div class="section-header">
                         <h2>Inventory Management</h2>
                         <div class="section-actions">
-                            <a href="inventory.html" class="button button--primary">→ Full Inventory Manager</a>
+                            <input
+                                type="text"
+                                placeholder="Search..."
+                                class="search-input"
+                                data-inventory-search
+                                style="width: 250px;"
+                            >
+                            <select class="filter-select" data-inventory-status-filter style="width: 150px;">
+                                <option value="all">All Status</option>
+                                <option value="LIVE">LIVE</option>
+                                <option value="SOLD">SOLD</option>
+                                <option value="RESERVED">RESERVED</option>
+                            </select>
                         </div>
                     </div>
 
@@ -165,113 +144,31 @@
                                 <tr>
                                     <th>Record</th>
                                     <th>Condition</th>
-                                    <th>Stock</th>
+                                    <th>Status</th>
                                     <th>Cost</th>
                                     <th>List Price</th>
                                     <th>Margin</th>
                                     <th></th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody data-inventory-tbody>
                                 <tr>
-                                    <td>
-                                        <strong>Dark Side of the Moon</strong><br>
-                                        <span class="text-muted">Pink Floyd • 1973</span>
-                                    </td>
-                                    <td>NM / NM</td>
-                                    <td>1</td>
-                                    <td>$48.50</td>
-                                    <td>$89.99</td>
-                                    <td><strong>45.6%</strong></td>
-                                    <td><button class="button button--sm button--secondary">Edit</button></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <strong>Abbey Road</strong><br>
-                                        <span class="text-muted">The Beatles • 1969</span>
-                                    </td>
-                                    <td>VG+ / VG+</td>
-                                    <td>3</td>
-                                    <td>$37.00</td>
-                                    <td>$49.50</td>
-                                    <td><strong>25.7%</strong></td>
-                                    <td><button class="button button--sm button--secondary">Edit</button></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <strong>Led Zeppelin IV</strong><br>
-                                        <span class="text-muted">Led Zeppelin • 1971</span>
-                                    </td>
-                                    <td>NM / G</td>
-                                    <td>1</td>
-                                    <td>$15.75</td>
-                                    <td>$34.99</td>
-                                    <td><strong>55.0%</strong></td>
-                                    <td><button class="button button--sm button--secondary">Edit</button></td>
+                                    <td colspan="7" style="text-align: center; padding: 40px;">Loading...</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- Pricing Tab -->
-                <div class="tab-panel">
+                <!-- Analytics Tab -->
+                <div class="tab-panel" data-analytics-container>
                     <div class="section-header">
-                        <h2>Pricing Policies</h2>
-                        <div class="section-actions">
-                            <a href="pricing-editor.html" class="button button--primary">→ Edit Policies</a>
-                        </div>
+                        <h2>Analytics & Reports</h2>
                     </div>
 
-                    <div class="policies-list">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Policy</th>
-                                    <th>Scope</th>
-                                    <th>Buy Formula</th>
-                                    <th>Sell Formula</th>
-                                    <th>Status</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <strong>Standard Global</strong><br>
-                                        <span class="text-muted">Default for all</span>
-                                    </td>
-                                    <td>All releases</td>
-                                    <td>Median × 55%</td>
-                                    <td>Median × 125%</td>
-                                    <td><span class="badge badge--success">Active</span></td>
-                                    <td><button class="button button--sm button--secondary">Edit</button></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <strong>Classic Rock Premium</strong><br>
-                                        <span class="text-muted">Higher margin rock</span>
-                                    </td>
-                                    <td>Rock genre</td>
-                                    <td>High × 60%</td>
-                                    <td>High × 135%</td>
-                                    <td><span class="badge badge--success">Active</span></td>
-                                    <td><button class="button button--sm button--secondary">Edit</button></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <strong>Web Seller Bonus</strong><br>
-                                        <span class="text-muted">Incentivize web</span>
-                                    </td>
-                                    <td>Web channel</td>
-                                    <td>Median × 58%</td>
-                                    <td>Median × 125%</td>
-                                    <td><span class="badge badge--warning">Draft</span></td>
-                                    <td><button class="button button--sm button--secondary">Edit</button></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <div data-analytics-overview></div>
+                    <div data-analytics-low-stock style="margin-top: 30px;"></div>
+                    <div data-analytics-sales style="margin-top: 30px;"></div>
                 </div>
             </div>
 
@@ -304,6 +201,27 @@
         </div>
     </main>
 
+    <!-- Submission Details Modal -->
+    <div data-submission-details-modal style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
+        <div style="background: white; margin: 50px auto; max-width: 800px; border-radius: 8px; padding: 30px;">
+            <h2>Submission Details</h2>
+            <div data-submission-details-body></div>
+        </div>
+    </div>
+
+    <!-- Inventory Edit Modal -->
+    <div data-inventory-edit-modal style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
+        <div style="background: white; margin: 50px auto; max-width: 500px; border-radius: 8px; padding: 30px;">
+            <h2>Edit Inventory Item</h2>
+            <div data-inventory-edit-modal-body></div>
+        </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div data-loading style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); color: white; padding: 20px 40px; border-radius: 8px; z-index: 2000;">
+        Loading...
+    </div>
+
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
@@ -327,6 +245,17 @@
         </div>
     </footer>
 
+    <script src="../../js/api-client.js"></script>
+    <script src="../../js/auth.js"></script>
+    <script src="../../js/submissions.js"></script>
+    <script src="../../js/inventory.js"></script>
+    <script src="../../js/analytics.js"></script>
     <script src="../../js/admin.js"></script>
+    <script>
+        // Initialize submissions manager when page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            await submissionsManager.initialize();
+        });
+    </script>
 </body>
 </html>
