@@ -418,7 +418,7 @@ class ProductDetailManager {
    */
   updateCartCount() {
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-    const cartLink = document.querySelector('a[href="cart.html"]');
+    const cartLink = document.querySelector('[data-cart-link]');
     if (cartLink) {
       const count = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
       cartLink.textContent = `Cart (${count})`;
