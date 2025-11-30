@@ -45,22 +45,10 @@ app.use(compression());
 
 // Serve static files (pages, styles, js)
 // Configure to serve index.html for directory requests
-const pagesDir = path.join(projectRoot, 'pages');
-const jsDir = path.join(projectRoot, 'js');
-const stylesDir = path.join(projectRoot, 'styles');
-
-logger.info('Static file paths:', {
-  __dirname,
-  projectRoot,
-  pagesDir,
-  jsDir,
-  stylesDir,
-});
-
 const staticOptions = { index: ['index.html'] };
-app.use(express.static(pagesDir, staticOptions));
-app.use(express.static(jsDir, staticOptions));
-app.use(express.static(stylesDir));
+app.use(express.static(path.join(projectRoot, 'pages'), staticOptions));
+app.use(express.static(path.join(projectRoot, 'js'), staticOptions));
+app.use(express.static(path.join(projectRoot, 'styles')));
 
 // Request logging
 app.use(logRequest);
