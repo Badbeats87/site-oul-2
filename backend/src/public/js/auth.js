@@ -19,7 +19,7 @@ class AuthManager {
     try {
       const response = await this.api.post('/auth/login', {
         email,
-        password
+        password,
       });
 
       // Store token (server returns accessToken, refreshToken)
@@ -105,7 +105,11 @@ class AuthManager {
    * @returns {boolean}
    */
   isAdmin() {
-    return this.currentUser && (this.currentUser.role === 'ADMIN' || this.currentUser.role === 'SUPER_ADMIN');
+    return (
+      this.currentUser &&
+      (this.currentUser.role === 'ADMIN' ||
+        this.currentUser.role === 'SUPER_ADMIN')
+    );
   }
 }
 

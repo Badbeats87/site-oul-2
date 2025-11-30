@@ -3,7 +3,7 @@
  * Handles login form submission, validation, and authentication
  */
 
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async function () {
   // Check if already authenticated
   const isAuthenticated = await auth.verifySession();
   if (isAuthenticated) {
@@ -104,7 +104,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Validate form
     const fieldErrors = validateForm();
     if (Object.keys(fieldErrors).length > 0) {
-      showError('Validation Error', 'Please check the errors below.', fieldErrors);
+      showError(
+        'Validation Error',
+        'Please check the errors below.',
+        fieldErrors
+      );
       return;
     }
 
@@ -123,15 +127,20 @@ document.addEventListener('DOMContentLoaded', async function() {
     } catch (error) {
       // Handle different error types
       let title = 'Login Failed';
-      let message = error.message || 'An unexpected error occurred. Please try again.';
+      let message =
+        error.message || 'An unexpected error occurred. Please try again.';
       let fieldErrors = {};
 
       if (error.message.includes('401') || error.message.includes('Invalid')) {
         title = 'Invalid Credentials';
         message = 'Email or password is incorrect. Please try again.';
-      } else if (error.message.includes('network') || error.message.includes('fetch')) {
+      } else if (
+        error.message.includes('network') ||
+        error.message.includes('fetch')
+      ) {
         title = 'Connection Error';
-        message = 'Unable to connect to the server. Please check your internet connection.';
+        message =
+          'Unable to connect to the server. Please check your internet connection.';
       } else if (error.message.includes('timeout')) {
         title = 'Request Timeout';
         message = 'The request took too long. Please try again.';
