@@ -1,4 +1,4 @@
-import express from "express";
+import express from 'express';
 import {
   getAllReleases,
   getReleaseById,
@@ -7,7 +7,7 @@ import {
   deleteRelease,
   searchReleases,
   autocomplete,
-} from "../controllers/releaseController.js";
+} from '../controllers/releaseController.js';
 
 const router = express.Router();
 
@@ -36,7 +36,7 @@ const router = express.Router();
  *       200:
  *         description: List of releases retrieved successfully
  */
-router.get("/", getAllReleases);
+router.get('/', getAllReleases);
 
 /**
  * @swagger
@@ -64,7 +64,7 @@ router.get("/", getAllReleases);
  *       200:
  *         description: Search results returned successfully
  */
-router.get("/search", searchReleases);
+router.get('/search', searchReleases);
 
 /**
  * @swagger
@@ -101,7 +101,7 @@ router.get("/search", searchReleases);
  *       200:
  *         description: Autocomplete suggestions returned successfully
  */
-router.get("/autocomplete", autocomplete);
+router.get('/autocomplete', autocomplete);
 
 /**
  * @swagger
@@ -177,7 +177,7 @@ router.get("/autocomplete", autocomplete);
  *       404:
  *         description: Release not found
  */
-router.get("/:id", getReleaseById);
+router.get('/:id', getReleaseById);
 
 /**
  * @swagger
@@ -217,10 +217,10 @@ router.get("/:id", getReleaseById);
  *       400:
  *         description: Invalid request data
  */
-router.post("/", createRelease);
+router.post('/', createRelease);
 
-router.put("/:id", updateRelease);
+router.put('/:id', updateRelease);
 
-router.delete("/:id", deleteRelease);
+router.delete('/:id', deleteRelease);
 
 export default router;

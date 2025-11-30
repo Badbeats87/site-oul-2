@@ -1,24 +1,24 @@
-import express from "express";
-import cors from "cors";
-import helmet from "helmet";
-import compression from "compression";
-import { v4 as uuidv4 } from "uuid";
-import swaggerUi from "swagger-ui-express";
-import config from "../config/config.js";
-import logger, { logRequest } from "../config/logger.js";
-import { swaggerSpec } from "../config/swagger.js";
-import { errorHandler } from "./middleware/errorHandler.js";
-import { notFoundHandler } from "./middleware/notFoundHandler.js";
-import healthRoutes from "./routes/health.js";
-import authRoutes from "./routes/auth.js";
-import catalogRoutes from "./routes/catalog.js";
-import integrationsRoutes from "./routes/integrations.js";
-import sellersRoutes from "./routes/sellers.js";
-import adminRoutes from "./routes/admin.js";
-import inventoryRoutes from "./routes/inventory.js";
-import buyerRoutes from "./routes/buyer.js";
-import { authenticate } from "./middleware/authMiddleware.js";
-import prisma from "./utils/db.js";
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import compression from 'compression';
+import { v4 as uuidv4 } from 'uuid';
+import swaggerUi from 'swagger-ui-express';
+import config from '../config/config.js';
+import logger, { logRequest } from '../config/logger.js';
+import { swaggerSpec } from '../config/swagger.js';
+import { errorHandler } from './middleware/errorHandler.js';
+import { notFoundHandler } from './middleware/notFoundHandler.js';
+import healthRoutes from './routes/health.js';
+import authRoutes from './routes/auth.js';
+import catalogRoutes from './routes/catalog.js';
+import integrationsRoutes from './routes/integrations.js';
+import sellersRoutes from './routes/sellers.js';
+import adminRoutes from './routes/admin.js';
+import inventoryRoutes from './routes/inventory.js';
+import buyerRoutes from './routes/buyer.js';
+import { authenticate } from './middleware/authMiddleware.js';
+import prisma from './utils/db.js';
 
 const app = express();
 
@@ -41,7 +41,7 @@ app.use(express.urlencoded({ extended: true }));
 // Request ID middleware for tracing
 app.use((req, res, next) => {
   req.id = uuidv4();
-  res.setHeader("X-Request-ID", req.id);
+  res.setHeader('X-Request-ID', req.id);
   next();
 });
 
@@ -50,7 +50,7 @@ app.use((req, res, next) => {
 // ============================================================================
 
 // API documentation (available without authentication)
-app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Authentication middleware
 app.use(authenticate);
@@ -63,28 +63,28 @@ logger.info(`Environment: ${config.app.env}`);
 // ============================================================================
 
 // Health check endpoint
-app.use("/api/v1/health", healthRoutes);
+app.use('/api/v1/health', healthRoutes);
 
 // Auth routes (before other protected routes)
-app.use("/api/v1/auth", authRoutes);
+app.use('/api/v1/auth', authRoutes);
 
 // Catalog routes
-app.use("/api/v1/catalog", catalogRoutes);
+app.use('/api/v1/catalog', catalogRoutes);
 
 // Integration routes
-app.use("/api/v1/integrations", integrationsRoutes);
+app.use('/api/v1/integrations', integrationsRoutes);
 
 // Sellers and submissions routes
-app.use("/api/v1/sellers", sellersRoutes);
+app.use('/api/v1/sellers', sellersRoutes);
 
 // Admin routes
-app.use("/api/v1/admin/submissions", adminRoutes);
+app.use('/api/v1/admin/submissions', adminRoutes);
 
 // Inventory routes
-app.use("/api/v1/inventory", inventoryRoutes);
+app.use('/api/v1/inventory', inventoryRoutes);
 
 // Buyer storefront routes
-app.use("/api/v1/buyer", buyerRoutes);
+app.use('/api/v1/buyer', buyerRoutes);
 
 // TODO: Add other route groups
 // app.use('/api/v1/pricing', pricingRoutes);

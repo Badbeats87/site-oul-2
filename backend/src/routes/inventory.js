@@ -1,4 +1,4 @@
-import express from "express";
+import express from 'express';
 import {
   listInventory,
   getInventoryDetail,
@@ -10,7 +10,7 @@ import {
   getLowStockAlerts,
   calculateSalesVelocity,
   bulkUpdatePrices,
-} from "../controllers/inventoryController.js";
+} from '../controllers/inventoryController.js';
 
 const router = express.Router();
 
@@ -98,7 +98,7 @@ const router = express.Router();
  *       200:
  *         description: Paginated inventory with advanced filters applied
  */
-router.get("/", listInventory);
+router.get('/', listInventory);
 
 /**
  * @swagger
@@ -123,7 +123,7 @@ router.get("/", listInventory);
  *       404:
  *         description: Inventory lot not found
  */
-router.get("/:inventoryLotId", getInventoryDetail);
+router.get('/:inventoryLotId', getInventoryDetail);
 
 // ============================================================================
 // INVENTORY UPDATES
@@ -181,7 +181,7 @@ router.get("/:inventoryLotId", getInventoryDetail);
  *       404:
  *         description: Inventory lot not found
  */
-router.put("/:inventoryLotId", updateInventory);
+router.put('/:inventoryLotId', updateInventory);
 
 /**
  * @swagger
@@ -215,7 +215,7 @@ router.put("/:inventoryLotId", updateInventory);
  *       404:
  *         description: Inventory lot not found
  */
-router.delete("/:inventoryLotId", deleteInventory);
+router.delete('/:inventoryLotId', deleteInventory);
 
 // ============================================================================
 // BULK OPERATIONS
@@ -263,7 +263,7 @@ router.delete("/:inventoryLotId", deleteInventory);
  *       400:
  *         description: Invalid request data
  */
-router.post("/bulk/prices", bulkUpdatePrices);
+router.post('/bulk/prices', bulkUpdatePrices);
 
 // ============================================================================
 // PRICING POLICY OPERATIONS
@@ -318,7 +318,7 @@ router.post("/bulk/prices", bulkUpdatePrices);
  *       200:
  *         description: Policy application results with price calculations
  */
-router.post("/pricing/apply", applyPricingPolicy);
+router.post('/pricing/apply', applyPricingPolicy);
 
 /**
  * @swagger
@@ -343,7 +343,7 @@ router.post("/pricing/apply", applyPricingPolicy);
  *       404:
  *         description: Inventory lot not found
  */
-router.get("/:inventoryLotId/pricing-history", getPricingHistory);
+router.get('/:inventoryLotId/pricing-history', getPricingHistory);
 
 // ============================================================================
 // ANALYTICS & REPORTING
@@ -363,7 +363,7 @@ router.get("/:inventoryLotId/pricing-history", getPricingHistory);
  *       200:
  *         description: Inventory analytics with stats and alerts
  */
-router.get("/analytics/overview", getInventoryAnalytics);
+router.get('/analytics/overview', getInventoryAnalytics);
 
 /**
  * @swagger
@@ -386,7 +386,7 @@ router.get("/analytics/overview", getInventoryAnalytics);
  *       200:
  *         description: Low-stock alert items grouped by release
  */
-router.get("/analytics/low-stock", getLowStockAlerts);
+router.get('/analytics/low-stock', getLowStockAlerts);
 
 /**
  * @swagger
@@ -402,6 +402,6 @@ router.get("/analytics/low-stock", getLowStockAlerts);
  *       200:
  *         description: Sales velocity metrics with top performers
  */
-router.get("/analytics/sales-velocity", calculateSalesVelocity);
+router.get('/analytics/sales-velocity', calculateSalesVelocity);
 
 export default router;

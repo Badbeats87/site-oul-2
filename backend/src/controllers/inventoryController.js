@@ -1,5 +1,5 @@
-import inventoryService from "../services/inventoryService.js";
-import logger from "../../config/logger.js";
+import inventoryService from '../services/inventoryService.js';
+import logger from '../../config/logger.js';
 
 /**
  * List inventory with pagination and filtering
@@ -12,8 +12,8 @@ export const listInventory = async (req, res, next) => {
       status,
       limit: limit ? parseInt(limit) : 50,
       page: page ? parseInt(page) : 1,
-      sortBy: sortBy || "createdAt",
-      sortOrder: sortOrder || "desc",
+      sortBy: sortBy || 'createdAt',
+      sortOrder: sortOrder || 'desc',
     });
 
     res.json({
@@ -92,7 +92,7 @@ export const deleteInventory = async (req, res, next) => {
     res.json({
       success: true,
       data: deleted,
-      message: "Inventory lot removed",
+      message: 'Inventory lot removed',
     });
   } catch (error) {
     next(error);
@@ -208,7 +208,7 @@ export const bulkUpdatePrices = async (req, res, next) => {
     if (!Array.isArray(updates)) {
       return res.status(400).json({
         success: false,
-        error: "Updates must be an array",
+        error: 'Updates must be an array',
       });
     }
 
