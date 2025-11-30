@@ -1,4 +1,4 @@
-import express from 'express';
+import express from "express";
 import {
   calculateShippingRates,
   getZoneForAddress,
@@ -12,8 +12,8 @@ import {
   createShippingRate,
   updateShippingRate,
   deleteShippingRate,
-} from '../controllers/shippingController.js';
-import { requireRole } from '../middleware/authMiddleware.js';
+} from "../controllers/shippingController.js";
+import { requireRole } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -92,7 +92,7 @@ const router = express.Router();
  *       404:
  *         description: No shipping zone found for destination
  */
-router.post('/calculate-rates', calculateShippingRates);
+router.post("/calculate-rates", calculateShippingRates);
 
 /**
  * @swagger
@@ -117,7 +117,7 @@ router.post('/calculate-rates', calculateShippingRates);
  *       404:
  *         description: No shipping zone found for state
  */
-router.get('/zones/lookup', getZoneForAddress);
+router.get("/zones/lookup", getZoneForAddress);
 
 // ============================================================================
 // ADMIN ENDPOINTS - ZONES
@@ -151,7 +151,7 @@ router.get('/zones/lookup', getZoneForAddress);
  *       200:
  *         description: List of shipping zones with pagination
  */
-router.get('/zones', requireRole('ADMIN'), listShippingZones);
+router.get("/zones", requireRole("ADMIN"), listShippingZones);
 
 /**
  * @swagger
@@ -191,7 +191,7 @@ router.get('/zones', requireRole('ADMIN'), listShippingZones);
  *       200:
  *         description: Zone created
  */
-router.post('/zones', requireRole('ADMIN'), createShippingZone);
+router.post("/zones", requireRole("ADMIN"), createShippingZone);
 
 /**
  * @swagger
@@ -214,7 +214,7 @@ router.post('/zones', requireRole('ADMIN'), createShippingZone);
  *       404:
  *         description: Zone not found
  */
-router.get('/zones/:zoneId', requireRole('ADMIN'), getShippingZone);
+router.get("/zones/:zoneId", requireRole("ADMIN"), getShippingZone);
 
 /**
  * @swagger
@@ -256,7 +256,7 @@ router.get('/zones/:zoneId', requireRole('ADMIN'), getShippingZone);
  *       404:
  *         description: Zone not found
  */
-router.put('/zones/:zoneId', requireRole('ADMIN'), updateShippingZone);
+router.put("/zones/:zoneId", requireRole("ADMIN"), updateShippingZone);
 
 /**
  * @swagger
@@ -281,7 +281,7 @@ router.put('/zones/:zoneId', requireRole('ADMIN'), updateShippingZone);
  *       404:
  *         description: Zone not found
  */
-router.delete('/zones/:zoneId', requireRole('ADMIN'), deleteShippingZone);
+router.delete("/zones/:zoneId", requireRole("ADMIN"), deleteShippingZone);
 
 // ============================================================================
 // ADMIN ENDPOINTS - RATES
@@ -324,7 +324,7 @@ router.delete('/zones/:zoneId', requireRole('ADMIN'), deleteShippingZone);
  *       200:
  *         description: List of shipping rates with pagination
  */
-router.get('/rates', requireRole('ADMIN'), listShippingRates);
+router.get("/rates", requireRole("ADMIN"), listShippingRates);
 
 /**
  * @swagger
@@ -389,7 +389,7 @@ router.get('/rates', requireRole('ADMIN'), listShippingRates);
  *       400:
  *         description: Invalid parameters
  */
-router.post('/rates', requireRole('ADMIN'), createShippingRate);
+router.post("/rates", requireRole("ADMIN"), createShippingRate);
 
 /**
  * @swagger
@@ -412,7 +412,7 @@ router.post('/rates', requireRole('ADMIN'), createShippingRate);
  *       404:
  *         description: Rate not found
  */
-router.get('/rates/:rateId', requireRole('ADMIN'), getShippingRate);
+router.get("/rates/:rateId", requireRole("ADMIN"), getShippingRate);
 
 /**
  * @swagger
@@ -462,7 +462,7 @@ router.get('/rates/:rateId', requireRole('ADMIN'), getShippingRate);
  *       404:
  *         description: Rate not found
  */
-router.put('/rates/:rateId', requireRole('ADMIN'), updateShippingRate);
+router.put("/rates/:rateId", requireRole("ADMIN"), updateShippingRate);
 
 /**
  * @swagger
@@ -485,6 +485,6 @@ router.put('/rates/:rateId', requireRole('ADMIN'), updateShippingRate);
  *       404:
  *         description: Rate not found
  */
-router.delete('/rates/:rateId', requireRole('ADMIN'), deleteShippingRate);
+router.delete("/rates/:rateId", requireRole("ADMIN"), deleteShippingRate);
 
 export default router;

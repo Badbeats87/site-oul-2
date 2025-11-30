@@ -1,4 +1,4 @@
-import express from 'express';
+import express from "express";
 import {
   getSubmissionQueue,
   getSubmissionDetail,
@@ -10,7 +10,7 @@ import {
   updateItemCounterOffer,
   updateSubmissionNotes,
   getSubmissionAudit,
-} from '../controllers/adminSubmissionController.js';
+} from "../controllers/adminSubmissionController.js";
 
 const router = express.Router();
 
@@ -117,7 +117,7 @@ const router = express.Router();
  *                   type: object
  *                   description: Summary of applied filters for client UI
  */
-router.get('/', getSubmissionQueue);
+router.get("/", getSubmissionQueue);
 
 /**
  * @swagger
@@ -142,7 +142,7 @@ router.get('/', getSubmissionQueue);
  *       404:
  *         description: Submission not found
  */
-router.get('/:submissionId', getSubmissionDetail);
+router.get("/:submissionId", getSubmissionDetail);
 
 /**
  * @swagger
@@ -167,7 +167,7 @@ router.get('/:submissionId', getSubmissionDetail);
  *       404:
  *         description: Submission not found
  */
-router.get('/:submissionId/audit', getSubmissionAudit);
+router.get("/:submissionId/audit", getSubmissionAudit);
 
 /**
  * @swagger
@@ -204,7 +204,7 @@ router.get('/:submissionId/audit', getSubmissionAudit);
  *       404:
  *         description: Submission not found
  */
-router.put('/:submissionId/notes', updateSubmissionNotes);
+router.put("/:submissionId/notes", updateSubmissionNotes);
 
 // ============================================================================
 // BULK SUBMISSION ACTIONS
@@ -242,7 +242,7 @@ router.put('/:submissionId/notes', updateSubmissionNotes);
  *       404:
  *         description: Submission not found
  */
-router.post('/:submissionId/accept', acceptSubmission);
+router.post("/:submissionId/accept", acceptSubmission);
 
 /**
  * @swagger
@@ -282,7 +282,7 @@ router.post('/:submissionId/accept', acceptSubmission);
  *       404:
  *         description: Submission not found
  */
-router.post('/:submissionId/reject', rejectSubmission);
+router.post("/:submissionId/reject", rejectSubmission);
 
 /**
  * @swagger
@@ -335,7 +335,7 @@ router.post('/:submissionId/reject', rejectSubmission);
  *       404:
  *         description: Submission or item not found
  */
-router.post('/:submissionId/counter-offer', createCounterOffer);
+router.post("/:submissionId/counter-offer", createCounterOffer);
 
 // ============================================================================
 // INDIVIDUAL ITEM ACTIONS
@@ -378,7 +378,7 @@ router.post('/:submissionId/counter-offer', createCounterOffer);
  *       404:
  *         description: Item not found
  */
-router.post('/:submissionId/items/:itemId/accept', acceptSubmissionItem);
+router.post("/:submissionId/items/:itemId/accept", acceptSubmissionItem);
 
 /**
  * @swagger
@@ -422,7 +422,7 @@ router.post('/:submissionId/items/:itemId/accept', acceptSubmissionItem);
  *       404:
  *         description: Item not found
  */
-router.post('/:submissionId/items/:itemId/reject', rejectSubmissionItem);
+router.post("/:submissionId/items/:itemId/reject", rejectSubmissionItem);
 
 /**
  * @swagger
@@ -470,7 +470,7 @@ router.post('/:submissionId/items/:itemId/reject', rejectSubmissionItem);
  *         description: Item not found
  */
 router.put(
-  '/:submissionId/items/:itemId/counter-offer',
+  "/:submissionId/items/:itemId/counter-offer",
   updateItemCounterOffer,
 );
 

@@ -1,6 +1,6 @@
-import shippingService from '../services/shippingService.js';
-import logger from '../../config/logger.js';
-import { ApiError } from '../middleware/errorHandler.js';
+import shippingService from "../services/shippingService.js";
+import logger from "../../config/logger.js";
+import { ApiError } from "../middleware/errorHandler.js";
 
 /**
  * Tracking Controller
@@ -16,12 +16,12 @@ export async function getTrackingByNumber(req, res, next) {
     const { trackingNumber } = req.params;
 
     if (!trackingNumber) {
-      throw new ApiError('Tracking number is required', 400);
+      throw new ApiError("Tracking number is required", 400);
     }
 
     const tracking = await shippingService.getTrackingHistory(trackingNumber);
 
-    logger.info('Tracking information retrieved', { trackingNumber });
+    logger.info("Tracking information retrieved", { trackingNumber });
 
     res.json({
       success: true,
@@ -41,16 +41,16 @@ export async function getShipmentTrackingEvents(req, res, next) {
     const { shipmentId } = req.params;
 
     if (!shipmentId) {
-      throw new ApiError('Shipment ID is required', 400);
+      throw new ApiError("Shipment ID is required", 400);
     }
 
     const shipment = await shippingService.getShipment(shipmentId);
 
     if (!shipment) {
-      throw new ApiError('Shipment not found', 404);
+      throw new ApiError("Shipment not found", 404);
     }
 
-    logger.info('Tracking events retrieved', { shipmentId });
+    logger.info("Tracking events retrieved", { shipmentId });
 
     res.json({
       success: true,
@@ -77,11 +77,11 @@ export async function getTrackingBatch(req, res, next) {
     const { trackingNumbers } = req.body;
 
     if (!Array.isArray(trackingNumbers) || trackingNumbers.length === 0) {
-      throw new ApiError('trackingNumbers (non-empty array) is required', 400);
+      throw new ApiError("trackingNumbers (non-empty array) is required", 400);
     }
 
     if (trackingNumbers.length > 50) {
-      throw new ApiError('Maximum 50 tracking numbers allowed', 400);
+      throw new ApiError("Maximum 50 tracking numbers allowed", 400);
     }
 
     const results = [];
@@ -89,7 +89,8 @@ export async function getTrackingBatch(req, res, next) {
 
     for (const trackingNumber of trackingNumbers) {
       try {
-        const tracking = await shippingService.getTrackingHistory(trackingNumber);
+        const tracking =
+          await shippingService.getTrackingHistory(trackingNumber);
         results.push(tracking);
       } catch (error) {
         errors.push({
@@ -99,7 +100,7 @@ export async function getTrackingBatch(req, res, next) {
       }
     }
 
-    logger.info('Batch tracking information retrieved', {
+    logger.info("Batch tracking information retrieved", {
       requested: trackingNumbers.length,
       found: results.length,
       notFound: errors.length,

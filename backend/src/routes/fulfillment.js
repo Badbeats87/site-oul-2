@@ -1,4 +1,4 @@
-import express from 'express';
+import express from "express";
 import {
   getOrdersReadyToShip,
   prepareOrderForShipment,
@@ -12,8 +12,8 @@ import {
   getFulfillmentStats,
   getShipmentsByStatus,
   getShipmentDetail,
-} from '../controllers/fulfillmentController.js';
-import { requireRole } from '../middleware/authMiddleware.js';
+} from "../controllers/fulfillmentController.js";
+import { requireRole } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -60,7 +60,7 @@ const router = express.Router();
  *       200:
  *         description: Orders ready to ship with pagination
  */
-router.get('/orders/ready-to-ship', requireRole('ADMIN'), getOrdersReadyToShip);
+router.get("/orders/ready-to-ship", requireRole("ADMIN"), getOrdersReadyToShip);
 
 /**
  * @swagger
@@ -97,7 +97,11 @@ router.get('/orders/ready-to-ship', requireRole('ADMIN'), getOrdersReadyToShip);
  *       404:
  *         description: Order not found
  */
-router.post('/orders/:orderId/prepare', requireRole('ADMIN'), prepareOrderForShipment);
+router.post(
+  "/orders/:orderId/prepare",
+  requireRole("ADMIN"),
+  prepareOrderForShipment,
+);
 
 /**
  * @swagger
@@ -143,7 +147,7 @@ router.post('/orders/:orderId/prepare', requireRole('ADMIN'), prepareOrderForShi
  *                     errors:
  *                       type: array
  */
-router.post('/labels/generate', requireRole('ADMIN'), generateLabelsForOrders);
+router.post("/labels/generate", requireRole("ADMIN"), generateLabelsForOrders);
 
 /**
  * @swagger
@@ -166,7 +170,7 @@ router.post('/labels/generate', requireRole('ADMIN'), generateLabelsForOrders);
  *       404:
  *         description: Shipment not found
  */
-router.get('/shipments/:shipmentId', requireRole('ADMIN'), getShipmentDetail);
+router.get("/shipments/:shipmentId", requireRole("ADMIN"), getShipmentDetail);
 
 /**
  * @swagger
@@ -191,7 +195,11 @@ router.get('/shipments/:shipmentId', requireRole('ADMIN'), getShipmentDetail);
  *       404:
  *         description: Shipment not found
  */
-router.post('/shipments/:shipmentId/approve', requireRole('ADMIN'), approveShipment);
+router.post(
+  "/shipments/:shipmentId/approve",
+  requireRole("ADMIN"),
+  approveShipment,
+);
 
 /**
  * @swagger
@@ -226,7 +234,11 @@ router.post('/shipments/:shipmentId/approve', requireRole('ADMIN'), approveShipm
  *       404:
  *         description: Shipment not found
  */
-router.post('/shipments/:shipmentId/reject', requireRole('ADMIN'), rejectShipment);
+router.post(
+  "/shipments/:shipmentId/reject",
+  requireRole("ADMIN"),
+  rejectShipment,
+);
 
 /**
  * @swagger
@@ -254,7 +266,11 @@ router.post('/shipments/:shipmentId/reject', requireRole('ADMIN'), rejectShipmen
  *       200:
  *         description: Batch approval completed with breakdown
  */
-router.post('/shipments/batch/approve', requireRole('ADMIN'), batchApproveShipments);
+router.post(
+  "/shipments/batch/approve",
+  requireRole("ADMIN"),
+  batchApproveShipments,
+);
 
 /**
  * @swagger
@@ -286,7 +302,7 @@ router.post('/shipments/batch/approve', requireRole('ADMIN'), batchApproveShipme
  *       404:
  *         description: Shipment not found
  */
-router.post('/shipments/:shipmentId/pack', requireRole('ADMIN'), markAsPacked);
+router.post("/shipments/:shipmentId/pack", requireRole("ADMIN"), markAsPacked);
 
 /**
  * @swagger
@@ -309,7 +325,7 @@ router.post('/shipments/:shipmentId/pack', requireRole('ADMIN'), markAsPacked);
  *       404:
  *         description: Shipment not found
  */
-router.post('/shipments/:shipmentId/ship', requireRole('ADMIN'), markAsShipped);
+router.post("/shipments/:shipmentId/ship", requireRole("ADMIN"), markAsShipped);
 
 /**
  * @swagger
@@ -337,7 +353,7 @@ router.post('/shipments/:shipmentId/ship', requireRole('ADMIN'), markAsShipped);
  *       200:
  *         description: Batch shipping completed with breakdown
  */
-router.post('/shipments/batch/ship', requireRole('ADMIN'), batchMarkAsShipped);
+router.post("/shipments/batch/ship", requireRole("ADMIN"), batchMarkAsShipped);
 
 // ============================================================================
 // ADMIN ENDPOINTS - ANALYTICS & REPORTING
@@ -373,7 +389,7 @@ router.post('/shipments/batch/ship', requireRole('ADMIN'), batchMarkAsShipped);
  *                     pendingShipments:
  *                       type: integer
  */
-router.get('/stats', requireRole('ADMIN'), getFulfillmentStats);
+router.get("/stats", requireRole("ADMIN"), getFulfillmentStats);
 
 /**
  * @swagger
@@ -417,6 +433,6 @@ router.get('/stats', requireRole('ADMIN'), getFulfillmentStats);
  *       400:
  *         description: Status parameter required
  */
-router.get('/shipments', requireRole('ADMIN'), getShipmentsByStatus);
+router.get("/shipments", requireRole("ADMIN"), getShipmentsByStatus);
 
 export default router;

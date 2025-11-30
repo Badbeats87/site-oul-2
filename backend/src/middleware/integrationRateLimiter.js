@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit from "express-rate-limit";
 
 /**
  * Rate limiting middleware for external API integrations
@@ -10,7 +10,7 @@ import rateLimit from 'express-rate-limit';
 export const discogsLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 30, // 30 requests per minute per user
-  message: 'Too many Discogs requests, please try again later',
+  message: "Too many Discogs requests, please try again later",
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => {
@@ -24,7 +24,7 @@ export const discogsLimiter = rateLimit({
 export const ebayLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 50, // 50 requests per minute per user
-  message: 'Too many eBay requests, please try again later',
+  message: "Too many eBay requests, please try again later",
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -34,7 +34,7 @@ export const ebayLimiter = rateLimit({
 export const integrationsGlobalLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 100, // 100 requests per minute per user
-  message: 'Too many integration requests, please try again later',
+  message: "Too many integration requests, please try again later",
   standardHeaders: true,
   legacyHeaders: false,
 });

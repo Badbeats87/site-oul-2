@@ -1,4 +1,4 @@
-import logger from '../../config/logger.js';
+import logger from "../../config/logger.js";
 
 /**
  * Middleware to capture raw body for webhook signature verification
@@ -7,13 +7,13 @@ import logger from '../../config/logger.js';
 export function captureRawBody(req, res, next) {
   const chunks = [];
 
-  req.on('data', (chunk) => {
+  req.on("data", (chunk) => {
     chunks.push(chunk);
   });
 
-  req.on('end', () => {
+  req.on("end", () => {
     try {
-      const rawBody = Buffer.concat(chunks).toString('utf8');
+      const rawBody = Buffer.concat(chunks).toString("utf8");
       req.rawBody = rawBody;
 
       // Re-parse as JSON for the rest of the middleware
@@ -21,7 +21,7 @@ export function captureRawBody(req, res, next) {
         try {
           req.body = JSON.parse(rawBody);
         } catch (error) {
-          logger.debug('Failed to parse request body as JSON', {
+          logger.debug("Failed to parse request body as JSON", {
             error: error.message,
           });
           req.body = {};
@@ -32,15 +32,15 @@ export function captureRawBody(req, res, next) {
 
       next();
     } catch (error) {
-      logger.error('Error capturing raw body', {
+      logger.error("Error capturing raw body", {
         error: error.message,
       });
       next(error);
     }
   });
 
-  req.on('error', (error) => {
-    logger.error('Error reading request stream', {
+  req.on("error", (error) => {
+    logger.error("Error reading request stream", {
       error: error.message,
     });
     next(error);

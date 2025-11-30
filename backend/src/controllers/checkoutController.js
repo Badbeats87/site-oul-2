@@ -1,8 +1,8 @@
-import checkoutService from '../services/checkoutService.js';
-import paymentService from '../services/paymentService.js';
-import orderService from '../services/orderService.js';
-import logger from '../../config/logger.js';
-import { ApiError } from '../middleware/errorHandler.js';
+import checkoutService from "../services/checkoutService.js";
+import paymentService from "../services/paymentService.js";
+import orderService from "../services/orderService.js";
+import logger from "../../config/logger.js";
+import { ApiError } from "../middleware/errorHandler.js";
 
 /**
  * Checkout Controller
@@ -19,13 +19,13 @@ export async function getCart(req, res, next) {
     const buyerName = req.query.buyerName || null;
 
     if (!buyerEmail) {
-      throw new ApiError('buyerEmail is required', 400);
+      throw new ApiError("buyerEmail is required", 400);
     }
 
     const cart = await checkoutService.getOrCreateCart(
       buyerEmail,
       buyerName,
-      sessionId
+      sessionId,
     );
 
     res.json({
@@ -46,12 +46,15 @@ export async function addToCart(req, res, next) {
     const { orderId, inventoryLotId } = req.body;
 
     if (!orderId || !inventoryLotId) {
-      throw new ApiError('orderId and inventoryLotId are required', 400);
+      throw new ApiError("orderId and inventoryLotId are required", 400);
     }
 
-    const updatedCart = await checkoutService.addToCart(orderId, inventoryLotId);
+    const updatedCart = await checkoutService.addToCart(
+      orderId,
+      inventoryLotId,
+    );
 
-    logger.info('Item added to cart via API', {
+    logger.info("Item added to cart via API", {
       orderId,
       inventoryLotId,
     });
@@ -75,15 +78,15 @@ export async function removeFromCart(req, res, next) {
     const { orderId } = req.body;
 
     if (!orderId || !inventoryLotId) {
-      throw new ApiError('orderId and inventoryLotId are required', 400);
+      throw new ApiError("orderId and inventoryLotId are required", 400);
     }
 
     const updatedCart = await checkoutService.removeFromCart(
       orderId,
-      inventoryLotId
+      inventoryLotId,
     );
 
-    logger.info('Item removed from cart via API', {
+    logger.info("Item removed from cart via API", {
       orderId,
       inventoryLotId,
     });
@@ -106,7 +109,7 @@ export async function getCartSummary(req, res, next) {
     const { orderId } = req.query;
 
     if (!orderId) {
-      throw new ApiError('orderId is required', 400);
+      throw new ApiError("orderId is required", 400);
     }
 
     const summary = await checkoutService.getCartSummary(orderId);
@@ -129,12 +132,12 @@ export async function recalculateCart(req, res, next) {
     const { orderId, shippingMethod } = req.body;
 
     if (!orderId) {
-      throw new ApiError('orderId is required', 400);
+      throw new ApiError("orderId is required", 400);
     }
 
     const updatedCart = await checkoutService.recalculateCartTotals(
       orderId,
-      shippingMethod || 'STANDARD'
+      shippingMethod || "STANDARD",
     );
 
     res.json({
@@ -155,7 +158,7 @@ export async function validateCart(req, res, next) {
     const { orderId } = req.body;
 
     if (!orderId) {
-      throw new ApiError('orderId is required', 400);
+      throw new ApiError("orderId is required", 400);
     }
 
     const validation = await checkoutService.validateCart(orderId);
@@ -163,14 +166,14 @@ export async function validateCart(req, res, next) {
     if (!validation.isValid) {
       return res.status(400).json({
         success: false,
-        message: 'Cart validation failed',
+        message: "Cart validation failed",
         data: validation,
       });
     }
 
     res.json({
       success: true,
-      message: 'Cart is valid',
+      message: "Cart is valid",
       data: validation,
     });
   } catch (error) {
@@ -187,15 +190,15 @@ export async function initiateCheckout(req, res, next) {
     const { orderId, total } = req.body;
 
     if (!orderId) {
-      throw new ApiError('orderId is required', 400);
+      throw new ApiError("orderId is required", 400);
     }
 
     const checkoutResult = await checkoutService.initiateCheckout(
       orderId,
-      total
+      total,
     );
 
-    logger.info('Checkout initiated via API', {
+    logger.info("Checkout initiated via API", {
       orderId,
       paymentIntentId: checkoutResult.paymentIntent.id,
     });
@@ -218,19 +221,19 @@ export async function completeCheckout(req, res, next) {
     const { orderId } = req.body;
 
     if (!orderId) {
-      throw new ApiError('orderId is required', 400);
+      throw new ApiError("orderId is required", 400);
     }
 
     const completedOrder = await checkoutService.completeCheckout(orderId);
 
-    logger.info('Checkout completed via API', {
+    logger.info("Checkout completed via API", {
       orderId,
       orderNumber: completedOrder.orderNumber,
     });
 
     res.json({
       success: true,
-      message: 'Checkout completed successfully',
+      message: "Checkout completed successfully",
       data: completedOrder,
     });
   } catch (error) {
@@ -247,22 +250,22 @@ export async function cancelCheckout(req, res, next) {
     const { orderId, reason } = req.body;
 
     if (!orderId) {
-      throw new ApiError('orderId is required', 400);
+      throw new ApiError("orderId is required", 400);
     }
 
     const cancelledOrder = await checkoutService.cancelCheckout(
       orderId,
-      reason
+      reason,
     );
 
-    logger.info('Checkout cancelled via API', {
+    logger.info("Checkout cancelled via API", {
       orderId,
       reason,
     });
 
     res.json({
       success: true,
-      message: 'Checkout cancelled',
+      message: "Checkout cancelled",
       data: cancelledOrder,
     });
   } catch (error) {
@@ -278,20 +281,20 @@ export async function handleStripeWebhook(req, res) {
   try {
     // Get raw body and signature from request
     const rawBody = req.rawBody; // Set by middleware
-    const signature = req.headers['stripe-signature'];
+    const signature = req.headers["stripe-signature"];
 
     if (!rawBody || !signature) {
-      logger.warn('Missing webhook body or signature', {
+      logger.warn("Missing webhook body or signature", {
         hasBody: !!rawBody,
         hasSignature: !!signature,
       });
-      throw new ApiError('Missing webhook body or signature', 400);
+      throw new ApiError("Missing webhook body or signature", 400);
     }
 
     // Process webhook
     const result = await paymentService.processWebhook(rawBody, signature);
 
-    logger.info('Webhook processed successfully', {
+    logger.info("Webhook processed successfully", {
       eventId: result.eventId,
       eventType: result.eventType,
     });
@@ -304,7 +307,7 @@ export async function handleStripeWebhook(req, res) {
     });
   } catch (error) {
     // Log error but still return 200 to prevent Stripe retries
-    logger.error('Error processing webhook', {
+    logger.error("Error processing webhook", {
       error: error.message,
     });
 
@@ -312,7 +315,7 @@ export async function handleStripeWebhook(req, res) {
       // Invalid signature - return 401
       return res.status(401).json({
         success: false,
-        message: 'Invalid webhook signature',
+        message: "Invalid webhook signature",
       });
     }
 
@@ -320,7 +323,7 @@ export async function handleStripeWebhook(req, res) {
     res.json({
       success: false,
       acknowledged: true,
-      message: 'Webhook received but processing failed',
+      message: "Webhook received but processing failed",
     });
   }
 }
@@ -334,7 +337,7 @@ export async function getOrder(req, res, next) {
     const { orderId } = req.params;
 
     if (!orderId) {
-      throw new ApiError('orderId is required', 400);
+      throw new ApiError("orderId is required", 400);
     }
 
     const order = await orderService.getOrderById(orderId);
@@ -357,7 +360,7 @@ export async function getOrders(req, res, next) {
     const { buyerEmail, status, limit = 50, page = 1 } = req.query;
 
     if (!buyerEmail) {
-      throw new ApiError('buyerEmail is required', 400);
+      throw new ApiError("buyerEmail is required", 400);
     }
 
     const result = await orderService.getOrdersByBuyer(buyerEmail, {
@@ -384,7 +387,7 @@ export async function getOrderHistory(req, res, next) {
     const { orderId } = req.params;
 
     if (!orderId) {
-      throw new ApiError('orderId is required', 400);
+      throw new ApiError("orderId is required", 400);
     }
 
     const history = await orderService.getOrderHistory(orderId);
@@ -407,10 +410,11 @@ export async function getPaymentIntent(req, res, next) {
     const { paymentIntentId } = req.params;
 
     if (!paymentIntentId) {
-      throw new ApiError('paymentIntentId is required', 400);
+      throw new ApiError("paymentIntentId is required", 400);
     }
 
-    const details = await paymentService.getPaymentIntentDetails(paymentIntentId);
+    const details =
+      await paymentService.getPaymentIntentDetails(paymentIntentId);
 
     res.json({
       success: true,

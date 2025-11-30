@@ -1,4 +1,4 @@
-import express from 'express';
+import express from "express";
 import {
   listProducts,
   getProductDetail,
@@ -11,7 +11,7 @@ import {
   getPersonalizedRecommendations,
   getRecommendationVariants,
   recordRecommendationClick,
-} from '../controllers/buyerController.js';
+} from "../controllers/buyerController.js";
 
 const router = express.Router();
 
@@ -86,7 +86,7 @@ const router = express.Router();
  *       200:
  *         description: List of available products
  */
-router.get('/products', listProducts);
+router.get("/products", listProducts);
 
 /**
  * @swagger
@@ -109,7 +109,7 @@ router.get('/products', listProducts);
  *       404:
  *         description: Product not found
  */
-router.get('/products/:inventoryLotId', getProductDetail);
+router.get("/products/:inventoryLotId", getProductDetail);
 
 // ============================================================================
 // PRODUCT SEARCH & DISCOVERY
@@ -144,7 +144,7 @@ router.get('/products/:inventoryLotId', getProductDetail);
  *       200:
  *         description: Search results
  */
-router.get('/search', searchProducts);
+router.get("/search", searchProducts);
 
 /**
  * @swagger
@@ -170,7 +170,7 @@ router.get('/search', searchProducts);
  *       200:
  *         description: List of recommended products
  */
-router.get('/products/:inventoryLotId/recommendations', getRecommendations);
+router.get("/products/:inventoryLotId/recommendations", getRecommendations);
 
 // ============================================================================
 // WISHLIST MANAGEMENT
@@ -202,7 +202,7 @@ router.get('/products/:inventoryLotId/recommendations', getRecommendations);
  *       404:
  *         description: Product not found
  */
-router.post('/wishlist', addToWishlist);
+router.post("/wishlist", addToWishlist);
 
 /**
  * @swagger
@@ -225,7 +225,7 @@ router.post('/wishlist', addToWishlist);
  *       404:
  *         description: Item not found in wishlist
  */
-router.delete('/wishlist/:inventoryLotId', removeFromWishlist);
+router.delete("/wishlist/:inventoryLotId", removeFromWishlist);
 
 // ============================================================================
 // RECOMMENDATIONS & DISCOVERY
@@ -263,7 +263,7 @@ router.delete('/wishlist/:inventoryLotId', removeFromWishlist);
  *       200:
  *         description: Similar items recommendations with scores
  */
-router.get('/recommendations/similar/:releaseId', getSimilarItems);
+router.get("/recommendations/similar/:releaseId", getSimilarItems);
 
 /**
  * @swagger
@@ -301,7 +301,7 @@ router.get('/recommendations/similar/:releaseId', getSimilarItems);
  *       200:
  *         description: Recently listed products
  */
-router.get('/recommendations/new-arrivals', getNewArrivals);
+router.get("/recommendations/new-arrivals", getNewArrivals);
 
 /**
  * @swagger
@@ -341,7 +341,7 @@ router.get('/recommendations/new-arrivals', getNewArrivals);
  *       200:
  *         description: Personalized recommendations
  */
-router.post('/recommendations/personalized', getPersonalizedRecommendations);
+router.post("/recommendations/personalized", getPersonalizedRecommendations);
 
 /**
  * @swagger
@@ -368,7 +368,7 @@ router.post('/recommendations/personalized', getPersonalizedRecommendations);
  *       200:
  *         description: Multiple recommendation variants for A/B testing
  */
-router.get('/recommendations/variants/:releaseId', getRecommendationVariants);
+router.get("/recommendations/variants/:releaseId", getRecommendationVariants);
 
 /**
  * @swagger
@@ -401,6 +401,6 @@ router.get('/recommendations/variants/:releaseId', getRecommendationVariants);
  *       200:
  *         description: Click recorded successfully
  */
-router.post('/recommendations/click', recordRecommendationClick);
+router.post("/recommendations/click", recordRecommendationClick);
 
 export default router;

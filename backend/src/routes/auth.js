@@ -1,5 +1,5 @@
-import express from 'express';
-import rateLimit from 'express-rate-limit';
+import express from "express";
+import rateLimit from "express-rate-limit";
 import {
   register,
   login,
@@ -8,8 +8,8 @@ import {
   logoutAll,
   getCurrentUser,
   changePassword,
-} from '../controllers/authController.js';
-import { authenticate } from '../middleware/authMiddleware.js';
+} from "../controllers/authController.js";
+import { authenticate } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -17,7 +17,7 @@ const router = express.Router();
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5, // 5 requests per windowMs
-  message: 'Too many login attempts, please try again later',
+  message: "Too many login attempts, please try again later",
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -25,7 +25,7 @@ const loginLimiter = rateLimit({
 const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 3, // 3 requests per windowMs
-  message: 'Too many registration attempts, please try again later',
+  message: "Too many registration attempts, please try again later",
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -71,7 +71,7 @@ const registerLimiter = rateLimit({
  *       429:
  *         description: Too many registration attempts
  */
-router.post('/register', registerLimiter, register);
+router.post("/register", registerLimiter, register);
 
 /**
  * @swagger
@@ -104,7 +104,7 @@ router.post('/register', registerLimiter, register);
  *       429:
  *         description: Too many login attempts
  */
-router.post('/login', loginLimiter, login);
+router.post("/login", loginLimiter, login);
 
 /**
  * @swagger
@@ -131,7 +131,7 @@ router.post('/login', loginLimiter, login);
  *       401:
  *         description: Invalid or expired refresh token
  */
-router.post('/refresh', refresh);
+router.post("/refresh", refresh);
 
 // ============================================================================
 // PROTECTED ROUTES (authentication required)
@@ -153,7 +153,7 @@ router.post('/refresh', refresh);
  *   "message": "Logged out successfully"
  * }
  */
-router.post('/logout', authenticate, logout);
+router.post("/logout", authenticate, logout);
 
 /**
  * POST /api/v1/auth/logout-all
@@ -170,7 +170,7 @@ router.post('/logout', authenticate, logout);
  *   }
  * }
  */
-router.post('/logout-all', authenticate, logoutAll);
+router.post("/logout-all", authenticate, logoutAll);
 
 /**
  * GET /api/v1/auth/me
@@ -186,7 +186,7 @@ router.post('/logout-all', authenticate, logoutAll);
  *   }
  * }
  */
-router.get('/me', authenticate, getCurrentUser);
+router.get("/me", authenticate, getCurrentUser);
 
 /**
  * POST /api/v1/auth/change-password
@@ -208,6 +208,6 @@ router.get('/me', authenticate, getCurrentUser);
  *   }
  * }
  */
-router.post('/change-password', authenticate, changePassword);
+router.post("/change-password", authenticate, changePassword);
 
 export default router;

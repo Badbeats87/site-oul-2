@@ -1,9 +1,9 @@
-import prisma from '../utils/db.js';
-import { ApiError } from '../middleware/errorHandler.js';
-import logger from '../../config/logger.js';
-import pricingService from './pricingService.js';
-import releaseService from './releaseService.js';
-import notificationService from './notificationService.js';
+import prisma from "../utils/db.js";
+import { ApiError } from "../middleware/errorHandler.js";
+import logger from "../../config/logger.js";
+import pricingService from "./pricingService.js";
+import releaseService from "./releaseService.js";
+import notificationService from "./notificationService.js";
 
 class SubmissionService {
   /**
@@ -41,14 +41,14 @@ class SubmissionService {
         changeReason,
       });
 
-      logger.info('Submission status changed', {
+      logger.info("Submission status changed", {
         submissionId,
         fromStatus,
         toStatus,
         changeReason,
       });
     } catch (error) {
-      logger.error('Error logging status change', {
+      logger.error("Error logging status change", {
         submissionId,
         error: error.message,
       });
@@ -69,7 +69,7 @@ class SubmissionService {
   async createSubmission(sellerId, items) {
     try {
       if (!items || items.length === 0) {
-        throw new ApiError('At least one item is required', 400);
+        throw new ApiError("At least one item is required", 400);
       }
 
       // Verify seller exists
@@ -78,10 +78,10 @@ class SubmissionService {
       });
 
       if (!seller) {
-        throw new ApiError('Seller not found', 404);
+        throw new ApiError("Seller not found", 404);
       }
 
-      if (seller.status !== 'PENDING_REVIEW') {
+      if (seller.status !== "PENDING_REVIEW") {
         throw new ApiError(
           `Cannot add items to submission with status: ${seller.status}`,
           400,
@@ -103,7 +103,7 @@ class SubmissionService {
         // Validate required fields
         if (!releaseId || !conditionMedia || !conditionSleeve) {
           throw new ApiError(
-            'releaseId, conditionMedia, and conditionSleeve are required',
+            "releaseId, conditionMedia, and conditionSleeve are required",
             400,
           );
         }
@@ -133,7 +133,7 @@ class SubmissionService {
             sellerConditionMedia: conditionMedia,
             sellerConditionSleeve: conditionSleeve,
             autoOfferPrice,
-            status: 'PENDING',
+            status: "PENDING",
           },
           include: {
             release: {
@@ -160,7 +160,7 @@ class SubmissionService {
         },
       });
 
-      logger.info('Submission created', {
+      logger.info("Submission created", {
         sellerId,
         itemCount: createdItems.length,
         totalOffered,
@@ -175,11 +175,11 @@ class SubmissionService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error creating submission', {
+      logger.error("Error creating submission", {
         sellerId,
         error: error.message,
       });
-      throw new ApiError('Failed to create submission', 500);
+      throw new ApiError("Failed to create submission", 500);
     }
   }
 
@@ -210,17 +210,17 @@ class SubmissionService {
       });
 
       if (!submission) {
-        throw new ApiError('Submission not found', 404);
+        throw new ApiError("Submission not found", 404);
       }
 
       return submission;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error getting submission', {
+      logger.error("Error getting submission", {
         submissionId,
         error: error.message,
       });
-      throw new ApiError('Failed to get submission', 500);
+      throw new ApiError("Failed to get submission", 500);
     }
   }
 
@@ -238,11 +238,11 @@ class SubmissionService {
       const { counterOfferPrice } = data;
 
       if (counterOfferPrice === undefined) {
-        throw new ApiError('counterOfferPrice is required', 400);
+        throw new ApiError("counterOfferPrice is required", 400);
       }
 
       if (counterOfferPrice < 0) {
-        throw new ApiError('Price cannot be negative', 400);
+        throw new ApiError("Price cannot be negative", 400);
       }
 
       // Verify item belongs to seller
@@ -254,30 +254,30 @@ class SubmissionService {
       });
 
       if (!item) {
-        throw new ApiError('Submission item not found', 404);
+        throw new ApiError("Submission item not found", 404);
       }
 
       const updatedItem = await prisma.submissionItem.update({
         where: { id: itemId },
         data: {
           counterOfferPrice,
-          status: 'COUNTER_OFFERED',
+          status: "COUNTER_OFFERED",
         },
         include: {
           release: true,
         },
       });
 
-      logger.info('Item quote updated', { itemId, counterOfferPrice });
+      logger.info("Item quote updated", { itemId, counterOfferPrice });
       return updatedItem;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error updating item quote', {
+      logger.error("Error updating item quote", {
         sellerId,
         itemId,
         error: error.message,
       });
-      throw new ApiError('Failed to update item quote', 500);
+      throw new ApiError("Failed to update item quote", 500);
     }
   }
 
@@ -291,8 +291,8 @@ class SubmissionService {
    */
   async reviewSubmissionItem(sellerId, itemId, action) {
     try {
-      if (!['accept', 'reject'].includes(action)) {
-        throw new ApiError('Action must be accept or reject', 400);
+      if (!["accept", "reject"].includes(action)) {
+        throw new ApiError("Action must be accept or reject", 400);
       }
 
       const item = await prisma.submissionItem.findFirst({
@@ -303,12 +303,12 @@ class SubmissionService {
       });
 
       if (!item) {
-        throw new ApiError('Submission item not found', 404);
+        throw new ApiError("Submission item not found", 404);
       }
 
-      const newStatus = action === 'accept' ? 'ACCEPTED' : 'REJECTED';
+      const newStatus = action === "accept" ? "ACCEPTED" : "REJECTED";
       const finalPrice =
-        action === 'accept' ? item.counterOfferPrice || item.autoOfferPrice : 0;
+        action === "accept" ? item.counterOfferPrice || item.autoOfferPrice : 0;
 
       await prisma.submissionItem.update({
         where: { id: itemId },
@@ -328,7 +328,7 @@ class SubmissionService {
 
       const acceptedItems = submission.items.filter(
         (i) =>
-          i.status === 'ACCEPTED' || (i.id === itemId && action === 'accept'),
+          i.status === "ACCEPTED" || (i.id === itemId && action === "accept"),
       );
       const totalAccepted = acceptedItems.reduce(
         (sum, i) => sum + Number(i.finalOfferPrice || i.autoOfferPrice),
@@ -338,16 +338,16 @@ class SubmissionService {
       // Determine overall submission status
       let submissionStatus = submission.status;
       const allItemsReviewed = submission.items.every(
-        (i) => ['ACCEPTED', 'REJECTED'].includes(i.status) || i.id === itemId,
+        (i) => ["ACCEPTED", "REJECTED"].includes(i.status) || i.id === itemId,
       );
 
       if (allItemsReviewed) {
         if (acceptedItems.length === submission.items.length) {
-          submissionStatus = 'ACCEPTED';
+          submissionStatus = "ACCEPTED";
         } else if (acceptedItems.length === 0) {
-          submissionStatus = 'REJECTED';
+          submissionStatus = "REJECTED";
         } else {
-          submissionStatus = 'PARTIALLY_ACCEPTED';
+          submissionStatus = "PARTIALLY_ACCEPTED";
         }
       }
 
@@ -374,16 +374,16 @@ class SubmissionService {
         );
       }
 
-      logger.info('Submission item reviewed', { itemId, action, newStatus });
+      logger.info("Submission item reviewed", { itemId, action, newStatus });
       return updated;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error reviewing submission item', {
+      logger.error("Error reviewing submission item", {
         sellerId,
         itemId,
         error: error.message,
       });
-      throw new ApiError('Failed to review submission item', 500);
+      throw new ApiError("Failed to review submission item", 500);
     }
   }
 
@@ -399,7 +399,7 @@ class SubmissionService {
         include: {
           audits: {
             orderBy: {
-              changedAt: 'desc',
+              changedAt: "desc",
             },
           },
           items: {
@@ -417,17 +417,17 @@ class SubmissionService {
       });
 
       if (!submission) {
-        throw new ApiError('Submission not found', 404);
+        throw new ApiError("Submission not found", 404);
       }
 
       return submission;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error getting submission history', {
+      logger.error("Error getting submission history", {
         submissionId,
         error: error.message,
       });
-      throw new ApiError('Failed to get submission history', 500);
+      throw new ApiError("Failed to get submission history", 500);
     }
   }
 }

@@ -1,6 +1,6 @@
-import prisma from '../utils/db.js';
-import { ApiError } from '../middleware/errorHandler.js';
-import logger from '../../config/logger.js';
+import prisma from "../utils/db.js";
+import { ApiError } from "../middleware/errorHandler.js";
+import logger from "../../config/logger.js";
 
 /**
  * Order Service
@@ -9,12 +9,12 @@ import logger from '../../config/logger.js';
 class OrderService {
   // Valid state transitions for orders
   VALID_TRANSITIONS = {
-    CART: ['PAYMENT_PENDING', 'CANCELLED'],
-    PAYMENT_PENDING: ['PAYMENT_CONFIRMED', 'PAYMENT_FAILED', 'CANCELLED'],
-    PAYMENT_CONFIRMED: ['PROCESSING', 'REFUNDED'],
-    PROCESSING: ['SHIPPED', 'CANCELLED'],
-    SHIPPED: ['DELIVERED'],
-    PAYMENT_FAILED: ['CART', 'CANCELLED'],
+    CART: ["PAYMENT_PENDING", "CANCELLED"],
+    PAYMENT_PENDING: ["PAYMENT_CONFIRMED", "PAYMENT_FAILED", "CANCELLED"],
+    PAYMENT_CONFIRMED: ["PROCESSING", "REFUNDED"],
+    PROCESSING: ["SHIPPED", "CANCELLED"],
+    SHIPPED: ["DELIVERED"],
+    PAYMENT_FAILED: ["CART", "CANCELLED"],
     DELIVERED: [],
     CANCELLED: [],
     REFUNDED: [],
@@ -33,7 +33,7 @@ class OrderService {
       const { buyerEmail, buyerName, sessionId } = data;
 
       if (!buyerEmail) {
-        throw new ApiError('buyerEmail is required', 400);
+        throw new ApiError("buyerEmail is required", 400);
       }
 
       // Generate order number
@@ -45,7 +45,7 @@ class OrderService {
           buyerEmail,
           buyerName: buyerName || null,
           sessionId: sessionId || null,
-          status: 'CART',
+          status: "CART",
           subtotal: 0,
           tax: 0,
           shipping: 0,
@@ -57,7 +57,7 @@ class OrderService {
         },
       });
 
-      logger.info('Order created', {
+      logger.info("Order created", {
         orderId: order.id,
         orderNumber: order.orderNumber,
         buyerEmail,
@@ -66,8 +66,8 @@ class OrderService {
       return order;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error creating order', { error: error.message });
-      throw new ApiError('Failed to create order', 500);
+      logger.error("Error creating order", { error: error.message });
+      throw new ApiError("Failed to create order", 500);
     }
   }
 
@@ -79,7 +79,7 @@ class OrderService {
   async getOrderById(orderId) {
     try {
       if (!orderId) {
-        throw new ApiError('orderId is required', 400);
+        throw new ApiError("orderId is required", 400);
       }
 
       const order = await prisma.order.findUnique({
@@ -91,20 +91,20 @@ class OrderService {
             },
           },
           audits: {
-            orderBy: { changedAt: 'desc' },
+            orderBy: { changedAt: "desc" },
           },
         },
       });
 
       if (!order) {
-        throw new ApiError('Order not found', 404);
+        throw new ApiError("Order not found", 404);
       }
 
       return order;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error getting order', { orderId, error: error.message });
-      throw new ApiError('Failed to get order', 500);
+      logger.error("Error getting order", { orderId, error: error.message });
+      throw new ApiError("Failed to get order", 500);
     }
   }
 
@@ -117,7 +117,7 @@ class OrderService {
   async getOrdersByBuyer(buyerEmail, filters = {}) {
     try {
       if (!buyerEmail) {
-        throw new ApiError('buyerEmail is required', 400);
+        throw new ApiError("buyerEmail is required", 400);
       }
 
       const { status, limit = 50, page = 1 } = filters;
@@ -134,7 +134,7 @@ class OrderService {
           where,
           skip,
           take: limit,
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
           include: {
             items: true,
             audits: true,
@@ -154,11 +154,11 @@ class OrderService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error getting orders by buyer', {
+      logger.error("Error getting orders by buyer", {
         buyerEmail,
         error: error.message,
       });
-      throw new ApiError('Failed to get orders', 500);
+      throw new ApiError("Failed to get orders", 500);
     }
   }
 
@@ -173,7 +173,7 @@ class OrderService {
   async updateOrderStatus(orderId, newStatus, reason = null, changedBy = null) {
     try {
       if (!orderId || !newStatus) {
-        throw new ApiError('orderId and newStatus are required', 400);
+        throw new ApiError("orderId and newStatus are required", 400);
       }
 
       const order = await prisma.order.findUnique({
@@ -181,7 +181,7 @@ class OrderService {
       });
 
       if (!order) {
-        throw new ApiError('Order not found', 404);
+        throw new ApiError("Order not found", 404);
       }
 
       // Validate transition
@@ -194,10 +194,14 @@ class OrderService {
           data: {
             status: newStatus,
             // Update relevant timestamps based on new status
-            ...(newStatus === 'PAYMENT_PENDING' && { checkoutStartedAt: new Date() }),
-            ...(newStatus === 'PAYMENT_CONFIRMED' && { paymentConfirmedAt: new Date() }),
-            ...(newStatus === 'SHIPPED' && { shippedAt: new Date() }),
-            ...(newStatus === 'DELIVERED' && { deliveredAt: new Date() }),
+            ...(newStatus === "PAYMENT_PENDING" && {
+              checkoutStartedAt: new Date(),
+            }),
+            ...(newStatus === "PAYMENT_CONFIRMED" && {
+              paymentConfirmedAt: new Date(),
+            }),
+            ...(newStatus === "SHIPPED" && { shippedAt: new Date() }),
+            ...(newStatus === "DELIVERED" && { deliveredAt: new Date() }),
           },
           include: { items: true, audits: true },
         });
@@ -216,7 +220,7 @@ class OrderService {
         return updated;
       });
 
-      logger.info('Order status updated', {
+      logger.info("Order status updated", {
         orderId,
         fromStatus: order.status,
         toStatus: newStatus,
@@ -226,12 +230,12 @@ class OrderService {
       return updatedOrder;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error updating order status', {
+      logger.error("Error updating order status", {
         orderId,
         newStatus,
         error: error.message,
       });
-      throw new ApiError('Failed to update order status', 500);
+      throw new ApiError("Failed to update order status", 500);
     }
   }
 
@@ -267,7 +271,7 @@ class OrderService {
       const order = await prisma.order.update({
         where: { id: orderId },
         data: {
-          status: 'PAYMENT_PENDING',
+          status: "PAYMENT_PENDING",
           stripePaymentIntentId: paymentIntentId,
           checkoutStartedAt: new Date(),
         },
@@ -278,19 +282,19 @@ class OrderService {
       await prisma.orderAudit.create({
         data: {
           orderId,
-          fromStatus: 'CART',
-          toStatus: 'PAYMENT_PENDING',
-          changeReason: 'Checkout initiated',
+          fromStatus: "CART",
+          toStatus: "PAYMENT_PENDING",
+          changeReason: "Checkout initiated",
         },
       });
 
       return order;
     } catch (error) {
-      logger.error('Error transitioning to PAYMENT_PENDING', {
+      logger.error("Error transitioning to PAYMENT_PENDING", {
         orderId,
         error: error.message,
       });
-      throw new ApiError('Failed to transition order status', 500);
+      throw new ApiError("Failed to transition order status", 500);
     }
   }
 
@@ -304,7 +308,7 @@ class OrderService {
       const order = await prisma.order.update({
         where: { id: orderId },
         data: {
-          status: 'PAYMENT_CONFIRMED',
+          status: "PAYMENT_CONFIRMED",
           paymentConfirmedAt: new Date(),
         },
         include: { items: true, audits: true },
@@ -314,19 +318,19 @@ class OrderService {
       await prisma.orderAudit.create({
         data: {
           orderId,
-          fromStatus: 'PAYMENT_PENDING',
-          toStatus: 'PAYMENT_CONFIRMED',
-          changeReason: 'Payment processed successfully',
+          fromStatus: "PAYMENT_PENDING",
+          toStatus: "PAYMENT_CONFIRMED",
+          changeReason: "Payment processed successfully",
         },
       });
 
       return order;
     } catch (error) {
-      logger.error('Error transitioning to PAYMENT_CONFIRMED', {
+      logger.error("Error transitioning to PAYMENT_CONFIRMED", {
         orderId,
         error: error.message,
       });
-      throw new ApiError('Failed to transition order status', 500);
+      throw new ApiError("Failed to transition order status", 500);
     }
   }
 
@@ -336,13 +340,13 @@ class OrderService {
    * @param {string} reason - Failure reason
    * @returns {Promise<Object>} Updated order
    */
-  async transitionToPaymentFailed(orderId, reason = 'Payment declined') {
+  async transitionToPaymentFailed(orderId, reason = "Payment declined") {
     try {
       const order = await prisma.order.update({
         where: { id: orderId },
         data: {
-          status: 'PAYMENT_FAILED',
-          stripePaymentStatus: 'failed',
+          status: "PAYMENT_FAILED",
+          stripePaymentStatus: "failed",
         },
         include: { items: true, audits: true },
       });
@@ -351,19 +355,19 @@ class OrderService {
       await prisma.orderAudit.create({
         data: {
           orderId,
-          fromStatus: 'PAYMENT_PENDING',
-          toStatus: 'PAYMENT_FAILED',
+          fromStatus: "PAYMENT_PENDING",
+          toStatus: "PAYMENT_FAILED",
           changeReason: reason,
         },
       });
 
       return order;
     } catch (error) {
-      logger.error('Error transitioning to PAYMENT_FAILED', {
+      logger.error("Error transitioning to PAYMENT_FAILED", {
         orderId,
         error: error.message,
       });
-      throw new ApiError('Failed to transition order status', 500);
+      throw new ApiError("Failed to transition order status", 500);
     }
   }
 
@@ -377,27 +381,27 @@ class OrderService {
     try {
       const order = await prisma.order.update({
         where: { id: orderId },
-        data: { status: 'PROCESSING' },
+        data: { status: "PROCESSING" },
         include: { items: true, audits: true },
       });
 
       await prisma.orderAudit.create({
         data: {
           orderId,
-          fromStatus: 'PAYMENT_CONFIRMED',
-          toStatus: 'PROCESSING',
-          changeReason: 'Order moved to processing',
+          fromStatus: "PAYMENT_CONFIRMED",
+          toStatus: "PROCESSING",
+          changeReason: "Order moved to processing",
           changedBy: adminId,
         },
       });
 
       return order;
     } catch (error) {
-      logger.error('Error transitioning to PROCESSING', {
+      logger.error("Error transitioning to PROCESSING", {
         orderId,
         error: error.message,
       });
-      throw new ApiError('Failed to transition order status', 500);
+      throw new ApiError("Failed to transition order status", 500);
     }
   }
 
@@ -413,7 +417,7 @@ class OrderService {
       const order = await prisma.order.update({
         where: { id: orderId },
         data: {
-          status: 'SHIPPED',
+          status: "SHIPPED",
           shippedAt: new Date(),
         },
         include: { items: true, audits: true },
@@ -422,20 +426,22 @@ class OrderService {
       await prisma.orderAudit.create({
         data: {
           orderId,
-          fromStatus: 'PROCESSING',
-          toStatus: 'SHIPPED',
-          changeReason: trackingNumber ? `Shipped with tracking ${trackingNumber}` : 'Order shipped',
+          fromStatus: "PROCESSING",
+          toStatus: "SHIPPED",
+          changeReason: trackingNumber
+            ? `Shipped with tracking ${trackingNumber}`
+            : "Order shipped",
           changedBy: adminId,
         },
       });
 
       return order;
     } catch (error) {
-      logger.error('Error transitioning to SHIPPED', {
+      logger.error("Error transitioning to SHIPPED", {
         orderId,
         error: error.message,
       });
-      throw new ApiError('Failed to transition order status', 500);
+      throw new ApiError("Failed to transition order status", 500);
     }
   }
 
@@ -449,7 +455,7 @@ class OrderService {
       const order = await prisma.order.update({
         where: { id: orderId },
         data: {
-          status: 'DELIVERED',
+          status: "DELIVERED",
           deliveredAt: new Date(),
         },
         include: { items: true, audits: true },
@@ -458,19 +464,19 @@ class OrderService {
       await prisma.orderAudit.create({
         data: {
           orderId,
-          fromStatus: 'SHIPPED',
-          toStatus: 'DELIVERED',
-          changeReason: 'Order delivered',
+          fromStatus: "SHIPPED",
+          toStatus: "DELIVERED",
+          changeReason: "Order delivered",
         },
       });
 
       return order;
     } catch (error) {
-      logger.error('Error transitioning to DELIVERED', {
+      logger.error("Error transitioning to DELIVERED", {
         orderId,
         error: error.message,
       });
-      throw new ApiError('Failed to transition order status', 500);
+      throw new ApiError("Failed to transition order status", 500);
     }
   }
 
@@ -480,17 +486,17 @@ class OrderService {
    * @param {string} reason - Cancellation reason
    * @returns {Promise<Object>} Updated order
    */
-  async transitionToCancelled(orderId, reason = 'Manual cancellation') {
+  async transitionToCancelled(orderId, reason = "Manual cancellation") {
     try {
       const order = await prisma.order.findUnique({ where: { id: orderId } });
 
       if (!order) {
-        throw new ApiError('Order not found', 404);
+        throw new ApiError("Order not found", 404);
       }
 
       const updated = await prisma.order.update({
         where: { id: orderId },
-        data: { status: 'CANCELLED' },
+        data: { status: "CANCELLED" },
         include: { items: true, audits: true },
       });
 
@@ -498,7 +504,7 @@ class OrderService {
         data: {
           orderId,
           fromStatus: order.status,
-          toStatus: 'CANCELLED',
+          toStatus: "CANCELLED",
           changeReason: reason,
         },
       });
@@ -506,11 +512,11 @@ class OrderService {
       return updated;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error transitioning to CANCELLED', {
+      logger.error("Error transitioning to CANCELLED", {
         orderId,
         error: error.message,
       });
-      throw new ApiError('Failed to transition order status', 500);
+      throw new ApiError("Failed to transition order status", 500);
     }
   }
 
@@ -521,19 +527,19 @@ class OrderService {
    * @param {string} adminId - Admin user ID
    * @returns {Promise<Object>} Updated order
    */
-  async transitionToRefunded(orderId, reason = 'Refund processed', adminId) {
+  async transitionToRefunded(orderId, reason = "Refund processed", adminId) {
     try {
       const order = await prisma.order.update({
         where: { id: orderId },
-        data: { status: 'REFUNDED' },
+        data: { status: "REFUNDED" },
         include: { items: true, audits: true },
       });
 
       await prisma.orderAudit.create({
         data: {
           orderId,
-          fromStatus: 'PAYMENT_CONFIRMED',
-          toStatus: 'REFUNDED',
+          fromStatus: "PAYMENT_CONFIRMED",
+          toStatus: "REFUNDED",
           changeReason: reason,
           changedBy: adminId,
         },
@@ -541,11 +547,11 @@ class OrderService {
 
       return order;
     } catch (error) {
-      logger.error('Error transitioning to REFUNDED', {
+      logger.error("Error transitioning to REFUNDED", {
         orderId,
         error: error.message,
       });
-      throw new ApiError('Failed to transition order status', 500);
+      throw new ApiError("Failed to transition order status", 500);
     }
   }
 
@@ -558,16 +564,16 @@ class OrderService {
     try {
       const audits = await prisma.orderAudit.findMany({
         where: { orderId },
-        orderBy: { changedAt: 'desc' },
+        orderBy: { changedAt: "desc" },
       });
 
       return audits;
     } catch (error) {
-      logger.error('Error getting order history', {
+      logger.error("Error getting order history", {
         orderId,
         error: error.message,
       });
-      throw new ApiError('Failed to get order history', 500);
+      throw new ApiError("Failed to get order history", 500);
     }
   }
 
@@ -579,15 +585,15 @@ class OrderService {
   async generateOrderNumber() {
     try {
       const date = new Date();
-      const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
+      const dateStr = date.toISOString().slice(0, 10).replace(/-/g, "");
       const random = Math.floor(Math.random() * 10000)
         .toString()
-        .padStart(4, '0');
+        .padStart(4, "0");
 
       return `OUL-${dateStr}-${random}`;
     } catch (error) {
-      logger.error('Error generating order number', { error: error.message });
-      throw new ApiError('Failed to generate order number', 500);
+      logger.error("Error generating order number", { error: error.message });
+      throw new ApiError("Failed to generate order number", 500);
     }
   }
 }
