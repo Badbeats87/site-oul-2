@@ -2,6 +2,7 @@ import prisma from '../utils/db.js';
 import logger from '../../config/logger.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { existsSync } from 'fs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -22,12 +23,12 @@ async function initializeDatabase() {
 
     logger.info(`Backend dir: ${backendDir}`);
     logger.info(`Prisma dir: ${prismaDir}`);
-    logger.info(`Schema file exists: ${require('fs').existsSync(prismaSchema)}`);
+    logger.info(`Schema file exists: ${existsSync(prismaSchema)}`);
 
     // Try prisma migrate deploy first (uses existing migrations)
     const prismaPath = path.resolve(backendDir, 'node_modules/.bin/prisma');
     logger.info(`Prisma CLI path: ${prismaPath}`);
-    logger.info(`Prisma CLI exists: ${require('fs').existsSync(prismaPath)}`);
+    logger.info(`Prisma CLI exists: ${existsSync(prismaPath)}`);
 
     const commands = [
       `node "${prismaPath}" migrate deploy --skip-generate`,
