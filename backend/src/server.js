@@ -5,7 +5,13 @@ import cleanupExpiredReservationsJob from './jobs/cleanupExpiredReservations.js'
 import initializeDatabase from './scripts/initDb.js';
 
 const PORT = config.app.port;
-const HOST = config.app.host;
+let HOST = config.app.host;
+
+// On containerized environments, listen on all interfaces instead of localhost
+// This allows the reverse proxy (Railway, Docker, etc.) to reach the server
+if (HOST === 'localhost' && process.env.NODE_ENV !== 'development') {
+  HOST = '0.0.0.0';
+}
 
 let server;
 
@@ -15,8 +21,8 @@ async function startServer() {
     await initializeDatabase();
 
     server = app.listen(PORT, HOST, () => {
-      logger.info(`✅ Server running at http://${HOST}:${PORT}`);
-      logger.info(`📍 Health check: http://${HOST}:${PORT}/api/v1/health`);
+      logger.info(`✅ Server running at http://0.0.0.0:${PORT}`);
+      logger.info(`📍 Health check: http://0.0.0.0:${PORT}/api/v1/health`);
 
       // Start background jobs
       cleanupExpiredReservationsJob.start();
