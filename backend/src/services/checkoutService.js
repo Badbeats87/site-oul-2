@@ -153,7 +153,7 @@ class CheckoutService {
       });
 
       if (existingItem) {
-        throw new ApiError('Item already in cart', 400);
+        throw new ApiError('Item already in cart', 409);
       }
 
       // Add item to cart
@@ -414,7 +414,18 @@ class CheckoutService {
         total,
       });
 
-      return updatedOrder;
+      // Convert Decimal fields to numbers for JSON serialization
+      return {
+        ...updatedOrder,
+        subtotal: parseFloat(updatedOrder.subtotal),
+        tax: parseFloat(updatedOrder.tax),
+        shipping: parseFloat(updatedOrder.shipping),
+        total: parseFloat(updatedOrder.total),
+        items: updatedOrder.items.map(item => ({
+          ...item,
+          priceAtPurchase: parseFloat(item.priceAtPurchase),
+        })),
+      };
     } catch (error) {
       if (error instanceof ApiError) throw error;
       logger.error('Error recalculating cart totals', {
