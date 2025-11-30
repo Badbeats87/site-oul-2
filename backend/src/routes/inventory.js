@@ -4,6 +4,8 @@ import {
   getInventoryDetail,
   updateInventory,
   deleteInventory,
+  applyPricingPolicy,
+  getPricingHistory,
   bulkUpdatePrices,
 } from '../controllers/inventoryController.js';
 
@@ -223,5 +225,85 @@ router.delete('/:inventoryLotId', deleteInventory);
  *         description: Invalid request data
  */
 router.post('/bulk/prices', bulkUpdatePrices);
+
+// ============================================================================
+// PRICING POLICY OPERATIONS
+// ============================================================================
+
+/**
+ * @swagger
+ * /api/v1/inventory/pricing/apply:
+ *   post:
+ *     summary: Apply pricing policy to inventory items
+ *     description: Apply a pricing policy to inventory items with optional dry-run preview
+ *     tags:
+ *       - Inventory Pricing
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - policyId
+ *             properties:
+ *               policyId:
+ *                 type: string
+ *                 format: uuid
+ *                 description: Pricing policy ID to apply
+ *               inventoryLotIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: uuid
+ *                 description: Specific lot IDs to apply to (if not specified, uses filters)
+ *               filters:
+ *                 type: object
+ *                 description: Filter options for partial application (status, conditions)
+ *                 properties:
+ *                   status:
+ *                     type: string
+ *                     enum: [DRAFT, LIVE, RESERVED, SOLD, REMOVED, RETURNED]
+ *                   conditions:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                       enum: [MINT, NM, VG_PLUS, VG, VG_MINUS, G, FAIR, POOR]
+ *               dryRun:
+ *                 type: boolean
+ *                 default: false
+ *                 description: Preview changes without applying if true
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Policy application results with price calculations
+ */
+router.post('/pricing/apply', applyPricingPolicy);
+
+/**
+ * @swagger
+ * /api/v1/inventory/{inventoryLotId}/pricing-history:
+ *   get:
+ *     summary: Get pricing history for an inventory lot
+ *     description: Retrieve pricing change history including all policy applications
+ *     tags:
+ *       - Inventory Pricing
+ *     parameters:
+ *       - in: path
+ *         name: inventoryLotId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Pricing history with policy names, prices, and timestamps
+ *       404:
+ *         description: Inventory lot not found
+ */
+router.get('/:inventoryLotId/pricing-history', getPricingHistory);
 
 export default router;

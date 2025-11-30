@@ -90,6 +90,50 @@ export const deleteInventory = async (req, res, next) => {
 };
 
 /**
+ * Apply pricing policy to inventory items
+ */
+export const applyPricingPolicy = async (req, res, next) => {
+  try {
+    const { policyId, inventoryLotIds, filters, dryRun } = req.body;
+
+    const result = await inventoryService.applyPricingPolicy({
+      policyId,
+      inventoryLotIds,
+      filters: filters || {},
+      dryRun: dryRun === true,
+    });
+
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get pricing history for an inventory lot
+ */
+export const getPricingHistory = async (req, res, next) => {
+  try {
+    const { inventoryLotId } = req.params;
+
+    const history = await inventoryService.getPricingHistory(inventoryLotId);
+
+    res.json({
+      success: true,
+      data: {
+        inventoryLotId,
+        history,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * Bulk update inventory prices
  */
 export const bulkUpdatePrices = async (req, res, next) => {
