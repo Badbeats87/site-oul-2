@@ -322,5 +322,16 @@
             </div>
         </div>
     </footer>
+
+    <script src="../../js/api-client.js"></script>
+    <script src="../../js/buyer-products.js"></script>
+    <script>
+        // Initialize product catalog when page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (buyerProductsManager) {
+                await buyerProductsManager.initialize();
+            }
+        });
+    </script>
 </body>
 </html>
