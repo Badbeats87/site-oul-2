@@ -46,6 +46,15 @@ app.use(compression());
 // Serve static files (pages, styles, js)
 // Configure to serve index.html for directory requests
 const staticOptions = { index: ['index.html'] };
+
+// Log CSS requests for debugging
+app.use((req, res, next) => {
+  if (req.path.endsWith('.css') || req.path.endsWith('.js')) {
+    logger.debug(`Static file request: ${req.path}`);
+  }
+  next();
+});
+
 app.use(express.static(path.join(projectRoot, 'pages'), staticOptions));
 app.use(express.static(path.join(projectRoot, 'js'), staticOptions));
 app.use(express.static(path.join(projectRoot, 'styles')));
