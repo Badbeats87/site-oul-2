@@ -9,13 +9,13 @@ COPY package*.json ./
 # Install all dependencies (including dev for Prisma generation)
 RUN npm ci
 
-# Copy application files from backend directory
-COPY . .
+# Copy backend application files
+COPY backend .
 
-# Copy frontend assets from parent directory
-COPY --chown=root:root ../pages ./pages
-COPY --chown=root:root ../js ./js
-COPY --chown=root:root ../styles ./styles
+# Copy frontend assets
+COPY pages ./pages
+COPY js ./js
+COPY styles ./styles
 
 # Generate Prisma Client
 RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npx prisma generate
@@ -37,8 +37,8 @@ COPY --from=builder /app/node_modules ./node_modules
 # Copy generated Prisma client from builder
 COPY --from=builder /app/src/generated/prisma ./src/generated/prisma
 
-# Copy application files from backend
-COPY . .
+# Copy backend application files from builder
+COPY --from=builder /app/backend .
 
 # Copy frontend assets from builder
 COPY --from=builder /app/pages ./pages
