@@ -2,7 +2,6 @@ import checkoutService from '../services/checkoutService.js';
 import paymentService from '../services/paymentService.js';
 import orderService from '../services/orderService.js';
 import logger from '../../config/logger.js';
-import { ApiError } from '../middleware/errorHandler.js';
 
 /**
  * Checkout Controller
@@ -274,7 +273,7 @@ export async function cancelCheckout(req, res, next) {
  * Handle Stripe webhook events
  * POST /api/v1/checkout/webhook
  */
-export async function handleStripeWebhook(req, res, next) {
+export async function handleStripeWebhook(req, res) {
   try {
     // Get raw body and signature from request
     const rawBody = req.rawBody; // Set by middleware

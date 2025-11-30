@@ -384,20 +384,20 @@ class PaymentService {
       let result;
 
       switch (event.type) {
-        case 'payment_intent.succeeded':
-          result = await this.handlePaymentSucceeded(event.data.object);
-          break;
+      case 'payment_intent.succeeded':
+        result = await this.handlePaymentSucceeded(event.data.object);
+        break;
 
-        case 'payment_intent.payment_failed':
-          result = await this.handlePaymentFailed(event.data.object);
-          break;
+      case 'payment_intent.payment_failed':
+        result = await this.handlePaymentFailed(event.data.object);
+        break;
 
-        default:
-          logger.debug('Unhandled webhook event type', {
-            eventType: event.type,
-            eventId: event.id,
-          });
-          result = { acknowledged: true, eventType: event.type };
+      default:
+        logger.debug('Unhandled webhook event type', {
+          eventType: event.type,
+          eventId: event.id,
+        });
+        result = { acknowledged: true, eventType: event.type };
       }
 
       return {
