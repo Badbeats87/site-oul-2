@@ -491,6 +491,344 @@ class InventoryService {
       throw new ApiError('Failed to calculate sell price', 500);
     }
   }
+
+  /**
+   * List inventory with pagination and filtering
+   * @param {Object} filters - Filter options
+   * @param {string} filters.status - Filter by status (LIVE, RESERVED, SOLD, DRAFT, REMOVED)
+   * @param {number} filters.limit - Results per page
+   * @param {number} filters.page - Page number
+   * @param {string} filters.sortBy - Sort field (createdAt, listPrice, soldAt)
+   * @param {string} filters.sortOrder - Sort direction (asc, desc)
+   * @returns {Promise<Object>} Paginated inventory
+   */
+  async listInventory(filters = {}) {
+    try {
+      const {
+        status,
+        limit = 50,
+        page = 1,
+        sortBy = 'createdAt',
+        sortOrder = 'desc',
+      } = filters;
+
+      if (limit > 500) {
+        throw new ApiError('Limit cannot exceed 500', 400);
+      }
+
+      const validSortFields = ['createdAt', 'listPrice', 'soldAt', 'listedAt'];
+      const finalSortBy = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
+      const finalSortOrder = sortOrder === 'asc' ? 'asc' : 'desc';
+
+      const where = {};
+      if (status) {
+        where.status = status;
+      }
+
+      const skip = (page - 1) * limit;
+      const orderBy = {};
+      orderBy[finalSortBy] = finalSortOrder;
+
+      const [lots, total] = await Promise.all([
+        prisma.inventoryLot.findMany({
+          where,
+          skip,
+          take: limit,
+          orderBy,
+          include: {
+            release: {
+              select: {
+                id: true,
+                title: true,
+                artist: true,
+                coverArtUrl: true,
+              },
+            },
+          },
+        }),
+        prisma.inventoryLot.count({ where }),
+      ]);
+
+      return {
+        inventory: lots.map(lot => ({
+          id: lot.id,
+          release: lot.release,
+          sku: lot.sku,
+          condition: {
+            media: lot.conditionMedia,
+            sleeve: lot.conditionSleeve,
+          },
+          pricing: {
+            costBasis: parseFloat(lot.costBasis),
+            listPrice: parseFloat(lot.listPrice),
+            salePrice: lot.salePrice ? parseFloat(lot.salePrice) : null,
+          },
+          status: lot.status,
+          channel: lot.channel,
+          createdAt: lot.createdAt,
+          listedAt: lot.listedAt,
+          soldAt: lot.soldAt,
+        })),
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      logger.error('Error listing inventory', { error: error.message });
+      throw new ApiError('Failed to list inventory', 500);
+    }
+  }
+
+  /**
+   * Get inventory lot detail
+   * @param {string} inventoryLotId - Inventory lot ID
+   * @returns {Promise<Object>} Detailed inventory lot
+   */
+  async getInventoryDetail(inventoryLotId) {
+    try {
+      const lot = await prisma.inventoryLot.findUnique({
+        where: { id: inventoryLotId },
+        include: {
+          release: true,
+          submissionItem: {
+            include: { submission: true },
+          },
+        },
+      });
+
+      if (!lot) {
+        throw new ApiError('Inventory lot not found', 404);
+      }
+
+      return {
+        id: lot.id,
+        release: lot.release,
+        submissionOrigin: lot.submissionItem ? {
+          submissionId: lot.submissionItem.submission.id,
+          sellerContact: lot.submissionItem.submission.sellerContact,
+        } : null,
+        sku: lot.sku,
+        condition: {
+          media: lot.conditionMedia,
+          sleeve: lot.conditionSleeve,
+        },
+        pricing: {
+          costBasis: parseFloat(lot.costBasis),
+          listPrice: parseFloat(lot.listPrice),
+          salePrice: lot.salePrice ? parseFloat(lot.salePrice) : null,
+        },
+        status: lot.status,
+        channel: lot.channel,
+        internalNotes: lot.internalNotes,
+        publicDescription: lot.publicDescription,
+        photoUrls: lot.photoUrls,
+        timestamps: {
+          createdAt: lot.createdAt,
+          updatedAt: lot.updatedAt,
+          listedAt: lot.listedAt,
+          reservedAt: lot.reservedAt,
+          soldAt: lot.soldAt,
+        },
+      };
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      logger.error('Error getting inventory detail', { inventoryLotId, error: error.message });
+      throw new ApiError('Failed to get inventory detail', 500);
+    }
+  }
+
+  /**
+   * Update inventory lot (price, status, notes, etc.)
+   * @param {string} inventoryLotId - Inventory lot ID
+   * @param {Object} updates - Fields to update
+   * @returns {Promise<Object>} Updated inventory lot
+   */
+  async updateInventory(inventoryLotId, updates = {}) {
+    try {
+      const lot = await prisma.inventoryLot.findUnique({
+        where: { id: inventoryLotId },
+      });
+
+      if (!lot) {
+        throw new ApiError('Inventory lot not found', 404);
+      }
+
+      const { listPrice, salePrice, status, internalNotes, publicDescription, sku } = updates;
+
+      // Validate status transitions
+      const validStatuses = ['DRAFT', 'LIVE', 'RESERVED', 'SOLD', 'REMOVED', 'RETURNED'];
+      if (status && !validStatuses.includes(status)) {
+        throw new ApiError(`Invalid status: ${status}`, 400);
+      }
+
+      // Validate price updates
+      if (listPrice !== undefined && listPrice < 0) {
+        throw new ApiError('List price cannot be negative', 400);
+      }
+      if (salePrice !== undefined && salePrice < 0) {
+        throw new ApiError('Sale price cannot be negative', 400);
+      }
+
+      // Build update data
+      const updateData = {};
+      if (listPrice !== undefined) updateData.listPrice = listPrice;
+      if (salePrice !== undefined) updateData.salePrice = salePrice;
+      if (status !== undefined) updateData.status = status;
+      if (internalNotes !== undefined) updateData.internalNotes = internalNotes;
+      if (publicDescription !== undefined) updateData.publicDescription = publicDescription;
+      if (sku !== undefined) {
+        // Check SKU uniqueness if provided
+        const existingSku = await prisma.inventoryLot.findUnique({
+          where: { sku },
+        });
+        if (existingSku && existingSku.id !== inventoryLotId) {
+          throw new ApiError('SKU must be unique', 400);
+        }
+        updateData.sku = sku;
+      }
+
+      // Handle status transition to LIVE
+      if (status === 'LIVE' && lot.status !== 'LIVE') {
+        updateData.listedAt = new Date();
+      }
+
+      // Handle status transition to SOLD
+      if (status === 'SOLD' && lot.status !== 'SOLD') {
+        updateData.soldAt = new Date();
+      }
+
+      const updated = await prisma.inventoryLot.update({
+        where: { id: inventoryLotId },
+        data: updateData,
+        include: { release: true },
+      });
+
+      logger.info('Inventory updated', {
+        inventoryLotId,
+        changes: Object.keys(updateData),
+      });
+
+      return this.getInventoryDetail(inventoryLotId);
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      logger.error('Error updating inventory', { inventoryLotId, error: error.message });
+      throw new ApiError('Failed to update inventory', 500);
+    }
+  }
+
+  /**
+   * Delete/remove inventory lot
+   * @param {string} inventoryLotId - Inventory lot ID
+   * @param {string} reason - Reason for removal
+   * @returns {Promise<Object>} Deleted inventory lot
+   */
+  async deleteInventory(inventoryLotId, reason = '') {
+    try {
+      const lot = await prisma.inventoryLot.findUnique({
+        where: { id: inventoryLotId },
+      });
+
+      if (!lot) {
+        throw new ApiError('Inventory lot not found', 404);
+      }
+
+      // Mark as REMOVED instead of hard delete to maintain audit trail
+      const updated = await prisma.inventoryLot.update({
+        where: { id: inventoryLotId },
+        data: {
+          status: 'REMOVED',
+          internalNotes: `${lot.internalNotes || ''}\\n[REMOVED: ${reason || 'No reason provided'}] - ${new Date().toISOString()}`,
+        },
+        include: { release: true },
+      });
+
+      logger.info('Inventory removed', { inventoryLotId, reason });
+      return this.getInventoryDetail(inventoryLotId);
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      logger.error('Error deleting inventory', { inventoryLotId, error: error.message });
+      throw new ApiError('Failed to delete inventory', 500);
+    }
+  }
+
+  /**
+   * Bulk update inventory prices
+   * @param {Array} updates - Array of {inventoryLotId, listPrice, salePrice}
+   * @returns {Promise<Object>} Results with successful and failed updates
+   */
+  async bulkUpdatePrices(updates = []) {
+    try {
+      if (!Array.isArray(updates) || updates.length === 0) {
+        throw new ApiError('Updates must be a non-empty array', 400);
+      }
+
+      if (updates.length > 500) {
+        throw new ApiError('Cannot update more than 500 items at once', 400);
+      }
+
+      const results = {
+        successful: [],
+        failed: [],
+      };
+
+      for (const update of updates) {
+        try {
+          const { inventoryLotId, listPrice, salePrice } = update;
+
+          if (!inventoryLotId) {
+            results.failed.push({
+              inventoryLotId,
+              error: 'inventoryLotId is required',
+            });
+            continue;
+          }
+
+          if (listPrice !== undefined && listPrice < 0) {
+            results.failed.push({
+              inventoryLotId,
+              error: 'List price cannot be negative',
+            });
+            continue;
+          }
+
+          const lot = await prisma.inventoryLot.update({
+            where: { id: inventoryLotId },
+            data: {
+              ...(listPrice !== undefined && { listPrice }),
+              ...(salePrice !== undefined && { salePrice }),
+            },
+          });
+
+          results.successful.push({
+            inventoryLotId,
+            listPrice: lot.listPrice,
+            salePrice: lot.salePrice,
+          });
+        } catch (error) {
+          results.failed.push({
+            inventoryLotId: update.inventoryLotId,
+            error: error.message,
+          });
+        }
+      }
+
+      logger.info('Bulk price update completed', {
+        totalRequests: updates.length,
+        successful: results.successful.length,
+        failed: results.failed.length,
+      });
+
+      return results;
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      logger.error('Error bulk updating prices', { error: error.message });
+      throw new ApiError('Failed to bulk update prices', 500);
+    }
+  }
 }
 
 export default new InventoryService();

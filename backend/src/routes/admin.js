@@ -22,8 +22,8 @@ const router = express.Router();
  * @swagger
  * /api/v1/admin/submissions:
  *   get:
- *     summary: Get submission queue for admin review
- *     description: Retrieve paginated list of submissions for admin review with optional filtering
+ *     summary: Get submission queue for admin review with advanced filtering
+ *     description: Retrieve paginated list of submissions with comprehensive filtering, searching, and sorting capabilities
  *     tags:
  *       - Admin - Submissions
  *     parameters:
@@ -34,32 +34,88 @@ const router = express.Router();
  *           enum: [PENDING_REVIEW, COUNTER_OFFERED, ACCEPTED, PARTIALLY_ACCEPTED, REJECTED, EXPIRED, COMPLETED]
  *         description: Filter by submission status
  *       - in: query
+ *         name: sellerSearch
+ *         schema:
+ *           type: string
+ *         description: Search by seller email or name (partial match, case-insensitive)
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter submissions created on or after this date (ISO 8601 format)
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter submissions created on or before this date (ISO 8601 format)
+ *       - in: query
+ *         name: conditionGrades
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *             enum: [MINT, NM, VG_PLUS, VG, VG_MINUS, G, FAIR, POOR]
+ *         style: form
+ *         explode: true
+ *         description: Filter by vinyl condition grades (media or sleeve). Can be single or multiple values.
+ *       - in: query
+ *         name: minValue
+ *         schema:
+ *           type: number
+ *           minimum: 0
+ *         description: Minimum submission value (totalOffered >= this value)
+ *       - in: query
+ *         name: maxValue
+ *         schema:
+ *           type: number
+ *           minimum: 0
+ *         description: Maximum submission value (totalOffered <= this value)
+ *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
  *           default: 50
+ *           maximum: 500
+ *         description: Results per page
  *       - in: query
  *         name: page
  *         schema:
  *           type: integer
  *           default: 1
+ *         description: Page number (1-based)
  *       - in: query
  *         name: sortBy
  *         schema:
  *           type: string
- *           enum: [createdAt, totalOffered, updatedAt]
+ *           enum: [createdAt, totalOffered, totalAccepted, updatedAt]
  *           default: createdAt
+ *         description: Sort by field
  *       - in: query
  *         name: sortOrder
  *         schema:
  *           type: string
  *           enum: [asc, desc]
  *           default: desc
+ *         description: Sort direction
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Paginated submission queue
+ *         description: Paginated submission queue with applied filters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 submissions:
+ *                   type: array
+ *                 pagination:
+ *                   type: object
+ *                 appliedFilters:
+ *                   type: object
+ *                   description: Summary of applied filters for client UI
  */
 router.get('/', getSubmissionQueue);
 

@@ -6,19 +6,31 @@ import inventoryService from './inventoryService.js';
 
 class AdminSubmissionService {
   /**
-   * Get paginated submission queue for admin review
+   * Get paginated submission queue for admin review with advanced filtering
    * @param {Object} filters - Filter options
-   * @param {string} filters.status - Filter by submission status
-   * @param {number} filters.limit - Results per page
+   * @param {string} filters.status - Filter by submission status (PENDING_REVIEW, ACCEPTED, etc.)
+   * @param {string} filters.sellerSearch - Search by seller email or name (partial match)
+   * @param {string} filters.startDate - Filter submissions created on/after this date (ISO string)
+   * @param {string} filters.endDate - Filter submissions created on/before this date (ISO string)
+   * @param {string|string[]} filters.conditionGrades - Filter by vinyl condition grades (MINT, NM, VG_PLUS, etc.)
+   * @param {number} filters.minValue - Filter submissions with totalOffered >= this value
+   * @param {number} filters.maxValue - Filter submissions with totalOffered <= this value
+   * @param {number} filters.limit - Results per page (max 500)
    * @param {number} filters.page - Page number
-   * @param {string} filters.sortBy - Sort field (createdAt, totalOffered, etc.)
+   * @param {string} filters.sortBy - Sort field (createdAt, totalOffered, totalAccepted, updatedAt)
    * @param {string} filters.sortOrder - Sort direction (asc, desc)
-   * @returns {Promise<Object>} Paginated submissions
+   * @returns {Promise<Object>} Paginated submissions with filter stats
    */
   async getSubmissionQueue(filters = {}) {
     try {
       const {
         status,
+        sellerSearch,
+        startDate,
+        endDate,
+        conditionGrades,
+        minValue,
+        maxValue,
         limit = 50,
         page = 1,
         sortBy = 'createdAt',
@@ -29,31 +41,85 @@ class AdminSubmissionService {
         throw new ApiError('Limit cannot exceed 500', 400);
       }
 
+      // Validate sort field to prevent injection
+      const validSortFields = ['createdAt', 'totalOffered', 'totalAccepted', 'updatedAt'];
+      const finalSortBy = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
+      const finalSortOrder = sortOrder === 'asc' ? 'asc' : 'desc';
+
+      // Build WHERE clause dynamically
       const where = {};
+
+      // Status filter
       if (status) {
         where.status = status;
       }
 
+      // Seller search (email or name - case insensitive)
+      if (sellerSearch) {
+        where.OR = [
+          { sellerContact: { contains: sellerSearch, mode: 'insensitive' } },
+          { sellerName: { contains: sellerSearch, mode: 'insensitive' } },
+        ];
+      }
+
+      // Date range filter
+      if (startDate || endDate) {
+        where.createdAt = {};
+        if (startDate) {
+          where.createdAt.gte = new Date(startDate);
+        }
+        if (endDate) {
+          const end = new Date(endDate);
+          end.setHours(23, 59, 59, 999); // Include entire end day
+          where.createdAt.lte = end;
+        }
+      }
+
+      // Value range filter
+      if (minValue !== undefined || maxValue !== undefined) {
+        where.totalOffered = {};
+        if (minValue !== undefined) {
+          where.totalOffered.gte = minValue;
+        }
+        if (maxValue !== undefined) {
+          where.totalOffered.lte = maxValue;
+        }
+      }
+
+      // Condition grade filter - requires items relationship filter
+      let itemsFilter = {
+        select: {
+          id: true,
+          status: true,
+          autoOfferPrice: true,
+          counterOfferPrice: true,
+          sellerConditionMedia: true,
+          sellerConditionSleeve: true,
+        },
+      };
+
+      if (conditionGrades) {
+        const grades = Array.isArray(conditionGrades) ? conditionGrades : [conditionGrades];
+        itemsFilter.where = {
+          OR: [
+            { sellerConditionMedia: { in: grades } },
+            { sellerConditionSleeve: { in: grades } },
+          ],
+        };
+      }
+
       const skip = (page - 1) * limit;
       const orderBy = {};
-      orderBy[sortBy] = sortOrder === 'asc' ? 'asc' : 'desc';
+      orderBy[finalSortBy] = finalSortOrder;
 
+      // Execute parallel queries
       const [submissions, total] = await Promise.all([
         prisma.sellerSubmission.findMany({
           where,
           skip,
           take: limit,
           orderBy,
-          include: {
-            items: {
-              select: {
-                id: true,
-                status: true,
-                autoOfferPrice: true,
-                counterOfferPrice: true,
-              },
-            },
-          },
+          include: { items: itemsFilter },
         }),
         prisma.sellerSubmission.count({ where }),
       ]);
@@ -65,6 +131,15 @@ class AdminSubmissionService {
           page,
           limit,
           totalPages: Math.ceil(total / limit),
+        },
+        appliedFilters: {
+          status: status || null,
+          sellerSearch: sellerSearch || null,
+          dateRange: startDate || endDate ? { startDate, endDate } : null,
+          valueRange: minValue !== undefined || maxValue !== undefined ? { minValue, maxValue } : null,
+          conditions: conditionGrades || null,
+          sortBy: finalSortBy,
+          sortOrder: finalSortOrder,
         },
       };
     } catch (error) {
