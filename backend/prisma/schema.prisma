@@ -195,6 +195,7 @@ model SellerSubmission {
 
   // Relations
   items           SubmissionItem[]
+  audits          SubmissionAudit[]
 
   // Indexes
   @@index([status, createdAt(sort: Desc)])
@@ -211,6 +212,25 @@ enum SubmissionStatus {
   REJECTED
   EXPIRED
   COMPLETED
+}
+
+// Audit trail for submission state changes
+model SubmissionAudit {
+  id              String   @id @default(uuid()) @db.Uuid
+  submissionId    String   @map("submission_id") @db.Uuid
+  fromStatus      SubmissionStatus @map("from_status")
+  toStatus        SubmissionStatus @map("to_status")
+  changeReason    String?  @map("change_reason") @db.VarChar(255)
+  changedBy       String?  @map("changed_by") @db.Uuid
+  changedAt       DateTime @default(now()) @map("changed_at") @db.Timestamptz
+
+  // Relations
+  submission      SellerSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([submissionId, changedAt(sort: Desc)])
+  @@index([changedAt(sort: Desc)])
+  @@map("submission_audits")
 }
 
 model SubmissionItem {

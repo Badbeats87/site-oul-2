@@ -11,6 +11,7 @@ import {
   getSubmission,
   updateItemQuote,
   reviewSubmissionItem,
+  getSubmissionHistory,
 } from '../controllers/submissionController.js';
 
 const router = express.Router();
@@ -320,5 +321,28 @@ router.put('/:sellerId/items/:itemId', updateItemQuote);
  *         description: Item not found
  */
 router.post('/:sellerId/items/:itemId/review', reviewSubmissionItem);
+
+/**
+ * @swagger
+ * /api/v1/submissions/{sellerId}/history:
+ *   get:
+ *     summary: Get submission audit trail and state change history
+ *     description: Retrieve complete history of submission state changes and audit trail
+ *     tags:
+ *       - Submissions
+ *     parameters:
+ *       - in: path
+ *         name: sellerId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Submission history with audit trail
+ *       404:
+ *         description: Submission not found
+ */
+router.get('/:sellerId/history', getSubmissionHistory);
 
 export default router;
