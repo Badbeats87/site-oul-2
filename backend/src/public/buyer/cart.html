@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - Vinyl Catalog</title>
+    <link rel="stylesheet" href="../../styles/design-system.css">
+    <link rel="stylesheet" href="../../styles/buyer.css">
+    <link rel="stylesheet" href="../../styles/cart.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar__container">
+            <a href="../index.html" class="navbar__logo">
+                <svg class="navbar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <circle cx="12" cy="12" r="6"></circle>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <span>Vinyl Catalog</span>
+            </a>
+            <div class="navbar__links">
+                <a href="index.html" class="nav-link">← Back to Catalog</a>
+                <a href="index.html" class="nav-link">Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <div class="container">
+            <a href="../index.html">Home</a>
+            <span>/</span>
+            <a href="index.html">Catalog</a>
+            <span>/</span>
+            <span>Shopping Cart</span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="page-content">
+        <div class="container">
+            <!-- Page Header -->
+            <h1 class="cart-title">Shopping Cart</h1>
+
+            <!-- Empty Cart State -->
+            <div class="cart-empty" data-empty-state style="display: none; text-align: center; padding: 80px 20px;">
+                <p style="font-size: 1.2em; color: #666; margin-bottom: 20px;">Your cart is empty</p>
+                <a href="index.html" class="button button--primary">Continue Shopping</a>
+            </div>
+
+            <!-- Cart Content -->
+            <div class="cart-content" data-cart-content style="display: none;">
+                <div class="cart-layout">
+                    <!-- Cart Items -->
+                    <div class="cart-items">
+                        <table class="cart-table">
+                            <thead>
+                                <tr>
+                                    <th class="col-product">Product</th>
+                                    <th class="col-price">Price</th>
+                                    <th class="col-quantity">Quantity</th>
+                                    <th class="col-total">Total</th>
+                                    <th class="col-actions"></th>
+                                </tr>
+                            </thead>
+                            <tbody data-cart-items>
+                                <!-- Items will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Cart Summary -->
+                    <div class="cart-summary">
+                        <!-- Summary Section -->
+                        <div class="summary-section">
+                            <h2 class="summary-title">Order Summary</h2>
+
+                            <div class="summary-row">
+                                <span class="summary-label">Subtotal:</span>
+                                <span class="summary-value" data-subtotal>$0.00</span>
+                            </div>
+
+                            <div class="summary-row">
+                                <span class="summary-label">Shipping:</span>
+                                <div class="shipping-options">
+                                    <label class="shipping-option">
+                                        <input type="radio" name="shipping" value="standard" checked>
+                                        <span>Standard (5-7 days)</span>
+                                        <span class="shipping-price" data-shipping-standard>$10.00</span>
+                                    </label>
+                                    <label class="shipping-option">
+                                        <input type="radio" name="shipping" value="express">
+                                        <span>Express (2-3 days)</span>
+                                        <span class="shipping-price" data-shipping-express>$25.00</span>
+                                    </label>
+                                    <label class="shipping-option">
+                                        <input type="radio" name="shipping" value="overnight">
+                                        <span>Overnight</span>
+                                        <span class="shipping-price" data-shipping-overnight>$45.00</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="summary-row">
+                                <span class="summary-label">Estimated Tax:</span>
+                                <span class="summary-value" data-tax>$0.00</span>
+                            </div>
+
+                            <div class="summary-divider"></div>
+
+                            <div class="summary-row summary-total">
+                                <span class="summary-label">Total:</span>
+                                <span class="summary-value" data-total>$0.00</span>
+                            </div>
+                        </div>
+
+                        <!-- Promo Code Section -->
+                        <div class="promo-section">
+                            <input type="text" class="promo-input" placeholder="Enter promo code" data-promo-code>
+                            <button class="button button--secondary button--block" data-apply-promo>
+                                Apply
+                            </button>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="cart-actions">
+                            <a href="checkout.html" class="button button--primary button--large button--block" data-checkout-btn>
+                                Proceed to Checkout
+                            </a>
+                            <a href="index.html" class="button button--secondary button--large button--block">
+                                Continue Shopping
+                            </a>
+                        </div>
+
+                        <!-- Trust Badges -->
+                        <div class="trust-badges">
+                            <div class="trust-badge">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                </svg>
+                                <span>Secure Checkout</span>
+                            </div>
+                            <div class="trust-badge">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                <span>30-Day Returns</span>
+                            </div>
+                            <div class="trust-badge">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"></path>
+                                    <path d="M16.5 8.5L11 14l-2.5-2.5"></path>
+                                </svg>
+                                <span>Satisfaction Guaranteed</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__content">
+                <div class="footer__section">
+                    <h4>Vinyl Catalog</h4>
+                    <p>Buy and sell vinyl records with confidence</p>
+                </div>
+                <div class="footer__section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="../seller/index.html">Sell Records</a></li>
+                        <li><a href="index.html">Buy Records</a></li>
+                        <li><a href="../index.html">Home</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer__bottom">
+                <p>&copy; 2024 Vinyl Catalog. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../js/api-client.js"></script>
+    <script src="../../js/cart.js"></script>
+    <script>
+        // Initialize cart when page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (cartManager) {
+                await cartManager.initialize();
+            }
+        });
+    </script>
+</body>
+</html>
