@@ -55,44 +55,53 @@ describe('Checkout API Integration Tests', () => {
   });
 
   afterAll(async () => {
-    // Clean up test data
-    // First, release all holds on the test inventory lot
-    await prisma.inventoryHold.deleteMany({
-      where: {
-        inventoryLotId: testInventoryLot.id,
-      },
-    });
+    try {
+      // Clean up test data
+      // First, release all holds on the test inventory lot
+      await prisma.inventoryHold.deleteMany({
+        where: {
+          inventoryLotId: testInventoryLot.id,
+        },
+      });
 
-    // Delete all order items for this inventory lot
-    await prisma.orderItem.deleteMany({
-      where: {
-        inventoryLotId: testInventoryLot.id,
-      },
-    });
+      // Delete all order items for this inventory lot
+      await prisma.orderItem.deleteMany({
+        where: {
+          inventoryLotId: testInventoryLot.id,
+        },
+      });
 
-    // Delete all orders (not just the test buyer, but all orders created during tests)
-    await prisma.order.deleteMany({
-      where: {
-        // This catches all orders, or we can be more specific if needed
-        OR: [
-          { buyerEmail: { contains: 'buyer-' } },
-          { buyerEmail: { contains: 'empty-' } },
-          { buyerEmail: { contains: 'notfound-' } },
-          { buyerEmail: { contains: 'initiate-' } },
-          { buyerEmail: { contains: 'history-test-' } },
-        ],
-      },
-    });
+      // Delete all orders created during these tests
+      await prisma.order.deleteMany({
+        where: {
+          // Only delete orders created by THIS test suite (with these specific email patterns)
+          OR: [
+            { buyerEmail: { contains: 'buyer-' } },
+            { buyerEmail: { contains: 'empty-' } },
+            { buyerEmail: { contains: 'notfound-' } },
+            { buyerEmail: { contains: 'initiate-' } },
+            { buyerEmail: { contains: 'history-test-' } },
+          ],
+        },
+      });
 
-    // Delete the test inventory lot
-    await prisma.inventoryLot.delete({
-      where: { id: testInventoryLot.id },
-    });
+      // Delete the test inventory lot
+      if (testInventoryLot?.id) {
+        await prisma.inventoryLot.deleteMany({
+          where: { id: testInventoryLot.id },
+        });
+      }
 
-    // Delete the test release
-    await prisma.release.delete({
-      where: { id: testRelease.id },
-    });
+      // Delete the test release
+      if (testRelease?.id) {
+        await prisma.release.delete({
+          where: { id: testRelease.id },
+        });
+      }
+    } catch (error) {
+      console.error('Error in checkout test cleanup:', error);
+      // Continue cleanup even if some deletions fail
+    }
 
     await prisma.$disconnect();
   });
