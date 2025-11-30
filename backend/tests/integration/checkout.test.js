@@ -493,18 +493,28 @@ describe('Checkout API Integration Tests', () => {
       expect(testInventoryLot).toBeDefined();
       expect(testInventoryLot.id).toBeDefined();
 
+      // Create a fresh cart with unique buyer email to avoid conflicts
+      const uniqueEmail = `initiate-${Date.now()}-${Math.random()}@test.com`;
       const cartResponse = await request(app)
         .get('/api/v1/checkout/cart')
         .set('Authorization', authHeader)
         .query({
-          buyerEmail: `initiate-${Date.now()}-${Math.random()}@test.com`,
+          buyerEmail: uniqueEmail,
         });
 
       expect(cartResponse.status).toBe(200);
       cartId = cartResponse.body.data.id;
       expect(cartId).toBeDefined();
 
-      // Add item to cart with validation
+      // Verify cart is empty before adding item
+      const emptyCartCheck = await request(app)
+        .get(`/api/v1/checkout/orders/${cartId}`)
+        .set('Authorization', authHeader);
+
+      expect(emptyCartCheck.status).toBe(200);
+      expect(emptyCartCheck.body.data.items.length).toBe(0);
+
+      // Add item to cart
       const addItemResponse = await request(app)
         .post('/api/v1/checkout/cart/items')
         .set('Authorization', authHeader)
@@ -513,13 +523,18 @@ describe('Checkout API Integration Tests', () => {
           inventoryLotId: testInventoryLot.id,
         });
 
-      if (addItemResponse.status !== 200) {
-        console.error('Failed to add item to cart:', addItemResponse.body);
+      // Handle both 200 (new add) and 409 (duplicate) - if 409, that's an error in our setup
+      if (addItemResponse.status === 409) {
+        console.error('Item already in cart - test setup issue:', {
+          cartId,
+          inventoryLotId: testInventoryLot.id,
+          response: addItemResponse.body,
+        });
       }
       expect(addItemResponse.status).toBe(200);
       expect(addItemResponse.body.success).toBe(true);
       expect(addItemResponse.body.data.items).toBeDefined();
-      expect(addItemResponse.body.data.items.length).toBeGreaterThan(0);
+      expect(addItemResponse.body.data.items.length).toBe(1);
 
       // Recalculate cart
       const recalcResponse = await request(app)
