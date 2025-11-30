@@ -39,11 +39,16 @@ class ShippingService {
       // Determine zone
       const zone = await this.getZoneForAddress(toAddress);
       if (!zone) {
-        throw new ApiError(`No shipping zone found for state: ${toAddress.state}`, 400);
+        throw new ApiError(
+          `No shipping zone found for state: ${toAddress.state}`,
+          400
+        );
       }
 
       // Calculate package weight
-      const weight = packageDetails.weight || this.calculatePackageWeight(packageDetails.items || []);
+      const weight =
+        packageDetails.weight ||
+        this.calculatePackageWeight(packageDetails.items || []);
       if (!weight || weight <= 0) {
         throw new ApiError('Invalid package weight', 400);
       }
@@ -132,7 +137,7 @@ class ShippingService {
       });
 
       // Format rates with calculated cost
-      const formattedRates = rates.map(rate => {
+      const formattedRates = rates.map((rate) => {
         const cost = this.calculateRateCost(rate, weightOz);
         return {
           method: rate.shippingMethod,
@@ -168,7 +173,7 @@ class ShippingService {
     const baseRate = parseFloat(rate.baseRate);
     const perOzRate = parseFloat(rate.perOzRate);
     const excessWeight = Math.max(0, weightOz - rate.minWeightOz);
-    const totalCost = baseRate + (excessWeight * perOzRate);
+    const totalCost = baseRate + excessWeight * perOzRate;
     return Math.round(totalCost * 100) / 100; // Round to 2 decimals
   }
 
@@ -431,10 +436,13 @@ class ShippingService {
       }
 
       // Calculate weight if not provided
-      const weight = packageDetails.weightOz || this.calculatePackageWeight(order.items);
+      const weight =
+        packageDetails.weightOz || this.calculatePackageWeight(order.items);
 
       // Get warehouse and shipping address
-      const warehouseAddress = JSON.parse(process.env.WAREHOUSE_ADDRESS || '{"state": "CA", "zip": "90001"}');
+      const warehouseAddress = JSON.parse(
+        process.env.WAREHOUSE_ADDRESS || '{"state": "CA", "zip": "90001"}'
+      );
       const toAddress = order.shippingAddress;
 
       if (!toAddress) {
@@ -442,13 +450,20 @@ class ShippingService {
       }
 
       // Calculate shipping cost
-      const rates = await this.calculateShippingRates(warehouseAddress, toAddress, {
-        weight,
-      });
+      const rates = await this.calculateShippingRates(
+        warehouseAddress,
+        toAddress,
+        {
+          weight,
+        }
+      );
 
-      const selectedRate = rates.find(r => r.method === shippingMethod);
+      const selectedRate = rates.find((r) => r.method === shippingMethod);
       if (!selectedRate) {
-        throw new ApiError(`Shipping method ${shippingMethod} not available for destination`, 400);
+        throw new ApiError(
+          `Shipping method ${shippingMethod} not available for destination`,
+          400
+        );
       }
 
       // Create shipment
@@ -668,7 +683,9 @@ class ShippingService {
             location: webhookData.location,
             message: webhookData.message,
             carrierEventId: webhookData.event_id,
-            eventTime: webhookData.timestamp ? new Date(webhookData.timestamp) : new Date(),
+            eventTime: webhookData.timestamp
+              ? new Date(webhookData.timestamp)
+              : new Date(),
           });
         }
       }
@@ -756,7 +773,10 @@ class ShippingService {
 
       return zone;
     } catch (error) {
-      logger.error('Error getting shipping zone', { zoneId, error: error.message });
+      logger.error('Error getting shipping zone', {
+        zoneId,
+        error: error.message,
+      });
       throw new ApiError('Failed to get shipping zone', 500);
     }
   }
@@ -772,14 +792,21 @@ class ShippingService {
     isActive,
   }) {
     try {
-      if (!name || !Array.isArray(statesIncluded) || statesIncluded.length === 0) {
-        throw new ApiError('name and statesIncluded (non-empty array) are required', 400);
+      if (
+        !name ||
+        !Array.isArray(statesIncluded) ||
+        statesIncluded.length === 0
+      ) {
+        throw new ApiError(
+          'name and statesIncluded (non-empty array) are required',
+          400
+        );
       }
 
       const zone = await prisma.shippingZone.create({
         data: {
           name,
-          statesIncluded: statesIncluded.map(s => s.toUpperCase()),
+          statesIncluded: statesIncluded.map((s) => s.toUpperCase()),
           priority,
           description,
           isActive,
@@ -804,10 +831,13 @@ class ShippingService {
       const data = {};
       if (updates.name !== undefined) data.name = updates.name;
       if (updates.statesIncluded !== undefined) {
-        data.statesIncluded = updates.statesIncluded.map(s => s.toUpperCase());
+        data.statesIncluded = updates.statesIncluded.map((s) =>
+          s.toUpperCase()
+        );
       }
       if (updates.priority !== undefined) data.priority = updates.priority;
-      if (updates.description !== undefined) data.description = updates.description;
+      if (updates.description !== undefined)
+        data.description = updates.description;
       if (updates.isActive !== undefined) data.isActive = updates.isActive;
 
       const zone = await prisma.shippingZone.update({
@@ -822,7 +852,10 @@ class ShippingService {
       if (error.code === 'P2025') {
         throw new ApiError('Shipping zone not found', 404);
       }
-      logger.error('Error updating shipping zone', { zoneId, error: error.message });
+      logger.error('Error updating shipping zone', {
+        zoneId,
+        error: error.message,
+      });
       throw new ApiError('Failed to update shipping zone', 500);
     }
   }
@@ -840,7 +873,7 @@ class ShippingService {
       if (rates.length > 0) {
         throw new ApiError(
           'Cannot delete zone with active rates. Delete rates first.',
-          400,
+          400
         );
       }
 
@@ -855,7 +888,10 @@ class ShippingService {
         throw new ApiError('Shipping zone not found', 404);
       }
       if (error instanceof ApiError) throw error;
-      logger.error('Error deleting shipping zone', { zoneId, error: error.message });
+      logger.error('Error deleting shipping zone', {
+        zoneId,
+        error: error.message,
+      });
       throw new ApiError('Failed to delete shipping zone', 500);
     }
   }
@@ -914,7 +950,10 @@ class ShippingService {
 
       return rate;
     } catch (error) {
-      logger.error('Error getting shipping rate', { rateId, error: error.message });
+      logger.error('Error getting shipping rate', {
+        rateId,
+        error: error.message,
+      });
       throw new ApiError('Failed to get shipping rate', 500);
     }
   }
@@ -938,13 +977,13 @@ class ShippingService {
   }) {
     try {
       if (
-        !zoneId
-        || !shippingMethod
-        || !carrier
-        || baseRate === undefined
-        || perOzRate === undefined
-        || minWeightOz === undefined
-        || maxWeightOz === undefined
+        !zoneId ||
+        !shippingMethod ||
+        !carrier ||
+        baseRate === undefined ||
+        perOzRate === undefined ||
+        minWeightOz === undefined ||
+        maxWeightOz === undefined
       ) {
         throw new ApiError('All rate parameters are required', 400);
       }
@@ -990,14 +1029,20 @@ class ShippingService {
   async updateShippingRate(rateId, updates) {
     try {
       const data = {};
-      if (updates.baseRate !== undefined) data.baseRate = updates.baseRate.toString();
-      if (updates.perOzRate !== undefined) data.perOzRate = updates.perOzRate.toString();
-      if (updates.minWeightOz !== undefined) data.minWeightOz = updates.minWeightOz;
-      if (updates.maxWeightOz !== undefined) data.maxWeightOz = updates.maxWeightOz;
+      if (updates.baseRate !== undefined)
+        data.baseRate = updates.baseRate.toString();
+      if (updates.perOzRate !== undefined)
+        data.perOzRate = updates.perOzRate.toString();
+      if (updates.minWeightOz !== undefined)
+        data.minWeightOz = updates.minWeightOz;
+      if (updates.maxWeightOz !== undefined)
+        data.maxWeightOz = updates.maxWeightOz;
       if (updates.minDays !== undefined) data.minDays = updates.minDays;
       if (updates.maxDays !== undefined) data.maxDays = updates.maxDays;
-      if (updates.effectiveDate !== undefined) data.effectiveDate = updates.effectiveDate;
-      if (updates.expirationDate !== undefined) data.expirationDate = updates.expirationDate;
+      if (updates.effectiveDate !== undefined)
+        data.effectiveDate = updates.effectiveDate;
+      if (updates.expirationDate !== undefined)
+        data.expirationDate = updates.expirationDate;
       if (updates.isActive !== undefined) data.isActive = updates.isActive;
 
       const rate = await prisma.shippingRate.update({
@@ -1012,7 +1057,10 @@ class ShippingService {
       if (error.code === 'P2025') {
         throw new ApiError('Shipping rate not found', 404);
       }
-      logger.error('Error updating shipping rate', { rateId, error: error.message });
+      logger.error('Error updating shipping rate', {
+        rateId,
+        error: error.message,
+      });
       throw new ApiError('Failed to update shipping rate', 500);
     }
   }
@@ -1032,7 +1080,10 @@ class ShippingService {
       if (error.code === 'P2025') {
         throw new ApiError('Shipping rate not found', 404);
       }
-      logger.error('Error deleting shipping rate', { rateId, error: error.message });
+      logger.error('Error deleting shipping rate', {
+        rateId,
+        error: error.message,
+      });
       throw new ApiError('Failed to delete shipping rate', 500);
     }
   }

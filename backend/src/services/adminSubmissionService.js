@@ -231,7 +231,7 @@ class AdminSubmissionService {
         await submissionService.reviewSubmissionItem(
           submissionId,
           itemId,
-          'accept',
+          'accept'
         );
       }
 
@@ -253,7 +253,7 @@ class AdminSubmissionService {
         submission.status,
         'ACCEPTED',
         'Bulk acceptance by admin',
-        adminId,
+        adminId
       );
 
       // Create inventory records for accepted items
@@ -310,7 +310,7 @@ class AdminSubmissionService {
         await submissionService.reviewSubmissionItem(
           submissionId,
           itemId,
-          'reject',
+          'reject'
         );
       }
 
@@ -331,7 +331,7 @@ class AdminSubmissionService {
         submission.status,
         'REJECTED',
         `Bulk rejection by admin: ${reason || 'No reason'}`,
-        adminId,
+        adminId
       );
 
       return this.getSubmissionDetail(submissionId);
@@ -370,7 +370,7 @@ class AdminSubmissionService {
         if (!submissionItemIds.has(item.itemId)) {
           throw new ApiError(
             `Item ${item.itemId} not found in submission`,
-            404,
+            404
           );
         }
         if (item.counterOfferPrice < 0) {
@@ -384,7 +384,7 @@ class AdminSubmissionService {
         const updated = await submissionService.updateItemQuote(
           submissionId,
           item.itemId,
-          { counterOfferPrice: item.counterOfferPrice },
+          { counterOfferPrice: item.counterOfferPrice }
         );
         totalCounterOffered += Number(item.counterOfferPrice);
       }
@@ -413,7 +413,7 @@ class AdminSubmissionService {
         submission.status,
         'COUNTER_OFFERED',
         `Counter-offers created for ${items.length} items`,
-        adminId,
+        adminId
       );
 
       logger.info('Counter-offers created', {
@@ -446,7 +446,7 @@ class AdminSubmissionService {
       const result = await submissionService.reviewSubmissionItem(
         submissionId,
         itemId,
-        'accept',
+        'accept'
       );
 
       if (notes) {
@@ -487,7 +487,7 @@ class AdminSubmissionService {
       const result = await submissionService.reviewSubmissionItem(
         submissionId,
         itemId,
-        'reject',
+        'reject'
       );
 
       const fullNotes = `Item rejected: ${reason || 'No reason'} - ${notes || ''}`;
@@ -527,7 +527,7 @@ class AdminSubmissionService {
     itemId,
     counterOfferPrice,
     notes,
-    adminId,
+    adminId
   ) {
     try {
       const result = await submissionService.updateItemQuote(
@@ -535,7 +535,7 @@ class AdminSubmissionService {
         itemId,
         {
           counterOfferPrice,
-        },
+        }
       );
 
       if (notes) {

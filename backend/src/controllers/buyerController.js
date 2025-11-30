@@ -67,7 +67,7 @@ export const getRecommendations = async (req, res, next) => {
 
     const recommendations = await buyerService.getRecommendations(
       inventoryLotId,
-      parseInt(limit),
+      parseInt(limit)
     );
 
     res.json({
@@ -133,7 +133,7 @@ export const removeFromWishlist = async (req, res, next) => {
 
     const result = await buyerService.removeFromWishlist(
       buyerId,
-      inventoryLotId,
+      inventoryLotId
     );
 
     res.json({
@@ -172,7 +172,12 @@ export const getSimilarItems = async (req, res, next) => {
  */
 export const getNewArrivals = async (req, res, next) => {
   try {
-    const { limit = 10, daysBack = 30, genre = null, variant = 'control' } = req.query;
+    const {
+      limit = 10,
+      daysBack = 30,
+      genre = null,
+      variant = 'control',
+    } = req.query;
 
     const result = await recommendationService.getNewArrivals({
       limit: parseInt(limit),
@@ -203,7 +208,7 @@ export const getPersonalizedRecommendations = async (req, res, next) => {
       {
         limit: parseInt(limit),
         abVariant: variant,
-      },
+      }
     );
 
     res.json({
@@ -227,7 +232,7 @@ export const getRecommendationVariants = async (req, res, next) => {
       releaseId,
       {
         limit: parseInt(limit),
-      },
+      }
     );
 
     res.json({
@@ -244,11 +249,7 @@ export const getRecommendationVariants = async (req, res, next) => {
  */
 export const recordRecommendationClick = async (req, res, next) => {
   try {
-    const {
-      recommendationTrackingId,
-      variantName,
-      itemId,
-    } = req.body;
+    const { recommendationTrackingId, variantName, itemId } = req.body;
     const buyerId =
       req.session?.userId || req.headers['x-buyer-id'] || 'anonymous';
 

@@ -581,7 +581,7 @@ class ReleaseService {
       const result = {
         query,
         total: Number(totalResults[0]?.count || 0),
-        results: results.map(r => {
+        results: results.map((r) => {
           const { relevance, ...release } = r;
           return {
             ...release,
@@ -625,7 +625,10 @@ class ReleaseService {
       // Try cache first (30 minute TTL for search)
       const cached = getCached(cacheKey);
       if (cached) {
-        logger.debug('Cache hit for album/artist/label search', { query, limit });
+        logger.debug('Cache hit for album/artist/label search', {
+          query,
+          limit,
+        });
         return cached;
       }
 
@@ -674,7 +677,7 @@ class ReleaseService {
       const result = {
         query,
         total: Number(totalResults[0]?.count || 0),
-        results: results.map(r => {
+        results: results.map((r) => {
           const { relevance, ...release } = r;
           return {
             ...release,
@@ -690,7 +693,10 @@ class ReleaseService {
       return result;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Album/artist/label search failed', { query, error: error.message });
+      logger.error('Album/artist/label search failed', {
+        query,
+        error: error.message,
+      });
       throw new ApiError('Failed to search by album/artist/label', 500);
     }
   }
@@ -712,7 +718,15 @@ class ReleaseService {
    */
   async facetedSearch(filters = {}, limit = 50, page = 1) {
     try {
-      const { query, genres, conditions, priceMin, priceMax, yearMin, yearMax } = filters;
+      const {
+        query,
+        genres,
+        conditions,
+        priceMin,
+        priceMax,
+        yearMin,
+        yearMax,
+      } = filters;
 
       if (limit > 200) {
         throw new ApiError('Limit cannot exceed 200', 400);
@@ -768,7 +782,7 @@ class ReleaseService {
       let filteredReleases = releases;
 
       if (priceMin || priceMax || (conditions && conditions.length > 0)) {
-        filteredReleases = releases.filter(release => {
+        filteredReleases = releases.filter((release) => {
           // Check if release has any inventory
           if (!release.inventoryLots || release.inventoryLots.length === 0) {
             return false;
@@ -776,7 +790,7 @@ class ReleaseService {
 
           // Apply price filter
           if (priceMin || priceMax) {
-            const hasMatchingPrice = release.inventoryLots.some(lot => {
+            const hasMatchingPrice = release.inventoryLots.some((lot) => {
               const price = Number(lot.listPrice);
               if (priceMin && price < priceMin) return false;
               if (priceMax && price > priceMax) return false;
@@ -787,7 +801,7 @@ class ReleaseService {
 
           // Apply condition filter
           if (conditions && conditions.length > 0) {
-            const hasMatchingCondition = release.inventoryLots.some(lot =>
+            const hasMatchingCondition = release.inventoryLots.some((lot) =>
               conditions.includes(lot.conditionMedia)
             );
             if (!hasMatchingCondition) return false;
@@ -804,9 +818,9 @@ class ReleaseService {
       const facets = await this._buildFacets(where);
 
       // Format results with inventory stats
-      const resultsWithInventory = filteredReleases.map(release => {
+      const resultsWithInventory = filteredReleases.map((release) => {
         const { inventoryLots, ...releaseData } = release;
-        
+
         if (!inventoryLots || inventoryLots.length === 0) {
           return {
             ...releaseData,
@@ -820,8 +834,10 @@ class ReleaseService {
           };
         }
 
-        const prices = inventoryLots.map(lot => Number(lot.listPrice));
-        const conditions = [...new Set(inventoryLots.map(lot => lot.conditionMedia))];
+        const prices = inventoryLots.map((lot) => Number(lot.listPrice));
+        const conditions = [
+          ...new Set(inventoryLots.map((lot) => lot.conditionMedia)),
+        ];
 
         return {
           ...releaseData,
@@ -896,7 +912,7 @@ class ReleaseService {
       ];
 
       const priceFacets = await Promise.all(
-        priceRanges.map(async range => {
+        priceRanges.map(async (range) => {
           const count = await prisma.inventoryLot.count({
             where: {
               status: 'LIVE',
@@ -911,15 +927,15 @@ class ReleaseService {
       );
 
       return {
-        genres: genreFacets.map(f => ({
+        genres: genreFacets.map((f) => ({
           value: f.genre,
           count: f._count,
         })),
-        years: yearFacets.map(f => ({
+        years: yearFacets.map((f) => ({
           value: f.releaseYear,
           count: f._count,
         })),
-        conditions: conditionFacets.map(f => ({
+        conditions: conditionFacets.map((f) => ({
           value: f.conditionMedia,
           count: f._count,
         })),

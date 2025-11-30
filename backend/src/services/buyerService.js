@@ -77,7 +77,7 @@ class BuyerService {
         where.OR = where.OR || [];
         where.OR.push(
           { release: { title: { contains: search, mode: 'insensitive' } } },
-          { release: { artist: { contains: search, mode: 'insensitive' } } },
+          { release: { artist: { contains: search, mode: 'insensitive' } } }
         );
       }
 

@@ -83,7 +83,7 @@ class PricingService {
       const marketStat = await this._getMarketStat(
         releaseId,
         marketSource,
-        marketStatistic,
+        marketStatistic
       );
 
       if (!marketStat) {
@@ -101,16 +101,16 @@ class PricingService {
         mediaCondition,
         sleeveCondition,
         curve,
-        weights,
+        weights
       );
       const rounded = this.roundToIncrement(
         adjustedPrice,
-        config.roundIncrement,
+        config.roundIncrement
       );
       const final = this.applyFloorAndCeiling(
         rounded,
         config.buyFloor,
-        config.buyCeiling,
+        config.buyCeiling
       );
 
       logger.debug('Buy price calculated', {
@@ -130,10 +130,10 @@ class PricingService {
           mediaCondition,
           sleeveCondition,
           mediaAdjustment: parseFloat(
-            (baseOffer * curve[mediaCondition] * weights.media).toFixed(2),
+            (baseOffer * curve[mediaCondition] * weights.media).toFixed(2)
           ),
           sleeveAdjustment: parseFloat(
-            (baseOffer * curve[sleeveCondition] * weights.sleeve).toFixed(2),
+            (baseOffer * curve[sleeveCondition] * weights.sleeve).toFixed(2)
           ),
           beforeRounding: parseFloat(adjustedPrice.toFixed(2)),
           afterRounding: parseFloat(rounded.toFixed(2)),
@@ -181,7 +181,7 @@ class PricingService {
       if (!costBasis || costBasis < 0) {
         throw new ApiError(
           'Valid cost basis is required for sell price calculation',
-          400,
+          400
         );
       }
 
@@ -202,7 +202,7 @@ class PricingService {
       const marketStat = await this._getMarketStat(
         releaseId,
         marketSource,
-        marketStatistic,
+        marketStatistic
       );
 
       if (!marketStat) {
@@ -220,7 +220,7 @@ class PricingService {
         mediaCondition,
         sleeveCondition,
         curve,
-        weights,
+        weights
       );
       let rounded = this.roundToIncrement(adjustedPrice, config.roundIncrement);
 
@@ -233,7 +233,7 @@ class PricingService {
       const final = this.applyFloorAndCeiling(
         rounded,
         config.sellFloor,
-        config.sellCeiling,
+        config.sellCeiling
       );
 
       // Calculate margin
@@ -309,7 +309,7 @@ class PricingService {
 
     // Apply the highest applicable markdown
     for (const [days, discount] of Object.entries(schedule).sort(
-      (a, b) => parseInt(b[0]) - parseInt(a[0]),
+      (a, b) => parseInt(b[0]) - parseInt(a[0])
     )) {
       if (daysListed >= parseInt(days)) {
         discountPercent = discount;
@@ -347,7 +347,7 @@ class PricingService {
     mediaCondition,
     sleeveCondition,
     curve,
-    weights,
+    weights
   ) {
     const mediaWeights = weights || this.defaultWeights;
     const curve_ = curve || this.defaultConditionCurve;
@@ -422,7 +422,7 @@ class PricingService {
 
       if (source === 'DISCOGS') {
         const data = await discogsService.getPriceStatistics(
-          parseInt(releaseId),
+          parseInt(releaseId)
         );
         return data?.[stat] || null;
       }
@@ -460,7 +460,7 @@ class PricingService {
 
     try {
       const discogsData = await discogsService.getPriceStatistics(
-        parseInt(releaseId),
+        parseInt(releaseId)
       );
       discogsPrice = discogsData?.[statistic];
     } catch (error) {
@@ -507,7 +507,7 @@ class PricingService {
     if (!validConditions.includes(condition)) {
       throw new ApiError(
         `Invalid condition: ${condition}. Must be one of: ${validConditions.join(', ')}`,
-        400,
+        400
       );
     }
   }

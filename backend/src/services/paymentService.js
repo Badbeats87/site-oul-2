@@ -27,10 +27,7 @@ class PaymentService {
   async createPaymentIntent(orderId, amount, buyerEmail) {
     try {
       if (!orderId || !amount || !buyerEmail) {
-        throw new ApiError(
-          'orderId, amount, and buyerEmail are required',
-          400
-        );
+        throw new ApiError('orderId, amount, and buyerEmail are required', 400);
       }
 
       if (amount <= 0) {
@@ -115,9 +112,8 @@ class PaymentService {
         throw new ApiError('paymentIntentId is required', 400);
       }
 
-      const paymentIntent = await this.stripe.paymentIntents.retrieve(
-        paymentIntentId
-      );
+      const paymentIntent =
+        await this.stripe.paymentIntents.retrieve(paymentIntentId);
 
       if (!paymentIntent) {
         throw new ApiError('Payment intent not found', 404);
@@ -286,7 +282,8 @@ class PaymentService {
       }
 
       // Get failure reason from payment intent
-      const failureReason = paymentIntent.last_payment_error?.message || 'Payment declined';
+      const failureReason =
+        paymentIntent.last_payment_error?.message || 'Payment declined';
 
       // Update order to PAYMENT_FAILED and release inventory reservations
       const updatedOrder = await prisma.$transaction(async (tx) => {
@@ -384,20 +381,20 @@ class PaymentService {
       let result;
 
       switch (event.type) {
-      case 'payment_intent.succeeded':
-        result = await this.handlePaymentSucceeded(event.data.object);
-        break;
+        case 'payment_intent.succeeded':
+          result = await this.handlePaymentSucceeded(event.data.object);
+          break;
 
-      case 'payment_intent.payment_failed':
-        result = await this.handlePaymentFailed(event.data.object);
-        break;
+        case 'payment_intent.payment_failed':
+          result = await this.handlePaymentFailed(event.data.object);
+          break;
 
-      default:
-        logger.debug('Unhandled webhook event type', {
-          eventType: event.type,
-          eventId: event.id,
-        });
-        result = { acknowledged: true, eventType: event.type };
+        default:
+          logger.debug('Unhandled webhook event type', {
+            eventType: event.type,
+            eventId: event.id,
+          });
+          result = { acknowledged: true, eventType: event.type };
       }
 
       return {
@@ -426,9 +423,8 @@ class PaymentService {
         throw new ApiError('paymentIntentId is required', 400);
       }
 
-      const paymentIntent = await this.stripe.paymentIntents.retrieve(
-        paymentIntentId
-      );
+      const paymentIntent =
+        await this.stripe.paymentIntents.retrieve(paymentIntentId);
 
       if (!paymentIntent) {
         throw new ApiError('Payment intent not found', 404);

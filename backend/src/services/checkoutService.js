@@ -305,10 +305,7 @@ class CheckoutService {
    * @param {string} orderId - Order ID
    * @returns {Promise<Object>} Updated order with recalculated totals
    */
-  async recalculateCartTotals(
-    orderId,
-    shippingMethod = 'STANDARD'
-  ) {
+  async recalculateCartTotals(orderId, shippingMethod = 'STANDARD') {
     try {
       if (!orderId) {
         throw new ApiError('orderId is required', 400);
@@ -332,7 +329,8 @@ class CheckoutService {
       }
 
       // Get shipping rate
-      const shipping = this.SHIPPING_RATES[shippingMethod] || this.SHIPPING_RATES.STANDARD;
+      const shipping =
+        this.SHIPPING_RATES[shippingMethod] || this.SHIPPING_RATES.STANDARD;
 
       // Calculate tax on subtotal + shipping
       const taxBase = subtotal + shipping;
@@ -511,10 +509,7 @@ class CheckoutService {
 
       for (const item of order.items) {
         try {
-          await inventoryService.reserveInventory(
-            item.inventoryLotId,
-            orderId
-          );
+          await inventoryService.reserveInventory(item.inventoryLotId, orderId);
           reservedItems.push(item.inventoryLotId);
         } catch (error) {
           failedReservations.push({
@@ -643,10 +638,7 @@ class CheckoutService {
           orderId,
           failedCount: failedSales.length,
         });
-        throw new ApiError(
-          'Failed to complete purchase for some items',
-          500
-        );
+        throw new ApiError('Failed to complete purchase for some items', 500);
       }
 
       logger.info('Checkout completed', {
@@ -689,10 +681,7 @@ class CheckoutService {
       }
 
       if (order.status !== 'PAYMENT_PENDING') {
-        throw new ApiError(
-          'Only PAYMENT_PENDING orders can be cancelled',
-          400
-        );
+        throw new ApiError('Only PAYMENT_PENDING orders can be cancelled', 400);
       }
 
       // Release all reserved inventory
@@ -703,10 +692,13 @@ class CheckoutService {
             reason
           );
         } catch (error) {
-          logger.warn('Error releasing inventory during checkout cancellation', {
-            inventoryLotId: item.inventoryLotId,
-            error: error.message,
-          });
+          logger.warn(
+            'Error releasing inventory during checkout cancellation',
+            {
+              inventoryLotId: item.inventoryLotId,
+              error: error.message,
+            }
+          );
           // Continue releasing other items even if one fails
         }
       }
