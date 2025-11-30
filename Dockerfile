@@ -1,24 +1,29 @@
-# This Dockerfile builds the backend service
-# The actual build logic is in backend/Dockerfile
-
+# Build stage
 FROM node:18-alpine as builder
 
 WORKDIR /app
 
-# Copy backend files
+# Copy backend package files
 COPY backend/package*.json ./
 
 # Install all dependencies (including dev for Prisma generation)
 RUN npm ci
 
-# Copy backend application files
-COPY backend .
+# Copy backend source code
+COPY backend/src ./src
+COPY backend/prisma ./prisma
+COPY backend/config ./config
 
-# Generate Prisma Client with explicit schema path
-RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npx prisma generate --schema=./prisma/schema.prisma
+# Copy frontend assets
+COPY pages ./pages
+COPY js ./js
+COPY styles ./styles
 
-# Verify Prisma client was generated
-RUN ls -la src/generated/prisma/ || echo "Warning: Prisma client not found"
+# Debug: Verify files are present
+RUN echo "=== App Contents ===" && ls -la /app/ && echo "=== Styles ===" && ls -la /app/styles/ && echo "=== JS ===" && ls -la /app/js/ && echo "=== Pages ===" && ls -la /app/pages/
+
+# Generate Prisma Client
+RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npx prisma generate
 
 # Remove dev dependencies, keep only production
 RUN npm prune --production
@@ -34,11 +39,21 @@ RUN apk add --no-cache dumb-init
 # Copy node_modules from builder
 COPY --from=builder /app/node_modules ./node_modules
 
+# Copy backend source code from builder
+COPY --from=builder /app/src ./src
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/config ./config
+
 # Copy generated Prisma client from builder
 COPY --from=builder /app/src/generated/prisma ./src/generated/prisma
 
-# Copy backend application files
-COPY backend .
+# Copy frontend assets from builder
+COPY --from=builder /app/pages ./pages
+COPY --from=builder /app/js ./js
+COPY --from=builder /app/styles ./styles
+
+# Copy package.json
+COPY backend/package.json ./
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
