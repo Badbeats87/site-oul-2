@@ -11,11 +11,13 @@ Complete reference for all UI components in the Vinyl Catalog design system, inc
 **Purpose**: Primary interactive element for user actions
 
 **Padding**: `--space-md` (vertical) × `--space-xl` (horizontal)
+
 ```css
 padding: var(--space-md) var(--space-xl);
 ```
 
 **Font**:
+
 - Size: `--font-size-base` (1rem / 16px)
 - Weight: `--font-weight-medium` (500)
 
@@ -28,40 +30,47 @@ padding: var(--space-md) var(--space-xl);
 ### Button Variants
 
 #### Semantic Colors
-| Class | Background | Color | Use Case |
-|-------|-----------|-------|----------|
-| `.button--primary` | `--color-primary` (#1a1a1a) | white | Main actions |
-| `.button--secondary` | transparent | `--color-primary` | Alternative actions |
-| `.button--accent` | `--color-accent` (#2563eb) | white | Highlighted actions |
-| `.button--success` | `--color-success` (#059669) | white | Positive actions |
-| `.button--danger` | `--color-danger` (#dc2626) | white | Destructive actions |
+
+| Class                | Background                  | Color             | Use Case            |
+| -------------------- | --------------------------- | ----------------- | ------------------- |
+| `.button--primary`   | `--color-primary` (#1a1a1a) | white             | Main actions        |
+| `.button--secondary` | transparent                 | `--color-primary` | Alternative actions |
+| `.button--accent`    | `--color-accent` (#2563eb)  | white             | Highlighted actions |
+| `.button--success`   | `--color-success` (#059669) | white             | Positive actions    |
+| `.button--danger`    | `--color-danger` (#dc2626)  | white             | Destructive actions |
 
 #### Size Variants
-| Class | Padding | Font Size | Use Case |
-|-------|---------|-----------|----------|
-| `.button--sm` | `--space-sm` × `--space-md` | `--font-size-sm` (14px) | Compact layouts |
-| `.button` (default) | `--space-md` × `--space-xl` | `--font-size-base` (16px) | Standard buttons |
-| `.button--lg` or `.button--large` | `--space-lg` × `--space-2xl` | `--font-size-lg` (18px) | Prominent actions |
+
+| Class                             | Padding                      | Font Size                 | Use Case          |
+| --------------------------------- | ---------------------------- | ------------------------- | ----------------- |
+| `.button--sm`                     | `--space-sm` × `--space-md`  | `--font-size-sm` (14px)   | Compact layouts   |
+| `.button` (default)               | `--space-md` × `--space-xl`  | `--font-size-base` (16px) | Standard buttons  |
+| `.button--lg` or `.button--large` | `--space-lg` × `--space-2xl` | `--font-size-lg` (18px)   | Prominent actions |
 
 #### Block Button
-| Class | Width | Display |
-|-------|-------|---------|
-| `.button--block` | 100% | `flex` |
+
+| Class            | Width | Display |
+| ---------------- | ----- | ------- |
+| `.button--block` | 100%  | `flex`  |
 
 ### Button States
 
 **Hover** (not disabled):
+
 - Opacity: `--state-opacity-hover` (0.85)
 - Shadow: `--shadow-md`
 
 **Active** (pressed):
+
 - Opacity: `--state-opacity-active` (0.75)
 
 **Disabled**:
+
 - Opacity: `--state-opacity-disabled` (0.5)
 - Cursor: `not-allowed`
 
 **Focus**:
+
 - Outline: `--focus-outline-width` solid `--focus-outline-color`
 - Box-shadow: `--focus-shadow`
 
@@ -78,7 +87,9 @@ padding: var(--space-md) var(--space-xl);
 <button class="button button--sm button--accent">Edit</button>
 
 <!-- Large block button -->
-<button class="button button--lg button--success button--block">Submit Form</button>
+<button class="button button--lg button--success button--block">
+  Submit Form
+</button>
 
 <!-- Disabled button -->
 <button class="button button--primary" disabled>Processing...</button>
@@ -93,6 +104,7 @@ padding: var(--space-md) var(--space-xl);
 **Purpose**: Container for grouped form elements
 
 **Margin**:
+
 - Bottom: `--space-xl` (2rem / 32px)
 - Last child: 0
 
@@ -105,6 +117,7 @@ padding: var(--space-md) var(--space-xl);
 **Margin Bottom**: `--space-sm` (0.5rem / 8px)
 
 **Font**:
+
 - Weight: `--font-weight-medium` (500)
 - Size: `--font-size-sm` (0.875rem / 14px)
 
@@ -119,10 +132,12 @@ All input types: `text`, `email`, `password`, `number`, `date`, `tel`, `select`,
 **Padding**: `--space-md` (1rem / 16px)
 
 **Font**:
+
 - Size: `--font-size-base` (1rem / 16px) - prevents iOS auto-zoom
 - Family: `--font-family-base`
 
 **Border**:
+
 - Width: 1px
 - Color: `--color-border`
 - Radius: `--radius-md` (8px)
@@ -136,11 +151,13 @@ All input types: `text`, `email`, `password`, `number`, `date`, `tel`, `select`,
 ### Form Input States
 
 **Focus**:
+
 - Border Color: `--color-accent`
 - Box Shadow: `--focus-shadow`
 - Outline: none
 
 **Disabled**:
+
 - Background: `--color-secondary`
 - Color: `--color-text-light`
 - Cursor: `not-allowed`
@@ -161,6 +178,7 @@ All input types: `text`, `email`, `password`, `number`, `date`, `tel`, `select`,
 **Padding Right**: `--space-2xl` (2rem) for icon space
 
 **Custom Chevron**:
+
 ```css
 background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%231f2937' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
 background-repeat: no-repeat;
@@ -176,10 +194,12 @@ background-position: right var(--space-md) center;
 **Gap**: `--space-xl` (2rem / 32px)
 
 **Responsive Behavior**:
+
 - Mobile (< 768px): 1 column
 - Desktop (768px+): 2 columns
 
 **Full Width Variant** `.form-row.full`:
+
 - Grid Columns: 1fr (single column)
 
 ### Usage Example
@@ -188,17 +208,17 @@ background-position: right var(--space-md) center;
 <form>
   <div class="form-group">
     <label for="email">Email Address</label>
-    <input type="email" id="email" placeholder="you@example.com" required>
+    <input type="email" id="email" placeholder="you@example.com" required />
   </div>
 
   <div class="form-row">
     <div class="form-group">
       <label for="first-name">First Name</label>
-      <input type="text" id="first-name" placeholder="John">
+      <input type="text" id="first-name" placeholder="John" />
     </div>
     <div class="form-group">
       <label for="last-name">Last Name</label>
-      <input type="text" id="last-name" placeholder="Doe">
+      <input type="text" id="last-name" placeholder="Doe" />
     </div>
   </div>
 
@@ -426,13 +446,13 @@ background-position: right var(--space-md) center;
 
 ### Badge Variants
 
-| Class | Background | Color | Use Case |
-|-------|-----------|-------|----------|
-| `.badge` (default) | `--color-secondary` | `--color-text` | Neutral status |
-| `.badge--primary` | `--color-accent` | white | Primary status |
-| `.badge--success` | `--color-success` | white | Success/approved |
-| `.badge--warning` | `--color-warning` | white | Warning/pending |
-| `.badge--danger` | `--color-danger` | white | Error/rejected |
+| Class              | Background          | Color          | Use Case         |
+| ------------------ | ------------------- | -------------- | ---------------- |
+| `.badge` (default) | `--color-secondary` | `--color-text` | Neutral status   |
+| `.badge--primary`  | `--color-accent`    | white          | Primary status   |
+| `.badge--success`  | `--color-success`   | white          | Success/approved |
+| `.badge--warning`  | `--color-warning`   | white          | Warning/pending  |
+| `.badge--danger`   | `--color-danger`    | white          | Error/rejected   |
 
 ### Status-Specific Badges
 
@@ -702,16 +722,19 @@ background-position: right var(--space-md) center;
 ### Pagination Button States
 
 **Hover** (not disabled):
+
 - Background: `--color-secondary`
 - Border Color: `--color-accent`
 - Color: `--color-accent`
 
 **Active** (current page):
+
 - Background: `--color-accent`
 - Color: white
 - Border Color: `--color-accent`
 
 **Disabled**:
+
 - Opacity: `--state-opacity-disabled` (0.5)
 - Cursor: not-allowed
 
@@ -747,13 +770,13 @@ background-position: right var(--space-md) center;
 
 All components follow mobile-first responsive design:
 
-| Breakpoint | Size | Device |
-|-----------|------|--------|
-| xs | 320px | Small phone |
-| sm | 480px | Phone |
-| md | 768px | Tablet |
-| lg | 1024px | Desktop |
-| xl | 1280px | Large screen |
+| Breakpoint | Size   | Device       |
+| ---------- | ------ | ------------ |
+| xs         | 320px  | Small phone  |
+| sm         | 480px  | Phone        |
+| md         | 768px  | Tablet       |
+| lg         | 1024px | Desktop      |
+| xl         | 1280px | Large screen |
 
 ### Media Query Format
 
@@ -787,25 +810,30 @@ All components follow mobile-first responsive design:
 ## Accessibility Guidelines
 
 ### Minimum Touch Targets
+
 - All interactive elements: 44px × 44px
 - Buttons: Minimum 44px height
 - Links: Minimum 44px height/width
 
 ### Focus States
+
 - Always visible and distinct
 - Minimum 2px outline or shadow
 - Outline color: `--color-accent`
 - Sufficient contrast: 3:1 minimum
 
 ### Color Contrast
+
 - Text on backgrounds: 4.5:1 (WCAG AA)
 - UI components: 3:1 (WCAG AA)
 
 ### Motion
+
 - Respects `prefers-reduced-motion` media query
 - Animations disabled for users with motion sensitivity
 
 ### Semantic HTML
+
 - Use proper heading hierarchy (h1-h6)
 - Use form labels with `for` attributes
 - Use semantic buttons instead of divs
@@ -816,6 +844,7 @@ All components follow mobile-first responsive design:
 ## Best Practices
 
 ### DO
+
 - ✅ Use design tokens (CSS variables) for all values
 - ✅ Test focus states for keyboard navigation
 - ✅ Test on multiple screen sizes (320px, 480px, 768px, 1024px, 1280px)
@@ -824,6 +853,7 @@ All components follow mobile-first responsive design:
 - ✅ Use semantic HTML
 
 ### DON'T
+
 - ❌ Hardcode pixel values
 - ❌ Override design tokens
 - ❌ Skip focus states
@@ -835,7 +865,6 @@ All components follow mobile-first responsive design:
 
 ## Version History
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0 | 2025-11-30 | Initial component specifications |
-
+| Version | Date       | Changes                          |
+| ------- | ---------- | -------------------------------- |
+| 1.0     | 2025-11-30 | Initial component specifications |
