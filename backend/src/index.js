@@ -18,6 +18,7 @@ import adminRoutes from './routes/admin.js';
 import inventoryRoutes from './routes/inventory.js';
 import buyerRoutes from './routes/buyer.js';
 import checkoutRoutes from './routes/checkout.js';
+import reservationRoutes from './routes/reservations.js';
 import shippingRoutes from './routes/shipping.js';
 import fulfillmentRoutes from './routes/fulfillment.js';
 import trackingRoutes from './routes/tracking.js';
@@ -107,6 +108,9 @@ app.use('/api/v1/buyer', buyerRoutes);
 
 // Checkout and orders routes
 app.use('/api/v1/checkout', checkoutRoutes);
+
+// Inventory reservation routes
+app.use('/api/v1/inventory/reserves', reservationRoutes);
 
 // Shipping routes
 app.use('/api/v1/shipping', shippingRoutes);
