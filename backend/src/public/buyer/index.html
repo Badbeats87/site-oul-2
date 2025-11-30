@@ -1,337 +1,442 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Buy Records - Vinyl Catalog</title>
-    <link rel="stylesheet" href="../../styles/design-system.css">
-    <link rel="stylesheet" href="../../styles/buyer.css">
-</head>
-<body>
+    <link rel="stylesheet" href="../../styles/design-system.css" />
+    <link rel="stylesheet" href="../../styles/buyer.css" />
+  </head>
+  <body>
     <!-- Navigation -->
     <nav class="navbar">
-        <div class="navbar__container">
-            <a href="../index.html" class="navbar__logo">
-                <svg class="navbar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <circle cx="12" cy="12" r="6"></circle>
-                    <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-                <span>Vinyl Catalog</span>
-            </a>
-            <div class="navbar__links">
-                <a href="../seller/index.html" class="nav-link">Sell Records</a>
-                <a href="cart.html" class="nav-link" data-cart-link>Cart (0)</a>
-                <a href="../index.html" class="nav-link">Home</a>
-            </div>
+      <div class="navbar__container">
+        <a href="../index.html" class="navbar__logo">
+          <svg
+            class="navbar__icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <circle cx="12" cy="12" r="6"></circle>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          <span>Vinyl Catalog</span>
+        </a>
+        <div class="navbar__links">
+          <a href="../seller/index.html" class="nav-link">Sell Records</a>
+          <a href="cart.html" class="nav-link" data-cart-link>Cart (0)</a>
+          <a href="../index.html" class="nav-link">Home</a>
         </div>
+      </div>
     </nav>
 
     <!-- Header -->
     <header class="page-header">
-        <div class="container">
-            <h1>Vinyl Records</h1>
-            <p>Discover rare and classic vinyl records from our carefully curated collection</p>
-        </div>
+      <div class="container">
+        <h1>Vinyl Records</h1>
+        <p>
+          Discover rare and classic vinyl records from our carefully curated
+          collection
+        </p>
+      </div>
     </header>
 
     <!-- Main Content -->
     <main class="page-content">
-        <div class="container">
-            <div class="storefront-layout">
-                <!-- Filters Sidebar -->
-                <aside class="filters-sidebar">
-                    <!-- Search -->
-                    <div class="filter-section">
-                        <h3 class="filter-title">Search</h3>
-                        <input
-                            type="text"
-                            class="filter-search"
-                            placeholder="Artist, title, or label..."
-                        >
-                    </div>
-
-                    <!-- Genre Filter -->
-                    <div class="filter-section">
-                        <h3 class="filter-title">Genre</h3>
-                        <div class="filter-options">
-                            <label class="filter-option">
-                                <input type="radio" name="genre" value="all" checked>
-                                <span>All Genres</span>
-                            </label>
-                            <label class="filter-option">
-                                <input type="radio" name="genre" value="rock">
-                                <span>Rock</span>
-                            </label>
-                            <label class="filter-option">
-                                <input type="radio" name="genre" value="jazz">
-                                <span>Jazz</span>
-                            </label>
-                            <label class="filter-option">
-                                <input type="radio" name="genre" value="classical">
-                                <span>Classical</span>
-                            </label>
-                            <label class="filter-option">
-                                <input type="radio" name="genre" value="pop">
-                                <span>Pop</span>
-                            </label>
-                            <label class="filter-option">
-                                <input type="radio" name="genre" value="electronic">
-                                <span>Electronic</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Condition Filter -->
-                    <div class="filter-section">
-                        <h3 class="filter-title">Condition</h3>
-                        <div class="filter-options">
-                            <label class="filter-option">
-                                <input type="checkbox" value="mint" checked>
-                                <span>Mint</span>
-                            </label>
-                            <label class="filter-option">
-                                <input type="checkbox" value="nm" checked>
-                                <span>Near Mint</span>
-                            </label>
-                            <label class="filter-option">
-                                <input type="checkbox" value="vgp" checked>
-                                <span>Very Good+</span>
-                            </label>
-                            <label class="filter-option">
-                                <input type="checkbox" value="vg">
-                                <span>Very Good</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Price Filter -->
-                    <div class="filter-section">
-                        <h3 class="filter-title">Price Range</h3>
-                        <div class="price-range">
-                            <input type="number" placeholder="Min" value="0" min="0" class="price-input">
-                            <span class="price-separator">–</span>
-                            <input type="number" placeholder="Max" value="500" max="10000" class="price-input">
-                        </div>
-                    </div>
-
-                    <!-- Sort -->
-                    <div class="filter-section">
-                        <h3 class="filter-title">Sort By</h3>
-                        <select class="filter-select">
-                            <option>Newest Arrivals</option>
-                            <option>Price: Low to High</option>
-                            <option>Price: High to Low</option>
-                            <option>Most Popular</option>
-                        </select>
-                    </div>
-
-                    <button class="button button--primary button--block" style="margin-top: var(--space-xl);">
-                        Apply Filters
-                    </button>
-                </aside>
-
-                <!-- Products Grid -->
-                <div class="products-section">
-                    <!-- Results Header -->
-                    <div class="results-header">
-                        <div class="results-info">
-                            <p>Showing <strong>1–12</strong> of <strong>284</strong> records</p>
-                        </div>
-                        <div class="view-options">
-                            <button class="view-btn view-btn--active" title="Grid view">⊞</button>
-                            <button class="view-btn" title="List view">≡</button>
-                        </div>
-                    </div>
-
-                    <!-- Products Grid -->
-                    <div class="products-grid">
-                        <!-- Product Card 1 -->
-                        <div class="product-card">
-                            <div class="product-card__image">
-                                <svg viewBox="0 0 240 240" fill="none">
-                                    <rect width="240" height="240" fill="#e5e7eb"/>
-                                    <text x="120" y="120" text-anchor="middle" dominant-baseline="middle" font-size="18" fill="#9ca3af">Album Cover</text>
-                                </svg>
-                                <div class="product-card__badge product-card__badge--new">New</div>
-                            </div>
-                            <div class="product-card__content">
-                                <h3 class="product-card__title">Dark Side of the Moon</h3>
-                                <p class="product-card__artist">Pink Floyd</p>
-                                <div class="product-card__meta">
-                                    <span>NM • 1973 UK</span>
-                                    <span class="badge badge--success">In Stock</span>
-                                </div>
-                                <div class="product-card__price">
-                                    <span class="price-current">$89.99</span>
-                                    <span class="price-original">$99.99</span>
-                                    <span class="discount">-10%</span>
-                                </div>
-                                <button class="button button--accent button--block">Add to Cart</button>
-                            </div>
-                        </div>
-
-                        <!-- Product Card 2 -->
-                        <div class="product-card">
-                            <div class="product-card__image">
-                                <svg viewBox="0 0 240 240" fill="none">
-                                    <rect width="240" height="240" fill="#e5e7eb"/>
-                                    <text x="120" y="120" text-anchor="middle" dominant-baseline="middle" font-size="18" fill="#9ca3af">Album Cover</text>
-                                </svg>
-                            </div>
-                            <div class="product-card__content">
-                                <h3 class="product-card__title">Abbey Road</h3>
-                                <p class="product-card__artist">The Beatles</p>
-                                <div class="product-card__meta">
-                                    <span>VG+ • 1969 US</span>
-                                    <span class="badge badge--success">In Stock (3)</span>
-                                </div>
-                                <div class="product-card__price">
-                                    <span class="price-current">$49.50</span>
-                                </div>
-                                <button class="button button--accent button--block">Add to Cart</button>
-                            </div>
-                        </div>
-
-                        <!-- Product Card 3 -->
-                        <div class="product-card">
-                            <div class="product-card__image">
-                                <svg viewBox="0 0 240 240" fill="none">
-                                    <rect width="240" height="240" fill="#e5e7eb"/>
-                                    <text x="120" y="120" text-anchor="middle" dominant-baseline="middle" font-size="18" fill="#9ca3af">Album Cover</text>
-                                </svg>
-                                <div class="product-card__badge product-card__badge--low">Low Stock</div>
-                            </div>
-                            <div class="product-card__content">
-                                <h3 class="product-card__title">Led Zeppelin IV</h3>
-                                <p class="product-card__artist">Led Zeppelin</p>
-                                <div class="product-card__meta">
-                                    <span>VG • 1971 UK</span>
-                                    <span class="badge badge--warning">Only 1 Left</span>
-                                </div>
-                                <div class="product-card__price">
-                                    <span class="price-current">$34.99</span>
-                                </div>
-                                <button class="button button--accent button--block">Add to Cart</button>
-                            </div>
-                        </div>
-
-                        <!-- Product Card 4 -->
-                        <div class="product-card">
-                            <div class="product-card__image">
-                                <svg viewBox="0 0 240 240" fill="none">
-                                    <rect width="240" height="240" fill="#e5e7eb"/>
-                                    <text x="120" y="120" text-anchor="middle" dominant-baseline="middle" font-size="18" fill="#9ca3af">Album Cover</text>
-                                </svg>
-                            </div>
-                            <div class="product-card__content">
-                                <h3 class="product-card__title">Rumours</h3>
-                                <p class="product-card__artist">Fleetwood Mac</p>
-                                <div class="product-card__meta">
-                                    <span>NM • 1977 US</span>
-                                    <span class="badge badge--success">In Stock (2)</span>
-                                </div>
-                                <div class="product-card__price">
-                                    <span class="price-current">$59.99</span>
-                                </div>
-                                <button class="button button--accent button--block">Add to Cart</button>
-                            </div>
-                        </div>
-
-                        <!-- Product Card 5 -->
-                        <div class="product-card">
-                            <div class="product-card__image">
-                                <svg viewBox="0 0 240 240" fill="none">
-                                    <rect width="240" height="240" fill="#e5e7eb"/>
-                                    <text x="120" y="120" text-anchor="middle" dominant-baseline="middle" font-size="18" fill="#9ca3af">Album Cover</text>
-                                </svg>
-                                <div class="product-card__badge product-card__badge--new">New</div>
-                            </div>
-                            <div class="product-card__content">
-                                <h3 class="product-card__title">The White Album</h3>
-                                <p class="product-card__artist">The Beatles</p>
-                                <div class="product-card__meta">
-                                    <span>VG+ • 1968 UK (Double)</span>
-                                    <span class="badge badge--success">In Stock</span>
-                                </div>
-                                <div class="product-card__price">
-                                    <span class="price-current">$85.00</span>
-                                </div>
-                                <button class="button button--accent button--block">Add to Cart</button>
-                            </div>
-                        </div>
-
-                        <!-- Product Card 6 -->
-                        <div class="product-card">
-                            <div class="product-card__image">
-                                <svg viewBox="0 0 240 240" fill="none">
-                                    <rect width="240" height="240" fill="#e5e7eb"/>
-                                    <text x="120" y="120" text-anchor="middle" dominant-baseline="middle" font-size="18" fill="#9ca3af">Album Cover</text>
-                                </svg>
-                                <div class="product-card__badge product-card__badge--rare">Rare</div>
-                            </div>
-                            <div class="product-card__content">
-                                <h3 class="product-card__title">Kind of Blue</h3>
-                                <p class="product-card__artist">Miles Davis</p>
-                                <div class="product-card__meta">
-                                    <span>Mint • 1959 US (Original)</span>
-                                    <span class="badge badge--primary">Limited</span>
-                                </div>
-                                <div class="product-card__price">
-                                    <span class="price-current">$199.99</span>
-                                </div>
-                                <button class="button button--accent button--block">Add to Cart</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Pagination -->
-                    <div class="pagination">
-                        <button class="button button--secondary button--sm">← Previous</button>
-                        <button class="button button--accent button--sm">1</button>
-                        <button class="button button--secondary button--sm">2</button>
-                        <button class="button button--secondary button--sm">3</button>
-                        <span class="pagination__dots">...</span>
-                        <button class="button button--secondary button--sm">20</button>
-                        <button class="button button--secondary button--sm">Next →</button>
-                    </div>
-                </div>
+      <div class="container">
+        <div class="storefront-layout">
+          <!-- Filters Sidebar -->
+          <aside class="filters-sidebar">
+            <!-- Search -->
+            <div class="filter-section">
+              <h3 class="filter-title">Search</h3>
+              <input
+                type="text"
+                class="filter-search"
+                placeholder="Artist, title, or label..."
+              />
             </div>
+
+            <!-- Genre Filter -->
+            <div class="filter-section">
+              <h3 class="filter-title">Genre</h3>
+              <div class="filter-options">
+                <label class="filter-option">
+                  <input type="radio" name="genre" value="all" checked />
+                  <span>All Genres</span>
+                </label>
+                <label class="filter-option">
+                  <input type="radio" name="genre" value="rock" />
+                  <span>Rock</span>
+                </label>
+                <label class="filter-option">
+                  <input type="radio" name="genre" value="jazz" />
+                  <span>Jazz</span>
+                </label>
+                <label class="filter-option">
+                  <input type="radio" name="genre" value="classical" />
+                  <span>Classical</span>
+                </label>
+                <label class="filter-option">
+                  <input type="radio" name="genre" value="pop" />
+                  <span>Pop</span>
+                </label>
+                <label class="filter-option">
+                  <input type="radio" name="genre" value="electronic" />
+                  <span>Electronic</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Condition Filter -->
+            <div class="filter-section">
+              <h3 class="filter-title">Condition</h3>
+              <div class="filter-options">
+                <label class="filter-option">
+                  <input type="checkbox" value="mint" checked />
+                  <span>Mint</span>
+                </label>
+                <label class="filter-option">
+                  <input type="checkbox" value="nm" checked />
+                  <span>Near Mint</span>
+                </label>
+                <label class="filter-option">
+                  <input type="checkbox" value="vgp" checked />
+                  <span>Very Good+</span>
+                </label>
+                <label class="filter-option">
+                  <input type="checkbox" value="vg" />
+                  <span>Very Good</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Price Filter -->
+            <div class="filter-section">
+              <h3 class="filter-title">Price Range</h3>
+              <div class="price-range">
+                <input
+                  type="number"
+                  placeholder="Min"
+                  value="0"
+                  min="0"
+                  class="price-input"
+                />
+                <span class="price-separator">–</span>
+                <input
+                  type="number"
+                  placeholder="Max"
+                  value="500"
+                  max="10000"
+                  class="price-input"
+                />
+              </div>
+            </div>
+
+            <!-- Sort -->
+            <div class="filter-section">
+              <h3 class="filter-title">Sort By</h3>
+              <select class="filter-select">
+                <option>Newest Arrivals</option>
+                <option>Price: Low to High</option>
+                <option>Price: High to Low</option>
+                <option>Most Popular</option>
+              </select>
+            </div>
+
+            <button
+              class="button button--primary button--block"
+              style="margin-top: var(--space-xl)"
+            >
+              Apply Filters
+            </button>
+          </aside>
+
+          <!-- Products Grid -->
+          <div class="products-section">
+            <!-- Results Header -->
+            <div class="results-header">
+              <div class="results-info">
+                <p>
+                  Showing <strong>1–12</strong> of <strong>284</strong> records
+                </p>
+              </div>
+              <div class="view-options">
+                <button class="view-btn view-btn--active" title="Grid view">
+                  ⊞
+                </button>
+                <button class="view-btn" title="List view">≡</button>
+              </div>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="products-grid">
+              <!-- Product Card 1 -->
+              <div class="product-card">
+                <div class="product-card__image">
+                  <svg viewBox="0 0 240 240" fill="none">
+                    <rect width="240" height="240" fill="#e5e7eb" />
+                    <text
+                      x="120"
+                      y="120"
+                      text-anchor="middle"
+                      dominant-baseline="middle"
+                      font-size="18"
+                      fill="#9ca3af"
+                    >
+                      Album Cover
+                    </text>
+                  </svg>
+                  <div class="product-card__badge product-card__badge--new">
+                    New
+                  </div>
+                </div>
+                <div class="product-card__content">
+                  <h3 class="product-card__title">Dark Side of the Moon</h3>
+                  <p class="product-card__artist">Pink Floyd</p>
+                  <div class="product-card__meta">
+                    <span>NM • 1973 UK</span>
+                    <span class="badge badge--success">In Stock</span>
+                  </div>
+                  <div class="product-card__price">
+                    <span class="price-current">$89.99</span>
+                    <span class="price-original">$99.99</span>
+                    <span class="discount">-10%</span>
+                  </div>
+                  <button class="button button--accent button--block">
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+
+              <!-- Product Card 2 -->
+              <div class="product-card">
+                <div class="product-card__image">
+                  <svg viewBox="0 0 240 240" fill="none">
+                    <rect width="240" height="240" fill="#e5e7eb" />
+                    <text
+                      x="120"
+                      y="120"
+                      text-anchor="middle"
+                      dominant-baseline="middle"
+                      font-size="18"
+                      fill="#9ca3af"
+                    >
+                      Album Cover
+                    </text>
+                  </svg>
+                </div>
+                <div class="product-card__content">
+                  <h3 class="product-card__title">Abbey Road</h3>
+                  <p class="product-card__artist">The Beatles</p>
+                  <div class="product-card__meta">
+                    <span>VG+ • 1969 US</span>
+                    <span class="badge badge--success">In Stock (3)</span>
+                  </div>
+                  <div class="product-card__price">
+                    <span class="price-current">$49.50</span>
+                  </div>
+                  <button class="button button--accent button--block">
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+
+              <!-- Product Card 3 -->
+              <div class="product-card">
+                <div class="product-card__image">
+                  <svg viewBox="0 0 240 240" fill="none">
+                    <rect width="240" height="240" fill="#e5e7eb" />
+                    <text
+                      x="120"
+                      y="120"
+                      text-anchor="middle"
+                      dominant-baseline="middle"
+                      font-size="18"
+                      fill="#9ca3af"
+                    >
+                      Album Cover
+                    </text>
+                  </svg>
+                  <div class="product-card__badge product-card__badge--low">
+                    Low Stock
+                  </div>
+                </div>
+                <div class="product-card__content">
+                  <h3 class="product-card__title">Led Zeppelin IV</h3>
+                  <p class="product-card__artist">Led Zeppelin</p>
+                  <div class="product-card__meta">
+                    <span>VG • 1971 UK</span>
+                    <span class="badge badge--warning">Only 1 Left</span>
+                  </div>
+                  <div class="product-card__price">
+                    <span class="price-current">$34.99</span>
+                  </div>
+                  <button class="button button--accent button--block">
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+
+              <!-- Product Card 4 -->
+              <div class="product-card">
+                <div class="product-card__image">
+                  <svg viewBox="0 0 240 240" fill="none">
+                    <rect width="240" height="240" fill="#e5e7eb" />
+                    <text
+                      x="120"
+                      y="120"
+                      text-anchor="middle"
+                      dominant-baseline="middle"
+                      font-size="18"
+                      fill="#9ca3af"
+                    >
+                      Album Cover
+                    </text>
+                  </svg>
+                </div>
+                <div class="product-card__content">
+                  <h3 class="product-card__title">Rumours</h3>
+                  <p class="product-card__artist">Fleetwood Mac</p>
+                  <div class="product-card__meta">
+                    <span>NM • 1977 US</span>
+                    <span class="badge badge--success">In Stock (2)</span>
+                  </div>
+                  <div class="product-card__price">
+                    <span class="price-current">$59.99</span>
+                  </div>
+                  <button class="button button--accent button--block">
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+
+              <!-- Product Card 5 -->
+              <div class="product-card">
+                <div class="product-card__image">
+                  <svg viewBox="0 0 240 240" fill="none">
+                    <rect width="240" height="240" fill="#e5e7eb" />
+                    <text
+                      x="120"
+                      y="120"
+                      text-anchor="middle"
+                      dominant-baseline="middle"
+                      font-size="18"
+                      fill="#9ca3af"
+                    >
+                      Album Cover
+                    </text>
+                  </svg>
+                  <div class="product-card__badge product-card__badge--new">
+                    New
+                  </div>
+                </div>
+                <div class="product-card__content">
+                  <h3 class="product-card__title">The White Album</h3>
+                  <p class="product-card__artist">The Beatles</p>
+                  <div class="product-card__meta">
+                    <span>VG+ • 1968 UK (Double)</span>
+                    <span class="badge badge--success">In Stock</span>
+                  </div>
+                  <div class="product-card__price">
+                    <span class="price-current">$85.00</span>
+                  </div>
+                  <button class="button button--accent button--block">
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+
+              <!-- Product Card 6 -->
+              <div class="product-card">
+                <div class="product-card__image">
+                  <svg viewBox="0 0 240 240" fill="none">
+                    <rect width="240" height="240" fill="#e5e7eb" />
+                    <text
+                      x="120"
+                      y="120"
+                      text-anchor="middle"
+                      dominant-baseline="middle"
+                      font-size="18"
+                      fill="#9ca3af"
+                    >
+                      Album Cover
+                    </text>
+                  </svg>
+                  <div class="product-card__badge product-card__badge--rare">
+                    Rare
+                  </div>
+                </div>
+                <div class="product-card__content">
+                  <h3 class="product-card__title">Kind of Blue</h3>
+                  <p class="product-card__artist">Miles Davis</p>
+                  <div class="product-card__meta">
+                    <span>Mint • 1959 US (Original)</span>
+                    <span class="badge badge--primary">Limited</span>
+                  </div>
+                  <div class="product-card__price">
+                    <span class="price-current">$199.99</span>
+                  </div>
+                  <button class="button button--accent button--block">
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination">
+              <button class="button button--secondary button--sm">
+                ← Previous
+              </button>
+              <button class="button button--accent button--sm">1</button>
+              <button class="button button--secondary button--sm">2</button>
+              <button class="button button--secondary button--sm">3</button>
+              <span class="pagination__dots">...</span>
+              <button class="button button--secondary button--sm">20</button>
+              <button class="button button--secondary button--sm">
+                Next →
+              </button>
+            </div>
+          </div>
         </div>
+      </div>
     </main>
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="container">
-            <div class="footer__content">
-                <div class="footer__section">
-                    <h4>Vinyl Catalog</h4>
-                    <p>Buy and sell vinyl records with confidence</p>
-                </div>
-                <div class="footer__section">
-                    <h4>Quick Links</h4>
-                    <ul>
-                        <li><a href="../seller/index.html">Sell Records</a></li>
-                        <li><a href="index.html">Buy Records</a></li>
-                        <li><a href="../index.html">Home</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer__bottom">
-                <p>&copy; 2024 Vinyl Catalog. All rights reserved.</p>
-            </div>
+      <div class="container">
+        <div class="footer__content">
+          <div class="footer__section">
+            <h4>Vinyl Catalog</h4>
+            <p>Buy and sell vinyl records with confidence</p>
+          </div>
+          <div class="footer__section">
+            <h4>Quick Links</h4>
+            <ul>
+              <li><a href="../seller/index.html">Sell Records</a></li>
+              <li><a href="index.html">Buy Records</a></li>
+              <li><a href="../index.html">Home</a></li>
+            </ul>
+          </div>
         </div>
+        <div class="footer__bottom">
+          <p>&copy; 2024 Vinyl Catalog. All rights reserved.</p>
+        </div>
+      </div>
     </footer>
 
     <script src="../../js/api-client.js"></script>
     <script src="../../js/buyer-products.js"></script>
     <script>
-        // Initialize product catalog when page loads
-        document.addEventListener('DOMContentLoaded', async function() {
-            if (buyerProductsManager) {
-                await buyerProductsManager.initialize();
-            }
-        });
+      // Initialize product catalog when page loads
+      document.addEventListener('DOMContentLoaded', async function () {
+        if (buyerProductsManager) {
+          await buyerProductsManager.initialize();
+        }
+      });
     </script>
-</body>
+  </body>
 </html>

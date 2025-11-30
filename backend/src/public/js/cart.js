@@ -9,9 +9,9 @@ class CartManager {
     this.items = [];
     this.shipping = 'standard';
     this.shippingCosts = {
-      standard: 10.00,
-      express: 25.00,
-      overnight: 45.00
+      standard: 10.0,
+      express: 25.0,
+      overnight: 45.0,
     };
     this.taxRate = 0.08; // 8% tax
   }
@@ -30,7 +30,7 @@ class CartManager {
    */
   setupEventListeners() {
     // Shipping option changes
-    document.querySelectorAll('input[name="shipping"]').forEach(radio => {
+    document.querySelectorAll('input[name="shipping"]').forEach((radio) => {
       radio.addEventListener('change', (e) => {
         this.shipping = e.target.value;
         this.updateTotals();
@@ -92,7 +92,9 @@ class CartManager {
     document.querySelector('[data-cart-content]').style.display = 'block';
 
     const tbody = document.querySelector('[data-cart-items]');
-    tbody.innerHTML = this.items.map(item => `
+    tbody.innerHTML = this.items
+      .map(
+        (item) => `
       <tr class="cart-row" data-item-id="${item.id}">
         <td class="col-product">
           <div class="cart-item">
@@ -126,13 +128,15 @@ class CartManager {
           </button>
         </td>
       </tr>
-    `).join('');
+    `
+      )
+      .join('');
 
     // Add event listeners for quantity controls
     this.setupQuantityControls();
 
     // Add event listeners for remove buttons
-    document.querySelectorAll('[data-remove-item]').forEach(btn => {
+    document.querySelectorAll('[data-remove-item]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const itemId = btn.dataset.removeItem;
         this.removeItem(itemId);
@@ -147,7 +151,7 @@ class CartManager {
    */
   setupQuantityControls() {
     // Increase quantity buttons
-    document.querySelectorAll('[data-increase-qty]').forEach(btn => {
+    document.querySelectorAll('[data-increase-qty]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const itemId = btn.dataset.increaseQty;
         this.updateQuantity(itemId, 1);
@@ -155,7 +159,7 @@ class CartManager {
     });
 
     // Decrease quantity buttons
-    document.querySelectorAll('[data-decrease-qty]').forEach(btn => {
+    document.querySelectorAll('[data-decrease-qty]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const itemId = btn.dataset.decreaseQty;
         this.updateQuantity(itemId, -1);
@@ -163,11 +167,11 @@ class CartManager {
     });
 
     // Quantity input fields
-    document.querySelectorAll('[data-qty-input]').forEach(input => {
+    document.querySelectorAll('[data-qty-input]').forEach((input) => {
       input.addEventListener('change', (e) => {
         const itemId = e.target.dataset.qtyInput;
         const newQty = parseInt(e.target.value) || 1;
-        const item = this.items.find(i => i.id === itemId);
+        const item = this.items.find((i) => i.id === itemId);
         if (item) {
           item.quantity = Math.max(1, Math.min(99, newQty));
           this.saveCart();
@@ -181,7 +185,7 @@ class CartManager {
    * Update item quantity
    */
   updateQuantity(itemId, change) {
-    const item = this.items.find(i => i.id === itemId);
+    const item = this.items.find((i) => i.id === itemId);
     if (item) {
       item.quantity = Math.max(1, (item.quantity || 1) + change);
       this.saveCart();
@@ -193,7 +197,7 @@ class CartManager {
    * Remove item from cart
    */
   removeItem(itemId) {
-    this.items = this.items.filter(item => item.id !== itemId);
+    this.items = this.items.filter((item) => item.id !== itemId);
     this.saveCart();
     this.renderCart();
     this.showSuccess('Item removed from cart');
@@ -204,7 +208,7 @@ class CartManager {
    */
   getSubtotal() {
     return this.items.reduce((total, item) => {
-      return total + (parseFloat(item.price || 0) * (item.quantity || 1));
+      return total + parseFloat(item.price || 0) * (item.quantity || 1);
     }, 0);
   }
 
@@ -239,16 +243,24 @@ class CartManager {
     const tax = this.getTax();
     const total = this.getTotal();
 
-    document.querySelector('[data-subtotal]').textContent = `$${subtotal.toFixed(2)}`;
+    document.querySelector('[data-subtotal]').textContent =
+      `$${subtotal.toFixed(2)}`;
     document.querySelector('[data-tax]').textContent = `$${tax.toFixed(2)}`;
     document.querySelector('[data-total]').textContent = `$${total.toFixed(2)}`;
 
     // Update shipping option display
-    document.querySelectorAll('[data-shipping-standard], [data-shipping-express], [data-shipping-overnight]').forEach(el => {
-      const shippingType = el.dataset.shippingStandard ? 'standard' :
-                          el.dataset.shippingExpress ? 'express' : 'overnight';
-      el.textContent = `$${this.shippingCosts[shippingType].toFixed(2)}`;
-    });
+    document
+      .querySelectorAll(
+        '[data-shipping-standard], [data-shipping-express], [data-shipping-overnight]'
+      )
+      .forEach((el) => {
+        const shippingType = el.dataset.shippingStandard
+          ? 'standard'
+          : el.dataset.shippingExpress
+            ? 'express'
+            : 'overnight';
+        el.textContent = `$${this.shippingCosts[shippingType].toFixed(2)}`;
+      });
   }
 
   /**
@@ -257,9 +269,9 @@ class CartManager {
   applyPromoCode(code) {
     // Basic promo code validation - in production, this would be validated on server
     const promoCodes = {
-      'WELCOME10': 0.10,
-      'SAVE15': 0.15,
-      'VINYL20': 0.20
+      WELCOME10: 0.1,
+      SAVE15: 0.15,
+      VINYL20: 0.2,
     };
 
     if (promoCodes[code.toUpperCase()]) {
@@ -267,7 +279,9 @@ class CartManager {
       const subtotal = this.getSubtotal();
       const discountAmount = subtotal * discount;
 
-      this.showSuccess(`Promo code applied! Discount: $${discountAmount.toFixed(2)}`);
+      this.showSuccess(
+        `Promo code applied! Discount: $${discountAmount.toFixed(2)}`
+      );
 
       // Store promo code in localStorage
       localStorage.setItem('promo_code', code.toUpperCase());
@@ -291,7 +305,8 @@ class CartManager {
    */
   showError(message) {
     const alertDiv = document.createElement('div');
-    alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #fee; color: #c33; padding: 12px 20px; border-radius: 4px; z-index: 1000;';
+    alertDiv.style.cssText =
+      'position: fixed; top: 20px; right: 20px; background: #fee; color: #c33; padding: 12px 20px; border-radius: 4px; z-index: 1000;';
     alertDiv.textContent = message;
     document.body.appendChild(alertDiv);
     setTimeout(() => alertDiv.remove(), 5000);
@@ -302,7 +317,8 @@ class CartManager {
    */
   showSuccess(message) {
     const alertDiv = document.createElement('div');
-    alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #efe; color: #3c3; padding: 12px 20px; border-radius: 4px; z-index: 1000;';
+    alertDiv.style.cssText =
+      'position: fixed; top: 20px; right: 20px; background: #efe; color: #3c3; padding: 12px 20px; border-radius: 4px; z-index: 1000;';
     alertDiv.textContent = message;
     document.body.appendChild(alertDiv);
     setTimeout(() => alertDiv.remove(), 3000);
@@ -314,7 +330,10 @@ class CartManager {
   updateCartCount() {
     const cartLink = document.querySelector('[data-cart-link]');
     if (cartLink) {
-      const count = this.items.reduce((sum, item) => sum + (item.quantity || 1), 0);
+      const count = this.items.reduce(
+        (sum, item) => sum + (item.quantity || 1),
+        0
+      );
       cartLink.textContent = `Cart (${count})`;
     }
   }

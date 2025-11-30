@@ -13,7 +13,9 @@ class SubmissionService {
    * @returns {boolean}
    */
   isValidUuid(id) {
-    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      id
+    );
   }
   /**
    * Helper method to track status changes and log to audit trail

@@ -19,12 +19,12 @@ class AuthManager {
     try {
       const response = await this.api.post('/auth/login', {
         email,
-        password,
+        password
       });
 
-      // Store token (server returns accessToken, refreshToken)
-      if (response.accessToken) {
-        this.api.setToken(response.accessToken);
+      // Store token
+      if (response.token) {
+        this.api.setToken(response.token);
         this.currentUser = response.user;
         return response;
       } else {
@@ -54,12 +54,12 @@ class AuthManager {
       localStorage.removeItem('auth_token');
 
       // Redirect to login
-      window.location.href = '/admin/login.html';
+      window.location.href = '/pages/admin/login.html';
     } catch (error) {
       console.error('Logout error:', error);
       // Still clear state and redirect
       localStorage.removeItem('auth_token');
-      window.location.href = '/admin/login.html';
+      window.location.href = '/pages/admin/login.html';
     }
   }
 
@@ -105,11 +105,7 @@ class AuthManager {
    * @returns {boolean}
    */
   isAdmin() {
-    return (
-      this.currentUser &&
-      (this.currentUser.role === 'ADMIN' ||
-        this.currentUser.role === 'SUPER_ADMIN')
-    );
+    return this.currentUser && (this.currentUser.role === 'ADMIN' || this.currentUser.role === 'SUPER_ADMIN');
   }
 }
 

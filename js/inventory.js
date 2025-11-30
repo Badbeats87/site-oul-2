@@ -38,7 +38,7 @@ class InventoryManager {
       this.showLoading(true);
       const params = {
         page: this.pagination.page,
-        limit: this.pagination.limit,
+        limit: this.pagination.limit
       };
       if (this.filters.search) params.search = this.filters.search;
 
@@ -59,42 +59,14 @@ class InventoryManager {
     if (!tbody) return;
 
     if (this.inventory.length === 0) {
-      tbody.innerHTML =
-        '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #999;">No inventory items found</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #999;">No inventory items found</td></tr>';
       return;
     }
 
-    tbody.innerHTML = this.inventory
-      .map((item) => {
-        const margin = item.costBasis
-          ? (
-              ((item.listPrice - item.costBasis) / item.listPrice) *
-              100
-            ).toFixed(1)
-          : '0';
-        return (
-          '<tr><td><strong>' +
-          (item.release?.title || 'Unknown') +
-          '</strong><br><span class="text-muted">' +
-          (item.release?.artist || '') +
-          '</span></td><td>' +
-          (item.conditionMedia || 'N/A') +
-          ' / ' +
-          (item.conditionSleeve || 'N/A') +
-          '</td><td>' +
-          (item.status || 'UNKNOWN') +
-          '</td><td>$' +
-          parseFloat(item.costBasis || 0).toFixed(2) +
-          '</td><td>$' +
-          parseFloat(item.listPrice || 0).toFixed(2) +
-          '</td><td>' +
-          margin +
-          '%</td><td><button class="button button--sm button--secondary" data-inventory-edit-btn data-inventory-id="' +
-          item.id +
-          '">Edit</button></td></tr>'
-        );
-      })
-      .join('');
+    tbody.innerHTML = this.inventory.map(item => {
+      const margin = item.costBasis ? ((item.listPrice - item.costBasis) / item.listPrice * 100).toFixed(1) : '0';
+      return '<tr><td><strong>' + (item.release?.title || 'Unknown') + '</strong><br><span class="text-muted">' + (item.release?.artist || '') + '</span></td><td>' + (item.conditionMedia || 'N/A') + ' / ' + (item.conditionSleeve || 'N/A') + '</td><td>' + (item.status || 'UNKNOWN') + '</td><td>$' + parseFloat(item.costBasis || 0).toFixed(2) + '</td><td>$' + parseFloat(item.listPrice || 0).toFixed(2) + '</td><td>' + margin + '%</td><td><button class="button button--sm button--secondary" data-inventory-edit-btn data-inventory-id="' + item.id + '">Edit</button></td></tr>';
+    }).join('');
   }
 
   async openEditModal(inventoryId) {
@@ -114,27 +86,20 @@ class InventoryManager {
   }
 
   renderEditModal(item) {
-    const modalBody = document.querySelector(
-      '[data-inventory-edit-modal-body]'
-    );
+    const modalBody = document.querySelector('[data-inventory-edit-modal-body]');
     if (!modalBody) return;
 
-    const html =
-      '<form id="inventoryEditForm"><div class="form-group"><label for="editListPrice">List Price</label><input type="number" id="editListPrice" name="listPrice" step="0.01" value="' +
-      parseFloat(item.listPrice || 0).toFixed(2) +
-      '" required></div><div class="form-group"><label for="editStatus">Status</label><select id="editStatus" name="status"><option value="LIVE">LIVE</option><option value="SOLD">SOLD</option><option value="RESERVED">RESERVED</option></select></div><div class="form-actions" style="display: flex; gap: 10px; margin-top: 20px;"><button type="submit" class="button button--primary">Save</button><button type="button" class="button button--secondary" onclick="document.querySelector(\'[data-inventory-edit-modal]\').style.display=\'none\'">Cancel</button></div></form>';
+    const html = '<form id="inventoryEditForm"><div class="form-group"><label for="editListPrice">List Price</label><input type="number" id="editListPrice" name="listPrice" step="0.01" value="' + parseFloat(item.listPrice || 0).toFixed(2) + '" required></div><div class="form-group"><label for="editStatus">Status</label><select id="editStatus" name="status"><option value="LIVE">LIVE</option><option value="SOLD">SOLD</option><option value="RESERVED">RESERVED</option></select></div><div class="form-actions" style="display: flex; gap: 10px; margin-top: 20px;"><button type="submit" class="button button--primary">Save</button><button type="button" class="button button--secondary" onclick="document.querySelector(\'[data-inventory-edit-modal]\').style.display=\'none\'">Cancel</button></div></form>';
     modalBody.innerHTML = html;
 
     document.getElementById('editStatus').value = item.status || 'LIVE';
 
-    document
-      .getElementById('inventoryEditForm')
-      .addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const data = Object.fromEntries(formData);
-        await this.updateItem(item.id, data);
-      });
+    document.getElementById('inventoryEditForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData);
+      await this.updateItem(item.id, data);
+    });
   }
 
   async updateItem(inventoryId, data) {
@@ -143,8 +108,7 @@ class InventoryManager {
       await this.api.put('/inventory/' + inventoryId, data);
       this.showSuccess('Inventory item updated');
       await this.loadInventory();
-      document.querySelector('[data-inventory-edit-modal]').style.display =
-        'none';
+      document.querySelector('[data-inventory-edit-modal]').style.display = 'none';
       this.showLoading(false);
     } catch (error) {
       this.showError('Failed to update inventory item: ' + error.message);
@@ -159,8 +123,7 @@ class InventoryManager {
 
   showError(message) {
     const alertDiv = document.createElement('div');
-    alertDiv.style.cssText =
-      'margin-bottom: 20px; padding: 12px; background: #fee; color: #c33; border-radius: 4px;';
+    alertDiv.style.cssText = 'margin-bottom: 20px; padding: 12px; background: #fee; color: #c33; border-radius: 4px;';
     alertDiv.textContent = message;
     const container = document.querySelector('[data-inventory-container]');
     if (container) {
@@ -171,8 +134,7 @@ class InventoryManager {
 
   showSuccess(message) {
     const alertDiv = document.createElement('div');
-    alertDiv.style.cssText =
-      'margin-bottom: 20px; padding: 12px; background: #efe; color: #3c3; border-radius: 4px;';
+    alertDiv.style.cssText = 'margin-bottom: 20px; padding: 12px; background: #efe; color: #3c3; border-radius: 4px;';
     alertDiv.textContent = message;
     const container = document.querySelector('[data-inventory-container]');
     if (container) {

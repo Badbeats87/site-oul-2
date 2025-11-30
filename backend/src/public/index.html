@@ -1,112 +1,141 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vinyl Catalog - Buy & Sell Vinyl Records</title>
-    <link rel="stylesheet" href="../styles/design-system.css">
-    <link rel="stylesheet" href="../styles/index.css">
-</head>
-<body>
+    <link rel="stylesheet" href="../styles/design-system.css" />
+    <link rel="stylesheet" href="../styles/index.css" />
+  </head>
+  <body>
     <!-- Navigation -->
     <nav class="navbar">
-        <div class="navbar__container">
-            <div class="navbar__logo">
-                <svg class="navbar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <circle cx="12" cy="12" r="6"></circle>
-                    <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-                <span>Vinyl Catalog</span>
-            </div>
-            <div class="navbar__links">
-                <a href="seller/index.html" class="nav-link">Sell Records</a>
-                <a href="buyer/index.html" class="nav-link">Buy Records</a>
-                <a href="admin/index.html" class="nav-link">Admin</a>
-            </div>
+      <div class="navbar__container">
+        <div class="navbar__logo">
+          <svg
+            class="navbar__icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <circle cx="12" cy="12" r="6"></circle>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          <span>Vinyl Catalog</span>
         </div>
+        <div class="navbar__links">
+          <a href="seller/index.html" class="nav-link">Sell Records</a>
+          <a href="buyer/index.html" class="nav-link">Buy Records</a>
+          <a href="admin/index.html" class="nav-link">Admin</a>
+        </div>
+      </div>
     </nav>
 
     <!-- Hero Section -->
     <header class="hero">
-        <div class="hero__container">
-            <div class="hero__content">
-                <h1 class="hero__title">Vinyl Marketplace</h1>
-                <p class="hero__subtitle">Buy rare vinyl records or sell from your collection with intelligent, condition-based pricing</p>
-                <div class="hero__cta">
-                    <a href="seller/index.html" class="button button--primary">Sell Your Records</a>
-                    <a href="buyer/index.html" class="button button--secondary">Browse Vinyl</a>
-                </div>
-            </div>
-            <div class="hero__visual">
-                <div class="vinyl-record">
-                    <div class="vinyl-record__outer"></div>
-                    <div class="vinyl-record__label"></div>
-                    <div class="vinyl-record__center"></div>
-                </div>
-            </div>
+      <div class="hero__container">
+        <div class="hero__content">
+          <h1 class="hero__title">Vinyl Marketplace</h1>
+          <p class="hero__subtitle">
+            Buy rare vinyl records or sell from your collection with
+            intelligent, condition-based pricing
+          </p>
+          <div class="hero__cta">
+            <a href="seller/index.html" class="button button--primary"
+              >Sell Your Records</a
+            >
+            <a href="buyer/index.html" class="button button--secondary"
+              >Browse Vinyl</a
+            >
+          </div>
         </div>
+        <div class="hero__visual">
+          <div class="vinyl-record">
+            <div class="vinyl-record__outer"></div>
+            <div class="vinyl-record__label"></div>
+            <div class="vinyl-record__center"></div>
+          </div>
+        </div>
+      </div>
     </header>
 
     <!-- Features Section -->
     <section class="features">
-        <div class="container">
-            <h2 class="section-title">How It Works</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-card__number">01</div>
-                    <h3 class="feature-card__title">Instant Quotes</h3>
-                    <p class="feature-card__description">Get immediate offers for your vinyl based on market data and condition grades</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-card__number">02</div>
-                    <h3 class="feature-card__title">Condition Grading</h3>
-                    <p class="feature-card__description">Our grading system accurately reflects media and sleeve condition for fair pricing</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-card__number">03</div>
-                    <h3 class="feature-card__title">Smart Pricing</h3>
-                    <p class="feature-card__description">Prices automatically adjust based on current market trends and your inventory</p>
-                </div>
-            </div>
+      <div class="container">
+        <h2 class="section-title">How It Works</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-card__number">01</div>
+            <h3 class="feature-card__title">Instant Quotes</h3>
+            <p class="feature-card__description">
+              Get immediate offers for your vinyl based on market data and
+              condition grades
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__number">02</div>
+            <h3 class="feature-card__title">Condition Grading</h3>
+            <p class="feature-card__description">
+              Our grading system accurately reflects media and sleeve condition
+              for fair pricing
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__number">03</div>
+            <h3 class="feature-card__title">Smart Pricing</h3>
+            <p class="feature-card__description">
+              Prices automatically adjust based on current market trends and
+              your inventory
+            </p>
+          </div>
         </div>
+      </div>
     </section>
 
     <!-- CTA Section -->
     <section class="cta-section">
-        <div class="container">
-            <div class="cta-box">
-                <h2>Ready to start?</h2>
-                <p>Choose your path below</p>
-                <div class="cta-buttons">
-                    <a href="seller/index.html" class="button button--large button--primary">I Want to Sell</a>
-                    <a href="buyer/index.html" class="button button--large button--secondary">I Want to Buy</a>
-                </div>
-            </div>
+      <div class="container">
+        <div class="cta-box">
+          <h2>Ready to start?</h2>
+          <p>Choose your path below</p>
+          <div class="cta-buttons">
+            <a
+              href="seller/index.html"
+              class="button button--large button--primary"
+              >I Want to Sell</a
+            >
+            <a
+              href="buyer/index.html"
+              class="button button--large button--secondary"
+              >I Want to Buy</a
+            >
+          </div>
         </div>
+      </div>
     </section>
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="container">
-            <div class="footer__content">
-                <div class="footer__section">
-                    <h4>Vinyl Catalog</h4>
-                    <p>A marketplace for vinyl enthusiasts</p>
-                </div>
-                <div class="footer__section">
-                    <h4>Quick Links</h4>
-                    <ul>
-                        <li><a href="seller/index.html">Sell Records</a></li>
-                        <li><a href="buyer/index.html">Buy Records</a></li>
-                        <li><a href="admin/index.html">Admin</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer__bottom">
-                <p>&copy; 2024 Vinyl Catalog. All rights reserved.</p>
-            </div>
+      <div class="container">
+        <div class="footer__content">
+          <div class="footer__section">
+            <h4>Vinyl Catalog</h4>
+            <p>A marketplace for vinyl enthusiasts</p>
+          </div>
+          <div class="footer__section">
+            <h4>Quick Links</h4>
+            <ul>
+              <li><a href="seller/index.html">Sell Records</a></li>
+              <li><a href="buyer/index.html">Buy Records</a></li>
+              <li><a href="admin/index.html">Admin</a></li>
+            </ul>
+          </div>
         </div>
+        <div class="footer__bottom">
+          <p>&copy; 2024 Vinyl Catalog. All rights reserved.</p>
+        </div>
+      </div>
     </footer>
-</body>
+  </body>
 </html>
