@@ -489,6 +489,10 @@ describe('Checkout API Integration Tests', () => {
     let cartId;
 
     beforeEach(async () => {
+      // Verify test inventory lot exists
+      expect(testInventoryLot).toBeDefined();
+      expect(testInventoryLot.id).toBeDefined();
+
       const cartResponse = await request(app)
         .get('/api/v1/checkout/cart')
         .set('Authorization', authHeader)
@@ -496,7 +500,9 @@ describe('Checkout API Integration Tests', () => {
           buyerEmail: `initiate-${Date.now()}-${Math.random()}@test.com`,
         });
 
+      expect(cartResponse.status).toBe(200);
       cartId = cartResponse.body.data.id;
+      expect(cartId).toBeDefined();
 
       // Add item to cart with validation
       const addItemResponse = await request(app)
@@ -505,10 +511,15 @@ describe('Checkout API Integration Tests', () => {
         .send({
           orderId: cartId,
           inventoryLotId: testInventoryLot.id,
-        })
-        .expect(200);
+        });
 
+      if (addItemResponse.status !== 200) {
+        console.error('Failed to add item to cart:', addItemResponse.body);
+      }
+      expect(addItemResponse.status).toBe(200);
       expect(addItemResponse.body.success).toBe(true);
+      expect(addItemResponse.body.data.items).toBeDefined();
+      expect(addItemResponse.body.data.items.length).toBeGreaterThan(0);
 
       // Recalculate cart
       const recalcResponse = await request(app)
@@ -517,9 +528,9 @@ describe('Checkout API Integration Tests', () => {
         .send({
           orderId: cartId,
           shippingMethod: 'STANDARD',
-        })
-        .expect(200);
+        });
 
+      expect(recalcResponse.status).toBe(200);
       expect(recalcResponse.body.success).toBe(true);
     });
 
