@@ -36,6 +36,15 @@ describe('Checkout API Integration Tests', () => {
     });
   });
 
+  afterEach(async () => {
+    // Clean up after each test to prevent holds from interfering with subsequent tests
+    await prisma.inventoryHold.deleteMany({
+      where: {
+        inventoryLotId: testInventoryLot.id,
+      },
+    });
+  });
+
   afterAll(async () => {
     // Clean up test data
     // First, release all holds on the test inventory lot
@@ -498,9 +507,11 @@ describe('Checkout API Integration Tests', () => {
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data).toHaveProperty('paymentIntentId');
-      expect(response.body.data).toHaveProperty('clientSecret');
-      expect(response.body.data.status).toBe('PAYMENT_PENDING');
+      expect(response.body.data).toHaveProperty('paymentIntent');
+      expect(response.body.data.paymentIntent).toHaveProperty('id');
+      expect(response.body.data.paymentIntent).toHaveProperty('clientSecret');
+      expect(response.body.data).toHaveProperty('order');
+      expect(response.body.data.order.status).toBe('PAYMENT_PENDING');
     });
 
     it('should return 400 for empty cart', async () => {
