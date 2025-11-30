@@ -82,6 +82,12 @@ class OrderService {
         throw new ApiError('orderId is required', 400);
       }
 
+      // Validate UUID format
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(orderId)) {
+        throw new ApiError('Invalid order ID format', 400);
+      }
+
       const order = await prisma.order.findUnique({
         where: { id: orderId },
         include: {

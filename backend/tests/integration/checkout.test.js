@@ -38,22 +38,40 @@ describe('Checkout API Integration Tests', () => {
 
   afterAll(async () => {
     // Clean up test data
+    // First, release all holds on the test inventory lot
+    await prisma.inventoryHold.deleteMany({
+      where: {
+        inventoryLotId: testInventoryLot.id,
+      },
+    });
+
+    // Delete all order items for this inventory lot
     await prisma.orderItem.deleteMany({
       where: {
         inventoryLotId: testInventoryLot.id,
       },
     });
 
+    // Delete all orders (not just the test buyer, but all orders created during tests)
     await prisma.order.deleteMany({
       where: {
-        buyerEmail: testBuyerEmail,
+        // This catches all orders, or we can be more specific if needed
+        OR: [
+          { buyerEmail: { contains: 'buyer-' } },
+          { buyerEmail: { contains: 'empty-' } },
+          { buyerEmail: { contains: 'notfound-' } },
+          { buyerEmail: { contains: 'initiate-' } },
+          { buyerEmail: { contains: 'history-test-' } },
+        ],
       },
     });
 
+    // Delete the test inventory lot
     await prisma.inventoryLot.delete({
       where: { id: testInventoryLot.id },
     });
 
+    // Delete the test release
     await prisma.release.delete({
       where: { id: testRelease.id },
     });
@@ -87,6 +105,7 @@ describe('Checkout API Integration Tests', () => {
       // Create first cart
       const response1 = await request(app)
         .get('/api/v1/checkout/cart')
+        .set('Authorization', authHeader)
         .query({ buyerEmail: testBuyerEmail })
         .expect(200);
 
@@ -95,6 +114,7 @@ describe('Checkout API Integration Tests', () => {
       // Get cart again
       const response2 = await request(app)
         .get('/api/v1/checkout/cart')
+        .set('Authorization', authHeader)
         .query({ buyerEmail: testBuyerEmail })
         .expect(200);
 
@@ -107,6 +127,7 @@ describe('Checkout API Integration Tests', () => {
     it('should return 400 without buyerEmail', async () => {
       const response = await request(app)
         .get('/api/v1/checkout/cart')
+        .set('Authorization', authHeader)
         .query({ buyerName: 'Test' })
         .expect(400);
 
@@ -122,6 +143,7 @@ describe('Checkout API Integration Tests', () => {
       // Create a fresh cart for each test
       const response = await request(app)
         .get('/api/v1/checkout/cart')
+        .set('Authorization', authHeader)
         .query({
           buyerEmail: `buyer-${Date.now()}-${Math.random()}@test.com`,
         });
@@ -132,6 +154,7 @@ describe('Checkout API Integration Tests', () => {
     it('should add item to cart', async () => {
       const response = await request(app)
         .post('/api/v1/checkout/cart/items')
+        .set('Authorization', authHeader)
         .send({
           orderId: cartId,
           inventoryLotId: testInventoryLot.id,
@@ -147,6 +170,7 @@ describe('Checkout API Integration Tests', () => {
       // Add item first time
       await request(app)
         .post('/api/v1/checkout/cart/items')
+        .set('Authorization', authHeader)
         .send({
           orderId: cartId,
           inventoryLotId: testInventoryLot.id,
@@ -156,6 +180,7 @@ describe('Checkout API Integration Tests', () => {
       // Try to add same item again
       const response = await request(app)
         .post('/api/v1/checkout/cart/items')
+        .set('Authorization', authHeader)
         .send({
           orderId: cartId,
           inventoryLotId: testInventoryLot.id,
@@ -168,6 +193,7 @@ describe('Checkout API Integration Tests', () => {
     it('should return 400 without required fields', async () => {
       const response = await request(app)
         .post('/api/v1/checkout/cart/items')
+        .set('Authorization', authHeader)
         .send({
           orderId: cartId,
           // Missing inventoryLotId
@@ -185,6 +211,7 @@ describe('Checkout API Integration Tests', () => {
       // Create cart and add item
       const cartResponse = await request(app)
         .get('/api/v1/checkout/cart')
+        .set('Authorization', authHeader)
         .query({
           buyerEmail: `buyer-${Date.now()}-${Math.random()}@test.com`,
         });
@@ -193,6 +220,7 @@ describe('Checkout API Integration Tests', () => {
 
       await request(app)
         .post('/api/v1/checkout/cart/items')
+        .set('Authorization', authHeader)
         .send({
           orderId: cartId,
           inventoryLotId: testInventoryLot.id,
@@ -202,6 +230,7 @@ describe('Checkout API Integration Tests', () => {
     it('should remove item from cart', async () => {
       const response = await request(app)
         .delete(`/api/v1/checkout/cart/items/${testInventoryLot.id}`)
+        .set('Authorization', authHeader)
         .send({
           orderId: cartId,
         })
@@ -218,6 +247,7 @@ describe('Checkout API Integration Tests', () => {
     beforeEach(async () => {
       const cartResponse = await request(app)
         .get('/api/v1/checkout/cart')
+        .set('Authorization', authHeader)
         .query({
           buyerEmail: `buyer-${Date.now()}-${Math.random()}@test.com`,
         });
@@ -226,6 +256,7 @@ describe('Checkout API Integration Tests', () => {
 
       await request(app)
         .post('/api/v1/checkout/cart/items')
+        .set('Authorization', authHeader)
         .send({
           orderId: cartId,
           inventoryLotId: testInventoryLot.id,
@@ -235,6 +266,7 @@ describe('Checkout API Integration Tests', () => {
     it('should recalculate cart totals', async () => {
       const response = await request(app)
         .post('/api/v1/checkout/cart/recalculate')
+        .set('Authorization', authHeader)
         .send({
           orderId: cartId,
           shippingMethod: 'STANDARD',
@@ -252,6 +284,7 @@ describe('Checkout API Integration Tests', () => {
     it('should include shipping cost in total', async () => {
       const response = await request(app)
         .post('/api/v1/checkout/cart/recalculate')
+        .set('Authorization', authHeader)
         .send({
           orderId: cartId,
           shippingMethod: 'STANDARD',
@@ -269,6 +302,7 @@ describe('Checkout API Integration Tests', () => {
     beforeEach(async () => {
       const cartResponse = await request(app)
         .get('/api/v1/checkout/cart')
+        .set('Authorization', authHeader)
         .query({
           buyerEmail: `buyer-${Date.now()}-${Math.random()}@test.com`,
         });
@@ -277,6 +311,7 @@ describe('Checkout API Integration Tests', () => {
 
       await request(app)
         .post('/api/v1/checkout/cart/items')
+        .set('Authorization', authHeader)
         .send({
           orderId: cartId,
           inventoryLotId: testInventoryLot.id,
@@ -286,6 +321,7 @@ describe('Checkout API Integration Tests', () => {
     it('should validate cart successfully', async () => {
       const response = await request(app)
         .post('/api/v1/checkout/cart/validate')
+        .set('Authorization', authHeader)
         .send({
           orderId: cartId,
         })
@@ -308,6 +344,7 @@ describe('Checkout API Integration Tests', () => {
       // Create a cart that will be our order
       const cartResponse = await request(app)
         .get('/api/v1/checkout/cart')
+        .set('Authorization', authHeader)
         .query({
           buyerEmail: testBuyerEmail,
         });
@@ -317,6 +354,7 @@ describe('Checkout API Integration Tests', () => {
       // Add item to cart
       await request(app)
         .post('/api/v1/checkout/cart/items')
+        .set('Authorization', authHeader)
         .send({
           orderId: orderId,
           inventoryLotId: testInventoryLot.id,
@@ -326,6 +364,7 @@ describe('Checkout API Integration Tests', () => {
     it('should get order details', async () => {
       const response = await request(app)
         .get(`/api/v1/checkout/orders/${orderId}`)
+        .set('Authorization', authHeader)
         .expect(200);
 
       expect(response.body.success).toBe(true);
@@ -339,6 +378,7 @@ describe('Checkout API Integration Tests', () => {
       const fakeId = '00000000-0000-0000-0000-000000000000';
       const response = await request(app)
         .get(`/api/v1/checkout/orders/${fakeId}`)
+        .set('Authorization', authHeader)
         .expect(404);
 
       expect(response.body.success).toBe(false);
@@ -349,6 +389,7 @@ describe('Checkout API Integration Tests', () => {
     it('should list orders by buyer email', async () => {
       const response = await request(app)
         .get('/api/v1/checkout/orders')
+        .set('Authorization', authHeader)
         .query({
           buyerEmail: testBuyerEmail,
         })
@@ -362,6 +403,7 @@ describe('Checkout API Integration Tests', () => {
     it('should filter by status', async () => {
       const response = await request(app)
         .get('/api/v1/checkout/orders')
+        .set('Authorization', authHeader)
         .query({
           buyerEmail: testBuyerEmail,
           status: 'CART',
@@ -377,6 +419,7 @@ describe('Checkout API Integration Tests', () => {
     it('should return 400 without buyerEmail', async () => {
       const response = await request(app)
         .get('/api/v1/checkout/orders')
+        .set('Authorization', authHeader)
         .query({
           status: 'CART',
         })
@@ -392,6 +435,7 @@ describe('Checkout API Integration Tests', () => {
     beforeAll(async () => {
       const cartResponse = await request(app)
         .get('/api/v1/checkout/cart')
+        .set('Authorization', authHeader)
         .query({
           buyerEmail: `history-test-${Date.now()}@test.com`,
         });
@@ -402,6 +446,7 @@ describe('Checkout API Integration Tests', () => {
     it('should get order audit history', async () => {
       const response = await request(app)
         .get(`/api/v1/checkout/orders/${orderId}/history`)
+        .set('Authorization', authHeader)
         .expect(200);
 
       expect(response.body.success).toBe(true);
@@ -419,6 +464,7 @@ describe('Checkout API Integration Tests', () => {
     beforeEach(async () => {
       const cartResponse = await request(app)
         .get('/api/v1/checkout/cart')
+        .set('Authorization', authHeader)
         .query({
           buyerEmail: `initiate-${Date.now()}-${Math.random()}@test.com`,
         });
@@ -427,6 +473,7 @@ describe('Checkout API Integration Tests', () => {
 
       await request(app)
         .post('/api/v1/checkout/cart/items')
+        .set('Authorization', authHeader)
         .send({
           orderId: cartId,
           inventoryLotId: testInventoryLot.id,
@@ -434,6 +481,7 @@ describe('Checkout API Integration Tests', () => {
 
       await request(app)
         .post('/api/v1/checkout/cart/recalculate')
+        .set('Authorization', authHeader)
         .send({
           orderId: cartId,
           shippingMethod: 'STANDARD',
@@ -443,6 +491,7 @@ describe('Checkout API Integration Tests', () => {
     it('should initiate checkout with payment intent', async () => {
       const response = await request(app)
         .post('/api/v1/checkout/initiate')
+        .set('Authorization', authHeader)
         .send({
           orderId: cartId,
         })
@@ -458,6 +507,7 @@ describe('Checkout API Integration Tests', () => {
       // Create empty cart
       const emptyCartResponse = await request(app)
         .get('/api/v1/checkout/cart')
+        .set('Authorization', authHeader)
         .query({
           buyerEmail: `empty-${Date.now()}@test.com`,
         });
@@ -466,6 +516,7 @@ describe('Checkout API Integration Tests', () => {
 
       const response = await request(app)
         .post('/api/v1/checkout/initiate')
+        .set('Authorization', authHeader)
         .send({
           orderId: emptyCartId,
         })
@@ -483,6 +534,7 @@ describe('Checkout API Integration Tests', () => {
     it('should handle invalid order ID gracefully', async () => {
       const response = await request(app)
         .get('/api/v1/checkout/orders/invalid-id')
+        .set('Authorization', authHeader)
         .expect(400);
 
       expect(response.body.success).toBe(false);
@@ -491,6 +543,7 @@ describe('Checkout API Integration Tests', () => {
     it('should handle inventory lot not found', async () => {
       const cartResponse = await request(app)
         .get('/api/v1/checkout/cart')
+        .set('Authorization', authHeader)
         .query({
           buyerEmail: `notfound-${Date.now()}@test.com`,
         });
@@ -500,6 +553,7 @@ describe('Checkout API Integration Tests', () => {
 
       const response = await request(app)
         .post('/api/v1/checkout/cart/items')
+        .set('Authorization', authHeader)
         .send({
           orderId: cartId,
           inventoryLotId: fakeInventoryId,
