@@ -6,6 +6,9 @@ import {
   deleteInventory,
   applyPricingPolicy,
   getPricingHistory,
+  getInventoryAnalytics,
+  getLowStockAlerts,
+  calculateSalesVelocity,
   bulkUpdatePrices,
 } from '../controllers/inventoryController.js';
 
@@ -19,8 +22,8 @@ const router = express.Router();
  * @swagger
  * /api/v1/inventory:
  *   get:
- *     summary: List inventory with pagination and filtering
- *     description: Retrieve paginated inventory lots with optional status filtering and sorting
+ *     summary: List inventory with advanced filtering, search, and sorting
+ *     description: Retrieve paginated inventory with comprehensive filtering, full-text search, and multiple sorting options
  *     tags:
  *       - Inventory Management
  *     parameters:
@@ -31,33 +34,69 @@ const router = express.Router();
  *           enum: [DRAFT, LIVE, RESERVED, SOLD, REMOVED, RETURNED]
  *         description: Filter by inventory status
  *       - in: query
+ *         name: conditions
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *             enum: [MINT, NM, VG_PLUS, VG, VG_MINUS, G, FAIR, POOR]
+ *         style: form
+ *         explode: true
+ *         description: Filter by vinyl condition grades (media or sleeve)
+ *       - in: query
+ *         name: genre
+ *         schema:
+ *           type: string
+ *         description: Filter by release genre
+ *       - in: query
+ *         name: minPrice
+ *         schema:
+ *           type: number
+ *           minimum: 0
+ *         description: Minimum list price
+ *       - in: query
+ *         name: maxPrice
+ *         schema:
+ *           type: number
+ *           minimum: 0
+ *         description: Maximum list price
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search by album name, artist, barcode, or SKU
+ *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
  *           default: 50
  *           maximum: 500
+ *         description: Results per page
  *       - in: query
  *         name: page
  *         schema:
  *           type: integer
  *           default: 1
+ *         description: Page number
  *       - in: query
  *         name: sortBy
  *         schema:
  *           type: string
  *           enum: [createdAt, listPrice, soldAt, listedAt]
  *           default: createdAt
+ *         description: Sort field
  *       - in: query
  *         name: sortOrder
  *         schema:
  *           type: string
  *           enum: [asc, desc]
  *           default: desc
+ *         description: Sort direction
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Paginated inventory list
+ *         description: Paginated inventory with advanced filters applied
  */
 router.get('/', listInventory);
 
@@ -305,5 +344,64 @@ router.post('/pricing/apply', applyPricingPolicy);
  *         description: Inventory lot not found
  */
 router.get('/:inventoryLotId/pricing-history', getPricingHistory);
+
+// ============================================================================
+// ANALYTICS & REPORTING
+// ============================================================================
+
+/**
+ * @swagger
+ * /api/v1/inventory/analytics/overview:
+ *   get:
+ *     summary: Get inventory analytics and summary statistics
+ *     description: Retrieve comprehensive analytics including status breakdown, price statistics, low-stock alerts, and top performers
+ *     tags:
+ *       - Inventory Analytics
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Inventory analytics with stats and alerts
+ */
+router.get('/analytics/overview', getInventoryAnalytics);
+
+/**
+ * @swagger
+ * /api/v1/inventory/analytics/low-stock:
+ *   get:
+ *     summary: Get low-stock alerts
+ *     description: Retrieve inventory items with stock levels below threshold
+ *     tags:
+ *       - Inventory Analytics
+ *     parameters:
+ *       - in: query
+ *         name: threshold
+ *         schema:
+ *           type: integer
+ *           default: 3
+ *         description: Threshold for low-stock alert
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Low-stock alert items grouped by release
+ */
+router.get('/analytics/low-stock', getLowStockAlerts);
+
+/**
+ * @swagger
+ * /api/v1/inventory/analytics/sales-velocity:
+ *   get:
+ *     summary: Calculate sales velocity metrics
+ *     description: Retrieve sales statistics including total sold, revenue, and top selling releases
+ *     tags:
+ *       - Inventory Analytics
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Sales velocity metrics with top performers
+ */
+router.get('/analytics/sales-velocity', calculateSalesVelocity);
 
 export default router;
