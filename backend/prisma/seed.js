@@ -11,10 +11,10 @@ async function main() {
     // Password: Admin123!
     const passwordHash = await bcrypt.hash('Admin123!', 12);
 
-    // Seed admin user
+    // Seed admin user (create if not exists, update password if exists)
     const admin = await prisma.adminUser.upsert({
       where: { email: 'admin@vinylcatalog.com' },
-      update: {},
+      update: { passwordHash },
       create: {
         email: 'admin@vinylcatalog.com',
         name: 'System Admin',
@@ -22,7 +22,7 @@ async function main() {
         passwordHash,
       },
     });
-    console.log('✅ Admin user created:', admin.email);
+    console.log('✅ Admin user ensured:', admin.email);
     console.log('   Email: admin@vinylcatalog.com');
     console.log('   Password: Admin123!');
 
