@@ -1,5 +1,5 @@
-import submissionService from '../services/submissionService.js';
-import logger from '../../config/logger.js';
+import submissionService from "../services/submissionService.js";
+import logger from "../../config/logger.js";
 
 /**
  * POST /api/v1/submissions/:sellerId
@@ -14,7 +14,7 @@ export const createSubmission = async (req, res, next) => {
       return res.status(400).json({
         success: false,
         error: {
-          message: 'items must be an array',
+          message: "items must be an array",
           status: 400,
         },
       });
@@ -87,11 +87,11 @@ export const reviewSubmissionItem = async (req, res, next) => {
     const { sellerId, itemId } = req.params;
     const { action } = req.body;
 
-    if (!['accept', 'reject'].includes(action)) {
+    if (!["accept", "reject"].includes(action)) {
       return res.status(400).json({
         success: false,
         error: {
-          message: 'action must be accept or reject',
+          message: "action must be accept or reject",
           status: 400,
         },
       });

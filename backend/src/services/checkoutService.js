@@ -1,9 +1,9 @@
-import prisma from '../utils/db.js';
-import { ApiError } from '../middleware/errorHandler.js';
-import logger from '../../config/logger.js';
-import orderService from './orderService.js';
-import paymentService from './paymentService.js';
-import inventoryService from './inventoryService.js';
+import prisma from "../utils/db.js";
+import { ApiError } from "../middleware/errorHandler.js";
+import logger from "../../config/logger.js";
+import orderService from "./orderService.js";
+import paymentService from "./paymentService.js";
+import inventoryService from "./inventoryService.js";
 
 /**
  * Checkout Service
@@ -30,7 +30,7 @@ class CheckoutService {
   async getOrCreateCart(buyerEmail, buyerName = null, sessionId = null) {
     try {
       if (!buyerEmail) {
-        throw new ApiError('buyerEmail is required', 400);
+        throw new ApiError("buyerEmail is required", 400);
       }
 
       // Look for existing CART order for this buyer/session
@@ -41,7 +41,7 @@ class CheckoutService {
         cart = await prisma.order.findFirst({
           where: {
             sessionId,
-            status: 'CART',
+            status: "CART",
           },
           include: {
             items: {
@@ -60,7 +60,7 @@ class CheckoutService {
         cart = await prisma.order.findFirst({
           where: {
             buyerEmail,
-            status: 'CART',
+            status: "CART",
           },
           include: {
             items: {
@@ -84,21 +84,21 @@ class CheckoutService {
           sessionId,
         });
 
-        logger.info('New cart created', {
+        logger.info("New cart created", {
           orderId: cart.id,
           buyerEmail,
-          sessionId: sessionId || 'registered',
+          sessionId: sessionId || "registered",
         });
       }
 
       return cart;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error getting or creating cart', {
+      logger.error("Error getting or creating cart", {
         buyerEmail,
         error: error.message,
       });
-      throw new ApiError('Failed to get or create cart', 500);
+      throw new ApiError("Failed to get or create cart", 500);
     }
   }
 
@@ -111,7 +111,7 @@ class CheckoutService {
   async addToCart(orderId, inventoryLotId) {
     try {
       if (!orderId || !inventoryLotId) {
-        throw new ApiError('orderId and inventoryLotId are required', 400);
+        throw new ApiError("orderId and inventoryLotId are required", 400);
       }
 
       // Get order
@@ -120,11 +120,11 @@ class CheckoutService {
       });
 
       if (!order) {
-        throw new ApiError('Order not found', 404);
+        throw new ApiError("Order not found", 404);
       }
 
-      if (order.status !== 'CART') {
-        throw new ApiError('Order is not in CART status', 400);
+      if (order.status !== "CART") {
+        throw new ApiError("Order is not in CART status", 400);
       }
 
       // Get inventory lot
@@ -136,11 +136,11 @@ class CheckoutService {
       });
 
       if (!inventoryLot) {
-        throw new ApiError('Inventory lot not found', 404);
+        throw new ApiError("Inventory lot not found", 404);
       }
 
-      if (inventoryLot.status !== 'LIVE') {
-        throw new ApiError('Item is not available for purchase', 409);
+      if (inventoryLot.status !== "LIVE") {
+        throw new ApiError("Item is not available for purchase", 409);
       }
 
       // Check if item already in cart
@@ -152,7 +152,7 @@ class CheckoutService {
       });
 
       if (existingItem) {
-        throw new ApiError('Item already in cart', 400);
+        throw new ApiError("Item already in cart", 400);
       }
 
       // Add item to cart (without reserving yet)
@@ -161,14 +161,14 @@ class CheckoutService {
           orderId,
           inventoryLotId,
           priceAtPurchase: inventoryLot.price,
-          releaseTitle: inventoryLot.release?.title || '',
-          releaseArtist: inventoryLot.release?.artist || '',
+          releaseTitle: inventoryLot.release?.title || "",
+          releaseArtist: inventoryLot.release?.artist || "",
           conditionMedia: inventoryLot.conditionMedia,
           conditionSleeve: inventoryLot.conditionSleeve,
         },
       });
 
-      logger.info('Item added to cart', {
+      logger.info("Item added to cart", {
         orderId,
         inventoryLotId,
         price: inventoryLot.price,
@@ -180,12 +180,12 @@ class CheckoutService {
       return updatedCart;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error adding to cart', {
+      logger.error("Error adding to cart", {
         orderId,
         inventoryLotId,
         error: error.message,
       });
-      throw new ApiError('Failed to add item to cart', 500);
+      throw new ApiError("Failed to add item to cart", 500);
     }
   }
 
@@ -198,7 +198,7 @@ class CheckoutService {
   async removeFromCart(orderId, inventoryLotId) {
     try {
       if (!orderId || !inventoryLotId) {
-        throw new ApiError('orderId and inventoryLotId are required', 400);
+        throw new ApiError("orderId and inventoryLotId are required", 400);
       }
 
       const order = await prisma.order.findUnique({
@@ -206,11 +206,11 @@ class CheckoutService {
       });
 
       if (!order) {
-        throw new ApiError('Order not found', 404);
+        throw new ApiError("Order not found", 404);
       }
 
-      if (order.status !== 'CART') {
-        throw new ApiError('Order is not in CART status', 400);
+      if (order.status !== "CART") {
+        throw new ApiError("Order is not in CART status", 400);
       }
 
       // Delete order item
@@ -222,10 +222,10 @@ class CheckoutService {
       });
 
       if (deleted.count === 0) {
-        throw new ApiError('Item not found in cart', 404);
+        throw new ApiError("Item not found in cart", 404);
       }
 
-      logger.info('Item removed from cart', {
+      logger.info("Item removed from cart", {
         orderId,
         inventoryLotId,
       });
@@ -236,12 +236,12 @@ class CheckoutService {
       return updatedCart;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error removing from cart', {
+      logger.error("Error removing from cart", {
         orderId,
         inventoryLotId,
         error: error.message,
       });
-      throw new ApiError('Failed to remove item from cart', 500);
+      throw new ApiError("Failed to remove item from cart", 500);
     }
   }
 
@@ -253,7 +253,7 @@ class CheckoutService {
   async getCartSummary(orderId) {
     try {
       if (!orderId) {
-        throw new ApiError('orderId is required', 400);
+        throw new ApiError("orderId is required", 400);
       }
 
       const cart = await prisma.order.findUnique({
@@ -272,11 +272,11 @@ class CheckoutService {
       });
 
       if (!cart) {
-        throw new ApiError('Order not found', 404);
+        throw new ApiError("Order not found", 404);
       }
 
-      if (cart.status !== 'CART') {
-        throw new ApiError('Order is not in CART status', 400);
+      if (cart.status !== "CART") {
+        throw new ApiError("Order is not in CART status", 400);
       }
 
       return {
@@ -292,11 +292,11 @@ class CheckoutService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error getting cart summary', {
+      logger.error("Error getting cart summary", {
         orderId,
         error: error.message,
       });
-      throw new ApiError('Failed to get cart summary', 500);
+      throw new ApiError("Failed to get cart summary", 500);
     }
   }
 
@@ -305,13 +305,10 @@ class CheckoutService {
    * @param {string} orderId - Order ID
    * @returns {Promise<Object>} Updated order with recalculated totals
    */
-  async recalculateCartTotals(
-    orderId,
-    shippingMethod = 'STANDARD'
-  ) {
+  async recalculateCartTotals(orderId, shippingMethod = "STANDARD") {
     try {
       if (!orderId) {
-        throw new ApiError('orderId is required', 400);
+        throw new ApiError("orderId is required", 400);
       }
 
       const order = await prisma.order.findUnique({
@@ -320,7 +317,7 @@ class CheckoutService {
       });
 
       if (!order) {
-        throw new ApiError('Order not found', 404);
+        throw new ApiError("Order not found", 404);
       }
 
       // Calculate subtotal
@@ -332,7 +329,8 @@ class CheckoutService {
       }
 
       // Get shipping rate
-      const shipping = this.SHIPPING_RATES[shippingMethod] || this.SHIPPING_RATES.STANDARD;
+      const shipping =
+        this.SHIPPING_RATES[shippingMethod] || this.SHIPPING_RATES.STANDARD;
 
       // Calculate tax on subtotal + shipping
       const taxBase = subtotal + shipping;
@@ -363,7 +361,7 @@ class CheckoutService {
         },
       });
 
-      logger.debug('Cart totals recalculated', {
+      logger.debug("Cart totals recalculated", {
         orderId,
         subtotal,
         tax,
@@ -374,11 +372,11 @@ class CheckoutService {
       return updatedOrder;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error recalculating cart totals', {
+      logger.error("Error recalculating cart totals", {
         orderId,
         error: error.message,
       });
-      throw new ApiError('Failed to recalculate cart totals', 500);
+      throw new ApiError("Failed to recalculate cart totals", 500);
     }
   }
 
@@ -391,7 +389,7 @@ class CheckoutService {
   async validateCart(orderId) {
     try {
       if (!orderId) {
-        throw new ApiError('orderId is required', 400);
+        throw new ApiError("orderId is required", 400);
       }
 
       const order = await prisma.order.findUnique({
@@ -410,15 +408,15 @@ class CheckoutService {
       });
 
       if (!order) {
-        throw new ApiError('Order not found', 404);
+        throw new ApiError("Order not found", 404);
       }
 
-      if (order.status !== 'CART') {
-        throw new ApiError('Order is not in CART status', 400);
+      if (order.status !== "CART") {
+        throw new ApiError("Order is not in CART status", 400);
       }
 
       if (!order.items || order.items.length === 0) {
-        throw new ApiError('Cart is empty', 400);
+        throw new ApiError("Cart is empty", 400);
       }
 
       // Check each item's availability
@@ -433,9 +431,9 @@ class CheckoutService {
         if (!currentLot) {
           unavailableItems.push({
             inventoryLotId: item.inventoryLotId,
-            reason: 'Item no longer exists',
+            reason: "Item no longer exists",
           });
-        } else if (currentLot.status !== 'LIVE') {
+        } else if (currentLot.status !== "LIVE") {
           unavailableItems.push({
             inventoryLotId: item.inventoryLotId,
             reason: `Item status changed to ${currentLot.status}`,
@@ -460,11 +458,11 @@ class CheckoutService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error validating cart', {
+      logger.error("Error validating cart", {
         orderId,
         error: error.message,
       });
-      throw new ApiError('Failed to validate cart', 500);
+      throw new ApiError("Failed to validate cart", 500);
     }
   }
 
@@ -477,7 +475,7 @@ class CheckoutService {
   async initiateCheckout(orderId, total) {
     try {
       if (!orderId) {
-        throw new ApiError('orderId is required', 400);
+        throw new ApiError("orderId is required", 400);
       }
 
       const order = await prisma.order.findUnique({
@@ -486,22 +484,22 @@ class CheckoutService {
       });
 
       if (!order) {
-        throw new ApiError('Order not found', 404);
+        throw new ApiError("Order not found", 404);
       }
 
-      if (order.status !== 'CART') {
-        throw new ApiError('Order is not in CART status', 400);
+      if (order.status !== "CART") {
+        throw new ApiError("Order is not in CART status", 400);
       }
 
       if (order.items.length === 0) {
-        throw new ApiError('Cart is empty', 400);
+        throw new ApiError("Cart is empty", 400);
       }
 
       // Verify total
       if (total && Math.abs(parseFloat(order.total) - total) > 0.01) {
         throw new ApiError(
-          'Total mismatch. Please refresh cart and try again.',
-          400
+          "Total mismatch. Please refresh cart and try again.",
+          400,
         );
       }
 
@@ -511,10 +509,7 @@ class CheckoutService {
 
       for (const item of order.items) {
         try {
-          await inventoryService.reserveInventory(
-            item.inventoryLotId,
-            orderId
-          );
+          await inventoryService.reserveInventory(item.inventoryLotId, orderId);
           reservedItems.push(item.inventoryLotId);
         } catch (error) {
           failedReservations.push({
@@ -526,7 +521,7 @@ class CheckoutService {
 
       // If any reservations failed, release all successful ones and error
       if (failedReservations.length > 0) {
-        logger.warn('Some inventory items could not be reserved', {
+        logger.warn("Some inventory items could not be reserved", {
           orderId,
           reservedCount: reservedItems.length,
           failedCount: failedReservations.length,
@@ -537,10 +532,10 @@ class CheckoutService {
           try {
             await inventoryService.releaseReservation(
               inventoryLotId,
-              'Checkout reservation failed due to other items unavailable'
+              "Checkout reservation failed due to other items unavailable",
             );
           } catch (releaseError) {
-            logger.error('Error releasing reservation during rollback', {
+            logger.error("Error releasing reservation during rollback", {
               inventoryLotId,
               error: releaseError.message,
             });
@@ -548,8 +543,8 @@ class CheckoutService {
         }
 
         throw new ApiError(
-          `Unable to reserve all items: ${failedReservations.map((f) => f.error).join(', ')}`,
-          409
+          `Unable to reserve all items: ${failedReservations.map((f) => f.error).join(", ")}`,
+          409,
         );
       }
 
@@ -558,16 +553,16 @@ class CheckoutService {
       const paymentIntent = await paymentService.createPaymentIntent(
         orderId,
         amountInCents,
-        order.buyerEmail
+        order.buyerEmail,
       );
 
       // Update order to PAYMENT_PENDING
       const updatedOrder = await orderService.transitionToPaymentPending(
         orderId,
-        paymentIntent.id
+        paymentIntent.id,
       );
 
-      logger.info('Checkout initiated', {
+      logger.info("Checkout initiated", {
         orderId,
         paymentIntentId: paymentIntent.id,
         itemCount: order.items.length,
@@ -586,11 +581,11 @@ class CheckoutService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error initiating checkout', {
+      logger.error("Error initiating checkout", {
         orderId,
         error: error.message,
       });
-      throw new ApiError('Failed to initiate checkout', 500);
+      throw new ApiError("Failed to initiate checkout", 500);
     }
   }
 
@@ -603,7 +598,7 @@ class CheckoutService {
   async completeCheckout(orderId) {
     try {
       if (!orderId) {
-        throw new ApiError('orderId is required', 400);
+        throw new ApiError("orderId is required", 400);
       }
 
       const order = await prisma.order.findUnique({
@@ -612,13 +607,13 @@ class CheckoutService {
       });
 
       if (!order) {
-        throw new ApiError('Order not found', 404);
+        throw new ApiError("Order not found", 404);
       }
 
-      if (order.status !== 'PAYMENT_CONFIRMED') {
+      if (order.status !== "PAYMENT_CONFIRMED") {
         throw new ApiError(
-          'Order must be in PAYMENT_CONFIRMED status to complete checkout',
-          400
+          "Order must be in PAYMENT_CONFIRMED status to complete checkout",
+          400,
         );
       }
 
@@ -639,17 +634,14 @@ class CheckoutService {
       }
 
       if (failedSales.length > 0) {
-        logger.error('Failed to mark some items as sold', {
+        logger.error("Failed to mark some items as sold", {
           orderId,
           failedCount: failedSales.length,
         });
-        throw new ApiError(
-          'Failed to complete purchase for some items',
-          500
-        );
+        throw new ApiError("Failed to complete purchase for some items", 500);
       }
 
-      logger.info('Checkout completed', {
+      logger.info("Checkout completed", {
         orderId,
         soldItemCount: soldItems.length,
       });
@@ -659,11 +651,11 @@ class CheckoutService {
       return completedOrder;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error completing checkout', {
+      logger.error("Error completing checkout", {
         orderId,
         error: error.message,
       });
-      throw new ApiError('Failed to complete checkout', 500);
+      throw new ApiError("Failed to complete checkout", 500);
     }
   }
 
@@ -673,10 +665,10 @@ class CheckoutService {
    * @param {string} reason - Cancellation reason
    * @returns {Promise<Object>} Cancelled order
    */
-  async cancelCheckout(orderId, reason = 'Checkout cancelled by user') {
+  async cancelCheckout(orderId, reason = "Checkout cancelled by user") {
     try {
       if (!orderId) {
-        throw new ApiError('orderId is required', 400);
+        throw new ApiError("orderId is required", 400);
       }
 
       const order = await prisma.order.findUnique({
@@ -685,14 +677,11 @@ class CheckoutService {
       });
 
       if (!order) {
-        throw new ApiError('Order not found', 404);
+        throw new ApiError("Order not found", 404);
       }
 
-      if (order.status !== 'PAYMENT_PENDING') {
-        throw new ApiError(
-          'Only PAYMENT_PENDING orders can be cancelled',
-          400
-        );
+      if (order.status !== "PAYMENT_PENDING") {
+        throw new ApiError("Only PAYMENT_PENDING orders can be cancelled", 400);
       }
 
       // Release all reserved inventory
@@ -700,13 +689,16 @@ class CheckoutService {
         try {
           await inventoryService.releaseReservation(
             item.inventoryLotId,
-            reason
+            reason,
           );
         } catch (error) {
-          logger.warn('Error releasing inventory during checkout cancellation', {
-            inventoryLotId: item.inventoryLotId,
-            error: error.message,
-          });
+          logger.warn(
+            "Error releasing inventory during checkout cancellation",
+            {
+              inventoryLotId: item.inventoryLotId,
+              error: error.message,
+            },
+          );
           // Continue releasing other items even if one fails
         }
       }
@@ -716,10 +708,10 @@ class CheckoutService {
         try {
           await paymentService.cancelPaymentIntent(
             order.stripePaymentIntentId,
-            reason
+            reason,
           );
         } catch (error) {
-          logger.warn('Error cancelling payment intent', {
+          logger.warn("Error cancelling payment intent", {
             paymentIntentId: order.stripePaymentIntentId,
             error: error.message,
           });
@@ -729,10 +721,10 @@ class CheckoutService {
       // Update order to CANCELLED
       const cancelledOrder = await orderService.transitionToCancelled(
         orderId,
-        reason
+        reason,
       );
 
-      logger.info('Checkout cancelled', {
+      logger.info("Checkout cancelled", {
         orderId,
         reason,
       });
@@ -740,11 +732,11 @@ class CheckoutService {
       return cancelledOrder;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error cancelling checkout', {
+      logger.error("Error cancelling checkout", {
         orderId,
         error: error.message,
       });
-      throw new ApiError('Failed to cancel checkout', 500);
+      throw new ApiError("Failed to cancel checkout", 500);
     }
   }
 }

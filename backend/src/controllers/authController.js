@@ -1,6 +1,6 @@
-import authService from '../services/authService.js';
-import { ApiError } from '../middleware/errorHandler.js';
-import logger from '../../config/logger.js';
+import authService from "../services/authService.js";
+import { ApiError } from "../middleware/errorHandler.js";
+import logger from "../../config/logger.js";
 
 /**
  * POST /api/v1/auth/register
@@ -14,7 +14,7 @@ export const register = async (req, res, next) => {
       email,
       password,
       name,
-      role: role || 'BUYER',
+      role: role || "BUYER",
     });
 
     res.status(201).json({
@@ -36,7 +36,7 @@ export const login = async (req, res, next) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      throw new ApiError('Email and password are required', 400);
+      throw new ApiError("Email and password are required", 400);
     }
 
     const result = await authService.login(email, password);
@@ -60,7 +60,7 @@ export const refresh = async (req, res, next) => {
     const { refreshToken } = req.body;
 
     if (!refreshToken) {
-      throw new ApiError('Refresh token is required', 400);
+      throw new ApiError("Refresh token is required", 400);
     }
 
     const result = await authService.refreshToken(refreshToken);
@@ -84,14 +84,14 @@ export const logout = async (req, res, next) => {
     const { refreshToken } = req.body;
 
     if (!refreshToken) {
-      throw new ApiError('Refresh token is required', 400);
+      throw new ApiError("Refresh token is required", 400);
     }
 
     await authService.logout(req.user.id, refreshToken);
 
     res.status(200).json({
       success: true,
-      message: 'Logged out successfully',
+      message: "Logged out successfully",
       requestId: req.id,
     });
   } catch (error) {
@@ -144,7 +144,7 @@ export const changePassword = async (req, res, next) => {
     const { oldPassword, newPassword } = req.body;
 
     if (!oldPassword || !newPassword) {
-      throw new ApiError('Old password and new password are required', 400);
+      throw new ApiError("Old password and new password are required", 400);
     }
 
     const result = await authService.changePassword(

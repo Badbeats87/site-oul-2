@@ -1,6 +1,6 @@
-import cron from 'node-cron';
-import logger from '../../config/logger.js';
-import inventoryService from '../services/inventoryService.js';
+import cron from "node-cron";
+import logger from "../../config/logger.js";
+import inventoryService from "../services/inventoryService.js";
 
 /**
  * Background job to clean up expired inventory reservations
@@ -17,9 +17,9 @@ class CleanupExpiredReservationsJob {
    * Start the background job
    * @param {string} schedule - Cron schedule expression (default: every 5 minutes)
    */
-  start(schedule = '*/5 * * * *') {
+  start(schedule = "*/5 * * * *") {
     if (this.task) {
-      logger.warn('Cleanup job already running');
+      logger.warn("Cleanup job already running");
       return;
     }
 
@@ -28,11 +28,11 @@ class CleanupExpiredReservationsJob {
         await this.execute();
       });
 
-      logger.info('Cleanup expired reservations job started', {
+      logger.info("Cleanup expired reservations job started", {
         schedule,
       });
     } catch (error) {
-      logger.error('Error starting cleanup job', {
+      logger.error("Error starting cleanup job", {
         error: error.message,
       });
     }
@@ -46,7 +46,7 @@ class CleanupExpiredReservationsJob {
       this.task.stop();
       this.task.destroy();
       this.task = null;
-      logger.info('Cleanup expired reservations job stopped');
+      logger.info("Cleanup expired reservations job stopped");
     }
   }
 
@@ -55,7 +55,7 @@ class CleanupExpiredReservationsJob {
    */
   async execute() {
     if (this.isRunning) {
-      logger.debug('Cleanup job already running, skipping this execution');
+      logger.debug("Cleanup job already running, skipping this execution");
       return;
     }
 
@@ -63,19 +63,19 @@ class CleanupExpiredReservationsJob {
     const startTime = Date.now();
 
     try {
-      logger.debug('Starting cleanup of expired reservations');
+      logger.debug("Starting cleanup of expired reservations");
 
       // Call inventory service to clean up
       const result = await inventoryService.cleanupExpiredReservations();
 
       const duration = Date.now() - startTime;
 
-      logger.info('Cleanup job completed successfully', {
+      logger.info("Cleanup job completed successfully", {
         itemsReleased: result.count,
         duration: `${duration}ms`,
       });
     } catch (error) {
-      logger.error('Error during cleanup job execution', {
+      logger.error("Error during cleanup job execution", {
         error: error.message,
         stack: error.stack,
       });
