@@ -11,51 +11,56 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  * This script ensures the database has all required tables
  */
 async function initializeDatabase() {
-  const { execSync } = await import('child_process');
+  const { execSync, exec } = await import('child_process');
+  const { promisify } = await import('util');
+  const execPromise = promisify(exec);
 
   try {
     logger.info('🔧 Starting database initialization...');
     logger.info(`DATABASE_URL set: ${!!process.env.DATABASE_URL}`);
 
-    const backendDir = path.resolve(__dirname, '../..');
-    const prismaDir = path.resolve(backendDir, 'prisma');
-    const prismaSchema = path.resolve(prismaDir, 'schema.prisma');
-
-    logger.info(`Backend dir: ${backendDir}`);
-    logger.info(`Prisma dir: ${prismaDir}`);
-    logger.info(`Schema file exists: ${existsSync(prismaSchema)}`);
-
-    // Try prisma migrate deploy first (uses existing migrations)
-    const prismaPath = path.resolve(backendDir, 'node_modules/.bin/prisma');
-    logger.info(`Prisma CLI path: ${prismaPath}`);
-    logger.info(`Prisma CLI exists: ${existsSync(prismaPath)}`);
-
-    const commands = [
-      `node "${prismaPath}" migrate deploy --skip-generate`,
-      'npx prisma migrate deploy --skip-generate',
-      `node "${prismaPath}" db push --skip-generate`,
-      'npx prisma db push --skip-generate',
-    ];
-
-    for (const command of commands) {
-      try {
-        logger.info(`⏳ Attempting: ${command}`);
-        execSync(command, {
-          cwd: backendDir,
-          stdio: 'inherit',
-          env: { ...process.env },
-          timeout: 60000, // 60 second timeout
-        });
-        logger.info('✅ Database schema initialized successfully');
-        return true;
-      } catch (error) {
-        logger.warn(`⚠️  Command failed: ${command}`, { error: error.message });
-        // Continue to next command
-      }
+    if (!process.env.DATABASE_URL) {
+      logger.warn('⚠️  DATABASE_URL not set, skipping initialization');
+      return true;
     }
 
-    // If all commands failed
-    throw new Error('All database initialization attempts failed');
+    const backendDir = path.resolve(__dirname, '../..');
+    logger.info(`Backend dir: ${backendDir}`);
+
+    // Primary method: Use prisma db push (most reliable)
+    // This pushes the current schema directly to the database without migration files
+    try {
+      logger.info('⏳ Attempting: npx prisma db push --skip-generate');
+      execSync('npx prisma db push --skip-generate', {
+        cwd: backendDir,
+        stdio: 'inherit',
+        env: { ...process.env },
+        timeout: 120000, // 120 second timeout for db push
+      });
+      logger.info('✅ Database schema initialized successfully with prisma db push');
+      return true;
+    } catch (error) {
+      logger.warn(`⚠️  prisma db push failed: ${error.message}`);
+      // Don't throw yet, try alternate method
+    }
+
+    // Fallback: Try migrate deploy
+    try {
+      logger.info('⏳ Attempting: npx prisma migrate deploy --skip-generate');
+      execSync('npx prisma migrate deploy --skip-generate', {
+        cwd: backendDir,
+        stdio: 'inherit',
+        env: { ...process.env },
+        timeout: 120000,
+      });
+      logger.info('✅ Database schema initialized successfully with migrate deploy');
+      return true;
+    } catch (error) {
+      logger.warn(`⚠️  prisma migrate deploy failed: ${error.message}`);
+    }
+
+    // If we reach here, all attempts failed
+    throw new Error('Database initialization failed: all methods exhausted');
   } catch (error) {
     logger.error('❌ Database initialization failed fatally', {
       error: error.message,
