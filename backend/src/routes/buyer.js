@@ -1,4 +1,4 @@
-import express from 'express';
+import express from "express";
 import {
   listProducts,
   getProductDetail,
@@ -6,7 +6,7 @@ import {
   searchProducts,
   addToWishlist,
   removeFromWishlist,
-} from '../controllers/buyerController.js';
+} from "../controllers/buyerController.js";
 
 const router = express.Router();
 
@@ -81,7 +81,7 @@ const router = express.Router();
  *       200:
  *         description: List of available products
  */
-router.get('/products', listProducts);
+router.get("/products", listProducts);
 
 /**
  * @swagger
@@ -104,7 +104,7 @@ router.get('/products', listProducts);
  *       404:
  *         description: Product not found
  */
-router.get('/products/:inventoryLotId', getProductDetail);
+router.get("/products/:inventoryLotId", getProductDetail);
 
 // ============================================================================
 // PRODUCT SEARCH & DISCOVERY
@@ -139,7 +139,7 @@ router.get('/products/:inventoryLotId', getProductDetail);
  *       200:
  *         description: Search results
  */
-router.get('/search', searchProducts);
+router.get("/search", searchProducts);
 
 /**
  * @swagger
@@ -165,7 +165,7 @@ router.get('/search', searchProducts);
  *       200:
  *         description: List of recommended products
  */
-router.get('/products/:inventoryLotId/recommendations', getRecommendations);
+router.get("/products/:inventoryLotId/recommendations", getRecommendations);
 
 // ============================================================================
 // WISHLIST MANAGEMENT
@@ -197,7 +197,7 @@ router.get('/products/:inventoryLotId/recommendations', getRecommendations);
  *       404:
  *         description: Product not found
  */
-router.post('/wishlist', addToWishlist);
+router.post("/wishlist", addToWishlist);
 
 /**
  * @swagger
@@ -220,6 +220,6 @@ router.post('/wishlist', addToWishlist);
  *       404:
  *         description: Item not found in wishlist
  */
-router.delete('/wishlist/:inventoryLotId', removeFromWishlist);
+router.delete("/wishlist/:inventoryLotId", removeFromWishlist);
 
 export default router;

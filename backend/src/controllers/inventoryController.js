@@ -1,5 +1,5 @@
-import inventoryService from '../services/inventoryService.js';
-import logger from '../../config/logger.js';
+import inventoryService from "../services/inventoryService.js";
+import logger from "../../config/logger.js";
 
 /**
  * List inventory with pagination and filtering
@@ -12,8 +12,8 @@ export const listInventory = async (req, res, next) => {
       status,
       limit: limit ? parseInt(limit) : 50,
       page: page ? parseInt(page) : 1,
-      sortBy: sortBy || 'createdAt',
-      sortOrder: sortOrder || 'desc',
+      sortBy: sortBy || "createdAt",
+      sortOrder: sortOrder || "desc",
     });
 
     res.json({
@@ -49,7 +49,14 @@ export const getInventoryDetail = async (req, res, next) => {
 export const updateInventory = async (req, res, next) => {
   try {
     const { inventoryLotId } = req.params;
-    const { listPrice, salePrice, status, internalNotes, publicDescription, sku } = req.body;
+    const {
+      listPrice,
+      salePrice,
+      status,
+      internalNotes,
+      publicDescription,
+      sku,
+    } = req.body;
 
     const updated = await inventoryService.updateInventory(inventoryLotId, {
       listPrice,
@@ -77,12 +84,15 @@ export const deleteInventory = async (req, res, next) => {
     const { inventoryLotId } = req.params;
     const { reason } = req.body;
 
-    const deleted = await inventoryService.deleteInventory(inventoryLotId, reason);
+    const deleted = await inventoryService.deleteInventory(
+      inventoryLotId,
+      reason,
+    );
 
     res.json({
       success: true,
       data: deleted,
-      message: 'Inventory lot removed',
+      message: "Inventory lot removed",
     });
   } catch (error) {
     next(error);
@@ -156,7 +166,9 @@ export const getLowStockAlerts = async (req, res, next) => {
   try {
     const { threshold = 3 } = req.query;
 
-    const alerts = await inventoryService.getLowStockAlerts(parseInt(threshold));
+    const alerts = await inventoryService.getLowStockAlerts(
+      parseInt(threshold),
+    );
 
     res.json({
       success: true,
@@ -196,7 +208,7 @@ export const bulkUpdatePrices = async (req, res, next) => {
     if (!Array.isArray(updates)) {
       return res.status(400).json({
         success: false,
-        error: 'Updates must be an array',
+        error: "Updates must be an array",
       });
     }
 

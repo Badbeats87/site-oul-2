@@ -1,4 +1,4 @@
-import buyerService from '../services/buyerService.js';
+import buyerService from "../services/buyerService.js";
 
 /**
  * List products with pagination and filtering
@@ -25,8 +25,8 @@ export const listProducts = async (req, res, next) => {
       maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
       limit: limit ? parseInt(limit) : 20,
       page: page ? parseInt(page) : 1,
-      sortBy: sortBy || 'createdAt',
-      sortOrder: sortOrder || 'desc',
+      sortBy: sortBy || "createdAt",
+      sortOrder: sortOrder || "desc",
     });
 
     res.json({
@@ -66,7 +66,7 @@ export const getRecommendations = async (req, res, next) => {
 
     const recommendations = await buyerService.getRecommendations(
       inventoryLotId,
-      parseInt(limit)
+      parseInt(limit),
     );
 
     res.json({
@@ -106,14 +106,15 @@ export const searchProducts = async (req, res, next) => {
 export const addToWishlist = async (req, res, next) => {
   try {
     const { inventoryLotId } = req.body;
-    const buyerId = req.session?.userId || req.headers['x-buyer-id'] || 'anonymous';
+    const buyerId =
+      req.session?.userId || req.headers["x-buyer-id"] || "anonymous";
 
     const item = await buyerService.addToWishlist(buyerId, inventoryLotId);
 
     res.json({
       success: true,
       data: item,
-      message: 'Added to wishlist',
+      message: "Added to wishlist",
     });
   } catch (error) {
     next(error);
@@ -126,9 +127,13 @@ export const addToWishlist = async (req, res, next) => {
 export const removeFromWishlist = async (req, res, next) => {
   try {
     const { inventoryLotId } = req.params;
-    const buyerId = req.session?.userId || req.headers['x-buyer-id'] || 'anonymous';
+    const buyerId =
+      req.session?.userId || req.headers["x-buyer-id"] || "anonymous";
 
-    const result = await buyerService.removeFromWishlist(buyerId, inventoryLotId);
+    const result = await buyerService.removeFromWishlist(
+      buyerId,
+      inventoryLotId,
+    );
 
     res.json({
       success: true,

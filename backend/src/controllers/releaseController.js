@@ -1,5 +1,5 @@
-import releaseService from '../services/releaseService.js';
-import logger from '../../config/logger.js';
+import releaseService from "../services/releaseService.js";
+import logger from "../../config/logger.js";
 
 export const getAllReleases = async (req, res, next) => {
   try {
@@ -47,7 +47,17 @@ export const getReleaseById = async (req, res, next) => {
 
 export const createRelease = async (req, res, next) => {
   try {
-    const { title, artist, label, catalogNumber, barcode, releaseYear, genre, coverArtUrl, description } = req.body;
+    const {
+      title,
+      artist,
+      label,
+      catalogNumber,
+      barcode,
+      releaseYear,
+      genre,
+      coverArtUrl,
+      description,
+    } = req.body;
 
     const release = await releaseService.create({
       title,
@@ -74,7 +84,17 @@ export const createRelease = async (req, res, next) => {
 export const updateRelease = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { title, artist, label, catalogNumber, barcode, releaseYear, genre, coverArtUrl, description } = req.body;
+    const {
+      title,
+      artist,
+      label,
+      catalogNumber,
+      barcode,
+      releaseYear,
+      genre,
+      coverArtUrl,
+      description,
+    } = req.body;
 
     const release = await releaseService.update(id, {
       title,
@@ -122,13 +142,16 @@ export const searchReleases = async (req, res, next) => {
       return res.status(400).json({
         success: false,
         error: {
-          message: 'Search query must be at least 2 characters',
+          message: "Search query must be at least 2 characters",
           status: 400,
         },
       });
     }
 
-    const results = await releaseService.search(q, limit ? parseInt(limit, 10) : 50);
+    const results = await releaseService.search(
+      q,
+      limit ? parseInt(limit, 10) : 50,
+    );
 
     res.json({
       success: true,
@@ -146,30 +169,34 @@ export const searchReleases = async (req, res, next) => {
  */
 export const autocomplete = async (req, res, next) => {
   try {
-    const { q, field = 'title', limit = 10 } = req.query;
+    const { q, field = "title", limit = 10 } = req.query;
 
     if (!q || q.length < 1) {
       return res.status(400).json({
         success: false,
         error: {
-          message: 'Query parameter is required',
+          message: "Query parameter is required",
           status: 400,
         },
       });
     }
 
-    const validFields = ['title', 'artist', 'label', 'genre'];
+    const validFields = ["title", "artist", "label", "genre"];
     if (!validFields.includes(field)) {
       return res.status(400).json({
         success: false,
         error: {
-          message: `Field must be one of: ${validFields.join(', ')}`,
+          message: `Field must be one of: ${validFields.join(", ")}`,
           status: 400,
         },
       });
     }
 
-    const suggestions = await releaseService.getAutocomplete(q, field, parseInt(limit, 10));
+    const suggestions = await releaseService.getAutocomplete(
+      q,
+      field,
+      parseInt(limit, 10),
+    );
 
     res.json({
       success: true,

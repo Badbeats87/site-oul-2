@@ -1,4 +1,4 @@
-import logger from '../../config/logger.js';
+import logger from "../../config/logger.js";
 
 /**
  * Notification Service
@@ -19,7 +19,7 @@ class NotificationService {
       const { submissionId, fromStatus, toStatus, changeReason } = data;
 
       // Log notification event
-      logger.info('Submission state change notification', {
+      logger.info("Submission state change notification", {
         submissionId,
         fromStatus,
         toStatus,
@@ -30,7 +30,7 @@ class NotificationService {
       const message = this.buildNotificationMessage(
         fromStatus,
         toStatus,
-        changeReason
+        changeReason,
       );
 
       // TODO: Implement actual notification channels:
@@ -40,13 +40,13 @@ class NotificationService {
       // - SMS notification (optional)
 
       // For now, just log the notification
-      logger.info('Notification sent', {
+      logger.info("Notification sent", {
         submissionId,
         toStatus,
         message,
       });
     } catch (error) {
-      logger.error('Error sending notification', {
+      logger.error("Error sending notification", {
         submissionId: data.submissionId,
         error: error.message,
       });
@@ -63,17 +63,17 @@ class NotificationService {
    */
   buildNotificationMessage(fromStatus, toStatus, changeReason) {
     const messages = {
-      PENDING_REVIEW: 'Your submission is being reviewed',
-      COUNTER_OFFERED: 'A counter-offer has been made on your submission',
-      ACCEPTED: 'Your submission has been accepted',
-      PARTIALLY_ACCEPTED: 'Part of your submission has been accepted',
-      REJECTED: 'Your submission has been rejected',
-      EXPIRED: 'Your submission has expired',
-      COMPLETED: 'Your submission has been completed',
+      PENDING_REVIEW: "Your submission is being reviewed",
+      COUNTER_OFFERED: "A counter-offer has been made on your submission",
+      ACCEPTED: "Your submission has been accepted",
+      PARTIALLY_ACCEPTED: "Part of your submission has been accepted",
+      REJECTED: "Your submission has been rejected",
+      EXPIRED: "Your submission has expired",
+      COMPLETED: "Your submission has been completed",
     };
 
     const baseMessage = messages[toStatus] || `Status changed to ${toStatus}`;
-    const reasonText = changeReason ? ` (${changeReason})` : '';
+    const reasonText = changeReason ? ` (${changeReason})` : "";
 
     return `${baseMessage}${reasonText}`;
   }
@@ -89,7 +89,7 @@ class NotificationService {
     try {
       const { itemId, counterOfferPrice, itemTitle } = data;
 
-      logger.info('Counter-offer notification', {
+      logger.info("Counter-offer notification", {
         itemId,
         counterOfferPrice,
         itemTitle,
@@ -97,7 +97,7 @@ class NotificationService {
 
       // TODO: Send email/notification to seller with counter-offer details
     } catch (error) {
-      logger.error('Error sending counter-offer notification', {
+      logger.error("Error sending counter-offer notification", {
         itemId: data.itemId,
         error: error.message,
       });
@@ -115,7 +115,7 @@ class NotificationService {
     try {
       const { submissionId, sellerEmail, expiresAt } = data;
 
-      logger.info('Quote expiration notification', {
+      logger.info("Quote expiration notification", {
         submissionId,
         sellerEmail,
         expiresAt,
@@ -123,7 +123,7 @@ class NotificationService {
 
       // TODO: Send reminder email to seller about upcoming expiration
     } catch (error) {
-      logger.error('Error sending expiration notification', {
+      logger.error("Error sending expiration notification", {
         submissionId: data.submissionId,
         error: error.message,
       });
@@ -140,9 +140,10 @@ class NotificationService {
    */
   async notifyInventoryCreated(data) {
     try {
-      const { submissionId, sellerEmail, itemCount, totalInventoryValue } = data;
+      const { submissionId, sellerEmail, itemCount, totalInventoryValue } =
+        data;
 
-      logger.info('Inventory creation notification', {
+      logger.info("Inventory creation notification", {
         submissionId,
         sellerEmail,
         itemCount,
@@ -155,7 +156,7 @@ class NotificationService {
       // - Total value of the accepted items
       // - Next steps for tracking/selling
     } catch (error) {
-      logger.error('Error sending inventory notification', {
+      logger.error("Error sending inventory notification", {
         submissionId: data.submissionId,
         error: error.message,
       });
@@ -174,7 +175,7 @@ class NotificationService {
     try {
       const { submissionId, sellerName, itemCount, totalOffered } = data;
 
-      logger.info('New submission admin notification', {
+      logger.info("New submission admin notification", {
         submissionId,
         sellerName,
         itemCount,
@@ -183,7 +184,7 @@ class NotificationService {
 
       // TODO: Send email/notification to admins about new submission
     } catch (error) {
-      logger.error('Error sending admin notification', {
+      logger.error("Error sending admin notification", {
         submissionId: data.submissionId,
         error: error.message,
       });
