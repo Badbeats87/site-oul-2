@@ -17,7 +17,9 @@ import sellersRoutes from './routes/sellers.js';
 import adminRoutes from './routes/admin.js';
 import inventoryRoutes from './routes/inventory.js';
 import buyerRoutes from './routes/buyer.js';
+import checkoutRoutes from './routes/checkout.js';
 import { authenticate } from './middleware/authMiddleware.js';
+import { captureRawBody } from './middleware/rawBody.js';
 import prisma from './utils/db.js';
 
 const app = express();
@@ -33,6 +35,9 @@ app.use(compression());
 
 // Request logging
 app.use(logRequest);
+
+// Capture raw body for webhook processing (must be before json())
+app.use('/api/v1/checkout/webhook', captureRawBody);
 
 // Body parsing
 app.use(express.json());
@@ -86,9 +91,11 @@ app.use('/api/v1/inventory', inventoryRoutes);
 // Buyer storefront routes
 app.use('/api/v1/buyer', buyerRoutes);
 
+// Checkout and orders routes
+app.use('/api/v1/checkout', checkoutRoutes);
+
 // TODO: Add other route groups
 // app.use('/api/v1/pricing', pricingRoutes);
-// app.use('/api/v1/orders', orderRoutes);
 
 // ============================================================================
 // ERROR HANDLING

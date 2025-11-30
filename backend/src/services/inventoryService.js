@@ -1422,6 +1422,238 @@ class InventoryService {
       throw new ApiError('Failed to bulk update prices', 500);
     }
   }
+
+  /**
+   * Reserve inventory for checkout
+   * Transitions item from LIVE to RESERVED status
+   * Uses optimistic locking to prevent race conditions
+   * @param {string} inventoryLotId - Inventory lot ID
+   * @param {string} orderId - Order ID to link reservation to
+   * @returns {Promise<Object>} Reserved inventory lot
+   */
+  async reserveInventory(inventoryLotId, orderId) {
+    try {
+      if (!inventoryLotId || !orderId) {
+        throw new ApiError('inventoryLotId and orderId are required', 400);
+      }
+
+      // Use updateMany with optimistic locking - only update if status is LIVE
+      const result = await prisma.inventoryLot.updateMany({
+        where: {
+          id: inventoryLotId,
+          status: 'LIVE', // CRITICAL: Only update if still LIVE
+        },
+        data: {
+          status: 'RESERVED',
+          reservedAt: new Date(),
+          orderId: orderId,
+        },
+      });
+
+      if (result.count === 0) {
+        throw new ApiError('Item no longer available', 409);
+      }
+
+      // Fetch and return the updated lot
+      const updatedLot = await prisma.inventoryLot.findUnique({
+        where: { id: inventoryLotId },
+      });
+
+      // Log to internal notes
+      const timestamp = new Date().toISOString();
+      await prisma.inventoryLot.update({
+        where: { id: inventoryLotId },
+        data: {
+          internalNotes: `${updatedLot?.internalNotes || ''}\n[RESERVED for order ${orderId}] - ${timestamp}`,
+        },
+      });
+
+      logger.info('Inventory reserved', {
+        inventoryLotId,
+        orderId,
+        sku: updatedLot?.sku,
+      });
+
+      return updatedLot;
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      logger.error('Error reserving inventory', {
+        inventoryLotId,
+        orderId,
+        error: error.message,
+      });
+      throw new ApiError('Failed to reserve inventory', 500);
+    }
+  }
+
+  /**
+   * Release reservation on inventory
+   * Transitions item from RESERVED back to LIVE status
+   * @param {string} inventoryLotId - Inventory lot ID
+   * @param {string} reason - Reason for release (payment failure, timeout, etc)
+   * @returns {Promise<Object>} Released inventory lot
+   */
+  async releaseReservation(inventoryLotId, reason = 'Manual release') {
+    try {
+      if (!inventoryLotId) {
+        throw new ApiError('inventoryLotId is required', 400);
+      }
+
+      const lot = await prisma.inventoryLot.findUnique({
+        where: { id: inventoryLotId },
+      });
+
+      if (!lot) {
+        throw new ApiError('Inventory lot not found', 404);
+      }
+
+      if (lot.status !== 'RESERVED') {
+        throw new ApiError(
+          `Cannot release inventory with status: ${lot.status}`,
+          400,
+        );
+      }
+
+      const timestamp = new Date().toISOString();
+      const updatedLot = await prisma.inventoryLot.update({
+        where: { id: inventoryLotId },
+        data: {
+          status: 'LIVE',
+          reservedAt: null,
+          orderId: null,
+          internalNotes: `${lot.internalNotes || ''}\n[RELEASED] Reason: ${reason} - ${timestamp}`,
+        },
+      });
+
+      logger.info('Reservation released', {
+        inventoryLotId,
+        reason,
+        sku: lot.sku,
+      });
+
+      return updatedLot;
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      logger.error('Error releasing reservation', {
+        inventoryLotId,
+        error: error.message,
+      });
+      throw new ApiError('Failed to release reservation', 500);
+    }
+  }
+
+  /**
+   * Mark inventory as sold
+   * Transitions item from RESERVED to SOLD status
+   * @param {string} inventoryLotId - Inventory lot ID
+   * @param {string} orderId - Order ID
+   * @returns {Promise<Object>} Sold inventory lot
+   */
+  async markAsSold(inventoryLotId, orderId) {
+    try {
+      if (!inventoryLotId || !orderId) {
+        throw new ApiError('inventoryLotId and orderId are required', 400);
+      }
+
+      const lot = await prisma.inventoryLot.findUnique({
+        where: { id: inventoryLotId },
+      });
+
+      if (!lot) {
+        throw new ApiError('Inventory lot not found', 404);
+      }
+
+      if (lot.status !== 'RESERVED') {
+        throw new ApiError(
+          `Cannot mark as sold with status: ${lot.status}`,
+          400,
+        );
+      }
+
+      const timestamp = new Date().toISOString();
+      const updatedLot = await prisma.inventoryLot.update({
+        where: { id: inventoryLotId },
+        data: {
+          status: 'SOLD',
+          soldAt: new Date(),
+          orderId: orderId,
+          internalNotes: `${lot.internalNotes || ''}\n[SOLD in order ${orderId}] - ${timestamp}`,
+        },
+      });
+
+      logger.info('Inventory marked as sold', {
+        inventoryLotId,
+        orderId,
+        sku: lot.sku,
+      });
+
+      return updatedLot;
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      logger.error('Error marking inventory as sold', {
+        inventoryLotId,
+        orderId,
+        error: error.message,
+      });
+      throw new ApiError('Failed to mark inventory as sold', 500);
+    }
+  }
+
+  /**
+   * Clean up expired reservations
+   * Finds and releases all RESERVED items older than 15 minutes
+   * Called by background job every 5 minutes
+   * @returns {Promise<Object>} Cleanup results
+   */
+  async cleanupExpiredReservations() {
+    try {
+      const cutoff = new Date(Date.now() - 15 * 60 * 1000); // 15 minutes ago
+
+      const expiredLots = await prisma.inventoryLot.findMany({
+        where: {
+          status: 'RESERVED',
+          reservedAt: {
+            lt: cutoff,
+          },
+        },
+      });
+
+      if (expiredLots.length === 0) {
+        logger.debug('No expired reservations to clean up');
+        return { releasedCount: 0, errors: [] };
+      }
+
+      const results = {
+        releasedCount: 0,
+        errors: [],
+      };
+
+      for (const lot of expiredLots) {
+        try {
+          await this.releaseReservation(lot.id, 'Checkout timeout - 15 minutes expired');
+          results.releasedCount += 1;
+        } catch (error) {
+          results.errors.push({
+            inventoryLotId: lot.id,
+            error: error.message,
+          });
+        }
+      }
+
+      logger.info('Expired reservations cleaned up', {
+        releasedCount: results.releasedCount,
+        errorCount: results.errors.length,
+      });
+
+      return results;
+    } catch (error) {
+      logger.error('Error cleaning up expired reservations', {
+        error: error.message,
+      });
+      // Don't throw - this is a background job and should fail gracefully
+      return { releasedCount: 0, errors: [{ error: error.message }] };
+    }
+  }
 }
 
 export default new InventoryService();
