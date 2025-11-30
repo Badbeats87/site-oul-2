@@ -78,14 +78,14 @@ describe('End-to-End User Flows', () => {
   });
 
   afterAll(async () => {
-    // Cleanup
+    // Cleanup - must respect foreign key constraints
     try {
       await prisma.submissionItem.deleteMany({});
       await prisma.submissionAudit.deleteMany({});
       await prisma.sellerSubmission.deleteMany({});
       await prisma.orderItem.deleteMany({});
+      await prisma.inventoryHold.deleteMany({});  // Delete before orders (FK constraint)
       await prisma.order.deleteMany({});
-      await prisma.inventoryHold.deleteMany({});
       await prisma.inventoryLot.deleteMany({});
       await prisma.marketSnapshot.deleteMany({});
       await prisma.releasePricingPolicy.deleteMany({});
