@@ -22,9 +22,9 @@ class AuthManager {
         password
       });
 
-      // Store token
-      if (response.token) {
-        this.api.setToken(response.token);
+      // Store token (server returns accessToken, refreshToken)
+      if (response.accessToken) {
+        this.api.setToken(response.accessToken);
         this.currentUser = response.user;
         return response;
       } else {
