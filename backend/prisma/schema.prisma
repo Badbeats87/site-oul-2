@@ -394,6 +394,7 @@ model Order {
 
   // Shipping Address
   shippingAddress        Json?
+  shippingMethod         ShippingMethod? @map("shipping_method")
 
   // Metadata
   sessionId              String?     @db.VarChar(255)
@@ -411,6 +412,7 @@ model Order {
   // Relations
   items                  OrderItem[]
   audits                 OrderAudit[]
+  shipment               Shipment?
 
   // Indexes
   @@index([buyerEmail])
@@ -463,6 +465,177 @@ model OrderAudit {
   @@index([orderId, changedAt(sort: Desc)])
   @@index([changedAt(sort: Desc)])
   @@map("order_audits")
+}
+
+// Update Order model to include shipping fields
+// (See extension at end of SHIPPING MANAGEMENT section)
+
+// ============================================================================
+// SHIPPING MANAGEMENT
+// ============================================================================
+
+enum ShippingMethod {
+  STANDARD
+  EXPRESS
+  OVERNIGHT
+}
+
+enum ShipmentStatus {
+  PENDING_LABEL        // Awaiting label generation
+  LABEL_GENERATED      // Label created, pending approval
+  READY_TO_SHIP        // Admin approved
+  IN_TRANSIT           // Shipped, carrier has package
+  OUT_FOR_DELIVERY     // Final delivery leg
+  DELIVERED            // Successfully delivered
+  FAILED_DELIVERY      // Delivery attempt failed
+  RETURNED             // Returned to sender
+  EXCEPTION            // Carrier exception
+}
+
+enum ShippingCarrier {
+  MOCK
+  USPS
+  UPS
+  FEDEX
+  DHL
+}
+
+model Shipment {
+  id                    String          @id @default(uuid()) @db.Uuid
+  orderId               String          @unique @map("order_id") @db.Uuid
+
+  // Status tracking
+  shipmentStatus        ShipmentStatus  @map("shipment_status") @default(PENDING_LABEL)
+  carrier               ShippingCarrier
+  shippingMethod        ShippingMethod  @map("shipping_method")
+
+  // Tracking info
+  trackingNumber        String?         @unique @map("tracking_number") @db.VarChar(100)
+  trackingUrl           String?         @map("tracking_url") @db.VarChar(500)
+
+  // Label details
+  labelUrl              String?         @map("label_url") @db.VarChar(500)
+  labelFormat           String?         @map("label_format") @db.VarChar(20) // PDF, ZPL, PNG
+
+  // Package details
+  weightOz              Int             @map("weight_oz")
+  packageType           String          @default("PACKAGE") @db.VarChar(50)
+  dimensions            Json?           // {length, width, height, unit}
+
+  // Pricing
+  baseRate              Decimal         @map("base_rate") @db.Decimal(10, 2)
+  insuranceCost         Decimal         @default(0) @map("insurance_cost") @db.Decimal(10, 2)
+  totalCost             Decimal         @map("total_cost") @db.Decimal(10, 2)
+
+  // Addresses (denormalized for historical accuracy)
+  fromAddress           Json            @map("from_address")
+  toAddress             Json            @map("to_address")
+
+  // Provider integration (for Shippo/EasyPost)
+  providerShipmentId    String?         @map("provider_shipment_id") @db.VarChar(100)
+  providerRateId        String?         @map("provider_rate_id") @db.VarChar(100)
+  providerMetadata      Json?           @map("provider_metadata")
+
+  // Fulfillment workflow
+  approvedForShipment   Boolean         @default(false) @map("approved_for_shipment")
+  approvedBy            String?         @map("approved_by") @db.Uuid
+  approvedAt            DateTime?       @map("approved_at") @db.Timestamptz
+  packedBy              String?         @map("packed_by") @db.Uuid
+  packedAt              DateTime?       @map("packed_at") @db.Timestamptz
+
+  // Delivery estimates
+  estimatedDeliveryDate DateTime?       @map("estimated_delivery_date") @db.Timestamptz
+  actualDeliveryDate    DateTime?       @map("actual_delivery_date") @db.Timestamptz
+  signatureRequired     Boolean         @default(false) @map("signature_required")
+
+  // Timestamps
+  createdAt             DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime        @updatedAt @map("updated_at") @db.Timestamptz
+  shippedAt             DateTime?       @map("shipped_at") @db.Timestamptz
+
+  // Relations
+  order                 Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  trackingEvents        ShipmentTracking[]
+
+  @@index([shipmentStatus, createdAt(sort: Desc)])
+  @@index([trackingNumber])
+  @@index([carrier, shipmentStatus])
+  @@map("shipments")
+}
+
+model ShipmentTracking {
+  id              String      @id @default(uuid()) @db.Uuid
+  shipmentId      String      @map("shipment_id") @db.Uuid
+
+  status          String      @db.VarChar(50)
+  statusDetail    String?     @map("status_detail") @db.VarChar(255)
+  location        String?     @db.VarChar(255)
+  eventTime       DateTime    @map("event_time") @db.Timestamptz
+
+  message         String?     @db.Text
+  carrierEventId  String?     @map("carrier_event_id") @db.VarChar(100)
+
+  createdAt       DateTime    @default(now()) @map("created_at") @db.Timestamptz
+
+  shipment        Shipment    @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@index([shipmentId, eventTime(sort: Desc)])
+  @@map("shipment_tracking")
+}
+
+model ShippingZone {
+  id              String      @id @default(uuid()) @db.Uuid
+  name            String      @unique @db.VarChar(100)
+  description     String?     @db.Text
+
+  statesIncluded  String[]    @map("states_included") // ["CA", "NV", "AZ"]
+  zipRanges       Json?       @map("zip_ranges") // [{start: "90000", end: "96999"}]
+
+  priority        Int         @default(0) // Lower = higher priority for matching
+  isActive        Boolean     @default(true) @map("is_active")
+
+  createdAt       DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime    @updatedAt @map("updated_at") @db.Timestamptz
+
+  rates           ShippingRate[]
+
+  @@index([priority, isActive])
+  @@map("shipping_zones")
+}
+
+model ShippingRate {
+  id              String          @id @default(uuid()) @db.Uuid
+  zoneId          String          @map("zone_id") @db.Uuid
+
+  shippingMethod  ShippingMethod  @map("shipping_method")
+  carrier         ShippingCarrier
+
+  // Weight tiers
+  minWeightOz     Int             @map("min_weight_oz")
+  maxWeightOz     Int             @map("max_weight_oz")
+
+  // Pricing
+  baseRate        Decimal         @map("base_rate") @db.Decimal(10, 2)
+  perOzRate       Decimal         @default(0) @map("per_oz_rate") @db.Decimal(10, 4)
+
+  // Delivery time
+  minDays         Int             @map("min_days")
+  maxDays         Int             @map("max_days")
+
+  // Validity
+  effectiveDate   DateTime        @default(now()) @map("effective_date") @db.Timestamptz
+  expirationDate  DateTime?       @map("expiration_date") @db.Timestamptz
+
+  isActive        Boolean         @default(true) @map("is_active")
+
+  createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime        @updatedAt @map("updated_at") @db.Timestamptz
+
+  zone            ShippingZone    @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+
+  @@index([zoneId, shippingMethod, isActive])
+  @@index([minWeightOz, maxWeightOz])
+  @@map("shipping_rates")
 }
 
 // ============================================================================
