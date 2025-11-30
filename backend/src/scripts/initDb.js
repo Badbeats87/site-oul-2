@@ -3,8 +3,43 @@ import logger from '../../config/logger.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync } from 'fs';
+import bcrypt from 'bcrypt';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+/**
+ * Seed initial data (admin user)
+ */
+async function seedInitialData() {
+  try {
+    logger.info('🌱 Seeding initial data...');
+
+    // Hash password for admin user
+    const passwordHash = await bcrypt.hash('Admin123!', 12);
+
+    // Create or update admin user
+    const admin = await prisma.adminUser.upsert({
+      where: { email: 'admin@vinylcatalog.com' },
+      update: { passwordHash },
+      create: {
+        email: 'admin@vinylcatalog.com',
+        name: 'System Admin',
+        role: 'SUPER_ADMIN',
+        passwordHash,
+      },
+    });
+
+    logger.info('✅ Admin user initialized', {
+      email: admin.email,
+      role: admin.role,
+    });
+
+    return true;
+  } catch (error) {
+    logger.error('❌ Error seeding data', { error: error.message });
+    return false;
+  }
+}
 
 /**
  * Initialize database schema
@@ -89,6 +124,13 @@ async function initializeDatabase() {
     });
     // Don't re-throw - let app attempt to start
     return false;
+  } finally {
+    // Always try to seed initial data after schema is ready
+    try {
+      await seedInitialData();
+    } catch (error) {
+      logger.warn('⚠️  Failed to seed initial data', { error: error.message });
+    }
   }
 }
 
