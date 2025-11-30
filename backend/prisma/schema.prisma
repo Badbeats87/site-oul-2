@@ -325,6 +325,7 @@ model InventoryLot {
   release           Release          @relation(fields: [releaseId], references: [id], onDelete: Restrict)
   submissionItem    SubmissionItem?  @relation(fields: [submissionItemId], references: [id], onDelete: SetNull)
   orderItems        OrderItem[]
+  holds             InventoryHold[]
 
   // Indexes
   @@index([releaseId, status])
@@ -413,6 +414,7 @@ model Order {
   items                  OrderItem[]
   audits                 OrderAudit[]
   shipment               Shipment?
+  holds                  InventoryHold[]
 
   // Indexes
   @@index([buyerEmail])
@@ -694,4 +696,69 @@ model RefreshToken {
   @@index([token])
   @@index([expiresAt])
   @@map("refresh_tokens")
+}
+
+// ============================================================================
+// INVENTORY RESERVATION & HOLDS
+// ============================================================================
+
+enum HoldStatus {
+  ACTIVE              // Hold is currently active
+  RELEASED            // Hold was released (item available again)
+  EXPIRED             // Hold expired without conversion to order
+  CONVERTED_TO_SALE   // Hold converted to sold order item
+}
+
+model InventoryHold {
+  id               String   @id @default(uuid()) @db.Uuid
+  inventoryLotId   String   @map("inventory_lot_id") @db.Uuid
+
+  // Order/Cart tracking
+  orderId          String?  @map("order_id") @db.Uuid
+  sessionId        String?  @map("session_id") @db.VarChar(255)  // For guest carts
+
+  // Hold status and lifecycle
+  holdStatus       HoldStatus @default(ACTIVE) @map("hold_status")
+  quantity         Int        @default(1)  // Support for multi-unit holds if needed
+
+  // Hold validity
+  expiresAt        DateTime   @map("expires_at") @db.Timestamptz
+  releasedAt       DateTime?  @map("released_at") @db.Timestamptz
+  releasedReason   String?    @map("released_reason") @db.VarChar(255)
+
+  // Audit trail
+  createdBy        String?    @map("created_by") @db.Uuid
+  createdAt        DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  inventoryLot     InventoryLot @relation(fields: [inventoryLotId], references: [id], onDelete: Cascade)
+  order            Order?       @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  // Indexes for efficient queries
+  @@index([inventoryLotId, holdStatus])
+  @@index([orderId, holdStatus])
+  @@index([sessionId, holdStatus])
+  @@index([expiresAt, holdStatus])  // For finding expired holds
+  @@index([holdStatus, createdAt(sort: Desc)])
+  @@map("inventory_holds")
+}
+
+model InventoryHoldAudit {
+  id               String   @id @default(uuid()) @db.Uuid
+  holdId           String   @map("hold_id") @db.Uuid
+
+  // Status transition tracking
+  fromStatus       HoldStatus @map("from_status")
+  toStatus         HoldStatus @map("to_status")
+  reason           String?    @db.VarChar(255)
+
+  // Metadata
+  changedBy        String?    @map("changed_by") @db.Uuid
+  changedAt        DateTime   @default(now()) @map("changed_at") @db.Timestamptz
+
+  // Indexes
+  @@index([holdId, changedAt(sort: Desc)])
+  @@index([changedAt(sort: Desc)])
+  @@map("inventory_hold_audits")
 }
