@@ -1,5 +1,5 @@
-import discogsService from '../services/discogsService.js';
-import logger from '../../config/logger.js';
+import discogsService from "../services/discogsService.js";
+import logger from "../../config/logger.js";
 
 /**
  * Search Discogs for releases
@@ -13,8 +13,8 @@ export async function searchDiscogs(req, res, next) {
       return res.status(400).json({
         success: false,
         error: {
-          code: 'VALIDATION_ERROR',
-          message: 'Either query or barcode parameter is required',
+          code: "VALIDATION_ERROR",
+          message: "Either query or barcode parameter is required",
         },
         requestId: req.id,
       });
@@ -27,7 +27,7 @@ export async function searchDiscogs(req, res, next) {
       page: page ? parseInt(page) : 1,
     });
 
-    logger.info('Discogs search completed', {
+    logger.info("Discogs search completed", {
       requestId: req.id,
       query: query || barcode,
       resultCount: results.results.length,
@@ -53,7 +53,7 @@ export async function getDiscogsRelease(req, res, next) {
 
     const release = await discogsService.getRelease(parseInt(id));
 
-    logger.info('Discogs release fetched', {
+    logger.info("Discogs release fetched", {
       requestId: req.id,
       releaseId: id,
     });
@@ -78,7 +78,7 @@ export async function getDiscogsPrices(req, res, next) {
 
     const prices = await discogsService.getPriceStatistics(parseInt(id));
 
-    logger.info('Discogs price statistics fetched', {
+    logger.info("Discogs price statistics fetched", {
       requestId: req.id,
       releaseId: id,
     });
@@ -105,8 +105,8 @@ export async function searchDiscogsEnriched(req, res, next) {
       return res.status(400).json({
         success: false,
         error: {
-          code: 'VALIDATION_ERROR',
-          message: 'Either query or barcode parameter is required',
+          code: "VALIDATION_ERROR",
+          message: "Either query or barcode parameter is required",
         },
         requestId: req.id,
       });
@@ -119,7 +119,7 @@ export async function searchDiscogsEnriched(req, res, next) {
       page: page ? parseInt(page) : 1,
     });
 
-    logger.info('Discogs enriched search completed', {
+    logger.info("Discogs enriched search completed", {
       requestId: req.id,
       query: query || barcode,
       resultCount: results.results.length,

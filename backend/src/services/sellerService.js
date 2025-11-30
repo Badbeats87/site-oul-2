@@ -1,7 +1,7 @@
-import prisma from '../utils/db.js';
-import { ApiError } from '../middleware/errorHandler.js';
-import logger from '../../config/logger.js';
-import notificationService from './notificationService.js';
+import prisma from "../utils/db.js";
+import { ApiError } from "../middleware/errorHandler.js";
+import logger from "../../config/logger.js";
+import notificationService from "./notificationService.js";
 
 class SellerService {
   /**
@@ -19,13 +19,13 @@ class SellerService {
       const { email, name, phone, notes } = data;
 
       if (!email || email.trim().length === 0) {
-        throw new ApiError('Email is required', 400);
+        throw new ApiError("Email is required", 400);
       }
 
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
-        throw new ApiError('Invalid email format', 400);
+        throw new ApiError("Invalid email format", 400);
       }
 
       // Create seller submission with 30-day expiration
@@ -37,13 +37,13 @@ class SellerService {
           sellerContact: email,
           sellerName: name || null,
           sellerNotes: notes || null,
-          channel: 'direct',
-          status: 'PENDING_REVIEW',
+          channel: "direct",
+          status: "PENDING_REVIEW",
           expiresAt,
         },
       });
 
-      logger.info('Seller registered', {
+      logger.info("Seller registered", {
         sellerId: seller.id,
         email: seller.sellerContact,
         name: seller.sellerName,
@@ -67,8 +67,8 @@ class SellerService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error registering seller', { error: error.message });
-      throw new ApiError('Failed to register seller', 500);
+      logger.error("Error registering seller", { error: error.message });
+      throw new ApiError("Failed to register seller", 500);
     }
   }
 
@@ -97,23 +97,23 @@ class SellerService {
       });
 
       if (!seller) {
-        throw new ApiError('Seller not found', 404);
+        throw new ApiError("Seller not found", 404);
       }
 
       // Check if submission expired
-      if (new Date() > seller.expiresAt && seller.status === 'PENDING_REVIEW') {
+      if (new Date() > seller.expiresAt && seller.status === "PENDING_REVIEW") {
         await prisma.sellerSubmission.update({
           where: { id: sellerId },
-          data: { status: 'EXPIRED' },
+          data: { status: "EXPIRED" },
         });
-        throw new ApiError('Submission has expired', 410);
+        throw new ApiError("Submission has expired", 410);
       }
 
       return seller;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error getting seller', { sellerId, error: error.message });
-      throw new ApiError('Failed to get seller information', 500);
+      logger.error("Error getting seller", { sellerId, error: error.message });
+      throw new ApiError("Failed to get seller information", 500);
     }
   }
 
@@ -132,7 +132,7 @@ class SellerService {
       });
 
       if (!seller) {
-        throw new ApiError('Seller not found', 404);
+        throw new ApiError("Seller not found", 404);
       }
 
       const updated = await prisma.sellerSubmission.update({
@@ -143,12 +143,12 @@ class SellerService {
         },
       });
 
-      logger.info('Seller updated', { sellerId });
+      logger.info("Seller updated", { sellerId });
       return updated;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error updating seller', { sellerId, error: error.message });
-      throw new ApiError('Failed to update seller information', 500);
+      logger.error("Error updating seller", { sellerId, error: error.message });
+      throw new ApiError("Failed to update seller information", 500);
     }
   }
 
@@ -162,14 +162,10 @@ class SellerService {
    */
   async listSellers(filters = {}) {
     try {
-      const {
-        status,
-        limit = 50,
-        page = 1,
-      } = filters;
+      const { status, limit = 50, page = 1 } = filters;
 
       if (limit > 500) {
-        throw new ApiError('Limit cannot exceed 500', 400);
+        throw new ApiError("Limit cannot exceed 500", 400);
       }
 
       const where = {};
@@ -184,7 +180,7 @@ class SellerService {
           where,
           skip,
           take: limit,
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
         }),
         prisma.sellerSubmission.count({ where }),
       ]);
@@ -200,8 +196,8 @@ class SellerService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error listing sellers', { error: error.message });
-      throw new ApiError('Failed to list sellers', 500);
+      logger.error("Error listing sellers", { error: error.message });
+      throw new ApiError("Failed to list sellers", 500);
     }
   }
 
@@ -235,8 +231,11 @@ class SellerService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error getting seller quote', { sellerId, error: error.message });
-      throw new ApiError('Failed to get seller quote', 500);
+      logger.error("Error getting seller quote", {
+        sellerId,
+        error: error.message,
+      });
+      throw new ApiError("Failed to get seller quote", 500);
     }
   }
 }

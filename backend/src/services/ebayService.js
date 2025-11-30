@@ -1,9 +1,9 @@
-import axios from 'axios';
-import { ApiError } from '../middleware/errorHandler.js';
-import logger from '../../config/logger.js';
-import { getOrSet, generateCacheKey } from '../utils/cache.js';
+import axios from "axios";
+import { ApiError } from "../middleware/errorHandler.js";
+import logger from "../../config/logger.js";
+import { getOrSet, generateCacheKey } from "../utils/cache.js";
 
-const EBAY_API_BASE = 'https://api.ebay.com';
+const EBAY_API_BASE = "https://api.ebay.com";
 const EBAY_CLIENT_ID = process.env.EBAY_CLIENT_ID;
 const EBAY_CLIENT_SECRET = process.env.EBAY_CLIENT_SECRET;
 
@@ -26,10 +26,10 @@ class EbayService {
       (response) => response,
       (error) => {
         if (error.response?.status === 429) {
-          logger.warn('eBay rate limit exceeded, backing off');
+          logger.warn("eBay rate limit exceeded, backing off");
         }
         return Promise.reject(error);
-      }
+      },
     );
   }
 
@@ -46,23 +46,23 @@ class EbayService {
       }
 
       if (!EBAY_CLIENT_ID || !EBAY_CLIENT_SECRET) {
-        logger.warn('eBay credentials not configured');
-        throw new ApiError('eBay API not configured', 503);
+        logger.warn("eBay credentials not configured");
+        throw new ApiError("eBay API not configured", 503);
       }
 
-      const auth = Buffer.from(`${EBAY_CLIENT_ID}:${EBAY_CLIENT_SECRET}`).toString(
-        'base64'
-      );
+      const auth = Buffer.from(
+        `${EBAY_CLIENT_ID}:${EBAY_CLIENT_SECRET}`,
+      ).toString("base64");
 
       const response = await axios.post(
-        'https://api.ebay.com/identity/v1/oauth2/token',
-        'grant_type=client_credentials&scope=https://api.ebay.com/oauth/api_scope',
+        "https://api.ebay.com/identity/v1/oauth2/token",
+        "grant_type=client_credentials&scope=https://api.ebay.com/oauth/api_scope",
         {
           headers: {
             Authorization: `Basic ${auth}`,
-            'Content-Type': 'application/x-www-form-urlencoded',
+            "Content-Type": "application/x-www-form-urlencoded",
           },
-        }
+        },
       );
 
       this.accessToken = response.data.access_token;
@@ -70,8 +70,8 @@ class EbayService {
 
       return this.accessToken;
     } catch (error) {
-      logger.error('Failed to get eBay access token', { error: error.message });
-      throw new ApiError('Failed to authenticate with eBay', 503);
+      logger.error("Failed to get eBay access token", { error: error.message });
+      throw new ApiError("Failed to authenticate with eBay", 503);
     }
   }
 
@@ -89,10 +89,10 @@ class EbayService {
       const { query, category, limit = 20, offset = 0 } = params;
 
       if (!query) {
-        throw new ApiError('Search query is required', 400);
+        throw new ApiError("Search query is required", 400);
       }
 
-      const cacheKey = generateCacheKey('ebay', 'search', params);
+      const cacheKey = generateCacheKey("ebay", "search", params);
 
       return await getOrSet(
         cacheKey,
@@ -105,17 +105,20 @@ class EbayService {
             filter.push(`categoryIds:{${category}}`);
           }
 
-          const response = await this.client.get('/buy/browse/v1/item_summary/search', {
-            params: {
-              q: query,
-              limit: Math.min(limit, 100), // eBay max is 100
-              offset,
-              sort: '-price',
+          const response = await this.client.get(
+            "/buy/browse/v1/item_summary/search",
+            {
+              params: {
+                q: query,
+                limit: Math.min(limit, 100), // eBay max is 100
+                offset,
+                sort: "-price",
+              },
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
             },
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
+          );
 
           return {
             results: (response.data.itemSummaries || []).map((item) => ({
@@ -133,12 +136,12 @@ class EbayService {
             offset,
           };
         },
-        3600 // Cache for 1 hour
+        3600, // Cache for 1 hour
       );
     } catch (error) {
       if (error.isApiError) throw error;
-      logger.error('eBay search failed', { error: error.message });
-      throw new ApiError('Failed to search eBay', 500);
+      logger.error("eBay search failed", { error: error.message });
+      throw new ApiError("Failed to search eBay", 500);
     }
   }
 
@@ -154,10 +157,10 @@ class EbayService {
       const { query, limit = 20 } = params;
 
       if (!query) {
-        throw new ApiError('Search query is required', 400);
+        throw new ApiError("Search query is required", 400);
       }
 
-      const cacheKey = generateCacheKey('ebay', 'sold_listings', params);
+      const cacheKey = generateCacheKey("ebay", "sold_listings", params);
 
       return await getOrSet(
         cacheKey,
@@ -165,17 +168,20 @@ class EbayService {
           const token = await this.getAccessToken();
 
           // Search for completed/sold listings
-          const response = await this.client.get('/buy/browse/v1/item_summary/search', {
-            params: {
-              q: query,
-              limit: Math.min(limit, 100),
-              filter: 'buyingOptions:{AUCTION}',
-              sort: '-endDate',
+          const response = await this.client.get(
+            "/buy/browse/v1/item_summary/search",
+            {
+              params: {
+                q: query,
+                limit: Math.min(limit, 100),
+                filter: "buyingOptions:{AUCTION}",
+                sort: "-endDate",
+              },
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
             },
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
+          );
 
           return {
             soldListings: (response.data.itemSummaries || []).map((item) => ({
@@ -189,23 +195,25 @@ class EbayService {
             total: response.data.total || 0,
           };
         },
-        1800 // Cache for 30 minutes (sold listings change more frequently)
+        1800, // Cache for 30 minutes (sold listings change more frequently)
       );
     } catch (error) {
       if (error.isApiError) throw error;
 
       // eBay API might return 400 if no results - treat gracefully
       if (error.response?.status === 400) {
-        logger.debug('No sold listings found', { query: params.query });
+        logger.debug("No sold listings found", { query: params.query });
         return {
           soldListings: [],
           total: 0,
-          note: 'No sold listings available for this search',
+          note: "No sold listings available for this search",
         };
       }
 
-      logger.error('Failed to fetch eBay sold listings', { error: error.message });
-      throw new ApiError('Failed to fetch sold listings', 500);
+      logger.error("Failed to fetch eBay sold listings", {
+        error: error.message,
+      });
+      throw new ApiError("Failed to fetch sold listings", 500);
     }
   }
 
@@ -220,7 +228,7 @@ class EbayService {
       const { query } = params;
 
       if (!query) {
-        throw new ApiError('Search query is required', 400);
+        throw new ApiError("Search query is required", 400);
       }
 
       const listings = await this.getSoldListings({
@@ -231,13 +239,13 @@ class EbayService {
       if (!listings.soldListings || listings.soldListings.length === 0) {
         return {
           query,
-          currency: 'USD',
+          currency: "USD",
           lowest: null,
           highest: null,
           average: null,
           median: null,
           sampleSize: 0,
-          note: 'No sold listings available',
+          note: "No sold listings available",
         };
       }
 
@@ -250,7 +258,7 @@ class EbayService {
       if (prices.length === 0) {
         return {
           query,
-          currency: 'USD',
+          currency: "USD",
           lowest: null,
           highest: null,
           average: null,
@@ -269,7 +277,7 @@ class EbayService {
 
       return {
         query,
-        currency: 'USD',
+        currency: "USD",
         lowest: Math.min(...prices),
         highest: Math.max(...prices),
         average: parseFloat(avg.toFixed(2)),
@@ -278,8 +286,10 @@ class EbayService {
       };
     } catch (error) {
       if (error.isApiError) throw error;
-      logger.error('Failed to calculate eBay price statistics', { error: error.message });
-      throw new ApiError('Failed to calculate price statistics', 500);
+      logger.error("Failed to calculate eBay price statistics", {
+        error: error.message,
+      });
+      throw new ApiError("Failed to calculate price statistics", 500);
     }
   }
 
@@ -305,8 +315,8 @@ class EbayService {
       };
     } catch (error) {
       if (error.isApiError) throw error;
-      logger.error('eBay enriched search failed', { error: error.message });
-      throw new ApiError('Failed to perform enriched search', 500);
+      logger.error("eBay enriched search failed", { error: error.message });
+      throw new ApiError("Failed to perform enriched search", 500);
     }
   }
 }

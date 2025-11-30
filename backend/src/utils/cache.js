@@ -1,4 +1,4 @@
-import NodeCache from 'node-cache';
+import NodeCache from "node-cache";
 
 /**
  * In-memory cache for API responses
@@ -59,7 +59,7 @@ export function getCacheStats() {
  */
 export function generateCacheKey(service, endpoint, params = {}) {
   const paramStr = JSON.stringify(params);
-  return `${service}:${endpoint}:${Buffer.from(paramStr).toString('base64')}`;
+  return `${service}:${endpoint}:${Buffer.from(paramStr).toString("base64")}`;
 }
 
 /**

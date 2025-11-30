@@ -1,5 +1,5 @@
-import ebayService from '../services/ebayService.js';
-import logger from '../../config/logger.js';
+import ebayService from "../services/ebayService.js";
+import logger from "../../config/logger.js";
 
 /**
  * Search eBay for items
@@ -13,8 +13,8 @@ export async function searchEbay(req, res, next) {
       return res.status(400).json({
         success: false,
         error: {
-          code: 'VALIDATION_ERROR',
-          message: 'Query parameter is required',
+          code: "VALIDATION_ERROR",
+          message: "Query parameter is required",
         },
         requestId: req.id,
       });
@@ -27,7 +27,7 @@ export async function searchEbay(req, res, next) {
       offset: offset ? parseInt(offset) : 0,
     });
 
-    logger.info('eBay search completed', {
+    logger.info("eBay search completed", {
       requestId: req.id,
       query,
       resultCount: results.results.length,
@@ -55,8 +55,8 @@ export async function getSoldListingsEbay(req, res, next) {
       return res.status(400).json({
         success: false,
         error: {
-          code: 'VALIDATION_ERROR',
-          message: 'Query parameter is required',
+          code: "VALIDATION_ERROR",
+          message: "Query parameter is required",
         },
         requestId: req.id,
       });
@@ -67,7 +67,7 @@ export async function getSoldListingsEbay(req, res, next) {
       limit: limit ? parseInt(limit) : 20,
     });
 
-    logger.info('eBay sold listings fetched', {
+    logger.info("eBay sold listings fetched", {
       requestId: req.id,
       query,
       resultCount: listings.soldListings.length,
@@ -95,8 +95,8 @@ export async function getPricesEbay(req, res, next) {
       return res.status(400).json({
         success: false,
         error: {
-          code: 'VALIDATION_ERROR',
-          message: 'Query parameter is required',
+          code: "VALIDATION_ERROR",
+          message: "Query parameter is required",
         },
         requestId: req.id,
       });
@@ -106,7 +106,7 @@ export async function getPricesEbay(req, res, next) {
       query,
     });
 
-    logger.info('eBay price statistics fetched', {
+    logger.info("eBay price statistics fetched", {
       requestId: req.id,
       query,
       sampleSize: prices.sampleSize,
@@ -134,8 +134,8 @@ export async function searchEbayEnriched(req, res, next) {
       return res.status(400).json({
         success: false,
         error: {
-          code: 'VALIDATION_ERROR',
-          message: 'Query parameter is required',
+          code: "VALIDATION_ERROR",
+          message: "Query parameter is required",
         },
         requestId: req.id,
       });
@@ -145,7 +145,7 @@ export async function searchEbayEnriched(req, res, next) {
       query,
     });
 
-    logger.info('eBay enriched search completed', {
+    logger.info("eBay enriched search completed", {
       requestId: req.id,
       query,
       resultCount: results.results.length,
