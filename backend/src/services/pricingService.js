@@ -80,7 +80,11 @@ class PricingService {
       };
 
       // Get market stat
-      const marketStat = await this._getMarketStat(releaseId, marketSource, marketStatistic);
+      const marketStat = await this._getMarketStat(
+        releaseId,
+        marketSource,
+        marketStatistic,
+      );
 
       if (!marketStat) {
         throw new ApiError('Market data not available for pricing', 404);
@@ -92,9 +96,22 @@ class PricingService {
 
       // Calculate step by step
       const baseOffer = marketStat * config.buyPercentage;
-      const adjustedPrice = this.applyConditionCurve(baseOffer, mediaCondition, sleeveCondition, curve, weights);
-      const rounded = this.roundToIncrement(adjustedPrice, config.roundIncrement);
-      const final = this.applyFloorAndCeiling(rounded, config.buyFloor, config.buyCeiling);
+      const adjustedPrice = this.applyConditionCurve(
+        baseOffer,
+        mediaCondition,
+        sleeveCondition,
+        curve,
+        weights,
+      );
+      const rounded = this.roundToIncrement(
+        adjustedPrice,
+        config.roundIncrement,
+      );
+      const final = this.applyFloorAndCeiling(
+        rounded,
+        config.buyFloor,
+        config.buyCeiling,
+      );
 
       logger.debug('Buy price calculated', {
         releaseId,
@@ -112,8 +129,12 @@ class PricingService {
           baseOffer: parseFloat(baseOffer.toFixed(2)),
           mediaCondition,
           sleeveCondition,
-          mediaAdjustment: parseFloat((baseOffer * curve[mediaCondition] * weights.media).toFixed(2)),
-          sleeveAdjustment: parseFloat((baseOffer * curve[sleeveCondition] * weights.sleeve).toFixed(2)),
+          mediaAdjustment: parseFloat(
+            (baseOffer * curve[mediaCondition] * weights.media).toFixed(2),
+          ),
+          sleeveAdjustment: parseFloat(
+            (baseOffer * curve[sleeveCondition] * weights.sleeve).toFixed(2),
+          ),
           beforeRounding: parseFloat(adjustedPrice.toFixed(2)),
           afterRounding: parseFloat(rounded.toFixed(2)),
           floorApplied: final === config.buyFloor,
@@ -158,7 +179,10 @@ class PricingService {
     try {
       // Validate inputs
       if (!costBasis || costBasis < 0) {
-        throw new ApiError('Valid cost basis is required for sell price calculation', 400);
+        throw new ApiError(
+          'Valid cost basis is required for sell price calculation',
+          400,
+        );
       }
 
       this._validateCondition(mediaCondition);
@@ -167,14 +191,19 @@ class PricingService {
       // Merge with defaults
       const config = {
         sellPercentage: formula.sellPercentage ?? this.defaults.sellPercentage,
-        minProfitMargin: formula.minProfitMargin ?? this.defaults.minProfitMargin,
+        minProfitMargin:
+          formula.minProfitMargin ?? this.defaults.minProfitMargin,
         roundIncrement: formula.roundIncrement ?? this.defaults.roundIncrement,
         sellFloor: formula.sellFloor ?? this.defaults.sellFloor,
         sellCeiling: formula.sellCeiling ?? this.defaults.sellCeiling,
       };
 
       // Get market stat
-      const marketStat = await this._getMarketStat(releaseId, marketSource, marketStatistic);
+      const marketStat = await this._getMarketStat(
+        releaseId,
+        marketSource,
+        marketStatistic,
+      );
 
       if (!marketStat) {
         throw new ApiError('Market data not available for pricing', 404);
@@ -186,7 +215,13 @@ class PricingService {
 
       // Calculate suggested price
       const listSuggestion = marketStat * config.sellPercentage;
-      const adjustedPrice = this.applyConditionCurve(listSuggestion, mediaCondition, sleeveCondition, curve, weights);
+      const adjustedPrice = this.applyConditionCurve(
+        listSuggestion,
+        mediaCondition,
+        sleeveCondition,
+        curve,
+        weights,
+      );
       let rounded = this.roundToIncrement(adjustedPrice, config.roundIncrement);
 
       // Validate minimum profit margin
@@ -195,10 +230,15 @@ class PricingService {
         rounded = minAcceptablePrice;
       }
 
-      const final = this.applyFloorAndCeiling(rounded, config.sellFloor, config.sellCeiling);
+      const final = this.applyFloorAndCeiling(
+        rounded,
+        config.sellFloor,
+        config.sellCeiling,
+      );
 
       // Calculate margin
-      const marginPercent = costBasis > 0 ? ((final - costBasis) / costBasis) * 100 : 0;
+      const marginPercent =
+        costBasis > 0 ? ((final - costBasis) / costBasis) * 100 : 0;
 
       logger.debug('Sell price calculated', {
         releaseId,
@@ -268,7 +308,9 @@ class PricingService {
     const schedule = markdownSchedule || this.defaults.markdownSchedule;
 
     // Apply the highest applicable markdown
-    for (const [days, discount] of Object.entries(schedule).sort((a, b) => parseInt(b[0]) - parseInt(a[0]))) {
+    for (const [days, discount] of Object.entries(schedule).sort(
+      (a, b) => parseInt(b[0]) - parseInt(a[0]),
+    )) {
       if (daysListed >= parseInt(days)) {
         discountPercent = discount;
         break;
@@ -300,7 +342,13 @@ class PricingService {
    * @param {Object} weights - { media: 0.6, sleeve: 0.4 }
    * @returns {number} Adjusted price
    */
-  applyConditionCurve(basePrice, mediaCondition, sleeveCondition, curve, weights) {
+  applyConditionCurve(
+    basePrice,
+    mediaCondition,
+    sleeveCondition,
+    curve,
+    weights,
+  ) {
     const mediaWeights = weights || this.defaultWeights;
     const curve_ = curve || this.defaultConditionCurve;
 
@@ -373,7 +421,9 @@ class PricingService {
       const stat = statistic.toLowerCase();
 
       if (source === 'DISCOGS') {
-        const data = await discogsService.getPriceStatistics(parseInt(releaseId));
+        const data = await discogsService.getPriceStatistics(
+          parseInt(releaseId),
+        );
         return data?.[stat] || null;
       }
 
@@ -409,14 +459,20 @@ class PricingService {
     let ebayPrice = null;
 
     try {
-      const discogsData = await discogsService.getPriceStatistics(parseInt(releaseId));
+      const discogsData = await discogsService.getPriceStatistics(
+        parseInt(releaseId),
+      );
       discogsPrice = discogsData?.[statistic];
     } catch (error) {
-      logger.debug('Discogs data unavailable for hybrid pricing', { releaseId });
+      logger.debug('Discogs data unavailable for hybrid pricing', {
+        releaseId,
+      });
     }
 
     try {
-      const ebayData = await ebayService.getPriceStatistics({ query: releaseId });
+      const ebayData = await ebayService.getPriceStatistics({
+        query: releaseId,
+      });
       ebayPrice = ebayData?.[statistic];
     } catch (error) {
       logger.debug('eBay data unavailable for hybrid pricing', { releaseId });
@@ -438,9 +494,21 @@ class PricingService {
    * @throws {ApiError} If condition is invalid
    */
   _validateCondition(condition) {
-    const validConditions = ['MINT', 'NM', 'VG_PLUS', 'VG', 'VG_MINUS', 'G', 'FAIR', 'POOR'];
+    const validConditions = [
+      'MINT',
+      'NM',
+      'VG_PLUS',
+      'VG',
+      'VG_MINUS',
+      'G',
+      'FAIR',
+      'POOR',
+    ];
     if (!validConditions.includes(condition)) {
-      throw new ApiError(`Invalid condition: ${condition}. Must be one of: ${validConditions.join(', ')}`, 400);
+      throw new ApiError(
+        `Invalid condition: ${condition}. Must be one of: ${validConditions.join(', ')}`,
+        400,
+      );
     }
   }
 }

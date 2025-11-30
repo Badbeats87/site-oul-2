@@ -1,5 +1,8 @@
 import express from 'express';
-import { discogsLimiter, ebayLimiter } from '../middleware/integrationRateLimiter.js';
+import {
+  discogsLimiter,
+  ebayLimiter,
+} from '../middleware/integrationRateLimiter.js';
 import {
   searchDiscogs,
   getDiscogsRelease,

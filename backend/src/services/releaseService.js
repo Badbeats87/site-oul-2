@@ -1,7 +1,12 @@
 import prisma from '../utils/db.js';
 import { ApiError } from '../middleware/errorHandler.js';
 import logger from '../../config/logger.js';
-import { getCached, setCached, deleteCached, getOrSet } from '../utils/cache.js';
+import {
+  getCached,
+  setCached,
+  deleteCached,
+  getOrSet,
+} from '../utils/cache.js';
 import inventoryService from './inventoryService.js';
 
 class ReleaseService {
@@ -82,11 +87,12 @@ class ReleaseService {
       ]);
 
       // Batch load inventory for all releases
-      const releaseIds = releases.map(r => r.id);
-      const inventoryMap = await inventoryService.getInventoryForReleases(releaseIds);
+      const releaseIds = releases.map((r) => r.id);
+      const inventoryMap =
+        await inventoryService.getInventoryForReleases(releaseIds);
 
       // Enhance releases with inventory data
-      const enhancedReleases = releases.map(release => ({
+      const enhancedReleases = releases.map((release) => ({
         ...release,
         inventory: inventoryMap.get(release.id) || {
           availableCount: 0,
@@ -172,7 +178,8 @@ class ReleaseService {
   async findById(id) {
     try {
       // Validate UUID format
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const uuidRegex =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (!uuidRegex.test(id)) {
         throw new ApiError('Invalid release ID format', 404);
       }
@@ -220,7 +227,17 @@ class ReleaseService {
 
   async create(data) {
     try {
-      const { title, artist, label, catalogNumber, barcode, releaseYear, genre, coverArtUrl, description } = data;
+      const {
+        title,
+        artist,
+        label,
+        catalogNumber,
+        barcode,
+        releaseYear,
+        genre,
+        coverArtUrl,
+        description,
+      } = data;
 
       // Validate required fields
       if (!title || !artist) {
@@ -242,7 +259,10 @@ class ReleaseService {
       });
 
       // Note: List caches will expire naturally; no need to invalidate all
-      logger.info('Release created', { releaseId: release.id, title: release.title });
+      logger.info('Release created', {
+        releaseId: release.id,
+        title: release.title,
+      });
       return release;
     } catch (error) {
       if (error instanceof ApiError) throw error;
@@ -266,7 +286,9 @@ class ReleaseService {
           label: data.label ?? release.label,
           catalogNumber: data.catalogNumber ?? release.catalogNumber,
           barcode: data.barcode ?? release.barcode,
-          releaseYear: data.releaseYear ? parseInt(data.releaseYear, 10) : release.releaseYear,
+          releaseYear: data.releaseYear
+            ? parseInt(data.releaseYear, 10)
+            : release.releaseYear,
           genre: data.genre ?? release.genre,
           coverArtUrl: data.coverArtUrl ?? release.coverArtUrl,
           description: data.description ?? release.description,
@@ -288,7 +310,8 @@ class ReleaseService {
   async delete(id) {
     try {
       // Validate UUID format
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const uuidRegex =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (!uuidRegex.test(id)) {
         throw new ApiError('Invalid release ID format', 404);
       }
@@ -359,9 +382,9 @@ class ReleaseService {
 
       // Extract and format suggestions
       const suggestions = results
-        .map(r => r[searchField])
-        .filter(v => v) // Remove nulls
-        .map(value => ({
+        .map((r) => r[searchField])
+        .filter((v) => v) // Remove nulls
+        .map((value) => ({
           value,
           label: value,
         }));
@@ -378,7 +401,11 @@ class ReleaseService {
       return result;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error('Error getting autocomplete suggestions', { query, field, error: error.message });
+      logger.error('Error getting autocomplete suggestions', {
+        query,
+        field,
+        error: error.message,
+      });
       throw new ApiError('Failed to get suggestions', 500);
     }
   }
@@ -423,7 +450,7 @@ class ReleaseService {
       });
 
       // Score and sort by relevance
-      const scored = releases.map(release => {
+      const scored = releases.map((release) => {
         let score = 0;
 
         // Title match (highest weight)
@@ -442,7 +469,9 @@ class ReleaseService {
         // Artist match (second priority)
         if (release.artist?.toLowerCase().includes(searchQuery)) {
           score += 80;
-          if (release.artist?.toLowerCase().split(/\s+/).includes(searchQuery)) {
+          if (
+            release.artist?.toLowerCase().split(/\s+/).includes(searchQuery)
+          ) {
             score += 40;
           }
           if (release.artist?.toLowerCase().startsWith(searchQuery)) {

@@ -35,7 +35,8 @@ export const getSubmissionDetail = async (req, res, next) => {
   try {
     const { submissionId } = req.params;
 
-    const submission = await adminSubmissionService.getSubmissionDetail(submissionId);
+    const submission =
+      await adminSubmissionService.getSubmissionDetail(submissionId);
 
     res.json({
       success: true,
@@ -59,7 +60,7 @@ export const acceptSubmission = async (req, res, next) => {
     const result = await adminSubmissionService.acceptSubmission(
       submissionId,
       notes,
-      req.user?.id
+      req.user?.id,
     );
 
     res.json({
@@ -85,7 +86,7 @@ export const rejectSubmission = async (req, res, next) => {
       submissionId,
       reason,
       notes,
-      req.user?.id
+      req.user?.id,
     );
 
     res.json({
@@ -121,7 +122,7 @@ export const createCounterOffer = async (req, res, next) => {
       submissionId,
       items,
       notes,
-      req.user?.id
+      req.user?.id,
     );
 
     res.json({
@@ -147,7 +148,7 @@ export const acceptSubmissionItem = async (req, res, next) => {
       submissionId,
       itemId,
       notes,
-      req.user?.id
+      req.user?.id,
     );
 
     res.json({
@@ -174,7 +175,7 @@ export const rejectSubmissionItem = async (req, res, next) => {
       itemId,
       reason,
       notes,
-      req.user?.id
+      req.user?.id,
     );
 
     res.json({
@@ -211,7 +212,7 @@ export const updateItemCounterOffer = async (req, res, next) => {
       itemId,
       counterOfferPrice,
       notes,
-      req.user?.id
+      req.user?.id,
     );
 
     res.json({
@@ -246,7 +247,7 @@ export const updateSubmissionNotes = async (req, res, next) => {
     const result = await adminSubmissionService.updateSubmissionNotes(
       submissionId,
       notes,
-      req.user?.id
+      req.user?.id,
     );
 
     res.json({

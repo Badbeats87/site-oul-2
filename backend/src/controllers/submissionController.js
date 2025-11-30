@@ -20,7 +20,10 @@ export const createSubmission = async (req, res, next) => {
       });
     }
 
-    const submission = await submissionService.createSubmission(sellerId, items);
+    const submission = await submissionService.createSubmission(
+      sellerId,
+      items,
+    );
 
     res.status(201).json({
       success: true,
@@ -97,7 +100,7 @@ export const reviewSubmissionItem = async (req, res, next) => {
     const submission = await submissionService.reviewSubmissionItem(
       sellerId,
       itemId,
-      action
+      action,
     );
 
     res.json({

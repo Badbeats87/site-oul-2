@@ -37,7 +37,7 @@ class DiscogsService {
           // Could implement exponential backoff here
         }
         return Promise.reject(error);
-      }
+      },
     );
   }
 
@@ -96,7 +96,7 @@ class DiscogsService {
             },
           };
         },
-        3600 // Cache for 1 hour
+        3600, // Cache for 1 hour
       );
     } catch (error) {
       if (error.isApiError) throw error;
@@ -164,7 +164,7 @@ class DiscogsService {
             uri: response.data.uri,
           };
         },
-        7200 // Cache for 2 hours
+        7200, // Cache for 2 hours
       );
     } catch (error) {
       if (error.isApiError) throw error;
@@ -202,7 +202,7 @@ class DiscogsService {
           // Try to get price data from the community stats
           // Discogs includes price info in the marketplace stats
           const statsResponse = await this.client.get(
-            `/releases/${releaseId}/stats`
+            `/releases/${releaseId}/stats`,
           );
 
           const priceData = statsResponse.data.prices;
@@ -216,7 +216,7 @@ class DiscogsService {
             median: parseFloat(priceData.median) || null,
           };
         },
-        1800 // Cache for 30 minutes (prices change more frequently)
+        1800, // Cache for 30 minutes (prices change more frequently)
       );
     } catch (error) {
       if (error.isApiError) throw error;
@@ -274,7 +274,7 @@ class DiscogsService {
             });
             return result;
           }
-        })
+        }),
       );
 
       return {

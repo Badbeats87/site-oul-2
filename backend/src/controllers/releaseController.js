@@ -47,7 +47,17 @@ export const getReleaseById = async (req, res, next) => {
 
 export const createRelease = async (req, res, next) => {
   try {
-    const { title, artist, label, catalogNumber, barcode, releaseYear, genre, coverArtUrl, description } = req.body;
+    const {
+      title,
+      artist,
+      label,
+      catalogNumber,
+      barcode,
+      releaseYear,
+      genre,
+      coverArtUrl,
+      description,
+    } = req.body;
 
     const release = await releaseService.create({
       title,
@@ -74,7 +84,17 @@ export const createRelease = async (req, res, next) => {
 export const updateRelease = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { title, artist, label, catalogNumber, barcode, releaseYear, genre, coverArtUrl, description } = req.body;
+    const {
+      title,
+      artist,
+      label,
+      catalogNumber,
+      barcode,
+      releaseYear,
+      genre,
+      coverArtUrl,
+      description,
+    } = req.body;
 
     const release = await releaseService.update(id, {
       title,
@@ -128,7 +148,10 @@ export const searchReleases = async (req, res, next) => {
       });
     }
 
-    const results = await releaseService.search(q, limit ? parseInt(limit, 10) : 50);
+    const results = await releaseService.search(
+      q,
+      limit ? parseInt(limit, 10) : 50,
+    );
 
     res.json({
       success: true,
@@ -169,7 +192,11 @@ export const autocomplete = async (req, res, next) => {
       });
     }
 
-    const suggestions = await releaseService.getAutocomplete(q, field, parseInt(limit, 10));
+    const suggestions = await releaseService.getAutocomplete(
+      q,
+      field,
+      parseInt(limit, 10),
+    );
 
     res.json({
       success: true,

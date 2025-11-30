@@ -43,11 +43,7 @@ const PERMISSIONS = {
     'submissions:write',
     'inventory:read',
   ],
-  BUYER: [
-    'catalog:read',
-    'orders:read',
-    'orders:write',
-  ],
+  BUYER: ['catalog:read', 'orders:read', 'orders:write'],
 };
 
 /**
@@ -64,14 +60,13 @@ export const authenticate = async (req, res, next) => {
 
   // Allow public auth endpoints without authentication
   // Check both possible path formats (/api/v1/auth/... and /auth/...)
-  const isPublicAuthEndpoint = (
+  const isPublicAuthEndpoint =
     req.path === '/api/v1/auth/login' ||
     req.path === '/api/v1/auth/register' ||
     req.path === '/api/v1/auth/refresh' ||
     req.path === '/auth/login' ||
     req.path === '/auth/register' ||
-    req.path === '/auth/refresh'
-  );
+    req.path === '/auth/refresh';
 
   if (isPublicAuthEndpoint) {
     return next();
@@ -169,13 +164,16 @@ export const requireRole = (minRole) => {
     const requiredRoleLevel = ROLE_HIERARCHY[minRole] || 0;
 
     if (userRoleLevel < requiredRoleLevel) {
-      logger.warn(`[${requestId}] Insufficient permissions - role check failed`, {
-        userId: req.user.id,
-        userRole: req.user.role,
-        requiredRole: minRole,
-        method: req.method,
-        path: req.path,
-      });
+      logger.warn(
+        `[${requestId}] Insufficient permissions - role check failed`,
+        {
+          userId: req.user.id,
+          userRole: req.user.role,
+          requiredRole: minRole,
+          method: req.method,
+          path: req.path,
+        },
+      );
 
       return res.status(403).json({
         success: false,
@@ -226,13 +224,16 @@ export const requirePermission = (permission) => {
 
     // Check specific permission
     if (!userPermissions.includes(permission)) {
-      logger.warn(`[${requestId}] Insufficient permissions - permission check failed`, {
-        userId: req.user.id,
-        userRole: req.user.role,
-        requiredPermission: permission,
-        method: req.method,
-        path: req.path,
-      });
+      logger.warn(
+        `[${requestId}] Insufficient permissions - permission check failed`,
+        {
+          userId: req.user.id,
+          userRole: req.user.role,
+          requiredPermission: permission,
+          method: req.method,
+          path: req.path,
+        },
+      );
 
       return res.status(403).json({
         success: false,
