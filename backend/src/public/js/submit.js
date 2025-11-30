@@ -69,29 +69,63 @@ const submitForm = {
     }
 
     try {
+      // Get auth token if available
+      const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       // Call catalog search API
       const response = await fetch(
-        `/api/v1/catalog/search?q=${encodeURIComponent(query)}&limit=10`
+        `/api/v1/catalog/search?q=${encodeURIComponent(query)}&limit=10`,
+        { headers }
       );
 
       if (!response.ok) {
+        console.error('Search response status:', response.status, response.statusText);
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Search error data:', errorData);
+
+        if (response.status === 401) {
+          throw new Error('Authentication required. Please log in first.');
+        }
         throw new Error(`API error: ${response.statusText}`);
       }
 
       const data = await response.json();
-      const results = data.data || [];
+      const results = data.data?.results || data.data || [];
 
-      // Transform results to expected format
+      if (results.length === 0) {
+        alert('No records found. Try a different search term.');
+        return;
+      }
+
+      // Transform results and calculate estimated offers based on buyer pricing policy
       const transformedResults = results.map((release) => {
-        // Use median price from market data if available, otherwise use default
-        const medianPrice = release.marketData?.median || 25;
+        // Get lowest Discogs price as base
+        const marketSnapshot = release.marketSnapshots?.[0];
+        const lowestPrice = marketSnapshot?.statLow ? parseFloat(marketSnapshot.statLow) :
+                           marketSnapshot?.statMedian ? parseFloat(marketSnapshot.statMedian) : 0;
+
+        // Calculate estimated offer: lowest_price × 55% (standard buyer percentage)
+        // For NM/NM condition (default)
+        let estimatedQuote = 0;
+        if (lowestPrice > 0) {
+          estimatedQuote = Math.round(lowestPrice * 0.55 * 100) / 100;
+        }
 
         return {
           id: release.id,
           title: release.title,
-          artist: release.artists?.[0]?.name || 'Unknown Artist',
+          artist: release.artist || 'Unknown Artist',
           year: release.year || 'N/A',
-          quote: Math.round(medianPrice * 0.55 * 100) / 100, // 55% of median as buyer offer
+          quote: estimatedQuote,
+          marketData: marketSnapshot,
           releaseData: release
         };
       });
@@ -99,7 +133,7 @@ const submitForm = {
       this.displaySearchResults(transformedResults);
     } catch (error) {
       console.error('Search error:', error);
-      alert('Search failed. Please try again.');
+      alert(`Search failed: ${error.message}`);
     }
   },
 
@@ -110,11 +144,12 @@ const submitForm = {
     results.forEach(result => {
       const card = document.createElement('div');
       card.className = 'result-card';
+      const quoteDisplay = result.quote > 0 ? `$${result.quote.toFixed(2)}` : 'Needs Review';
       card.innerHTML = `
         <div class="result-card__title">${result.title}</div>
         <div class="result-card__artist">${result.artist} • ${result.year}</div>
         <button class="button button--secondary result-card__button">
-          Quote: $${result.quote.toFixed(2)}
+          Estimate: ${quoteDisplay} → Add to List
         </button>
       `;
 
@@ -128,17 +163,50 @@ const submitForm = {
     this.elements.searchResults.style.display = 'block';
   },
 
+  calculateEstimatedQuote(record, mediaCondition = 'NM', sleeveCondition = 'NM') {
+    if (!record.marketData || record.marketData.statLow <= 0) {
+      return 0;
+    }
+
+    // Base offer: lowest Discogs price × 55% (buyer percentage)
+    const baseOffer = record.marketData.statLow * 0.55;
+
+    // Apply condition adjustments (simplified: NM = 100%, others adjusted accordingly)
+    const conditionMultipliers = {
+      'MINT': 1.15,
+      'M': 1.15,
+      'NM': 1.0,
+      'VG_PLUS': 0.80,
+      'VG+': 0.80,
+      'VG': 0.65,
+      'VG_MINUS': 0.50,
+      'VG-': 0.50,
+      'G': 0.30,
+    };
+
+    const mediaMultiplier = conditionMultipliers[mediaCondition] || 1.0;
+    const sleeveMultiplier = conditionMultipliers[sleeveCondition] || 1.0;
+
+    // Weighted average: 70% media, 30% sleeve (buyer emphasizes media condition)
+    const conditionAdjustment = (mediaMultiplier * 0.7) + (sleeveMultiplier * 0.3);
+    const estimatedQuote = baseOffer * conditionAdjustment;
+
+    return Math.round(estimatedQuote * 100) / 100;
+  },
+
   addRecordToSubmission(record) {
     const existingRecord = this.submission.records.find(r => r.id === record.id);
 
     if (existingRecord) {
       existingRecord.quantity += 1;
     } else {
+      const estimatedQuote = this.calculateEstimatedQuote(record, 'NM', 'NM');
       this.submission.records.push({
         ...record,
         quantity: 1,
         mediaCondition: 'NM',
-        sleeveCondition: 'NM'
+        sleeveCondition: 'NM',
+        quote: estimatedQuote
       });
     }
 
