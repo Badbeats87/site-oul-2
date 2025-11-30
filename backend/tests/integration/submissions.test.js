@@ -173,8 +173,10 @@ describe('Submissions Service - Integration Tests', () => {
     });
 
     it('should throw error for non-existent submission', async () => {
+      // Use valid UUID format that doesn't exist
+      const fakeUuid = '00000000-0000-0000-0000-000000000000';
       await expect(
-        submissionService.getSubmission('invalid-submission-id')
+        submissionService.getSubmission(fakeUuid)
       ).rejects.toThrow(ApiError);
     });
   });
