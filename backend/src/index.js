@@ -3,6 +3,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import { v4 as uuidv4 } from 'uuid';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import swaggerUi from 'swagger-ui-express';
 import config from '../config/config.js';
 import logger, { logRequest } from '../config/logger.js';
@@ -26,6 +28,9 @@ import { authenticate } from './middleware/authMiddleware.js';
 import { captureRawBody } from './middleware/rawBody.js';
 import prisma from './utils/db.js';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.resolve(__dirname, '../..');
+
 const app = express();
 
 // ============================================================================
@@ -36,6 +41,11 @@ const app = express();
 app.use(helmet());
 app.use(cors(config.cors));
 app.use(compression());
+
+// Serve static files (pages, styles, js)
+app.use(express.static(path.join(projectRoot, 'pages')));
+app.use(express.static(path.join(projectRoot, 'js')));
+app.use(express.static(path.join(projectRoot, 'styles')));
 
 // Request logging
 app.use(logRequest);
