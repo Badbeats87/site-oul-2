@@ -16,5 +16,17 @@
     "semi": ["error", "always"],
     "no-unused-vars": ["warn"],
     "no-console": ["warn"]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["src/public/js/**/*.js"],
+      "env": {
+        "browser": true,
+        "es2022": true
+      },
+      "rules": {
+        "no-undef": "off"
+      }
+    }
+  ]
 }
