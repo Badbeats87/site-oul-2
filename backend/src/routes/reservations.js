@@ -5,7 +5,6 @@
 
 import express from 'express';
 import * as reservationController from '../controllers/reservationController.js';
-import { protect, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -72,7 +71,7 @@ const router = express.Router();
  *       409:
  *         description: Item already reserved or unavailable
  */
-router.post('/', protect, reservationController.createReservation);
+router.post('/', reservationController.createReservation);
 
 /**
  * @swagger
@@ -100,7 +99,7 @@ router.post('/', protect, reservationController.createReservation);
  *       200:
  *         description: Hold released successfully
  */
-router.delete('/:holdId', protect, reservationController.releaseReservation);
+router.delete('/:holdId', reservationController.releaseReservation);
 
 /**
  * @swagger
@@ -203,7 +202,7 @@ router.get('/holds/:holdId/history', reservationController.getReservationHistory
  *       200:
  *         description: Hold statistics retrieved
  */
-router.get('/stats', protect, authorize('ADMIN'), reservationController.getReservationStats);
+router.get('/stats', reservationController.getReservationStats);
 
 /**
  * @swagger
@@ -230,6 +229,6 @@ router.get('/stats', protect, authorize('ADMIN'), reservationController.getReser
  *       200:
  *         description: Hold converted to sale
  */
-router.post('/:holdId/convert', protect, authorize('ADMIN'), reservationController.convertReservationToSale);
+router.post('/:holdId/convert', reservationController.convertReservationToSale);
 
 export default router;
