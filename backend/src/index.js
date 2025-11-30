@@ -15,6 +15,7 @@ import catalogRoutes from './routes/catalog.js';
 import integrationsRoutes from './routes/integrations.js';
 import sellersRoutes from './routes/sellers.js';
 import adminRoutes from './routes/admin.js';
+import inventoryRoutes from './routes/inventory.js';
 import { authenticate } from './middleware/authMiddleware.js';
 import prisma from './utils/db.js';
 
@@ -78,9 +79,11 @@ app.use('/api/v1/sellers', sellersRoutes);
 // Admin routes
 app.use('/api/v1/admin/submissions', adminRoutes);
 
+// Inventory routes
+app.use('/api/v1/inventory', inventoryRoutes);
+
 // TODO: Add other route groups
 // app.use('/api/v1/pricing', pricingRoutes);
-// app.use('/api/v1/inventory', inventoryRoutes);
 // app.use('/api/v1/orders', orderRoutes);
 
 // ============================================================================
