@@ -13,43 +13,53 @@ async function initializeDatabase() {
   const { execSync } = await import('child_process');
 
   try {
-    logger.info('Initializing database schema...');
+    logger.info('🔧 Starting database initialization...');
+    logger.info(`DATABASE_URL set: ${!!process.env.DATABASE_URL}`);
 
-    // ALWAYS run prisma db push to ensure schema is in sync
-    // This is idempotent - safe to run even if schema exists
-    const prismaPath = path.resolve(__dirname, '../../node_modules/.bin/prisma');
-    const command = `node "${prismaPath}" db push --skip-generate`;
+    const backendDir = path.resolve(__dirname, '../..');
+    const prismaDir = path.resolve(backendDir, 'prisma');
+    const prismaSchema = path.resolve(prismaDir, 'schema.prisma');
 
-    logger.info(`Executing: ${command}`);
+    logger.info(`Backend dir: ${backendDir}`);
+    logger.info(`Prisma dir: ${prismaDir}`);
+    logger.info(`Schema file exists: ${require('fs').existsSync(prismaSchema)}`);
 
-    try {
-      execSync(command, {
-        cwd: path.resolve(__dirname, '../..'),
-        stdio: 'inherit',
-        env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL },
-      });
-      logger.info('✅ Database schema initialized successfully');
-      return true;
-    } catch (execError) {
-      logger.error('❌ Prisma db push failed with direct path', { error: execError.message });
+    // Try prisma migrate deploy first (uses existing migrations)
+    const prismaPath = path.resolve(backendDir, 'node_modules/.bin/prisma');
+    logger.info(`Prisma CLI path: ${prismaPath}`);
+    logger.info(`Prisma CLI exists: ${require('fs').existsSync(prismaPath)}`);
 
-      // Fallback: try with npx
-      logger.info('Attempting fallback with npx...');
+    const commands = [
+      `node "${prismaPath}" migrate deploy --skip-generate`,
+      'npx prisma migrate deploy --skip-generate',
+      `node "${prismaPath}" db push --skip-generate`,
+      'npx prisma db push --skip-generate',
+    ];
+
+    for (const command of commands) {
       try {
-        execSync('npx prisma db push --skip-generate', {
-          cwd: path.resolve(__dirname, '../..'),
+        logger.info(`⏳ Attempting: ${command}`);
+        execSync(command, {
+          cwd: backendDir,
           stdio: 'inherit',
-          env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL },
+          env: { ...process.env },
+          timeout: 60000, // 60 second timeout
         });
-        logger.info('✅ Database schema initialized successfully (via npx)');
+        logger.info('✅ Database schema initialized successfully');
         return true;
-      } catch (npxError) {
-        logger.error('❌ Both methods failed', { error: npxError.message });
-        throw new Error(`Database initialization failed: ${npxError.message}`);
+      } catch (error) {
+        logger.warn(`⚠️  Command failed: ${command}`, { error: error.message });
+        // Continue to next command
       }
     }
+
+    // If all commands failed
+    throw new Error('All database initialization attempts failed');
   } catch (error) {
-    logger.error('❌ Database initialization failed', { error: error.message });
+    logger.error('❌ Database initialization failed fatally', {
+      error: error.message,
+      stack: error.stack,
+    });
     throw error;
   }
 }
