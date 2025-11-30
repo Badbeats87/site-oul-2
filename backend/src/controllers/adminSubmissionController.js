@@ -1,5 +1,5 @@
-import adminSubmissionService from "../services/adminSubmissionService.js";
-import logger from "../../config/logger.js";
+import adminSubmissionService from '../services/adminSubmissionService.js';
+import logger from '../../config/logger.js';
 
 /**
  * GET /api/v1/admin/submissions
@@ -13,8 +13,8 @@ export const getSubmissionQueue = async (req, res, next) => {
       status,
       limit: limit ? parseInt(limit, 10) : 50,
       page: page ? parseInt(page, 10) : 1,
-      sortBy: sortBy || "createdAt",
-      sortOrder: sortOrder || "desc",
+      sortBy: sortBy || 'createdAt',
+      sortOrder: sortOrder || 'desc',
     });
 
     res.json({
@@ -60,7 +60,7 @@ export const acceptSubmission = async (req, res, next) => {
     const result = await adminSubmissionService.acceptSubmission(
       submissionId,
       notes,
-      req.user?.id,
+      req.user?.id
     );
 
     res.json({
@@ -86,7 +86,7 @@ export const rejectSubmission = async (req, res, next) => {
       submissionId,
       reason,
       notes,
-      req.user?.id,
+      req.user?.id
     );
 
     res.json({
@@ -112,7 +112,7 @@ export const createCounterOffer = async (req, res, next) => {
       return res.status(400).json({
         success: false,
         error: {
-          message: "items must be a non-empty array",
+          message: 'items must be a non-empty array',
           status: 400,
         },
       });
@@ -122,7 +122,7 @@ export const createCounterOffer = async (req, res, next) => {
       submissionId,
       items,
       notes,
-      req.user?.id,
+      req.user?.id
     );
 
     res.json({
@@ -148,7 +148,7 @@ export const acceptSubmissionItem = async (req, res, next) => {
       submissionId,
       itemId,
       notes,
-      req.user?.id,
+      req.user?.id
     );
 
     res.json({
@@ -175,7 +175,7 @@ export const rejectSubmissionItem = async (req, res, next) => {
       itemId,
       reason,
       notes,
-      req.user?.id,
+      req.user?.id
     );
 
     res.json({
@@ -201,7 +201,7 @@ export const updateItemCounterOffer = async (req, res, next) => {
       return res.status(400).json({
         success: false,
         error: {
-          message: "counterOfferPrice must be a non-negative number",
+          message: 'counterOfferPrice must be a non-negative number',
           status: 400,
         },
       });
@@ -212,7 +212,7 @@ export const updateItemCounterOffer = async (req, res, next) => {
       itemId,
       counterOfferPrice,
       notes,
-      req.user?.id,
+      req.user?.id
     );
 
     res.json({
@@ -238,7 +238,7 @@ export const updateSubmissionNotes = async (req, res, next) => {
       return res.status(400).json({
         success: false,
         error: {
-          message: "notes cannot be empty",
+          message: 'notes cannot be empty',
           status: 400,
         },
       });
@@ -247,7 +247,7 @@ export const updateSubmissionNotes = async (req, res, next) => {
     const result = await adminSubmissionService.updateSubmissionNotes(
       submissionId,
       notes,
-      req.user?.id,
+      req.user?.id
     );
 
     res.json({

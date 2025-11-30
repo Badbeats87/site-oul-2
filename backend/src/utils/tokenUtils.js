@@ -1,5 +1,5 @@
-import jwt from "jsonwebtoken";
-import config from "../../config/config.js";
+import jwt from 'jsonwebtoken';
+import config from '../../config/config.js';
 
 /**
  * Generate an access token
@@ -7,7 +7,7 @@ import config from "../../config/config.js";
  * @returns {string} - Signed JWT token
  */
 export function generateAccessToken(payload) {
-  return jwt.sign({ ...payload, type: "access" }, config.auth.jwtSecret, {
+  return jwt.sign({ ...payload, type: 'access' }, config.auth.jwtSecret, {
     expiresIn: config.auth.jwtExpiresIn,
   });
 }
@@ -18,7 +18,7 @@ export function generateAccessToken(payload) {
  * @returns {string} - Signed JWT token
  */
 export function generateRefreshToken(payload) {
-  return jwt.sign({ ...payload, type: "refresh" }, config.auth.jwtSecret, {
+  return jwt.sign({ ...payload, type: 'refresh' }, config.auth.jwtSecret, {
     expiresIn: config.auth.jwtRefreshExpiresIn,
   });
 }
@@ -33,11 +33,11 @@ export function verifyToken(token) {
   try {
     return jwt.verify(token, config.auth.jwtSecret);
   } catch (error) {
-    if (error.name === "TokenExpiredError") {
-      throw new Error("Token has expired");
+    if (error.name === 'TokenExpiredError') {
+      throw new Error('Token has expired');
     }
-    if (error.name === "JsonWebTokenError") {
-      throw new Error("Invalid token");
+    if (error.name === 'JsonWebTokenError') {
+      throw new Error('Invalid token');
     }
     throw error;
   }
@@ -60,8 +60,8 @@ export function decodeToken(token) {
 export function extractTokenFromHeader(authHeader) {
   if (!authHeader) return null;
 
-  const parts = authHeader.split(" ");
-  if (parts.length !== 2 || parts[0].toLowerCase() !== "bearer") {
+  const parts = authHeader.split(' ');
+  if (parts.length !== 2 || parts[0].toLowerCase() !== 'bearer') {
     return null;
   }
 

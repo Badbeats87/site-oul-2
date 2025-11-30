@@ -1,6 +1,6 @@
-import shippingService from "../services/shippingService.js";
-import logger from "../../config/logger.js";
-import { ApiError } from "../middleware/errorHandler.js";
+import shippingService from '../services/shippingService.js';
+import logger from '../../config/logger.js';
+import { ApiError } from '../middleware/errorHandler.js';
 
 /**
  * Shipping Controller
@@ -17,20 +17,20 @@ export async function calculateShippingRates(req, res, next) {
       req.body;
 
     if (!destinationAddress) {
-      throw new ApiError("destinationAddress is required", 400);
+      throw new ApiError('destinationAddress is required', 400);
     }
 
     if (!destinationAddress.state) {
-      throw new ApiError("Destination address must include state", 400);
+      throw new ApiError('Destination address must include state', 400);
     }
 
     const rates = await shippingService.calculateShippingRates(
       originAddress,
       destinationAddress,
-      { items, shippingMethod },
+      { items, shippingMethod }
     );
 
-    logger.info("Shipping rates calculated via API", {
+    logger.info('Shipping rates calculated via API', {
       destinationState: destinationAddress.state,
       itemCount: items?.length || 0,
     });
@@ -53,13 +53,13 @@ export async function getZoneForAddress(req, res, next) {
     const { state } = req.query;
 
     if (!state) {
-      throw new ApiError("state is required", 400);
+      throw new ApiError('state is required', 400);
     }
 
     const zone = await shippingService.getZoneForAddress({ state });
 
     if (!zone) {
-      throw new ApiError("No shipping zone found for address", 404);
+      throw new ApiError('No shipping zone found for address', 404);
     }
 
     res.json({
@@ -81,7 +81,7 @@ export async function listShippingZones(req, res, next) {
 
     const filters = {};
     if (isActive !== undefined) {
-      filters.isActive = isActive === "true";
+      filters.isActive = isActive === 'true';
     }
 
     const result = await shippingService.listShippingZones({
@@ -110,7 +110,7 @@ export async function getShippingZone(req, res, next) {
     const zone = await shippingService.getShippingZone(zoneId);
 
     if (!zone) {
-      throw new ApiError("Shipping zone not found", 404);
+      throw new ApiError('Shipping zone not found', 404);
     }
 
     res.json({
@@ -131,7 +131,7 @@ export async function createShippingZone(req, res, next) {
     const { name, statesIncluded, priority, description, isActive } = req.body;
 
     if (!name || !statesIncluded || !Array.isArray(statesIncluded)) {
-      throw new ApiError("name and statesIncluded (array) are required", 400);
+      throw new ApiError('name and statesIncluded (array) are required', 400);
     }
 
     const zone = await shippingService.createShippingZone({
@@ -142,12 +142,12 @@ export async function createShippingZone(req, res, next) {
       isActive: isActive !== false,
     });
 
-    logger.info("Shipping zone created via API", { zoneId: zone.id, name });
+    logger.info('Shipping zone created via API', { zoneId: zone.id, name });
 
     res.json({
       success: true,
       data: zone,
-      message: "Shipping zone created",
+      message: 'Shipping zone created',
     });
   } catch (error) {
     next(error);
@@ -171,12 +171,12 @@ export async function updateShippingZone(req, res, next) {
       isActive,
     });
 
-    logger.info("Shipping zone updated via API", { zoneId, name });
+    logger.info('Shipping zone updated via API', { zoneId, name });
 
     res.json({
       success: true,
       data: zone,
-      message: "Shipping zone updated",
+      message: 'Shipping zone updated',
     });
   } catch (error) {
     next(error);
@@ -193,12 +193,12 @@ export async function deleteShippingZone(req, res, next) {
 
     const deleted = await shippingService.deleteShippingZone(zoneId);
 
-    logger.info("Shipping zone deleted via API", { zoneId });
+    logger.info('Shipping zone deleted via API', { zoneId });
 
     res.json({
       success: true,
       data: deleted,
-      message: "Shipping zone deleted",
+      message: 'Shipping zone deleted',
     });
   } catch (error) {
     next(error);
@@ -216,7 +216,7 @@ export async function listShippingRates(req, res, next) {
     const filters = {};
     if (zoneId) filters.zoneId = zoneId;
     if (shippingMethod) filters.shippingMethod = shippingMethod;
-    if (isActive !== undefined) filters.isActive = isActive === "true";
+    if (isActive !== undefined) filters.isActive = isActive === 'true';
 
     const result = await shippingService.listShippingRates({
       filters,
@@ -244,7 +244,7 @@ export async function getShippingRate(req, res, next) {
     const rate = await shippingService.getShippingRate(rateId);
 
     if (!rate) {
-      throw new ApiError("Shipping rate not found", 404);
+      throw new ApiError('Shipping rate not found', 404);
     }
 
     res.json({
@@ -286,7 +286,7 @@ export async function createShippingRate(req, res, next) {
       minWeightOz === undefined ||
       maxWeightOz === undefined
     ) {
-      throw new ApiError("All rate parameters are required", 400);
+      throw new ApiError('All rate parameters are required', 400);
     }
 
     const rate = await shippingService.createShippingRate({
@@ -304,7 +304,7 @@ export async function createShippingRate(req, res, next) {
       isActive: isActive !== false,
     });
 
-    logger.info("Shipping rate created via API", {
+    logger.info('Shipping rate created via API', {
       rateId: rate.id,
       shippingMethod,
     });
@@ -312,7 +312,7 @@ export async function createShippingRate(req, res, next) {
     res.json({
       success: true,
       data: rate,
-      message: "Shipping rate created",
+      message: 'Shipping rate created',
     });
   } catch (error) {
     next(error);
@@ -350,12 +350,12 @@ export async function updateShippingRate(req, res, next) {
       isActive,
     });
 
-    logger.info("Shipping rate updated via API", { rateId });
+    logger.info('Shipping rate updated via API', { rateId });
 
     res.json({
       success: true,
       data: rate,
-      message: "Shipping rate updated",
+      message: 'Shipping rate updated',
     });
   } catch (error) {
     next(error);
@@ -372,12 +372,12 @@ export async function deleteShippingRate(req, res, next) {
 
     const deleted = await shippingService.deleteShippingRate(rateId);
 
-    logger.info("Shipping rate deleted via API", { rateId });
+    logger.info('Shipping rate deleted via API', { rateId });
 
     res.json({
       success: true,
       data: deleted,
-      message: "Shipping rate deleted",
+      message: 'Shipping rate deleted',
     });
   } catch (error) {
     next(error);

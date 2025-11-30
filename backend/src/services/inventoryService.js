@@ -1,8 +1,8 @@
-import prisma from "../utils/db.js";
-import { ApiError } from "../middleware/errorHandler.js";
-import logger from "../../config/logger.js";
-import pricingService from "./pricingService.js";
-import notificationService from "./notificationService.js";
+import prisma from '../utils/db.js';
+import { ApiError } from '../middleware/errorHandler.js';
+import logger from '../../config/logger.js';
+import pricingService from './pricingService.js';
+import notificationService from './notificationService.js';
 
 /**
  * Inventory Service
@@ -20,7 +20,7 @@ class InventoryService {
       const inventoryLots = await prisma.inventoryLot.findMany({
         where: {
           releaseId,
-          status: "LIVE",
+          status: 'LIVE',
         },
       });
 
@@ -58,11 +58,11 @@ class InventoryService {
         isAvailable: inventoryLots.length > 0,
       };
     } catch (error) {
-      logger.error("Error getting inventory stats", {
+      logger.error('Error getting inventory stats', {
         releaseId,
         error: error.message,
       });
-      throw new ApiError("Failed to get inventory stats", 500);
+      throw new ApiError('Failed to get inventory stats', 500);
     }
   }
 
@@ -82,7 +82,7 @@ class InventoryService {
       const inventoryLots = await prisma.inventoryLot.findMany({
         where: {
           releaseId: { in: releaseIds },
-          status: "LIVE",
+          status: 'LIVE',
         },
         select: {
           releaseId: true,
@@ -141,11 +141,11 @@ class InventoryService {
 
       return statsMap;
     } catch (error) {
-      logger.error("Error batch loading inventory", {
+      logger.error('Error batch loading inventory', {
         count: releaseIds?.length,
         error: error.message,
       });
-      throw new ApiError("Failed to load inventory", 500);
+      throw new ApiError('Failed to load inventory', 500);
     }
   }
 
@@ -158,10 +158,10 @@ class InventoryService {
   async getConditionDistribution(releaseId) {
     try {
       const distribution = await prisma.inventoryLot.groupBy({
-        by: ["conditionMedia"],
+        by: ['conditionMedia'],
         where: {
           releaseId,
-          status: "LIVE",
+          status: 'LIVE',
         },
         _count: true,
       });
@@ -173,11 +173,11 @@ class InventoryService {
 
       return result;
     } catch (error) {
-      logger.error("Error getting condition distribution", {
+      logger.error('Error getting condition distribution', {
         releaseId,
         error: error.message,
       });
-      throw new ApiError("Failed to get condition distribution", 500);
+      throw new ApiError('Failed to get condition distribution', 500);
     }
   }
 
@@ -201,7 +201,7 @@ class InventoryService {
    */
   async getInventoryByStatus(status, limit = 50) {
     try {
-      const validStatuses = ["LIVE", "RESERVED", "SOLD", "DRAFT", "REMOVED"];
+      const validStatuses = ['LIVE', 'RESERVED', 'SOLD', 'DRAFT', 'REMOVED'];
       if (!validStatuses.includes(status)) {
         throw new ApiError(`Invalid status: ${status}`, 400);
       }
@@ -209,7 +209,7 @@ class InventoryService {
       const inventoryLots = await prisma.inventoryLot.findMany({
         where: { status },
         take: limit,
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: 'desc' },
         include: {
           release: true,
         },
@@ -232,11 +232,11 @@ class InventoryService {
       }));
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error getting inventory by status", {
+      logger.error('Error getting inventory by status', {
         status,
         error: error.message,
       });
-      throw new ApiError("Failed to get inventory", 500);
+      throw new ApiError('Failed to get inventory', 500);
     }
   }
 
@@ -249,7 +249,7 @@ class InventoryService {
   async getPriceStatistics(filters = {}) {
     try {
       const where = {
-        status: "LIVE",
+        status: 'LIVE',
       };
 
       if (filters.condition) {
@@ -301,11 +301,11 @@ class InventoryService {
         stdDev: parseFloat(stdDev.toFixed(2)),
       };
     } catch (error) {
-      logger.error("Error calculating price statistics", {
+      logger.error('Error calculating price statistics', {
         filters,
         error: error.message,
       });
-      throw new ApiError("Failed to calculate price statistics", 500);
+      throw new ApiError('Failed to calculate price statistics', 500);
     }
   }
 
@@ -318,7 +318,7 @@ class InventoryService {
    */
   async createFromSubmissionItem(submissionItemId, options = {}) {
     try {
-      const { channel = "direct" } = options;
+      const { channel = 'direct' } = options;
 
       // Get submission item with release and submission info
       const item = await prisma.submissionItem.findUnique({
@@ -330,13 +330,13 @@ class InventoryService {
       });
 
       if (!item) {
-        throw new ApiError("Submission item not found", 404);
+        throw new ApiError('Submission item not found', 404);
       }
 
-      if (item.status !== "ACCEPTED") {
+      if (item.status !== 'ACCEPTED') {
         throw new ApiError(
           `Cannot create inventory for item with status: ${item.status}`,
-          400,
+          400
         );
       }
 
@@ -348,7 +348,7 @@ class InventoryService {
       const sellPrice = await this.calculateSellPrice(
         item.release,
         item.sellerConditionMedia,
-        item.sellerConditionSleeve,
+        item.sellerConditionSleeve
       );
 
       // Create inventory lot
@@ -361,7 +361,7 @@ class InventoryService {
           costBasis,
           listPrice: sellPrice,
           channel,
-          status: "DRAFT",
+          status: 'DRAFT',
           internalNotes: `Auto-created from submission by seller: ${item.submission.sellerContact}`,
         },
         include: {
@@ -373,11 +373,11 @@ class InventoryService {
       await prisma.submissionItem.update({
         where: { id: submissionItemId },
         data: {
-          status: "CONVERTED_TO_INVENTORY",
+          status: 'CONVERTED_TO_INVENTORY',
         },
       });
 
-      logger.info("Inventory created from submission item", {
+      logger.info('Inventory created from submission item', {
         inventoryLotId: inventoryLot.id,
         submissionItemId,
         releaseId: item.releaseId,
@@ -388,11 +388,11 @@ class InventoryService {
       return inventoryLot;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error creating inventory from submission", {
+      logger.error('Error creating inventory from submission', {
         submissionItemId,
         error: error.message,
       });
-      throw new ApiError("Failed to create inventory record", 500);
+      throw new ApiError('Failed to create inventory record', 500);
     }
   }
 
@@ -404,25 +404,25 @@ class InventoryService {
    */
   async createFromSubmission(submissionId, options = {}) {
     try {
-      const { channel = "direct" } = options;
+      const { channel = 'direct' } = options;
 
       // Get submission with all accepted items
       const submission = await prisma.sellerSubmission.findUnique({
         where: { id: submissionId },
         include: {
           items: {
-            where: { status: "ACCEPTED" },
+            where: { status: 'ACCEPTED' },
             include: { release: true },
           },
         },
       });
 
       if (!submission) {
-        throw new ApiError("Submission not found", 404);
+        throw new ApiError('Submission not found', 404);
       }
 
       if (submission.items.length === 0) {
-        throw new ApiError("No accepted items in submission", 400);
+        throw new ApiError('No accepted items in submission', 400);
       }
 
       const createdInventory = [];
@@ -435,7 +435,7 @@ class InventoryService {
           createdInventory.push(lot);
           totalInventoryValue += Number(lot.listPrice);
         } catch (error) {
-          logger.error("Failed to create inventory for item", {
+          logger.error('Failed to create inventory for item', {
             itemId: item.id,
             error: error.message,
           });
@@ -451,7 +451,7 @@ class InventoryService {
         totalInventoryValue,
       });
 
-      logger.info("Inventory created from submission", {
+      logger.info('Inventory created from submission', {
         submissionId,
         itemCount: createdInventory.length,
         totalValue: totalInventoryValue,
@@ -465,11 +465,11 @@ class InventoryService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error creating inventory from submission", {
+      logger.error('Error creating inventory from submission', {
         submissionId,
         error: error.message,
       });
-      throw new ApiError("Failed to create inventory from submission", 500);
+      throw new ApiError('Failed to create inventory from submission', 500);
     }
   }
 
@@ -489,11 +489,11 @@ class InventoryService {
           isActive: true,
         },
         include: { policy: true },
-        orderBy: { priority: "asc" },
+        orderBy: { priority: 'asc' },
       });
 
       if (!policy) {
-        throw new ApiError("No active pricing policy found for release", 400);
+        throw new ApiError('No active pricing policy found for release', 400);
       }
 
       // Calculate sell price using pricing service
@@ -501,17 +501,17 @@ class InventoryService {
         release,
         conditionMedia,
         conditionSleeve,
-        policy.policy,
+        policy.policy
       );
 
       return sellPrice;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error calculating sell price", {
+      logger.error('Error calculating sell price', {
         releaseId: release.id,
         error: error.message,
       });
-      throw new ApiError("Failed to calculate sell price", 500);
+      throw new ApiError('Failed to calculate sell price', 500);
     }
   }
 
@@ -541,19 +541,19 @@ class InventoryService {
         search,
         limit = 50,
         page = 1,
-        sortBy = "createdAt",
-        sortOrder = "desc",
+        sortBy = 'createdAt',
+        sortOrder = 'desc',
       } = filters;
 
       if (limit > 500) {
-        throw new ApiError("Limit cannot exceed 500", 400);
+        throw new ApiError('Limit cannot exceed 500', 400);
       }
 
-      const validSortFields = ["createdAt", "listPrice", "soldAt", "listedAt"];
+      const validSortFields = ['createdAt', 'listPrice', 'soldAt', 'listedAt'];
       const finalSortBy = validSortFields.includes(sortBy)
         ? sortBy
-        : "createdAt";
-      const finalSortOrder = sortOrder === "asc" ? "asc" : "desc";
+        : 'createdAt';
+      const finalSortOrder = sortOrder === 'asc' ? 'asc' : 'desc';
 
       const where = {};
       if (status) {
@@ -589,10 +589,10 @@ class InventoryService {
       if (search) {
         where.OR = where.OR || [];
         where.OR.push(
-          { release: { title: { contains: search, mode: "insensitive" } } },
-          { release: { artist: { contains: search, mode: "insensitive" } } },
-          { release: { barcode: { contains: search, mode: "insensitive" } } },
-          { sku: { contains: search, mode: "insensitive" } },
+          { release: { title: { contains: search, mode: 'insensitive' } } },
+          { release: { artist: { contains: search, mode: 'insensitive' } } },
+          { release: { barcode: { contains: search, mode: 'insensitive' } } },
+          { sku: { contains: search, mode: 'insensitive' } }
         );
       }
 
@@ -649,8 +649,8 @@ class InventoryService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error listing inventory", { error: error.message });
-      throw new ApiError("Failed to list inventory", 500);
+      logger.error('Error listing inventory', { error: error.message });
+      throw new ApiError('Failed to list inventory', 500);
     }
   }
 
@@ -672,7 +672,7 @@ class InventoryService {
       });
 
       if (!lot) {
-        throw new ApiError("Inventory lot not found", 404);
+        throw new ApiError('Inventory lot not found', 404);
       }
 
       return {
@@ -709,11 +709,11 @@ class InventoryService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error getting inventory detail", {
+      logger.error('Error getting inventory detail', {
         inventoryLotId,
         error: error.message,
       });
-      throw new ApiError("Failed to get inventory detail", 500);
+      throw new ApiError('Failed to get inventory detail', 500);
     }
   }
 
@@ -730,7 +730,7 @@ class InventoryService {
       });
 
       if (!lot) {
-        throw new ApiError("Inventory lot not found", 404);
+        throw new ApiError('Inventory lot not found', 404);
       }
 
       const {
@@ -744,12 +744,12 @@ class InventoryService {
 
       // Validate status transitions
       const validStatuses = [
-        "DRAFT",
-        "LIVE",
-        "RESERVED",
-        "SOLD",
-        "REMOVED",
-        "RETURNED",
+        'DRAFT',
+        'LIVE',
+        'RESERVED',
+        'SOLD',
+        'REMOVED',
+        'RETURNED',
       ];
       if (status && !validStatuses.includes(status)) {
         throw new ApiError(`Invalid status: ${status}`, 400);
@@ -757,10 +757,10 @@ class InventoryService {
 
       // Validate price updates
       if (listPrice !== undefined && listPrice < 0) {
-        throw new ApiError("List price cannot be negative", 400);
+        throw new ApiError('List price cannot be negative', 400);
       }
       if (salePrice !== undefined && salePrice < 0) {
-        throw new ApiError("Sale price cannot be negative", 400);
+        throw new ApiError('Sale price cannot be negative', 400);
       }
 
       // Build update data
@@ -777,18 +777,18 @@ class InventoryService {
           where: { sku },
         });
         if (existingSku && existingSku.id !== inventoryLotId) {
-          throw new ApiError("SKU must be unique", 400);
+          throw new ApiError('SKU must be unique', 400);
         }
         updateData.sku = sku;
       }
 
       // Handle status transition to LIVE
-      if (status === "LIVE" && lot.status !== "LIVE") {
+      if (status === 'LIVE' && lot.status !== 'LIVE') {
         updateData.listedAt = new Date();
       }
 
       // Handle status transition to SOLD
-      if (status === "SOLD" && lot.status !== "SOLD") {
+      if (status === 'SOLD' && lot.status !== 'SOLD') {
         updateData.soldAt = new Date();
       }
 
@@ -798,7 +798,7 @@ class InventoryService {
         include: { release: true },
       });
 
-      logger.info("Inventory updated", {
+      logger.info('Inventory updated', {
         inventoryLotId,
         changes: Object.keys(updateData),
       });
@@ -806,11 +806,11 @@ class InventoryService {
       return this.getInventoryDetail(inventoryLotId);
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error updating inventory", {
+      logger.error('Error updating inventory', {
         inventoryLotId,
         error: error.message,
       });
-      throw new ApiError("Failed to update inventory", 500);
+      throw new ApiError('Failed to update inventory', 500);
     }
   }
 
@@ -820,35 +820,35 @@ class InventoryService {
    * @param {string} reason - Reason for removal
    * @returns {Promise<Object>} Deleted inventory lot
    */
-  async deleteInventory(inventoryLotId, reason = "") {
+  async deleteInventory(inventoryLotId, reason = '') {
     try {
       const lot = await prisma.inventoryLot.findUnique({
         where: { id: inventoryLotId },
       });
 
       if (!lot) {
-        throw new ApiError("Inventory lot not found", 404);
+        throw new ApiError('Inventory lot not found', 404);
       }
 
       // Mark as REMOVED instead of hard delete to maintain audit trail
       const updated = await prisma.inventoryLot.update({
         where: { id: inventoryLotId },
         data: {
-          status: "REMOVED",
-          internalNotes: `${lot.internalNotes || ""}\\n[REMOVED: ${reason || "No reason provided"}] - ${new Date().toISOString()}`,
+          status: 'REMOVED',
+          internalNotes: `${lot.internalNotes || ''}\\n[REMOVED: ${reason || 'No reason provided'}] - ${new Date().toISOString()}`,
         },
         include: { release: true },
       });
 
-      logger.info("Inventory removed", { inventoryLotId, reason });
+      logger.info('Inventory removed', { inventoryLotId, reason });
       return this.getInventoryDetail(inventoryLotId);
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error deleting inventory", {
+      logger.error('Error deleting inventory', {
         inventoryLotId,
         error: error.message,
       });
-      throw new ApiError("Failed to delete inventory", 500);
+      throw new ApiError('Failed to delete inventory', 500);
     }
   }
 
@@ -892,14 +892,12 @@ class InventoryService {
       const prices = allLots.map((lot) => parseFloat(lot.listPrice));
       const priceStats = {
         average: parseFloat(
-          (prices.reduce((a, b) => a + b, 0) / prices.length).toFixed(2),
+          (prices.reduce((a, b) => a + b, 0) / prices.length).toFixed(2)
         ),
         min: parseFloat(Math.min(...prices).toFixed(2)),
         max: parseFloat(Math.max(...prices).toFixed(2)),
         median: parseFloat(
-          prices
-            .sort((a, b) => a - b)
-            [Math.floor(prices.length / 2)].toFixed(2),
+          prices.sort((a, b) => a - b)[Math.floor(prices.length / 2)].toFixed(2)
         ),
         total: parseFloat(prices.reduce((a, b) => a + b, 0).toFixed(2)),
       };
@@ -907,7 +905,7 @@ class InventoryService {
       // Low stock alerts (less than 3 LIVE items per release)
       const releaseInventoryCounts = {};
       allLots.forEach((lot) => {
-        if (lot.status === "LIVE") {
+        if (lot.status === 'LIVE') {
           const key = lot.releaseId;
           releaseInventoryCounts[key] = (releaseInventoryCounts[key] || 0) + 1;
         }
@@ -917,7 +915,7 @@ class InventoryService {
       Object.entries(releaseInventoryCounts).forEach(([releaseId, count]) => {
         if (count < 3) {
           const release = allLots.find(
-            (l) => l.releaseId === releaseId,
+            (l) => l.releaseId === releaseId
           )?.release;
           lowStockAlerts.push({
             releaseId,
@@ -932,7 +930,7 @@ class InventoryService {
 
       // Top performers (highest priced LIVE items)
       const topPerformers = allLots
-        .filter((lot) => lot.status === "LIVE")
+        .filter((lot) => lot.status === 'LIVE')
         .sort((a, b) => parseFloat(b.listPrice) - parseFloat(a.listPrice))
         .slice(0, 10)
         .map((lot) => ({
@@ -948,7 +946,7 @@ class InventoryService {
               ((parseFloat(lot.listPrice) - parseFloat(lot.costBasis)) /
                 parseFloat(lot.costBasis)) *
               100
-            ).toFixed(2),
+            ).toFixed(2)
           ),
         }));
 
@@ -961,10 +959,10 @@ class InventoryService {
         topPerformers,
       };
     } catch (error) {
-      logger.error("Error getting inventory analytics", {
+      logger.error('Error getting inventory analytics', {
         error: error.message,
       });
-      throw new ApiError("Failed to get inventory analytics", 500);
+      throw new ApiError('Failed to get inventory analytics', 500);
     }
   }
 
@@ -976,8 +974,8 @@ class InventoryService {
   async getLowStockAlerts(threshold = 3) {
     try {
       const releaseInventory = await prisma.inventoryLot.groupBy({
-        by: ["releaseId"],
-        where: { status: "LIVE" },
+        by: ['releaseId'],
+        where: { status: 'LIVE' },
         _count: { id: true },
       });
 
@@ -988,7 +986,7 @@ class InventoryService {
       const alerts = await prisma.inventoryLot.findMany({
         where: {
           releaseId: { in: lowStockReleases },
-          status: "LIVE",
+          status: 'LIVE',
         },
         include: { release: true },
       });
@@ -1018,8 +1016,8 @@ class InventoryService {
         threshold,
       }));
     } catch (error) {
-      logger.error("Error getting low-stock alerts", { error: error.message });
-      throw new ApiError("Failed to get low-stock alerts", 500);
+      logger.error('Error getting low-stock alerts', { error: error.message });
+      throw new ApiError('Failed to get low-stock alerts', 500);
     }
   }
 
@@ -1031,7 +1029,7 @@ class InventoryService {
     try {
       // Get sold items
       const soldItems = await prisma.inventoryLot.findMany({
-        where: { status: "SOLD" },
+        where: { status: 'SOLD' },
         include: { release: true },
       });
 
@@ -1080,16 +1078,16 @@ class InventoryService {
         totalSold: soldItems.length,
         totalRevenue: parseFloat(totalRevenue.toFixed(2)),
         averagePricePerItem: parseFloat(
-          (totalRevenue / soldItems.length).toFixed(2),
+          (totalRevenue / soldItems.length).toFixed(2)
         ),
         soldByCondition,
         topSelling,
       };
     } catch (error) {
-      logger.error("Error calculating sales velocity", {
+      logger.error('Error calculating sales velocity', {
         error: error.message,
       });
-      throw new ApiError("Failed to calculate sales velocity", 500);
+      throw new ApiError('Failed to calculate sales velocity', 500);
     }
   }
 
@@ -1112,7 +1110,7 @@ class InventoryService {
       } = options;
 
       if (!policyId) {
-        throw new ApiError("Policy ID is required", 400);
+        throw new ApiError('Policy ID is required', 400);
       }
 
       // Fetch the pricing policy
@@ -1121,11 +1119,11 @@ class InventoryService {
       });
 
       if (!policy) {
-        throw new ApiError("Pricing policy not found", 404);
+        throw new ApiError('Pricing policy not found', 404);
       }
 
       if (!policy.isActive) {
-        throw new ApiError("Pricing policy is not active", 400);
+        throw new ApiError('Pricing policy is not active', 400);
       }
 
       // Build WHERE clause for inventory selection
@@ -1158,7 +1156,7 @@ class InventoryService {
         return {
           applied: false,
           dryRun: true,
-          message: "No inventory items matched the criteria",
+          message: 'No inventory items matched the criteria',
           affectedCount: 0,
           updates: [],
         };
@@ -1173,7 +1171,7 @@ class InventoryService {
             lot.release,
             lot.conditionMedia,
             lot.conditionSleeve,
-            policy,
+            policy
           );
 
           updates.push({
@@ -1191,7 +1189,7 @@ class InventoryService {
             ).toFixed(2),
           });
         } catch (error) {
-          logger.error("Error calculating price for inventory lot", {
+          logger.error('Error calculating price for inventory lot', {
             inventoryLotId: lot.id,
             error: error.message,
           });
@@ -1224,7 +1222,7 @@ class InventoryService {
                 ? (
                     successfulUpdates.reduce(
                       (sum, u) => sum + u.priceDifference,
-                      0,
+                      0
                     ) / successfulUpdates.length
                   ).toFixed(2)
                 : 0,
@@ -1248,7 +1246,7 @@ class InventoryService {
             where: { id: update.inventoryLotId },
             data: {
               listPrice: update.newPrice,
-              internalNotes: `${lot.internalNotes || ""}\n[PRICE UPDATED by policy ${policy.name}] Old: $${update.oldPrice}, New: $${update.newPrice} - ${new Date().toISOString()}`,
+              internalNotes: `${lot.internalNotes || ''}\n[PRICE UPDATED by policy ${policy.name}] Old: $${update.oldPrice}, New: $${update.newPrice} - ${new Date().toISOString()}`,
             },
           });
 
@@ -1261,7 +1259,7 @@ class InventoryService {
         }
       }
 
-      logger.info("Pricing policy applied to inventory", {
+      logger.info('Pricing policy applied to inventory', {
         policyId,
         policyName: policy.name,
         appliedCount: appliedUpdates.length,
@@ -1286,7 +1284,7 @@ class InventoryService {
               ? (
                   appliedUpdates.reduce(
                     (sum, u) => sum + u.priceDifference,
-                    0,
+                    0
                   ) / appliedUpdates.length
                 ).toFixed(2)
               : 0,
@@ -1294,10 +1292,10 @@ class InventoryService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error applying pricing policy to inventory", {
+      logger.error('Error applying pricing policy to inventory', {
         error: error.message,
       });
-      throw new ApiError("Failed to apply pricing policy", 500);
+      throw new ApiError('Failed to apply pricing policy', 500);
     }
   }
 
@@ -1313,21 +1311,21 @@ class InventoryService {
       });
 
       if (!lot) {
-        throw new ApiError("Inventory lot not found", 404);
+        throw new ApiError('Inventory lot not found', 404);
       }
 
       // Parse history from internal notes (stored as text with timestamps)
       const history = [];
-      const lines = (lot.internalNotes || "").split("\n");
+      const lines = (lot.internalNotes || '').split('\n');
 
       for (const line of lines) {
-        if (line.includes("[PRICE UPDATED")) {
+        if (line.includes('[PRICE UPDATED')) {
           const match = line.match(
-            /\[PRICE UPDATED by policy (.+?)\] Old: \$([0-9.]+), New: \$([0-9.]+) - (.+)/,
+            /\[PRICE UPDATED by policy (.+?)\] Old: \$([0-9.]+), New: \$([0-9.]+) - (.+)/
           );
           if (match) {
             history.push({
-              type: "PRICE_UPDATE",
+              type: 'PRICE_UPDATE',
               policy: match[1],
               oldPrice: parseFloat(match[2]),
               newPrice: parseFloat(match[3]),
@@ -1340,11 +1338,11 @@ class InventoryService {
       return history;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error getting pricing history", {
+      logger.error('Error getting pricing history', {
         inventoryLotId,
         error: error.message,
       });
-      throw new ApiError("Failed to get pricing history", 500);
+      throw new ApiError('Failed to get pricing history', 500);
     }
   }
 
@@ -1356,11 +1354,11 @@ class InventoryService {
   async bulkUpdatePrices(updates = []) {
     try {
       if (!Array.isArray(updates) || updates.length === 0) {
-        throw new ApiError("Updates must be a non-empty array", 400);
+        throw new ApiError('Updates must be a non-empty array', 400);
       }
 
       if (updates.length > 500) {
-        throw new ApiError("Cannot update more than 500 items at once", 400);
+        throw new ApiError('Cannot update more than 500 items at once', 400);
       }
 
       const results = {
@@ -1375,7 +1373,7 @@ class InventoryService {
           if (!inventoryLotId) {
             results.failed.push({
               inventoryLotId,
-              error: "inventoryLotId is required",
+              error: 'inventoryLotId is required',
             });
             continue;
           }
@@ -1383,7 +1381,7 @@ class InventoryService {
           if (listPrice !== undefined && listPrice < 0) {
             results.failed.push({
               inventoryLotId,
-              error: "List price cannot be negative",
+              error: 'List price cannot be negative',
             });
             continue;
           }
@@ -1409,7 +1407,7 @@ class InventoryService {
         }
       }
 
-      logger.info("Bulk price update completed", {
+      logger.info('Bulk price update completed', {
         totalRequests: updates.length,
         successful: results.successful.length,
         failed: results.failed.length,
@@ -1418,8 +1416,8 @@ class InventoryService {
       return results;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error bulk updating prices", { error: error.message });
-      throw new ApiError("Failed to bulk update prices", 500);
+      logger.error('Error bulk updating prices', { error: error.message });
+      throw new ApiError('Failed to bulk update prices', 500);
     }
   }
 
@@ -1434,24 +1432,24 @@ class InventoryService {
   async reserveInventory(inventoryLotId, orderId) {
     try {
       if (!inventoryLotId || !orderId) {
-        throw new ApiError("inventoryLotId and orderId are required", 400);
+        throw new ApiError('inventoryLotId and orderId are required', 400);
       }
 
       // Use updateMany with optimistic locking - only update if status is LIVE
       const result = await prisma.inventoryLot.updateMany({
         where: {
           id: inventoryLotId,
-          status: "LIVE", // CRITICAL: Only update if still LIVE
+          status: 'LIVE', // CRITICAL: Only update if still LIVE
         },
         data: {
-          status: "RESERVED",
+          status: 'RESERVED',
           reservedAt: new Date(),
           orderId: orderId,
         },
       });
 
       if (result.count === 0) {
-        throw new ApiError("Item no longer available", 409);
+        throw new ApiError('Item no longer available', 409);
       }
 
       // Fetch and return the updated lot
@@ -1464,11 +1462,11 @@ class InventoryService {
       await prisma.inventoryLot.update({
         where: { id: inventoryLotId },
         data: {
-          internalNotes: `${updatedLot?.internalNotes || ""}\n[RESERVED for order ${orderId}] - ${timestamp}`,
+          internalNotes: `${updatedLot?.internalNotes || ''}\n[RESERVED for order ${orderId}] - ${timestamp}`,
         },
       });
 
-      logger.info("Inventory reserved", {
+      logger.info('Inventory reserved', {
         inventoryLotId,
         orderId,
         sku: updatedLot?.sku,
@@ -1477,12 +1475,12 @@ class InventoryService {
       return updatedLot;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error reserving inventory", {
+      logger.error('Error reserving inventory', {
         inventoryLotId,
         orderId,
         error: error.message,
       });
-      throw new ApiError("Failed to reserve inventory", 500);
+      throw new ApiError('Failed to reserve inventory', 500);
     }
   }
 
@@ -1493,10 +1491,10 @@ class InventoryService {
    * @param {string} reason - Reason for release (payment failure, timeout, etc)
    * @returns {Promise<Object>} Released inventory lot
    */
-  async releaseReservation(inventoryLotId, reason = "Manual release") {
+  async releaseReservation(inventoryLotId, reason = 'Manual release') {
     try {
       if (!inventoryLotId) {
-        throw new ApiError("inventoryLotId is required", 400);
+        throw new ApiError('inventoryLotId is required', 400);
       }
 
       const lot = await prisma.inventoryLot.findUnique({
@@ -1504,13 +1502,13 @@ class InventoryService {
       });
 
       if (!lot) {
-        throw new ApiError("Inventory lot not found", 404);
+        throw new ApiError('Inventory lot not found', 404);
       }
 
-      if (lot.status !== "RESERVED") {
+      if (lot.status !== 'RESERVED') {
         throw new ApiError(
           `Cannot release inventory with status: ${lot.status}`,
-          400,
+          400
         );
       }
 
@@ -1518,14 +1516,14 @@ class InventoryService {
       const updatedLot = await prisma.inventoryLot.update({
         where: { id: inventoryLotId },
         data: {
-          status: "LIVE",
+          status: 'LIVE',
           reservedAt: null,
           orderId: null,
-          internalNotes: `${lot.internalNotes || ""}\n[RELEASED] Reason: ${reason} - ${timestamp}`,
+          internalNotes: `${lot.internalNotes || ''}\n[RELEASED] Reason: ${reason} - ${timestamp}`,
         },
       });
 
-      logger.info("Reservation released", {
+      logger.info('Reservation released', {
         inventoryLotId,
         reason,
         sku: lot.sku,
@@ -1534,11 +1532,11 @@ class InventoryService {
       return updatedLot;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error releasing reservation", {
+      logger.error('Error releasing reservation', {
         inventoryLotId,
         error: error.message,
       });
-      throw new ApiError("Failed to release reservation", 500);
+      throw new ApiError('Failed to release reservation', 500);
     }
   }
 
@@ -1552,7 +1550,7 @@ class InventoryService {
   async markAsSold(inventoryLotId, orderId) {
     try {
       if (!inventoryLotId || !orderId) {
-        throw new ApiError("inventoryLotId and orderId are required", 400);
+        throw new ApiError('inventoryLotId and orderId are required', 400);
       }
 
       const lot = await prisma.inventoryLot.findUnique({
@@ -1560,13 +1558,13 @@ class InventoryService {
       });
 
       if (!lot) {
-        throw new ApiError("Inventory lot not found", 404);
+        throw new ApiError('Inventory lot not found', 404);
       }
 
-      if (lot.status !== "RESERVED") {
+      if (lot.status !== 'RESERVED') {
         throw new ApiError(
           `Cannot mark as sold with status: ${lot.status}`,
-          400,
+          400
         );
       }
 
@@ -1574,14 +1572,14 @@ class InventoryService {
       const updatedLot = await prisma.inventoryLot.update({
         where: { id: inventoryLotId },
         data: {
-          status: "SOLD",
+          status: 'SOLD',
           soldAt: new Date(),
           orderId: orderId,
-          internalNotes: `${lot.internalNotes || ""}\n[SOLD in order ${orderId}] - ${timestamp}`,
+          internalNotes: `${lot.internalNotes || ''}\n[SOLD in order ${orderId}] - ${timestamp}`,
         },
       });
 
-      logger.info("Inventory marked as sold", {
+      logger.info('Inventory marked as sold', {
         inventoryLotId,
         orderId,
         sku: lot.sku,
@@ -1590,12 +1588,12 @@ class InventoryService {
       return updatedLot;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error marking inventory as sold", {
+      logger.error('Error marking inventory as sold', {
         inventoryLotId,
         orderId,
         error: error.message,
       });
-      throw new ApiError("Failed to mark inventory as sold", 500);
+      throw new ApiError('Failed to mark inventory as sold', 500);
     }
   }
 
@@ -1611,7 +1609,7 @@ class InventoryService {
 
       const expiredLots = await prisma.inventoryLot.findMany({
         where: {
-          status: "RESERVED",
+          status: 'RESERVED',
           reservedAt: {
             lt: cutoff,
           },
@@ -1619,7 +1617,7 @@ class InventoryService {
       });
 
       if (expiredLots.length === 0) {
-        logger.debug("No expired reservations to clean up");
+        logger.debug('No expired reservations to clean up');
         return { releasedCount: 0, errors: [] };
       }
 
@@ -1632,7 +1630,7 @@ class InventoryService {
         try {
           await this.releaseReservation(
             lot.id,
-            "Checkout timeout - 15 minutes expired",
+            'Checkout timeout - 15 minutes expired'
           );
           results.releasedCount += 1;
         } catch (error) {
@@ -1643,14 +1641,14 @@ class InventoryService {
         }
       }
 
-      logger.info("Expired reservations cleaned up", {
+      logger.info('Expired reservations cleaned up', {
         releasedCount: results.releasedCount,
         errorCount: results.errors.length,
       });
 
       return results;
     } catch (error) {
-      logger.error("Error cleaning up expired reservations", {
+      logger.error('Error cleaning up expired reservations', {
         error: error.message,
       });
       // Don't throw - this is a background job and should fail gracefully

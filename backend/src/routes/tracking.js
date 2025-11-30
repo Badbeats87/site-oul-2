@@ -1,14 +1,14 @@
-import express from "express";
+import express from 'express';
 import {
   getTrackingByNumber,
   getShipmentTrackingEvents,
   getTrackingBatch,
-} from "../controllers/trackingController.js";
+} from '../controllers/trackingController.js';
 import {
   receiveCarrierWebhook,
   webhookHealth,
   simulateCarrierWebhook,
-} from "../controllers/webhookController.js";
+} from '../controllers/webhookController.js';
 
 const router = express.Router();
 
@@ -53,7 +53,7 @@ const router = express.Router();
  *       404:
  *         description: Shipment not found
  */
-router.get("/:trackingNumber", getTrackingByNumber);
+router.get('/:trackingNumber', getTrackingByNumber);
 
 /**
  * @swagger
@@ -76,7 +76,7 @@ router.get("/:trackingNumber", getTrackingByNumber);
  *       404:
  *         description: Shipment not found
  */
-router.get("/shipment/:shipmentId/events", getShipmentTrackingEvents);
+router.get('/shipment/:shipmentId/events', getShipmentTrackingEvents);
 
 /**
  * @swagger
@@ -123,7 +123,7 @@ router.get("/shipment/:shipmentId/events", getShipmentTrackingEvents);
  *                     summary:
  *                       type: object
  */
-router.post("/batch", getTrackingBatch);
+router.post('/batch', getTrackingBatch);
 
 // ============================================================================
 // WEBHOOK ENDPOINTS
@@ -141,7 +141,7 @@ router.post("/batch", getTrackingBatch);
  *       200:
  *         description: Webhook endpoint is operational
  */
-router.get("/webhooks/shipping/health", webhookHealth);
+router.get('/webhooks/shipping/health', webhookHealth);
 
 /**
  * @swagger
@@ -186,7 +186,7 @@ router.get("/webhooks/shipping/health", webhookHealth);
  *       200:
  *         description: Webhook acknowledged
  */
-router.post("/webhooks/shipping/carrier-events", receiveCarrierWebhook);
+router.post('/webhooks/shipping/carrier-events', receiveCarrierWebhook);
 
 /**
  * @swagger
@@ -225,6 +225,6 @@ router.post("/webhooks/shipping/carrier-events", receiveCarrierWebhook);
  *       200:
  *         description: Mock webhook simulated successfully
  */
-router.post("/webhooks/shipping/simulate", simulateCarrierWebhook);
+router.post('/webhooks/shipping/simulate', simulateCarrierWebhook);
 
 export default router;

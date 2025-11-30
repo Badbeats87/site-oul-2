@@ -12,7 +12,7 @@ export default class ShippingProviderInterface {
    * @returns {Promise<Array>} Available rates
    */
   async getRates(fromAddress, toAddress, packageDetails) {
-    throw new Error("getRates() not implemented");
+    throw new Error('getRates() not implemented');
   }
 
   /**
@@ -21,7 +21,7 @@ export default class ShippingProviderInterface {
    * @returns {Promise<Object>} Created shipment response
    */
   async createShipment(shipmentData) {
-    throw new Error("createShipment() not implemented");
+    throw new Error('createShipment() not implemented');
   }
 
   /**
@@ -30,7 +30,7 @@ export default class ShippingProviderInterface {
    * @returns {Promise<Object>} Label details {labelUrl, trackingNumber, labelFormat}
    */
   async generateLabel(shipment) {
-    throw new Error("generateLabel() not implemented");
+    throw new Error('generateLabel() not implemented');
   }
 
   /**
@@ -39,7 +39,7 @@ export default class ShippingProviderInterface {
    * @returns {Promise<Object>} Tracking details
    */
   async getTracking(trackingNumber) {
-    throw new Error("getTracking() not implemented");
+    throw new Error('getTracking() not implemented');
   }
 
   /**
@@ -48,6 +48,6 @@ export default class ShippingProviderInterface {
    * @returns {Promise<boolean>} Success
    */
   async voidLabel(shipmentId) {
-    throw new Error("voidLabel() not implemented");
+    throw new Error('voidLabel() not implemented');
   }
 }

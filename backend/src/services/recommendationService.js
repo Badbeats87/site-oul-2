@@ -1,7 +1,7 @@
-import prisma from "../utils/db.js";
-import { ApiError } from "../middleware/errorHandler.js";
-import logger from "../../config/logger.js";
-import { getCached, setCached } from "../utils/cache.js";
+import prisma from '../utils/db.js';
+import { ApiError } from '../middleware/errorHandler.js';
+import logger from '../../config/logger.js';
+import { getCached, setCached } from '../utils/cache.js';
 
 /**
  * Recommendation Service
@@ -20,17 +20,17 @@ class RecommendationService {
    */
   async getSimilarItems(releaseId, options = {}) {
     try {
-      const { limit = 5, abVariant = "control" } = options;
+      const { limit = 5, abVariant = 'control' } = options;
 
       if (limit > 50) {
-        throw new ApiError("Limit cannot exceed 50", 400);
+        throw new ApiError('Limit cannot exceed 50', 400);
       }
 
       // Check cache first
       const cacheKey = `recommendations:similar:${releaseId}:${abVariant}`;
       const cached = getCached(cacheKey);
       if (cached) {
-        logger.debug("Cache hit for similar items recommendations", {
+        logger.debug('Cache hit for similar items recommendations', {
           releaseId,
         });
         return cached;
@@ -48,14 +48,14 @@ class RecommendationService {
       });
 
       if (!currentRelease) {
-        throw new ApiError("Release not found", 404);
+        throw new ApiError('Release not found', 404);
       }
 
       // Find candidates: same genre or artist, different release
       const candidates = await prisma.inventoryLot.findMany({
         where: {
           AND: [
-            { status: "LIVE" },
+            { status: 'LIVE' },
             {
               release: {
                 AND: [
@@ -92,7 +92,7 @@ class RecommendationService {
         _score: this._calculateSimilarityScore(
           currentRelease,
           item.release,
-          abVariant,
+          abVariant
         ),
       }));
 
@@ -108,7 +108,7 @@ class RecommendationService {
       const result = {
         releaseId,
         recommendations: recommended,
-        algorithm: "similarity-scoring",
+        algorithm: 'similarity-scoring',
         abVariant,
         count: recommended.length,
         generatedAt: new Date(),
@@ -119,11 +119,11 @@ class RecommendationService {
       return result;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error getting similar items", {
+      logger.error('Error getting similar items', {
         releaseId,
         error: error.message,
       });
-      throw new ApiError("Failed to get similar items", 500);
+      throw new ApiError('Failed to get similar items', 500);
     }
   }
 
@@ -144,18 +144,18 @@ class RecommendationService {
         limit = 10,
         daysBack = 30,
         genre = null,
-        abVariant = "control",
+        abVariant = 'control',
       } = options;
 
       if (limit > 100) {
-        throw new ApiError("Limit cannot exceed 100", 400);
+        throw new ApiError('Limit cannot exceed 100', 400);
       }
 
       // Check cache
-      const cacheKey = `recommendations:new-arrivals:${genre || "all"}:${abVariant}`;
+      const cacheKey = `recommendations:new-arrivals:${genre || 'all'}:${abVariant}`;
       const cached = getCached(cacheKey);
       if (cached) {
-        logger.debug("Cache hit for new arrivals", { genre });
+        logger.debug('Cache hit for new arrivals', { genre });
         return cached;
       }
 
@@ -164,7 +164,7 @@ class RecommendationService {
 
       const where = {
         AND: [
-          { status: "LIVE" },
+          { status: 'LIVE' },
           { listedAt: { gte: cutoffDate } },
           genre ? { release: { genre } } : {},
         ],
@@ -184,7 +184,7 @@ class RecommendationService {
             },
           },
         },
-        orderBy: { listedAt: "desc" },
+        orderBy: { listedAt: 'desc' },
         take: limit,
       });
 
@@ -193,8 +193,8 @@ class RecommendationService {
           ...item,
           _daysListed: this._daysSince(item.listedAt),
         })),
-        genre: genre || "all",
-        algorithm: "new-arrivals",
+        genre: genre || 'all',
+        algorithm: 'new-arrivals',
         abVariant,
         count: items.length,
         generatedAt: new Date(),
@@ -205,8 +205,8 @@ class RecommendationService {
       return result;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error getting new arrivals", { error: error.message });
-      throw new ApiError("Failed to get new arrivals", 500);
+      logger.error('Error getting new arrivals', { error: error.message });
+      throw new ApiError('Failed to get new arrivals', 500);
     }
   }
 
@@ -222,7 +222,7 @@ class RecommendationService {
    */
   async getPersonalizedRecommendations(wishlistItemIds, options = {}) {
     try {
-      const { limit = 10, abVariant = "control" } = options;
+      const { limit = 10, abVariant = 'control' } = options;
 
       if (!wishlistItemIds || wishlistItemIds.length === 0) {
         // Return new arrivals if no wishlist
@@ -230,7 +230,7 @@ class RecommendationService {
       }
 
       if (limit > 100) {
-        throw new ApiError("Limit cannot exceed 100", 400);
+        throw new ApiError('Limit cannot exceed 100', 400);
       }
 
       // Get wishlist release IDs
@@ -258,7 +258,7 @@ class RecommendationService {
       const recommendations = await prisma.inventoryLot.findMany({
         where: {
           AND: [
-            { status: "LIVE" },
+            { status: 'LIVE' },
             {
               release: {
                 AND: [
@@ -295,7 +295,7 @@ class RecommendationService {
         _score: this._calculatePersonalizationScore(
           item.release,
           Array.from(wishlistGenres),
-          Array.from(wishlistArtists),
+          Array.from(wishlistArtists)
         ),
       }));
 
@@ -307,7 +307,7 @@ class RecommendationService {
             ...item,
             _relevanceScore: _score,
           })),
-        algorithm: "personalized",
+        algorithm: 'personalized',
         abVariant,
         count: scored.length,
         generatedAt: new Date(),
@@ -316,10 +316,10 @@ class RecommendationService {
       return result;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error getting personalized recommendations", {
+      logger.error('Error getting personalized recommendations', {
         error: error.message,
       });
-      throw new ApiError("Failed to get personalized recommendations", 500);
+      throw new ApiError('Failed to get personalized recommendations', 500);
     }
   }
 
@@ -336,18 +336,18 @@ class RecommendationService {
     try {
       const { limit = 5 } = options;
 
-      logger.debug("Generating A/B test variants", { releaseId });
+      logger.debug('Generating A/B test variants', { releaseId });
 
       // Generate control variant (similar items)
       const controlVariant = await this.getSimilarItems(releaseId, {
         limit,
-        abVariant: "control",
+        abVariant: 'control',
       });
 
       // Generate experimental variant (similar items with different scoring)
       const experimentalVariant = await this.getSimilarItems(releaseId, {
         limit,
-        abVariant: "experimental",
+        abVariant: 'experimental',
       });
 
       // Experimental variant uses a different scoring mechanism
@@ -357,16 +357,16 @@ class RecommendationService {
         releaseId,
         variants: [
           {
-            name: "control",
-            description: "Standard similarity scoring",
+            name: 'control',
+            description: 'Standard similarity scoring',
             recommendations: controlVariant.recommendations,
-            algorithm: "similarity-scoring",
+            algorithm: 'similarity-scoring',
           },
           {
-            name: "experimental",
-            description: "Enhanced genre-weighted scoring",
+            name: 'experimental',
+            description: 'Enhanced genre-weighted scoring',
             recommendations: experimentalVariant.recommendations,
-            algorithm: "similarity-scoring-v2",
+            algorithm: 'similarity-scoring-v2',
           },
         ],
         trackingId: `${releaseId}-${Date.now()}`,
@@ -374,11 +374,11 @@ class RecommendationService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error generating recommendation variants", {
+      logger.error('Error generating recommendation variants', {
         releaseId,
         error: error.message,
       });
-      throw new ApiError("Failed to generate recommendation variants", 500);
+      throw new ApiError('Failed to generate recommendation variants', 500);
     }
   }
 
@@ -399,15 +399,15 @@ class RecommendationService {
         clickData;
 
       if (!recommendationTrackingId || !variantName || !itemId) {
-        throw new ApiError("trackingId, variant, and itemId are required", 400);
+        throw new ApiError('trackingId, variant, and itemId are required', 400);
       }
 
       // In production, this would write to a RecommendationClick model
-      logger.info("Recommendation click recorded", {
+      logger.info('Recommendation click recorded', {
         trackingId: recommendationTrackingId,
         variant: variantName,
         itemId,
-        buyerId: buyerId || "anonymous",
+        buyerId: buyerId || 'anonymous',
         timestamp: new Date(),
       });
 
@@ -420,10 +420,10 @@ class RecommendationService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error recording recommendation click", {
+      logger.error('Error recording recommendation click', {
         error: error.message,
       });
-      throw new ApiError("Failed to record click", 500);
+      throw new ApiError('Failed to record click', 500);
     }
   }
 
@@ -439,7 +439,7 @@ class RecommendationService {
       currentRelease.genre &&
       candidateRelease.genre === currentRelease.genre
     ) {
-      score += abVariant === "experimental" ? 60 : 40; // Experimental weights genre higher
+      score += abVariant === 'experimental' ? 60 : 40; // Experimental weights genre higher
     }
 
     // Artist match (secondary factor)
@@ -460,7 +460,7 @@ class RecommendationService {
     }
 
     // Slight randomization for experimental variant to create diversity
-    if (abVariant === "experimental") {
+    if (abVariant === 'experimental') {
       score += Math.random() * 5; // Add 0-5 random points
     }
 
@@ -487,7 +487,7 @@ class RecommendationService {
     // Bonus for recent items
     if (release.createdAt) {
       const daysOld = Math.floor(
-        (Date.now() - release.createdAt.getTime()) / (1000 * 60 * 60 * 24),
+        (Date.now() - release.createdAt.getTime()) / (1000 * 60 * 60 * 24)
       );
       if (daysOld < 30) {
         score += Math.max(10 - Math.floor(daysOld / 3), 0);

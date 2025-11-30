@@ -1,9 +1,9 @@
-import prisma from "../utils/db.js";
-import { ApiError } from "../middleware/errorHandler.js";
-import logger from "../../config/logger.js";
-import shippingService from "./shippingService.js";
-import orderService from "./orderService.js";
-import notificationService from "./notificationService.js";
+import prisma from '../utils/db.js';
+import { ApiError } from '../middleware/errorHandler.js';
+import logger from '../../config/logger.js';
+import shippingService from './shippingService.js';
+import orderService from './orderService.js';
+import notificationService from './notificationService.js';
 
 /**
  * Fulfillment Service
@@ -12,7 +12,7 @@ import notificationService from "./notificationService.js";
  */
 class FulfillmentService {
   constructor() {
-    logger.info("FulfillmentService initialized");
+    logger.info('FulfillmentService initialized');
   }
 
   // ============================================================================
@@ -26,7 +26,7 @@ class FulfillmentService {
    */
   async getOrdersReadyToShip(filters = {}) {
     try {
-      const { limit = 50, page = 1, sortBy = "createdAt" } = filters;
+      const { limit = 50, page = 1, sortBy = 'createdAt' } = filters;
 
       const skip = (page - 1) * limit;
 
@@ -34,7 +34,7 @@ class FulfillmentService {
       const [orders, total] = await Promise.all([
         prisma.order.findMany({
           where: {
-            status: "PAYMENT_CONFIRMED",
+            status: 'PAYMENT_CONFIRMED',
           },
           include: {
             items: {
@@ -48,19 +48,19 @@ class FulfillmentService {
             },
           },
           orderBy: {
-            [sortBy]: "desc",
+            [sortBy]: 'desc',
           },
           skip,
           take: limit,
         }),
         prisma.order.count({
           where: {
-            status: "PAYMENT_CONFIRMED",
+            status: 'PAYMENT_CONFIRMED',
           },
         }),
       ]);
 
-      logger.info("Orders ready to ship retrieved", {
+      logger.info('Orders ready to ship retrieved', {
         count: orders.length,
         total,
         page,
@@ -76,10 +76,10 @@ class FulfillmentService {
         },
       };
     } catch (error) {
-      logger.error("Error getting orders ready to ship", {
+      logger.error('Error getting orders ready to ship', {
         error: error.message,
       });
-      throw new ApiError("Failed to retrieve orders", 500);
+      throw new ApiError('Failed to retrieve orders', 500);
     }
   }
 
@@ -89,10 +89,10 @@ class FulfillmentService {
    * @param {string} shippingMethod - Shipping method (STANDARD, EXPRESS, OVERNIGHT)
    * @returns {Promise<Object>} Created shipment
    */
-  async prepareOrderForShipment(orderId, shippingMethod = "STANDARD") {
+  async prepareOrderForShipment(orderId, shippingMethod = 'STANDARD') {
     try {
       if (!orderId) {
-        throw new ApiError("orderId is required", 400);
+        throw new ApiError('orderId is required', 400);
       }
 
       // Validate order exists and is in correct state
@@ -104,17 +104,17 @@ class FulfillmentService {
       });
 
       if (existingShipment) {
-        logger.info("Shipment already exists for order", { orderId });
+        logger.info('Shipment already exists for order', { orderId });
         return existingShipment;
       }
 
       // Create shipment
       const shipment = await shippingService.createShipment(
         orderId,
-        shippingMethod,
+        shippingMethod
       );
 
-      logger.info("Order prepared for shipment", {
+      logger.info('Order prepared for shipment', {
         orderId,
         shipmentId: shipment.id,
         shippingMethod,
@@ -123,11 +123,11 @@ class FulfillmentService {
       return shipment;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error preparing order for shipment", {
+      logger.error('Error preparing order for shipment', {
         orderId,
         error: error.message,
       });
-      throw new ApiError("Failed to prepare order for shipment", 500);
+      throw new ApiError('Failed to prepare order for shipment', 500);
     }
   }
 
@@ -144,28 +144,28 @@ class FulfillmentService {
       });
 
       if (!order) {
-        throw new ApiError("Order not found", 404);
+        throw new ApiError('Order not found', 404);
       }
 
-      if (order.status !== "PAYMENT_CONFIRMED") {
+      if (order.status !== 'PAYMENT_CONFIRMED') {
         throw new ApiError(
           `Order status must be PAYMENT_CONFIRMED, got ${order.status}`,
-          400,
+          400
         );
       }
 
       if (!order.items || order.items.length === 0) {
-        throw new ApiError("Order has no items", 400);
+        throw new ApiError('Order has no items', 400);
       }
 
       if (!order.shippingAddress) {
-        throw new ApiError("Order missing shipping address", 400);
+        throw new ApiError('Order missing shipping address', 400);
       }
 
       return order;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      throw new ApiError("Order validation failed", 400);
+      throw new ApiError('Order validation failed', 400);
     }
   }
 
@@ -181,7 +181,7 @@ class FulfillmentService {
   async generateLabelsForOrders(orderIds) {
     try {
       if (!Array.isArray(orderIds) || orderIds.length === 0) {
-        throw new ApiError("orderIds must be a non-empty array", 400);
+        throw new ApiError('orderIds must be a non-empty array', 400);
       }
 
       const results = {
@@ -197,7 +197,7 @@ class FulfillmentService {
 
           // Generate label
           const label = await shippingService.generateShippingLabel(
-            shipment.id,
+            shipment.id
           );
 
           results.successful.push({
@@ -214,7 +214,7 @@ class FulfillmentService {
         }
       }
 
-      logger.info("Batch label generation completed", {
+      logger.info('Batch label generation completed', {
         successful: results.successful.length,
         failed: results.failed.length,
       });
@@ -222,10 +222,10 @@ class FulfillmentService {
       return results;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error in batch label generation", {
+      logger.error('Error in batch label generation', {
         error: error.message,
       });
-      throw new ApiError("Failed to generate labels", 500);
+      throw new ApiError('Failed to generate labels', 500);
     }
   }
 
@@ -238,7 +238,7 @@ class FulfillmentService {
   async approveShipment(shipmentId, adminId) {
     try {
       if (!shipmentId || !adminId) {
-        throw new ApiError("shipmentId and adminId are required", 400);
+        throw new ApiError('shipmentId and adminId are required', 400);
       }
 
       const shipment = await prisma.shipment.findUnique({
@@ -246,13 +246,13 @@ class FulfillmentService {
       });
 
       if (!shipment) {
-        throw new ApiError("Shipment not found", 404);
+        throw new ApiError('Shipment not found', 404);
       }
 
-      if (shipment.shipmentStatus !== "LABEL_GENERATED") {
+      if (shipment.shipmentStatus !== 'LABEL_GENERATED') {
         throw new ApiError(
-          "Shipment must be in LABEL_GENERATED status to approve",
-          400,
+          'Shipment must be in LABEL_GENERATED status to approve',
+          400
         );
       }
 
@@ -260,14 +260,14 @@ class FulfillmentService {
       const updated = await prisma.shipment.update({
         where: { id: shipmentId },
         data: {
-          shipmentStatus: "READY_TO_SHIP",
+          shipmentStatus: 'READY_TO_SHIP',
           approvedForShipment: true,
           approvedBy: adminId,
           approvedAt: new Date(),
         },
       });
 
-      logger.info("Shipment approved", {
+      logger.info('Shipment approved', {
         shipmentId,
         approvedBy: adminId,
       });
@@ -275,11 +275,11 @@ class FulfillmentService {
       return updated;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error approving shipment", {
+      logger.error('Error approving shipment', {
         shipmentId,
         error: error.message,
       });
-      throw new ApiError("Failed to approve shipment", 500);
+      throw new ApiError('Failed to approve shipment', 500);
     }
   }
 
@@ -290,10 +290,10 @@ class FulfillmentService {
    * @param {string} reason - Rejection reason
    * @returns {Promise<Object>} Updated shipment
    */
-  async rejectShipment(shipmentId, adminId, reason = "") {
+  async rejectShipment(shipmentId, adminId, reason = '') {
     try {
       if (!shipmentId || !adminId) {
-        throw new ApiError("shipmentId and adminId are required", 400);
+        throw new ApiError('shipmentId and adminId are required', 400);
       }
 
       const shipment = await prisma.shipment.findUnique({
@@ -301,14 +301,14 @@ class FulfillmentService {
       });
 
       if (!shipment) {
-        throw new ApiError("Shipment not found", 404);
+        throw new ApiError('Shipment not found', 404);
       }
 
       // Update shipment to PENDING_LABEL for regeneration
       const updated = await prisma.shipment.update({
         where: { id: shipmentId },
         data: {
-          shipmentStatus: "PENDING_LABEL",
+          shipmentStatus: 'PENDING_LABEL',
           approvedForShipment: false,
           approvedBy: null,
           approvedAt: null,
@@ -316,12 +316,12 @@ class FulfillmentService {
       });
 
       // Create tracking event for rejection
-      await shippingService.createTrackingEvent(shipmentId, "PENDING_LABEL", {
-        statusDetail: "Label rejected",
+      await shippingService.createTrackingEvent(shipmentId, 'PENDING_LABEL', {
+        statusDetail: 'Label rejected',
         message: `Rejected by admin: ${reason}`,
       });
 
-      logger.info("Shipment rejected", {
+      logger.info('Shipment rejected', {
         shipmentId,
         rejectedBy: adminId,
         reason,
@@ -330,11 +330,11 @@ class FulfillmentService {
       return updated;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error rejecting shipment", {
+      logger.error('Error rejecting shipment', {
         shipmentId,
         error: error.message,
       });
-      throw new ApiError("Failed to reject shipment", 500);
+      throw new ApiError('Failed to reject shipment', 500);
     }
   }
 
@@ -351,20 +351,20 @@ class FulfillmentService {
   async batchGenerateLabels(orderIds, packageDefaults = {}) {
     try {
       if (!Array.isArray(orderIds) || orderIds.length === 0) {
-        throw new ApiError("orderIds must be a non-empty array", 400);
+        throw new ApiError('orderIds must be a non-empty array', 400);
       }
 
-      logger.info("Batch generate labels started", {
+      logger.info('Batch generate labels started', {
         count: orderIds.length,
       });
 
       return await this.generateLabelsForOrders(orderIds);
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error in batch generate labels", {
+      logger.error('Error in batch generate labels', {
         error: error.message,
       });
-      throw new ApiError("Failed to batch generate labels", 500);
+      throw new ApiError('Failed to batch generate labels', 500);
     }
   }
 
@@ -377,11 +377,11 @@ class FulfillmentService {
   async batchApproveShipments(shipmentIds, adminId) {
     try {
       if (!Array.isArray(shipmentIds) || shipmentIds.length === 0) {
-        throw new ApiError("shipmentIds must be a non-empty array", 400);
+        throw new ApiError('shipmentIds must be a non-empty array', 400);
       }
 
       if (!adminId) {
-        throw new ApiError("adminId is required", 400);
+        throw new ApiError('adminId is required', 400);
       }
 
       const results = {
@@ -401,7 +401,7 @@ class FulfillmentService {
         }
       }
 
-      logger.info("Batch approve shipments completed", {
+      logger.info('Batch approve shipments completed', {
         successful: results.successful.length,
         failed: results.failed.length,
       });
@@ -409,10 +409,10 @@ class FulfillmentService {
       return results;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error in batch approve shipments", {
+      logger.error('Error in batch approve shipments', {
         error: error.message,
       });
-      throw new ApiError("Failed to batch approve shipments", 500);
+      throw new ApiError('Failed to batch approve shipments', 500);
     }
   }
 
@@ -425,11 +425,11 @@ class FulfillmentService {
   async batchMarkAsShipped(shipmentIds, adminId) {
     try {
       if (!Array.isArray(shipmentIds) || shipmentIds.length === 0) {
-        throw new ApiError("shipmentIds must be a non-empty array", 400);
+        throw new ApiError('shipmentIds must be a non-empty array', 400);
       }
 
       if (!adminId) {
-        throw new ApiError("adminId is required", 400);
+        throw new ApiError('adminId is required', 400);
       }
 
       const results = {
@@ -449,7 +449,7 @@ class FulfillmentService {
         }
       }
 
-      logger.info("Batch mark as shipped completed", {
+      logger.info('Batch mark as shipped completed', {
         successful: results.successful.length,
         failed: results.failed.length,
       });
@@ -457,10 +457,10 @@ class FulfillmentService {
       return results;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error in batch mark as shipped", {
+      logger.error('Error in batch mark as shipped', {
         error: error.message,
       });
-      throw new ApiError("Failed to batch mark as shipped", 500);
+      throw new ApiError('Failed to batch mark as shipped', 500);
     }
   }
 
@@ -478,7 +478,7 @@ class FulfillmentService {
   async markAsPacked(shipmentId, adminId, packageDetails = {}) {
     try {
       if (!shipmentId || !adminId) {
-        throw new ApiError("shipmentId and adminId are required", 400);
+        throw new ApiError('shipmentId and adminId are required', 400);
       }
 
       const shipment = await prisma.shipment.findUnique({
@@ -486,13 +486,13 @@ class FulfillmentService {
       });
 
       if (!shipment) {
-        throw new ApiError("Shipment not found", 404);
+        throw new ApiError('Shipment not found', 404);
       }
 
-      if (shipment.shipmentStatus !== "READY_TO_SHIP") {
+      if (shipment.shipmentStatus !== 'READY_TO_SHIP') {
         throw new ApiError(
-          "Shipment must be in READY_TO_SHIP status to mark as packed",
-          400,
+          'Shipment must be in READY_TO_SHIP status to mark as packed',
+          400
         );
       }
 
@@ -507,7 +507,7 @@ class FulfillmentService {
         },
       });
 
-      logger.info("Shipment marked as packed", {
+      logger.info('Shipment marked as packed', {
         shipmentId,
         packedBy: adminId,
       });
@@ -515,11 +515,11 @@ class FulfillmentService {
       return updated;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error marking shipment as packed", {
+      logger.error('Error marking shipment as packed', {
         shipmentId,
         error: error.message,
       });
-      throw new ApiError("Failed to mark shipment as packed", 500);
+      throw new ApiError('Failed to mark shipment as packed', 500);
     }
   }
 
@@ -532,7 +532,7 @@ class FulfillmentService {
   async markAsShipped(shipmentId, adminId) {
     try {
       if (!shipmentId || !adminId) {
-        throw new ApiError("shipmentId and adminId are required", 400);
+        throw new ApiError('shipmentId and adminId are required', 400);
       }
 
       const shipment = await prisma.shipment.findUnique({
@@ -541,11 +541,11 @@ class FulfillmentService {
       });
 
       if (!shipment) {
-        throw new ApiError("Shipment not found", 404);
+        throw new ApiError('Shipment not found', 404);
       }
 
       if (!shipment.order) {
-        throw new ApiError("Shipment order not found", 404);
+        throw new ApiError('Shipment order not found', 404);
       }
 
       // Update shipment to IN_TRANSIT
@@ -554,7 +554,7 @@ class FulfillmentService {
         const updated = await tx.shipment.update({
           where: { id: shipmentId },
           data: {
-            shipmentStatus: "IN_TRANSIT",
+            shipmentStatus: 'IN_TRANSIT',
             shippedAt: new Date(),
           },
         });
@@ -563,9 +563,9 @@ class FulfillmentService {
         await tx.shipmentTracking.create({
           data: {
             shipmentId,
-            status: "IN_TRANSIT",
-            statusDetail: "Package picked up",
-            message: "Package picked up from warehouse",
+            status: 'IN_TRANSIT',
+            statusDetail: 'Package picked up',
+            message: 'Package picked up from warehouse',
             eventTime: new Date(),
           },
         });
@@ -574,7 +574,7 @@ class FulfillmentService {
         await tx.order.update({
           where: { id: shipment.orderId },
           data: {
-            status: "SHIPPED",
+            status: 'SHIPPED',
             shippedAt: new Date(),
           },
         });
@@ -583,8 +583,8 @@ class FulfillmentService {
         await tx.orderAudit.create({
           data: {
             orderId: shipment.orderId,
-            fromStatus: "PROCESSING",
-            toStatus: "SHIPPED",
+            fromStatus: 'PROCESSING',
+            toStatus: 'SHIPPED',
             changeReason: `Shipped with tracking ${updated.trackingNumber}`,
             changedBy: adminId,
           },
@@ -593,7 +593,7 @@ class FulfillmentService {
         return updated;
       });
 
-      logger.info("Shipment marked as shipped", {
+      logger.info('Shipment marked as shipped', {
         shipmentId,
         orderId: shipment.orderId,
         trackingNumber: shipment.trackingNumber,
@@ -611,7 +611,7 @@ class FulfillmentService {
           buyerName: shipment.order.buyerName,
         });
       } catch (error) {
-        logger.warn("Failed to send shipment notification", {
+        logger.warn('Failed to send shipment notification', {
           orderId: shipment.orderId,
           error: error.message,
         });
@@ -620,11 +620,11 @@ class FulfillmentService {
       return updatedShipment;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error marking shipment as shipped", {
+      logger.error('Error marking shipment as shipped', {
         shipmentId,
         error: error.message,
       });
-      throw new ApiError("Failed to mark shipment as shipped", 500);
+      throw new ApiError('Failed to mark shipment as shipped', 500);
     }
   }
 
@@ -645,16 +645,16 @@ class FulfillmentService {
         shipmentsDelivered,
         shipmentsWithIssues,
       ] = await Promise.all([
-        prisma.order.count({ where: { status: "PAYMENT_CONFIRMED" } }),
+        prisma.order.count({ where: { status: 'PAYMENT_CONFIRMED' } }),
         prisma.shipment.count({
-          where: { shipmentStatus: "LABEL_GENERATED" },
+          where: { shipmentStatus: 'LABEL_GENERATED' },
         }),
-        prisma.shipment.count({ where: { shipmentStatus: "IN_TRANSIT" } }),
-        prisma.shipment.count({ where: { shipmentStatus: "DELIVERED" } }),
+        prisma.shipment.count({ where: { shipmentStatus: 'IN_TRANSIT' } }),
+        prisma.shipment.count({ where: { shipmentStatus: 'DELIVERED' } }),
         prisma.shipment.count({
           where: {
             shipmentStatus: {
-              in: ["FAILED_DELIVERY", "EXCEPTION", "RETURNED"],
+              in: ['FAILED_DELIVERY', 'EXCEPTION', 'RETURNED'],
             },
           },
         }),
@@ -669,14 +669,14 @@ class FulfillmentService {
         totalShipmentsProcessed: shipmentsDelivered + shipmentsWithIssues,
       };
 
-      logger.info("Fulfillment stats retrieved", stats);
+      logger.info('Fulfillment stats retrieved', stats);
 
       return stats;
     } catch (error) {
-      logger.error("Error getting fulfillment stats", {
+      logger.error('Error getting fulfillment stats', {
         error: error.message,
       });
-      throw new ApiError("Failed to retrieve fulfillment statistics", 500);
+      throw new ApiError('Failed to retrieve fulfillment statistics', 500);
     }
   }
 
@@ -688,7 +688,7 @@ class FulfillmentService {
    */
   async getShipmentsByStatus(status, filters = {}) {
     try {
-      const { limit = 50, page = 1, sortBy = "createdAt" } = filters;
+      const { limit = 50, page = 1, sortBy = 'createdAt' } = filters;
 
       const skip = (page - 1) * limit;
 
@@ -705,11 +705,11 @@ class FulfillmentService {
             },
             trackingEvents: {
               take: 5,
-              orderBy: { eventTime: "desc" },
+              orderBy: { eventTime: 'desc' },
             },
           },
           orderBy: {
-            [sortBy]: "desc",
+            [sortBy]: 'desc',
           },
           skip,
           take: limit,
@@ -719,7 +719,7 @@ class FulfillmentService {
         }),
       ]);
 
-      logger.info("Shipments by status retrieved", {
+      logger.info('Shipments by status retrieved', {
         status,
         count: shipments.length,
         total,
@@ -735,11 +735,11 @@ class FulfillmentService {
         },
       };
     } catch (error) {
-      logger.error("Error getting shipments by status", {
+      logger.error('Error getting shipments by status', {
         status,
         error: error.message,
       });
-      throw new ApiError("Failed to retrieve shipments", 500);
+      throw new ApiError('Failed to retrieve shipments', 500);
     }
   }
 
@@ -765,23 +765,23 @@ class FulfillmentService {
             },
           },
           trackingEvents: {
-            orderBy: { eventTime: "desc" },
+            orderBy: { eventTime: 'desc' },
           },
         },
       });
 
       if (!shipment) {
-        throw new ApiError("Shipment not found", 404);
+        throw new ApiError('Shipment not found', 404);
       }
 
       return shipment;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error getting shipment detail", {
+      logger.error('Error getting shipment detail', {
         shipmentId,
         error: error.message,
       });
-      throw new ApiError("Failed to retrieve shipment", 500);
+      throw new ApiError('Failed to retrieve shipment', 500);
     }
   }
 }

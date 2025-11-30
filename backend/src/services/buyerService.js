@@ -1,6 +1,6 @@
-import prisma from "../utils/db.js";
-import { ApiError } from "../middleware/errorHandler.js";
-import logger from "../../config/logger.js";
+import prisma from '../utils/db.js';
+import { ApiError } from '../middleware/errorHandler.js';
+import logger from '../../config/logger.js';
 
 /**
  * Buyer Service
@@ -31,21 +31,21 @@ class BuyerService {
         maxPrice,
         limit = 20,
         page = 1,
-        sortBy = "createdAt",
-        sortOrder = "desc",
+        sortBy = 'createdAt',
+        sortOrder = 'desc',
       } = filters;
 
       if (limit > 500) {
-        throw new ApiError("Limit cannot exceed 500", 400);
+        throw new ApiError('Limit cannot exceed 500', 400);
       }
 
-      const validSortFields = ["price", "createdAt", "popularity"];
+      const validSortFields = ['price', 'createdAt', 'popularity'];
       const finalSortBy = validSortFields.includes(sortBy)
         ? sortBy
-        : "createdAt";
-      const finalSortOrder = sortOrder === "asc" ? "asc" : "desc";
+        : 'createdAt';
+      const finalSortOrder = sortOrder === 'asc' ? 'asc' : 'desc';
 
-      const where = { status: "LIVE" };
+      const where = { status: 'LIVE' };
 
       // Genre filter
       if (genre) {
@@ -76,16 +76,16 @@ class BuyerService {
       if (search) {
         where.OR = where.OR || [];
         where.OR.push(
-          { release: { title: { contains: search, mode: "insensitive" } } },
-          { release: { artist: { contains: search, mode: "insensitive" } } },
+          { release: { title: { contains: search, mode: 'insensitive' } } },
+          { release: { artist: { contains: search, mode: 'insensitive' } } }
         );
       }
 
       const skip = (page - 1) * limit;
       const orderBy =
-        finalSortBy === "price"
+        finalSortBy === 'price'
           ? { listPrice: finalSortOrder }
-          : finalSortBy === "popularity"
+          : finalSortBy === 'popularity'
             ? { createdAt: finalSortOrder } // Placeholder for actual popularity
             : { [finalSortBy]: finalSortOrder };
 
@@ -123,8 +123,8 @@ class BuyerService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error listing products", { error: error.message });
-      throw new ApiError("Failed to list products", 500);
+      logger.error('Error listing products', { error: error.message });
+      throw new ApiError('Failed to list products', 500);
     }
   }
 
@@ -142,8 +142,8 @@ class BuyerService {
         },
       });
 
-      if (!product || product.status !== "LIVE") {
-        throw new ApiError("Product not found", 404);
+      if (!product || product.status !== 'LIVE') {
+        throw new ApiError('Product not found', 404);
       }
 
       return {
@@ -170,16 +170,16 @@ class BuyerService {
         channel: product.channel,
         description: product.publicDescription,
         photos: product.photoUrls || [],
-        inStock: product.status === "LIVE",
+        inStock: product.status === 'LIVE',
         createdAt: product.createdAt,
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error getting product detail", {
+      logger.error('Error getting product detail', {
         inventoryLotId,
         error: error.message,
       });
-      throw new ApiError("Failed to get product detail", 500);
+      throw new ApiError('Failed to get product detail', 500);
     }
   }
 
@@ -192,7 +192,7 @@ class BuyerService {
   async addToWishlist(buyerId, inventoryLotId) {
     try {
       if (!buyerId || !inventoryLotId) {
-        throw new ApiError("Buyer ID and inventory lot ID are required", 400);
+        throw new ApiError('Buyer ID and inventory lot ID are required', 400);
       }
 
       // Verify product exists and is available
@@ -200,15 +200,15 @@ class BuyerService {
         where: { id: inventoryLotId },
       });
 
-      if (!product || product.status !== "LIVE") {
-        throw new ApiError("Product not found or not available", 404);
+      if (!product || product.status !== 'LIVE') {
+        throw new ApiError('Product not found or not available', 404);
       }
 
       // For now, store wishlist in memory/session
       // In production, would use a Wishlist model
       const wishlistKey = `wishlist:${buyerId}`;
 
-      logger.info("Item added to wishlist", {
+      logger.info('Item added to wishlist', {
         buyerId,
         inventoryLotId,
         productSku: product.sku,
@@ -222,11 +222,11 @@ class BuyerService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error adding to wishlist", {
+      logger.error('Error adding to wishlist', {
         buyerId,
         error: error.message,
       });
-      throw new ApiError("Failed to add to wishlist", 500);
+      throw new ApiError('Failed to add to wishlist', 500);
     }
   }
 
@@ -239,25 +239,25 @@ class BuyerService {
   async removeFromWishlist(buyerId, inventoryLotId) {
     try {
       if (!buyerId || !inventoryLotId) {
-        throw new ApiError("Buyer ID and inventory lot ID are required", 400);
+        throw new ApiError('Buyer ID and inventory lot ID are required', 400);
       }
 
-      logger.info("Item removed from wishlist", {
+      logger.info('Item removed from wishlist', {
         buyerId,
         inventoryLotId,
       });
 
       return {
-        message: "Item removed from wishlist",
+        message: 'Item removed from wishlist',
         inventoryLotId,
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error removing from wishlist", {
+      logger.error('Error removing from wishlist', {
         buyerId,
         error: error.message,
       });
-      throw new ApiError("Failed to remove from wishlist", 500);
+      throw new ApiError('Failed to remove from wishlist', 500);
     }
   }
 
@@ -276,14 +276,14 @@ class BuyerService {
       });
 
       if (!product) {
-        throw new ApiError("Product not found", 404);
+        throw new ApiError('Product not found', 404);
       }
 
       // Find similar products (same artist or genre, different items)
       const recommendations = await prisma.inventoryLot.findMany({
         where: {
           AND: [
-            { status: "LIVE" },
+            { status: 'LIVE' },
             { id: { not: inventoryLotId } },
             {
               OR: [
@@ -300,11 +300,11 @@ class BuyerService {
       return recommendations.map((p) => this._formatProductForBuyer(p));
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error getting recommendations", {
+      logger.error('Error getting recommendations', {
         inventoryLotId,
         error: error.message,
       });
-      throw new ApiError("Failed to get recommendations", 500);
+      throw new ApiError('Failed to get recommendations', 500);
     }
   }
 
@@ -321,11 +321,11 @@ class BuyerService {
       const { query, limit = 20, page = 1 } = options;
 
       if (!query || query.trim().length === 0) {
-        throw new ApiError("Search query is required", 400);
+        throw new ApiError('Search query is required', 400);
       }
 
       if (limit > 500) {
-        throw new ApiError("Limit cannot exceed 500", 400);
+        throw new ApiError('Limit cannot exceed 500', 400);
       }
 
       const skip = (page - 1) * limit;
@@ -335,30 +335,30 @@ class BuyerService {
         prisma.inventoryLot.findMany({
           where: {
             AND: [
-              { status: "LIVE" },
+              { status: 'LIVE' },
               {
                 OR: [
                   {
                     release: {
-                      title: { contains: searchTerm, mode: "insensitive" },
+                      title: { contains: searchTerm, mode: 'insensitive' },
                     },
                   },
                   {
                     release: {
-                      artist: { contains: searchTerm, mode: "insensitive" },
+                      artist: { contains: searchTerm, mode: 'insensitive' },
                     },
                   },
                   {
                     release: {
-                      label: { contains: searchTerm, mode: "insensitive" },
+                      label: { contains: searchTerm, mode: 'insensitive' },
                     },
                   },
                   {
                     release: {
-                      barcode: { contains: searchTerm, mode: "insensitive" },
+                      barcode: { contains: searchTerm, mode: 'insensitive' },
                     },
                   },
-                  { sku: { contains: searchTerm, mode: "insensitive" } },
+                  { sku: { contains: searchTerm, mode: 'insensitive' } },
                 ],
               },
             ],
@@ -370,30 +370,30 @@ class BuyerService {
         prisma.inventoryLot.count({
           where: {
             AND: [
-              { status: "LIVE" },
+              { status: 'LIVE' },
               {
                 OR: [
                   {
                     release: {
-                      title: { contains: searchTerm, mode: "insensitive" },
+                      title: { contains: searchTerm, mode: 'insensitive' },
                     },
                   },
                   {
                     release: {
-                      artist: { contains: searchTerm, mode: "insensitive" },
+                      artist: { contains: searchTerm, mode: 'insensitive' },
                     },
                   },
                   {
                     release: {
-                      label: { contains: searchTerm, mode: "insensitive" },
+                      label: { contains: searchTerm, mode: 'insensitive' },
                     },
                   },
                   {
                     release: {
-                      barcode: { contains: searchTerm, mode: "insensitive" },
+                      barcode: { contains: searchTerm, mode: 'insensitive' },
                     },
                   },
-                  { sku: { contains: searchTerm, mode: "insensitive" } },
+                  { sku: { contains: searchTerm, mode: 'insensitive' } },
                 ],
               },
             ],
@@ -413,8 +413,8 @@ class BuyerService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Error searching products", { error: error.message });
-      throw new ApiError("Failed to search products", 500);
+      logger.error('Error searching products', { error: error.message });
+      throw new ApiError('Failed to search products', 500);
     }
   }
 
@@ -434,7 +434,7 @@ class BuyerService {
       condition: `${lot.conditionMedia}/${lot.conditionSleeve}`,
       price: parseFloat(lot.listPrice),
       salePrice: lot.salePrice ? parseFloat(lot.salePrice) : null,
-      inStock: lot.status === "LIVE",
+      inStock: lot.status === 'LIVE',
     };
   }
 }
