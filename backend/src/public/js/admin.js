@@ -1,26 +1,27 @@
 // Admin Console Interactions
-document.addEventListener('DOMContentLoaded', async function () {
-  // Verify authentication on page load
-  const isAuthenticated = await auth.verifySession();
-  if (!isAuthenticated) {
-    window.location.href = '/admin/login.html';
-    return;
-  }
+document.addEventListener('DOMContentLoaded', function () {
+  console.log('Admin page loaded');
 
-  // Initialize UI
+  // Initialize UI - Core functionality that doesn't depend on backend
   initializeUserInfo();
   initializeTabSwitching();
   initializeLogout();
   initializeModals();
 
-  // Load dashboard stats
-  if (dashboardStats) {
-    await dashboardStats.initialize();
+  console.log('Admin UI initialized');
+
+  // Load dashboard stats (optional - doesn't block page)
+  if (typeof dashboardStats !== 'undefined' && dashboardStats) {
+    dashboardStats.initialize().catch(error => {
+      console.warn('Dashboard stats failed to load:', error.message);
+    });
   }
 
-  // Initialize submissions manager
-  if (submissionsManager) {
-    await submissionsManager.initialize();
+  // Initialize submissions manager (optional - doesn't block page)
+  if (typeof submissionsManager !== 'undefined' && submissionsManager) {
+    submissionsManager.initialize().catch(error => {
+      console.warn('Submissions manager failed to load:', error.message);
+    });
   }
 });
 
