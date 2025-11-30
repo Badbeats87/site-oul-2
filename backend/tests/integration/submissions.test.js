@@ -84,12 +84,14 @@ describe('Submissions Service - Integration Tests', () => {
   });
 
   afterAll(async () => {
-    // Cleanup
+    // Cleanup in correct order to respect foreign key constraints
     await prisma.submissionItem.deleteMany({});
     await prisma.submissionAudit.deleteMany({});
     await prisma.sellerSubmission.deleteMany({});
     await prisma.marketSnapshot.deleteMany({});
     await prisma.releasePricingPolicy.deleteMany({});
+    // Delete inventory lots before releases
+    await prisma.inventoryLot.deleteMany({});
     await prisma.release.deleteMany({});
     await prisma.pricingPolicy.deleteMany({});
     await prisma.$disconnect();

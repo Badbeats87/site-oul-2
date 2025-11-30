@@ -13,8 +13,13 @@ describe('Catalog API Integration Tests', () => {
   });
 
   afterAll(async () => {
-    // Cleanup
+    // Cleanup in correct order to respect foreign key constraints
     await prisma.marketSnapshot.deleteMany({});
+    // Delete inventory holds first
+    await prisma.inventoryHold.deleteMany({});
+    // Then delete inventory lots
+    await prisma.inventoryLot.deleteMany({});
+    // Then delete releases
     await prisma.release.deleteMany({});
     await prisma.$disconnect();
   });

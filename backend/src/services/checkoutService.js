@@ -4,6 +4,7 @@ import logger from '../../config/logger.js';
 import orderService from './orderService.js';
 import paymentService from './paymentService.js';
 import inventoryService from './inventoryService.js';
+import * as inventoryReservationService from './inventoryReservationService.js';
 
 /**
  * Checkout Service
@@ -152,15 +153,15 @@ class CheckoutService {
       });
 
       if (existingItem) {
-        throw new ApiError('Item already in cart', 400);
+        throw new ApiError('Item already in cart', 409);
       }
 
-      // Add item to cart (without reserving yet)
+      // Add item to cart
       await prisma.orderItem.create({
         data: {
           orderId,
           inventoryLotId,
-          priceAtPurchase: inventoryLot.price,
+          priceAtPurchase: inventoryLot.listPrice,
           releaseTitle: inventoryLot.release?.title || '',
           releaseArtist: inventoryLot.release?.artist || '',
           conditionMedia: inventoryLot.conditionMedia,
@@ -168,10 +169,36 @@ class CheckoutService {
         },
       });
 
-      logger.info('Item added to cart', {
+      // Create inventory hold to prevent double-booking
+      try {
+        await inventoryReservationService.createHold(inventoryLotId, {
+          orderId,
+          quantity: 1,
+          durationMinutes: 30, // 30-minute hold for cart items
+        });
+      } catch (error) {
+        // If hold creation fails, remove the item from cart
+        await prisma.orderItem.deleteMany({
+          where: {
+            orderId,
+            inventoryLotId,
+          },
+        });
+        logger.error(
+          'Failed to create inventory hold, item removed from cart',
+          {
+            orderId,
+            inventoryLotId,
+            error: error.message,
+          }
+        );
+        throw error;
+      }
+
+      logger.info('Item added to cart with hold', {
         orderId,
         inventoryLotId,
-        price: inventoryLot.price,
+        price: inventoryLot.listPrice,
       });
 
       // Recalculate cart totals
@@ -213,6 +240,28 @@ class CheckoutService {
         throw new ApiError('Order is not in CART status', 400);
       }
 
+      // Release inventory hold for this item
+      try {
+        const holds =
+          await inventoryReservationService.getHoldsForInventory(
+            inventoryLotId
+          );
+        const holdForThisOrder = holds.find((h) => h.orderId === orderId);
+        if (holdForThisOrder) {
+          await inventoryReservationService.releaseHold(
+            holdForThisOrder.id,
+            'Item removed from cart'
+          );
+        }
+      } catch (error) {
+        logger.warn('Failed to release inventory hold during cart removal', {
+          orderId,
+          inventoryLotId,
+          error: error.message,
+        });
+        // Continue with item removal even if hold release fails
+      }
+
       // Delete order item
       const deleted = await prisma.orderItem.deleteMany({
         where: {
@@ -225,7 +274,7 @@ class CheckoutService {
         throw new ApiError('Item not found in cart', 404);
       }
 
-      logger.info('Item removed from cart', {
+      logger.info('Item removed from cart and hold released', {
         orderId,
         inventoryLotId,
       });
@@ -369,7 +418,18 @@ class CheckoutService {
         total,
       });
 
-      return updatedOrder;
+      // Convert Decimal fields to numbers for JSON serialization
+      return {
+        ...updatedOrder,
+        subtotal: parseFloat(updatedOrder.subtotal),
+        tax: parseFloat(updatedOrder.tax),
+        shipping: parseFloat(updatedOrder.shipping),
+        total: parseFloat(updatedOrder.total),
+        items: updatedOrder.items.map((item) => ({
+          ...item,
+          priceAtPurchase: parseFloat(item.priceAtPurchase),
+        })),
+      };
     } catch (error) {
       if (error instanceof ApiError) throw error;
       logger.error('Error recalculating cart totals', {
@@ -617,7 +677,7 @@ class CheckoutService {
         );
       }
 
-      // Mark all reserved items as SOLD
+      // Mark all reserved items as SOLD and convert holds to sales
       const soldItems = [];
       const failedSales = [];
 
@@ -625,6 +685,28 @@ class CheckoutService {
         try {
           await inventoryService.markAsSold(item.inventoryLotId, orderId);
           soldItems.push(item.inventoryLotId);
+
+          // Convert hold to sale
+          try {
+            const holds =
+              await inventoryReservationService.getHoldsForInventory(
+                item.inventoryLotId
+              );
+            const holdForThisOrder = holds.find((h) => h.orderId === orderId);
+            if (holdForThisOrder) {
+              await inventoryReservationService.convertHoldToSale(
+                holdForThisOrder.id,
+                'Order payment confirmed'
+              );
+            }
+          } catch (error) {
+            logger.warn('Failed to convert hold to sale', {
+              inventoryLotId: item.inventoryLotId,
+              orderId,
+              error: error.message,
+            });
+            // Continue processing other items even if hold conversion fails
+          }
         } catch (error) {
           failedSales.push({
             inventoryLotId: item.inventoryLotId,
@@ -641,7 +723,7 @@ class CheckoutService {
         throw new ApiError('Failed to complete purchase for some items', 500);
       }
 
-      logger.info('Checkout completed', {
+      logger.info('Checkout completed with holds converted to sales', {
         orderId,
         soldItemCount: soldItems.length,
       });
@@ -684,7 +766,20 @@ class CheckoutService {
         throw new ApiError('Only PAYMENT_PENDING orders can be cancelled', 400);
       }
 
-      // Release all reserved inventory
+      // Release all inventory holds and reserved inventory
+      try {
+        await inventoryReservationService.releaseAllHoldsForOrder(
+          orderId,
+          reason
+        );
+      } catch (error) {
+        logger.warn('Error releasing all holds during checkout cancellation', {
+          orderId,
+          error: error.message,
+        });
+        // Continue with checkout cancellation even if hold release fails
+      }
+
       for (const item of order.items) {
         try {
           await inventoryService.releaseReservation(
