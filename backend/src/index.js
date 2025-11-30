@@ -29,8 +29,8 @@ import { captureRawBody } from './middleware/rawBody.js';
 import prisma from './utils/db.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// From /backend/src, go up two levels to get to project root (where pages/, js/, styles/ are)
-const projectRoot = path.resolve(__dirname, '../..');
+// From /app/src, go up one level to get to /app (where pages/, js/, styles/ are)
+const projectRoot = path.resolve(__dirname, '..');
 
 const app = express();
 
