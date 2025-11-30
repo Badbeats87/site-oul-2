@@ -90,6 +90,11 @@ export const authenticate = async (req, res, next) => {
     return next();
   }
 
+  // Allow public catalog search endpoints (for seller/buyer browsing)
+  if (req.path.startsWith('/api/v1/catalog/search')) {
+    return next();
+  }
+
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {

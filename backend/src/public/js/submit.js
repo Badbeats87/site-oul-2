@@ -69,17 +69,41 @@ const submitForm = {
     }
 
     try {
+      // Get auth token if available
+      const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       // Call catalog search API
       const response = await fetch(
-        `/api/v1/catalog/search?q=${encodeURIComponent(query)}&limit=10`
+        `/api/v1/catalog/search?q=${encodeURIComponent(query)}&limit=10`,
+        { headers }
       );
 
       if (!response.ok) {
+        console.error('Search response status:', response.status, response.statusText);
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Search error data:', errorData);
+
+        if (response.status === 401) {
+          throw new Error('Authentication required. Please log in first.');
+        }
         throw new Error(`API error: ${response.statusText}`);
       }
 
       const data = await response.json();
       const results = data.data || [];
+
+      if (results.length === 0) {
+        alert('No records found. Try a different search term.');
+        return;
+      }
 
       // Transform results to expected format
       const transformedResults = results.map((release) => {
@@ -99,7 +123,7 @@ const submitForm = {
       this.displaySearchResults(transformedResults);
     } catch (error) {
       console.error('Search error:', error);
-      alert('Search failed. Please try again.');
+      alert(`Search failed: ${error.message}`);
     }
   },
 
