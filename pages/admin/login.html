@@ -175,7 +175,7 @@
             // If already authenticated, redirect to dashboard
             const isAuthenticated = await auth.verifySession();
             if (isAuthenticated) {
-                window.location.href = '/admin/index.html';
+                window.location.href = '/pages/admin/index.html';
                 return;
             }
 
@@ -201,7 +201,7 @@
                 try {
                     await auth.login(email, password);
                     // If successful, redirect to dashboard
-                    window.location.href = '/admin/index.html';
+                    window.location.href = '/pages/admin/index.html';
                 } catch (error) {
                     errorMessage.textContent = error.message || 'Login failed. Please try again.';
                     errorMessage.classList.add('show');

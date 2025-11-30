@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Verify authentication on page load
     const isAuthenticated = await auth.verifySession();
     if (!isAuthenticated) {
-        window.location.href = '/admin/login.html';
+        window.location.href = '/pages/admin/login.html';
         return;
     }
 
