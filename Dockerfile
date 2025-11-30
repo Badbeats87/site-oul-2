@@ -54,6 +54,9 @@ RUN addgroup -g 1001 -S nodejs && \
 RUN mkdir -p logs && \
     chown -R nodejs:nodejs /app
 
+# Make startup script executable (before switching user)
+RUN chmod +x /app/scripts/startup.sh
+
 USER nodejs
 
 # Expose port
@@ -66,8 +69,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
-# Make startup script executable
-RUN chmod +x /app/scripts/startup.sh
-
-# Start server with startup script
-CMD ["/app/scripts/startup.sh"]
+# Start server with startup script (use sh to execute)
+CMD ["sh", "/app/scripts/startup.sh"]
