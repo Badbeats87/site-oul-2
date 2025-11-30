@@ -3,6 +3,9 @@ FROM node:18-alpine as builder
 
 WORKDIR /app
 
+# Rebuild trigger - force fresh deployment
+# Ensures frontend assets are included
+
 # Copy package files
 COPY package*.json ./
 
@@ -11,6 +14,9 @@ RUN npm ci
 
 # Copy all application files (backend code + frontend assets)
 COPY . .
+
+# Debug: List files to ensure frontend assets are present
+RUN echo "=== Backend Contents ===" && ls -la /app/ && echo "=== Styles ===" && ls -la /app/styles/ 2>/dev/null || echo "Styles directory not found" && echo "=== JS ===" && ls -la /app/js/ 2>/dev/null || echo "JS directory not found"
 
 # Generate Prisma Client
 RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npx prisma generate
