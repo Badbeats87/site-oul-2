@@ -9,6 +9,9 @@ import {
   getCurrentUser,
   changePassword,
 } from '../controllers/authController.js';
+import discogsOAuthService from '../services/discogsOAuthService.js';
+import { ApiError } from '../middleware/errorHandler.js';
+import logger from '../../config/logger.js';
 import { authenticate } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -132,6 +135,145 @@ router.post('/login', loginLimiter, login);
  *         description: Invalid or expired refresh token
  */
 router.post('/refresh', refresh);
+
+// ============================================================================
+// DISCOGS OAUTH ENDPOINTS (public, no authentication required)
+// ============================================================================
+
+/**
+ * @swagger
+ * /api/v1/auth/discogs/initiate:
+ *   get:
+ *     summary: Initiate Discogs OAuth flow
+ *     description: Start the 3-legged OAuth flow by requesting a request token and returning the authorization URL
+ *     tags:
+ *       - Discogs OAuth
+ *     responses:
+ *       200:
+ *         description: OAuth flow initiated successfully
+ */
+router.get('/discogs/initiate', async (req, res, next) => {
+  try {
+    logger.info('Initiating Discogs OAuth flow');
+
+    const result = await discogsOAuthService.getRequestToken();
+
+    logger.info('OAuth request token generated', {
+      token: result.requestToken.substring(0, 5) + '...',
+    });
+
+    res.json({
+      success: true,
+      data: {
+        authorizationUrl: result.authorizationUrl,
+        requestToken: result.requestToken,
+      },
+    });
+  } catch (error) {
+    logger.error('Failed to initiate Discogs OAuth flow', {
+      error: error.message,
+    });
+    next(new ApiError('Failed to initiate OAuth flow', 500));
+  }
+});
+
+/**
+ * @swagger
+ * /api/v1/auth/discogs/callback:
+ *   get:
+ *     summary: Handle Discogs OAuth callback
+ *     description: Exchange request token + verifier for access token after user authorizes
+ *     tags:
+ *       - Discogs OAuth
+ *     parameters:
+ *       - in: query
+ *         name: oauth_token
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: oauth_verifier
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successfully exchanged for access token
+ */
+router.get('/discogs/callback', async (req, res, next) => {
+  try {
+    const { oauth_token: oauthToken, oauth_verifier: oauthVerifier } = req.query;
+
+    if (!oauthToken || !oauthVerifier) {
+      throw new ApiError('Missing OAuth token or verifier', 400);
+    }
+
+    logger.info('Processing Discogs OAuth callback', {
+      token: oauthToken.substring(0, 5) + '...',
+    });
+
+    const result = await discogsOAuthService.getAccessToken(oauthToken, oauthVerifier);
+
+    logger.info('Discogs OAuth tokens successfully exchanged', {
+      username: result.discogsUsername,
+      userId: result.discogsUserId,
+    });
+
+    res.json({
+      success: true,
+      data: {
+        message: 'Successfully authenticated with Discogs',
+        username: result.discogsUsername,
+        userId: result.discogsUserId,
+        accessToken: result.accessToken.substring(0, 5) + '...',
+      },
+    });
+  } catch (error) {
+    logger.error('Failed to process Discogs OAuth callback', {
+      error: error.message,
+    });
+
+    if (error.isApiError) {
+      next(error);
+    } else {
+      next(new ApiError('Failed to process OAuth callback', 500));
+    }
+  }
+});
+
+/**
+ * @swagger
+ * /api/v1/auth/discogs/status:
+ *   get:
+ *     summary: Check if Discogs OAuth token is active
+ *     description: Verify if a valid Discogs OAuth token is currently stored in the system
+ *     tags:
+ *       - Discogs OAuth
+ *     responses:
+ *       200:
+ *         description: OAuth token status
+ */
+router.get('/discogs/status', async (req, res, next) => {
+  try {
+    const token = await discogsOAuthService.getLatestAccessToken();
+    const hasActiveToken = token !== null;
+
+    res.json({
+      success: true,
+      data: {
+        hasActiveToken,
+        message: hasActiveToken
+          ? 'Active Discogs OAuth token is configured'
+          : 'No active Discogs OAuth token found. Please run the OAuth flow to authenticate.',
+      },
+    });
+  } catch (error) {
+    logger.error('Failed to check OAuth status', {
+      error: error.message,
+    });
+    next(new ApiError('Failed to check OAuth status', 500));
+  }
+});
 
 // ============================================================================
 // PROTECTED ROUTES (authentication required)

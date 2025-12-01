@@ -641,6 +641,36 @@ model ShippingRate {
 }
 
 // ============================================================================
+// THIRD-PARTY INTEGRATIONS
+// ============================================================================
+
+model DiscogsOAuthToken {
+  id                  String   @id @default(uuid()) @db.Uuid
+
+  // OAuth token data
+  accessToken         String   @unique @db.VarChar(500) @map("access_token")
+  accessTokenSecret   String   @db.VarChar(500) @map("access_token_secret")
+
+  // User identification from Discogs
+  discogsUsername     String?  @db.VarChar(255) @map("discogs_username")
+  discogsUserId       Int?     @map("discogs_user_id")
+
+  // Token lifecycle
+  isActive            Boolean  @default(true) @map("is_active")
+
+  // Timestamps
+  obtainedAt          DateTime @default(now()) @map("obtained_at") @db.Timestamptz
+  expiresAt           DateTime? @map("expires_at") @db.Timestamptz
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Indexes
+  @@index([isActive, createdAt(sort: Desc)])
+  @@index([discogsUsername])
+  @@map("discogs_oauth_tokens")
+}
+
+// ============================================================================
 // USER AUTHENTICATION & AUTHORIZATION
 // ============================================================================
 
