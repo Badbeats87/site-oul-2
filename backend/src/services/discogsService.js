@@ -4,7 +4,9 @@ import logger from '../../config/logger.js';
 import { getOrSet, generateCacheKey } from '../utils/cache.js';
 
 const DISCOGS_API_BASE = 'https://api.discogs.com';
-const DISCOGS_TOKEN = process.env.DISCOGS_API_TOKEN;
+
+// Get token dynamically to support runtime environment variable loading
+const getDiscogsToken = () => process.env.DISCOGS_API_TOKEN;
 
 /**
  * Discogs API Integration Service
@@ -22,8 +24,9 @@ class DiscogsService {
 
     // Add request interceptor for auth and rate limiting
     this.client.interceptors.request.use((config) => {
-      if (DISCOGS_TOKEN) {
-        config.headers['Authorization'] = `Discogs token=${DISCOGS_TOKEN}`;
+      const token = getDiscogsToken();
+      if (token) {
+        config.headers['Authorization'] = `Discogs token=${token}`;
       }
       return config;
     });
