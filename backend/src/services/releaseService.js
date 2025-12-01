@@ -696,7 +696,10 @@ class ReleaseService {
         topResults.map((result) => this._enrichDiscogsResult(result))
       );
 
-      let finalResults = enrichedTopResults;
+      // Filter out top results without marketplace data
+      let finalResults = enrichedTopResults.filter(
+        (result) => result && result.marketSnapshots && result.marketSnapshots.length > 0
+      );
 
       if (discogsResults.results.length > topResults.length) {
         const remainingResults = discogsResults.results.slice(topResults.length);
@@ -707,7 +710,11 @@ class ReleaseService {
               .slice(0, availableSlots)
               .map((result) => this._enrichDiscogsResult(result))
           );
-          finalResults = [...finalResults, ...remainingEnriched];
+          // Filter out results without marketplace data (only include records with actual Discogs listings)
+          const validResults = remainingEnriched.filter(
+            (result) => result && result.marketSnapshots && result.marketSnapshots.length > 0
+          );
+          finalResults = [...finalResults, ...validResults];
         }
       }
 
