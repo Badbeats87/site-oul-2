@@ -680,9 +680,9 @@ class InventoryService {
         release: lot.release,
         submissionOrigin: lot.submissionItem
           ? {
-            submissionId: lot.submissionItem.submission.id,
-            sellerContact: lot.submissionItem.submission.sellerContact,
-          }
+              submissionId: lot.submissionItem.submission.id,
+              sellerContact: lot.submissionItem.submission.sellerContact,
+            }
           : null,
         sku: lot.sku,
         condition: {
@@ -1220,11 +1220,11 @@ class InventoryService {
             averagePriceChange:
               successfulUpdates.length > 0
                 ? (
-                  successfulUpdates.reduce(
-                    (sum, u) => sum + u.priceDifference,
-                    0
-                  ) / successfulUpdates.length
-                ).toFixed(2)
+                    successfulUpdates.reduce(
+                      (sum, u) => sum + u.priceDifference,
+                      0
+                    ) / successfulUpdates.length
+                  ).toFixed(2)
                 : 0,
           },
         };
@@ -1282,11 +1282,11 @@ class InventoryService {
           averagePriceChange:
             appliedUpdates.length > 0
               ? (
-                appliedUpdates.reduce(
-                  (sum, u) => sum + u.priceDifference,
-                  0
-                ) / appliedUpdates.length
-              ).toFixed(2)
+                  appliedUpdates.reduce(
+                    (sum, u) => sum + u.priceDifference,
+                    0
+                  ) / appliedUpdates.length
+                ).toFixed(2)
               : 0,
         },
       };

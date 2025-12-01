@@ -575,15 +575,15 @@ class ReleaseService {
                       priceStats.average ||
                       priceStats.median)
                       ? [
-                        {
-                          releaseId: `discogs_${result.id}`,
-                          source: 'DISCOGS',
-                          statLow: priceStats.lowest,
-                          statMedian: priceStats.median,
-                          statHigh: priceStats.highest,
-                          fetchedAt: new Date(),
-                        },
-                      ]
+                          {
+                            releaseId: `discogs_${result.id}`,
+                            source: 'DISCOGS',
+                            statLow: priceStats.lowest,
+                            statMedian: priceStats.median,
+                            statHigh: priceStats.highest,
+                            fetchedAt: new Date(),
+                          },
+                        ]
                       : [];
 
                   return {

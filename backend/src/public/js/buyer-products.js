@@ -208,13 +208,13 @@ class BuyerProductsManager {
         <a href="product.html?id=${product.id}" style="text-decoration: none; color: inherit;">
           <div class="product-card__image">
             ${
-  product.coverArtUrl
-    ? `<img src="${product.coverArtUrl}" alt="${product.title}" style="width: 100%; height: 100%; object-fit: cover;">`
-    : `<svg viewBox="0 0 240 240" fill="none">
+              product.coverArtUrl
+                ? `<img src="${product.coverArtUrl}" alt="${product.title}" style="width: 100%; height: 100%; object-fit: cover;">`
+                : `<svg viewBox="0 0 240 240" fill="none">
                 <rect width="240" height="240" fill="#e5e7eb"/>
                 <text x="120" y="120" text-anchor="middle" dominant-baseline="middle" font-size="18" fill="#9ca3af">Album Cover</text>
               </svg>`
-}
+            }
             ${product.isNew ? '<div class="product-card__badge product-card__badge--new">New</div>' : ''}
             ${product.isRare ? '<div class="product-card__badge product-card__badge--rare">Rare</div>' : ''}
             ${product.lowStock ? '<div class="product-card__badge product-card__badge--low">Low Stock</div>' : ''}
@@ -231,10 +231,10 @@ class BuyerProductsManager {
             <div class="product-card__price">
               <span class="price-current">$${parseFloat(product.price || 0).toFixed(2)}</span>
               ${
-  product.originalPrice && product.originalPrice !== product.price
-    ? `<span class="price-original">$${parseFloat(product.originalPrice).toFixed(2)}</span>`
-    : ''
-}
+                product.originalPrice && product.originalPrice !== product.price
+                  ? `<span class="price-original">$${parseFloat(product.originalPrice).toFixed(2)}</span>`
+                  : ''
+              }
             </div>
           </div>
         </a>
