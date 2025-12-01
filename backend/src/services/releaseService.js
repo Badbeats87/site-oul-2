@@ -437,8 +437,9 @@ class ReleaseService {
       const cacheKey = this.generateSearchCacheKey(query, {}, { limit });
 
       // Try cache first (30 minute TTL for search)
+      // BUT: skip cache for searches that previously had 0 results (to allow Discogs fallback)
       const cached = getCached(cacheKey);
-      if (cached) {
+      if (cached && cached.total > 0) {
         logger.debug('Cache hit for search', { query, limit });
         return cached;
       }
