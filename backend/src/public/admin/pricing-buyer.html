@@ -19,6 +19,13 @@
     <link rel="stylesheet" href="../../styles/pricing-editor.css" />
   </head>
   <body style="min-height: 100vh; overflow-y: auto">
+    <script>
+      // Check authentication and redirect to login if needed
+      const authToken = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+      if (!authToken) {
+        window.location.href = 'login.html';
+      }
+    </script>
     <!-- Navigation -->
     <nav class="navbar">
       <div class="navbar__container">
