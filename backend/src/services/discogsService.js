@@ -361,17 +361,30 @@ class DiscogsService {
               hasData: !!response.data,
               numForSale: response.data?.num_for_sale,
               lowestPrice: response.data?.lowest_price,
+              rawResponse: response.data,
             });
 
+            // Discogs returns lowest_price as either:
+            // 1. A number directly: lowest_price: 19.99
+            // 2. An object: lowest_price: { value: 19.99, currency: "USD" }
+            let lowestPrice = null;
+            if (response.data.lowest_price) {
+              if (typeof response.data.lowest_price === 'object') {
+                lowestPrice = response.data.lowest_price.value;
+              } else {
+                lowestPrice = parseFloat(response.data.lowest_price);
+              }
+            }
+
             // If no listings available, return null
-            if (!response.data.lowest_price || response.data.num_for_sale === 0) {
+            if (!lowestPrice || response.data.num_for_sale === 0) {
               return null;
             }
 
             return {
               release_id: releaseId,
               currency: currencyCode,
-              lowest: parseFloat(response.data.lowest_price),
+              lowest: parseFloat(lowestPrice),
               num_for_sale: response.data.num_for_sale,
               blocked: response.data.blocked_from_sale || false,
             };
