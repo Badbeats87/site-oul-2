@@ -50,16 +50,28 @@
         <!-- Search Section -->
         <section class="section-panel">
           <h2 class="section-title">Find Your Record</h2>
-          <div class="search-box">
-            <input
-              type="text"
-              class="search-box__input"
-              placeholder="Search by artist, title, or barcode..."
-              id="searchInput"
-            />
-            <button type="button" class="button button--primary search-box__button">
-              Search
-            </button>
+          <div class="search-box-container">
+            <div class="search-box">
+              <input
+                type="text"
+                class="search-box__input"
+                placeholder="Search by artist, title, or barcode..."
+                id="searchInput"
+              />
+              <button type="button" class="button button--primary search-box__button">
+                Search
+              </button>
+            </div>
+            <!-- Search Results Dropdown -->
+            <div class="search-dropdown" id="searchDropdown" style="display: none;">
+              <div class="search-dropdown__loading" style="display: none;">
+                <p>Searching...</p>
+              </div>
+              <div class="search-dropdown__results" id="searchResults"></div>
+              <div class="search-dropdown__no-results" style="display: none;">
+                <p>No results found</p>
+              </div>
+            </div>
           </div>
           <div class="search-info">
             <p>
