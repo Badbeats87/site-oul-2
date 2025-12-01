@@ -308,6 +308,94 @@ class DiscogsService {
   }
 
   /**
+   * Get marketplace statistics for a release
+   * Returns current marketplace state including lowest price and number for sale
+   * @param {number} releaseId - Discogs release ID
+   * @param {string} currencyCode - Optional currency code (e.g., 'EUR', 'USD', 'CAD')
+   * @returns {Promise<Object>} - Marketplace statistics with pricing
+   */
+  async getMarketplaceStats(releaseId, currencyCode = 'USD') {
+    try {
+      if (!releaseId || typeof releaseId !== 'number') {
+        throw new ApiError('Invalid release ID', 400);
+      }
+
+      const cacheKey = generateCacheKey('discogs', `marketplace_stats_${releaseId}_${currencyCode}`, {});
+
+      return await getOrSet(
+        cacheKey,
+        async () => {
+          try {
+            logger.debug('Fetching marketplace stats', { releaseId, currencyCode });
+
+            // Get OAuth token if available for authenticated requests
+            const oauthToken = await discogsOAuthService.getLatestAccessToken();
+
+            let headers = {
+              'User-Agent': 'VinylCatalogAPI/1.0',
+            };
+
+            if (oauthToken && oauthToken.accessToken) {
+              const authHeader = this._buildOAuthHeader(
+                'GET',
+                `${DISCOGS_API_BASE}/marketplace/stats/${releaseId}`,
+                oauthToken.accessToken,
+                oauthToken.accessTokenSecret,
+                process.env.DISCOGS_CONSUMER_SECRET
+              );
+              headers['Authorization'] = authHeader;
+            } else {
+              // Fallback to token authentication
+              const token = getDiscogsToken();
+              if (token) {
+                headers['Authorization'] = `Discogs token=${token}`;
+              }
+            }
+
+            const url = `${DISCOGS_API_BASE}/marketplace/stats/${releaseId}?curr_abbr=${currencyCode}`;
+
+            const response = await axios.get(url, { headers });
+
+            logger.debug('Marketplace stats response', {
+              releaseId,
+              hasData: !!response.data,
+              numForSale: response.data?.num_for_sale,
+              lowestPrice: response.data?.lowest_price,
+            });
+
+            // If no listings available, return null
+            if (!response.data.lowest_price || response.data.num_for_sale === 0) {
+              return null;
+            }
+
+            return {
+              release_id: releaseId,
+              currency: currencyCode,
+              lowest: parseFloat(response.data.lowest_price),
+              num_for_sale: response.data.num_for_sale,
+              blocked: response.data.blocked_from_sale || false,
+            };
+          } catch (statsError) {
+            logger.debug('Failed to fetch marketplace stats', {
+              releaseId,
+              error: statsError.message,
+            });
+            return null;
+          }
+        },
+        1800 // Cache for 30 minutes (marketplace prices change frequently)
+      );
+    } catch (error) {
+      if (error.isApiError) throw error;
+      logger.debug('Failed to process marketplace stats', {
+        releaseId,
+        error: error.message,
+      });
+      return null;
+    }
+  }
+
+  /**
    * Get marketplace price suggestions for a release (requires OAuth)
    * @param {number} releaseId - Discogs release ID
    * @returns {Promise<Object>} - Price suggestions with marketplace data
