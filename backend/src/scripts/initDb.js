@@ -140,16 +140,19 @@ async function initializeDatabase() {
     try {
       await seedInitialData();
 
-      // Also run the full seed script to populate vinyl records
-      try {
-        logger.info('🌱 Running full database seed...');
-        const { default: seed } = await import('../../prisma/seed.js');
-        // Note: seed.js runs its own main() function on import
-      } catch (error) {
-        logger.debug('Full seed script already ran or not needed', {
-          error: error.message,
-        });
-      }
+      // Run the full seed script asynchronously (non-blocking)
+      // Don't await it - let it run in the background
+      (async () => {
+        try {
+          logger.info('🌱 Running full database seed in background...');
+          const { default: seed } = await import('../../prisma/seed.js');
+          // Note: seed.js runs its own main() function on import
+        } catch (error) {
+          logger.warn('⚠️  Background seed script error', {
+            error: error.message,
+          });
+        }
+      })();
     } catch (error) {
       logger.warn('⚠️  Failed to seed initial data', { error: error.message });
     }
