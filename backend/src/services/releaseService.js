@@ -54,7 +54,7 @@ class ReleaseService {
     let baseEstimate = 20; // Modern vinyl baseline €20
 
     // Adjust by genre
-    const genre = (release.genres?.[0] || result.genres?.[0] || '').toLowerCase();
+    const genre = (release?.genres?.[0] || result?.genres?.[0] || '').toLowerCase();
     const highValueGenres = ['jazz', 'electronic', 'hip-hop', 'hip hop', 'soul', 'funk'];
     const standardGenres = ['rock', 'pop', 'indie', 'metal'];
 
@@ -65,7 +65,7 @@ class ReleaseService {
     }
 
     // Adjust by age
-    const year = release.year || result.year;
+    const year = release?.year || result?.year;
     if (year) {
       const age = new Date().getFullYear() - year;
       if (age > 30) {
