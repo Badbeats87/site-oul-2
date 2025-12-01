@@ -664,11 +664,13 @@ class ReleaseService {
                   const resultId = parseInt(result.id);
                   let release, priceStats, releaseIdForStats;
 
+                  let isMaster = false;
                   if (result.type === 'master') {
                     // For master releases, get the master metadata
-                    // and use the master ID itself for marketplace pricing
+                    // and fetch vinyl-specific marketplace pricing
                     release = await discogsService.getMaster(resultId);
-                    releaseIdForStats = resultId; // Use master ID for marketplace stats to get aggregated pricing
+                    releaseIdForStats = resultId;
+                    isMaster = true;
                   } else {
                     // For regular releases, use them directly
                     release = await discogsService.getRelease(resultId);
@@ -677,16 +679,31 @@ class ReleaseService {
 
                   // Fetch price data from marketplace
                   if (releaseIdForStats) {
-                    // Try marketplace stats first (real current marketplace prices)
-                    priceStats = await discogsService
-                      .getMarketplaceStats(releaseIdForStats, 'EUR')
-                      .catch((err) => {
-                        logger.debug('getMarketplaceStats failed', {
-                          releaseId: releaseIdForStats,
-                          error: err.message,
+                    // For master releases, try vinyl-specific pricing first
+                    if (isMaster) {
+                      priceStats = await discogsService
+                        .getVinylMarketplaceStats(releaseIdForStats, 'EUR')
+                        .catch((err) => {
+                          logger.debug('getVinylMarketplaceStats failed', {
+                            masterId: releaseIdForStats,
+                            error: err.message,
+                          });
+                          return null;
                         });
-                        return null;
-                      });
+                    }
+
+                    // Try marketplace stats first (real current marketplace prices)
+                    if (!priceStats) {
+                      priceStats = await discogsService
+                        .getMarketplaceStats(releaseIdForStats, 'EUR')
+                        .catch((err) => {
+                          logger.debug('getMarketplaceStats failed', {
+                            releaseId: releaseIdForStats,
+                            error: err.message,
+                          });
+                          return null;
+                        });
+                    }
 
                     // If stats not available, try price suggestions (fallback)
                     if (!priceStats) {
