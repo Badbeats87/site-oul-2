@@ -535,7 +535,7 @@ class ReleaseService {
           console.log('[Discogs Fallback] Starting search for:', query);
 
           const discogsResults = await discogsService.search({
-            q: query,
+            query: query,
           });
 
           console.log('[Discogs Fallback] Got results:', discogsResults?.results?.length || 0);
