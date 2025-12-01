@@ -47,9 +47,10 @@ class ReleaseService {
   }
 
   /**
-   * Calculate ourPrice from market snapshots using pricing policy
+   * Calculate ourPrice from market snapshots using BUYER pricing policy
+   * This represents what we will BUY the record for from sellers
    * @param {Array} marketSnapshots - Array of market snapshot objects with statMedian
-   * @returns {Promise<number|null>} Calculated selling price or null if no market data
+   * @returns {Promise<number|null>} Calculated buy price or null if no market data
    */
   async calculateOurPrice(marketSnapshots) {
     try {
@@ -62,19 +63,18 @@ class ReleaseService {
         return null;
       }
 
-      // Get active SELLER pricing policy
-      const sellerFormula = await pricingService.getSellerFormula();
+      // Get active BUYER pricing policy (what we offer to buy records for)
+      const buyerFormula = await pricingService.getBuyerFormula();
 
-      // Calculate sell price using the market statistic and formula
+      // Calculate buy price using the market statistic and BUYER policy formula
       // Since we don't have condition data in search results, use default NM conditions
-      const priceCalculation = await pricingService.calculateSellPrice({
+      const priceCalculation = await pricingService.calculateBuyPrice({
         releaseId: 'search-result', // Placeholder, not used for search
         mediaCondition: 'NM',
         sleeveCondition: 'NM',
-        costBasis: 0, // No cost basis for search results
         marketSource: 'HYBRID',
         marketStatistic: 'median',
-        formula: sellerFormula,
+        formula: buyerFormula,
       });
 
       return priceCalculation.price;
