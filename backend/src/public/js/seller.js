@@ -89,10 +89,16 @@ const sellerApp = {
   },
 
   calculateBuyingPrice(album) {
-    const basePrice = this.getBasePrice(album);
+    let basePrice = this.getBasePrice(album);
+
+    // If no market data, use estimated price based on format/age
+    if (!basePrice) {
+      basePrice = this.estimatePrice(album);
+    }
+
     if (!basePrice) return null;
 
-    const buyerPercentage = 0.55; // Adjust based on pricing policy
+    const buyerPercentage = 0.55; // We offer sellers 55% of market value
     return basePrice * buyerPercentage;
   },
 
@@ -100,6 +106,36 @@ const sellerApp = {
     const marketSnapshot = album.marketSnapshots?.[0];
     if (!marketSnapshot) return 0;
     return parseFloat(marketSnapshot.statLow || marketSnapshot.statMedian || 0);
+  },
+
+  estimatePrice(album) {
+    // Fallback pricing estimation when market data unavailable
+    // Base: €12 for vinyl, adjusted by age and demand signals
+    let baseEstimate = 12;
+
+    // Adjust by genre (classic/collectible genres worth more)
+    const premiumGenres = [
+      'Jazz',
+      'Electronic',
+      'Hip-Hop',
+      'Soul',
+      'Rock',
+    ];
+    if (
+      album.genre &&
+      premiumGenres.some((g) => album.genre.toLowerCase().includes(g.toLowerCase()))
+    ) {
+      baseEstimate += 3;
+    }
+
+    // Adjust by age (older records often more valuable)
+    if (album.releaseYear) {
+      const age = new Date().getFullYear() - album.releaseYear;
+      if (age > 30) baseEstimate += 5; // Vintage
+      else if (age > 10) baseEstimate += 2; // Classic era
+    }
+
+    return baseEstimate;
   },
 
   async performSearch(query) {
@@ -112,7 +148,7 @@ const sellerApp = {
 
     try {
       const response = await fetch(
-        `/api/v1/catalog/search?q=${encodeURIComponent(query)}&limit=10`
+        `/api/v1/catalog/search?q=${encodeURIComponent(query)}&limit=20`
       );
 
       if (!response.ok) {
@@ -195,10 +231,10 @@ const sellerApp = {
       <div class="search-result-item" data-index="${idx}">
         <div class="search-result-item__cover">
           ${
-            coverUrl
-              ? `<img src="${coverUrl}" alt="${album.title}" />`
-              : '<div class="search-result-item__cover-placeholder">♫</div>'
-          }
+  coverUrl
+    ? `<img src="${coverUrl}" alt="${album.title}" />`
+    : '<div class="search-result-item__cover-placeholder">♫</div>'
+}
         </div>
         <div class="search-result-item__content">
           <h4 class="search-result-item__title">${album.title || 'Unknown'}</h4>
@@ -256,17 +292,12 @@ const sellerApp = {
   },
 
   updateQuote(album) {
-    // Get market data
-    const marketSnapshot = album.marketSnapshots?.[0];
-    let basePrice = 0;
-
-    if (marketSnapshot) {
-      // Use statLow if available, otherwise statMedian
-      const price = marketSnapshot.statLow || marketSnapshot.statMedian || 0;
-      basePrice = parseFloat(price);
+    // Get base price (uses market data or estimation)
+    let basePrice = this.getBasePrice(album);
+    if (!basePrice) {
+      basePrice = this.estimatePrice(album);
     }
 
-    // Apply seller percentage (standard 55% for sellers)
     const sellerPercentage = 0.55;
     let baseOffer = basePrice * sellerPercentage;
 

@@ -217,14 +217,14 @@ class CheckoutManager {
       billing: data.sameAsBilling
         ? null
         : {
-            firstName: data.billingFirstName,
-            lastName: data.billingLastName,
-            address: data.billingAddress,
-            city: data.billingCity,
-            state: data.billingState,
-            zipcode: data.billingZipcode,
-            country: data.billingCountry,
-          },
+          firstName: data.billingFirstName,
+          lastName: data.billingLastName,
+          address: data.billingAddress,
+          city: data.billingCity,
+          state: data.billingState,
+          zipcode: data.billingZipcode,
+          country: data.billingCountry,
+        },
       payment: {
         method: data.paymentMethod,
         cardholderName: data.cardholderName,

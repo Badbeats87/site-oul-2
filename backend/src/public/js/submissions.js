@@ -433,8 +433,8 @@ class SubmissionsManager {
         </thead>
         <tbody>
           ${submission.items
-            .map(
-              (item) => `
+    .map(
+      (item) => `
               <tr>
                 <td data-label="Album">
                   <strong>${item.release?.title || 'Unknown'}</strong><br>
@@ -480,8 +480,8 @@ class SubmissionsManager {
                 </td>
               </tr>
             `
-            )
-            .join('')}
+    )
+    .join('')}
         </tbody>
       </table>
     `;
