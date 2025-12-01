@@ -63,7 +63,15 @@ export const getPricingPolicy = async (req, res, next) => {
 export const savePricingPolicy = async (req, res, next) => {
   try {
     const { type } = req.params; // BUYER or SELLER
-    const { name, buyFormula, sellFormula, conditionCurve, minOffer, maxOffer, offerExpiryDays } = req.body;
+    const {
+      name,
+      buyFormula,
+      sellFormula,
+      conditionCurve,
+      minOffer,
+      maxOffer,
+      offerExpiryDays,
+    } = req.body;
 
     if (!['BUYER', 'SELLER'].includes(type)) {
       throw new ApiError('Invalid policy type. Must be BUYER or SELLER', 400);
@@ -71,7 +79,10 @@ export const savePricingPolicy = async (req, res, next) => {
 
     // Validation
     if (!name || !buyFormula || !sellFormula || !conditionCurve) {
-      throw new ApiError('Missing required fields: name, buyFormula, sellFormula, conditionCurve', 400);
+      throw new ApiError(
+        'Missing required fields: name, buyFormula, sellFormula, conditionCurve',
+        400
+      );
     }
 
     // Find existing policy
@@ -100,10 +111,16 @@ export const savePricingPolicy = async (req, res, next) => {
           changes: {
             buyFormula: { old: existingPolicy.buyFormula, new: buyFormula },
             sellFormula: { old: existingPolicy.sellFormula, new: sellFormula },
-            conditionCurve: { old: existingPolicy.conditionCurve, new: conditionCurve },
+            conditionCurve: {
+              old: existingPolicy.conditionCurve,
+              new: conditionCurve,
+            },
             minOffer: { old: existingPolicy.minOffer, new: minOffer },
             maxOffer: { old: existingPolicy.maxOffer, new: maxOffer },
-            offerExpiryDays: { old: existingPolicy.offerExpiryDays, new: offerExpiryDays },
+            offerExpiryDays: {
+              old: existingPolicy.offerExpiryDays,
+              new: offerExpiryDays,
+            },
           },
           changedBy: req.user?.id,
         },

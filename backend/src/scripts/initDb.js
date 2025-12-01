@@ -146,7 +146,9 @@ async function initializeDatabase() {
         const { default: seed } = await import('../../prisma/seed.js');
         // Note: seed.js runs its own main() function on import
       } catch (error) {
-        logger.debug('Full seed script already ran or not needed', { error: error.message });
+        logger.debug('Full seed script already ran or not needed', {
+          error: error.message,
+        });
       }
     } catch (error) {
       logger.warn('⚠️  Failed to seed initial data', { error: error.message });

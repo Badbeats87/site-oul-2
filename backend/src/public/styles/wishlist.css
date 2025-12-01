@@ -161,7 +161,9 @@
   grid-template-columns: 120px 1fr auto;
   gap: var(--space-xl);
   align-items: center;
-  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+  transition:
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 .wishlist-card:hover {

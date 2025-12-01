@@ -320,7 +320,11 @@
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
   position: relative;
-  background: linear-gradient(135deg, var(--color-secondary) 0%, rgba(37, 99, 235, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-secondary) 0%,
+    rgba(37, 99, 235, 0.05) 100%
+  );
   transition: all var(--transition-fast);
 }
 
@@ -331,7 +335,11 @@
 
 .payment-card--default {
   border: 2px solid var(--color-accent);
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(37, 99, 235, 0.1) 0%,
+    rgba(37, 99, 235, 0.05) 100%
+  );
 }
 
 .payment-badge {

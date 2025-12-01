@@ -1,9 +1,15 @@
 <!doctype html>
-<html lang="en" style="height: auto; overflow: auto;">
+<html lang="en" style="height: auto; overflow: auto">
   <head>
     <style>
-      html { height: auto !important; overflow: auto !important; }
-      body { min-height: 100vh !important; overflow-y: auto !important; }
+      html {
+        height: auto !important;
+        overflow: auto !important;
+      }
+      body {
+        min-height: 100vh !important;
+        overflow-y: auto !important;
+      }
     </style>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,7 +18,7 @@
     <link rel="stylesheet" href="../../styles/buyer.css" />
     <link rel="stylesheet" href="../../styles/account.css" />
   </head>
-  <body style="min-height: 100vh; overflow-y: auto;">
+  <body style="min-height: 100vh; overflow-y: auto">
     <!-- Navigation -->
     <nav class="navbar">
       <div class="navbar__container">
@@ -118,7 +124,9 @@
                   stroke="currentColor"
                   stroke-width="2"
                 >
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <path
+                    d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"
+                  ></path>
                   <circle cx="12" cy="10" r="3"></circle>
                 </svg>
                 <span>Addresses</span>
@@ -144,7 +152,9 @@
                   stroke="currentColor"
                   stroke-width="2"
                 >
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                  <path
+                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                  ></path>
                 </svg>
                 <span>Wishlist</span>
               </button>
@@ -187,7 +197,10 @@
           <!-- Main Content Area -->
           <div class="account-content">
             <!-- Order History Tab -->
-            <section class="account-panel account-panel--active" data-panel="orders">
+            <section
+              class="account-panel account-panel--active"
+              data-panel="orders"
+            >
               <div class="panel-header">
                 <h2>Order History</h2>
                 <a href="index.html" class="button button--secondary button--sm"
@@ -213,14 +226,18 @@
                     <div class="order-item">
                       <div class="item-details">
                         <strong>Dark Side of the Moon</strong>
-                        <div class="item-meta">Pink Floyd • Condition: NM/NM</div>
+                        <div class="item-meta">
+                          Pink Floyd • Condition: NM/NM
+                        </div>
                       </div>
                       <div class="item-price">$89.99</div>
                     </div>
                     <div class="order-item">
                       <div class="item-details">
                         <strong>Abbey Road</strong>
-                        <div class="item-meta">The Beatles • Condition: VG+/VG+</div>
+                        <div class="item-meta">
+                          The Beatles • Condition: VG+/VG+
+                        </div>
                       </div>
                       <div class="item-price">$49.50</div>
                     </div>
@@ -253,7 +270,9 @@
                     <div class="order-item">
                       <div class="item-details">
                         <strong>Rumours</strong>
-                        <div class="item-meta">Fleetwood Mac • Condition: M/M</div>
+                        <div class="item-meta">
+                          Fleetwood Mac • Condition: M/M
+                        </div>
                       </div>
                       <div class="item-price">$89.99</div>
                     </div>
@@ -286,7 +305,9 @@
                     <div class="order-item">
                       <div class="item-details">
                         <strong>Led Zeppelin IV</strong>
-                        <div class="item-meta">Led Zeppelin • Condition: NM/G</div>
+                        <div class="item-meta">
+                          Led Zeppelin • Condition: NM/G
+                        </div>
                       </div>
                       <div class="item-price">$34.99</div>
                     </div>
@@ -309,7 +330,10 @@
             <section class="account-panel" data-panel="profile">
               <div class="panel-header">
                 <h2>Profile Information</h2>
-                <button class="button button--secondary button--sm" id="edit-profile-btn">
+                <button
+                  class="button button--secondary button--sm"
+                  id="edit-profile-btn"
+                >
                   Edit Profile
                 </button>
               </div>
@@ -351,7 +375,10 @@
             <section class="account-panel" data-panel="addresses">
               <div class="panel-header">
                 <h2>Shipping Addresses</h2>
-                <button class="button button--primary button--sm" id="add-address-btn">
+                <button
+                  class="button button--primary button--sm"
+                  id="add-address-btn"
+                >
                   + Add Address
                 </button>
               </div>
@@ -368,7 +395,9 @@
                   </p>
                   <div class="address-actions">
                     <button class="button button--text button--sm">Edit</button>
-                    <button class="button button--text button--sm">Delete</button>
+                    <button class="button button--text button--sm">
+                      Delete
+                    </button>
                   </div>
                 </div>
 
@@ -382,7 +411,9 @@
                   </p>
                   <div class="address-actions">
                     <button class="button button--text button--sm">Edit</button>
-                    <button class="button button--text button--sm">Delete</button>
+                    <button class="button button--text button--sm">
+                      Delete
+                    </button>
                   </div>
                 </div>
               </div>
@@ -392,7 +423,10 @@
             <section class="account-panel" data-panel="payments">
               <div class="panel-header">
                 <h2>Payment Methods</h2>
-                <button class="button button--primary button--sm" id="add-payment-btn">
+                <button
+                  class="button button--primary button--sm"
+                  id="add-payment-btn"
+                >
                   + Add Payment Method
                 </button>
               </div>
@@ -405,7 +439,9 @@
                   <div class="payment-expires">Expires 03/26</div>
                   <div class="payment-actions">
                     <button class="button button--text button--sm">Edit</button>
-                    <button class="button button--text button--sm">Delete</button>
+                    <button class="button button--text button--sm">
+                      Delete
+                    </button>
                   </div>
                 </div>
 
@@ -415,7 +451,9 @@
                   <div class="payment-expires">Expires 08/25</div>
                   <div class="payment-actions">
                     <button class="button button--text button--sm">Edit</button>
-                    <button class="button button--text button--sm">Delete</button>
+                    <button class="button button--text button--sm">
+                      Delete
+                    </button>
                   </div>
                 </div>
               </div>

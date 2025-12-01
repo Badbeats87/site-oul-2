@@ -1,9 +1,15 @@
 <!doctype html>
-<html lang="en" style="height: auto; overflow: auto;">
+<html lang="en" style="height: auto; overflow: auto">
   <head>
     <style>
-      html { height: auto !important; overflow: auto !important; }
-      body { min-height: 100vh !important; overflow-y: auto !important; }
+      html {
+        height: auto !important;
+        overflow: auto !important;
+      }
+      body {
+        min-height: 100vh !important;
+        overflow-y: auto !important;
+      }
     </style>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,7 +18,7 @@
     <link rel="stylesheet" href="../../styles/seller.css" />
     <link rel="stylesheet" href="../../styles/submit.css" />
   </head>
-  <body style="min-height: 100vh; overflow-y: auto;">
+  <body style="min-height: 100vh; overflow-y: auto">
     <!-- Navigation -->
     <nav class="navbar">
       <div class="navbar__container">
@@ -119,7 +125,10 @@
                   placeholder="Search by artist, title, barcode, or catalog number..."
                   id="searchInput"
                 />
-                <button type="button" class="button button--primary search-box__button">
+                <button
+                  type="button"
+                  class="button button--primary search-box__button"
+                >
                   🔍 Search
                 </button>
               </div>
@@ -129,7 +138,11 @@
             </div>
 
             <!-- Search Results -->
-            <div class="search-results" id="searchResults" style="display: none">
+            <div
+              class="search-results"
+              id="searchResults"
+              style="display: none"
+            >
               <h3 class="results-title">Search Results</h3>
               <div class="results-list">
                 <!-- Results will appear here -->
@@ -142,14 +155,20 @@
 
               <div class="empty-state" id="emptyState">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"></path>
+                  <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"
+                  ></path>
                   <line x1="12" y1="8" x2="12" y2="16"></line>
                   <line x1="8" y1="12" x2="16" y2="12"></line>
                 </svg>
                 <p>No records added yet. Search above to get started.</p>
               </div>
 
-              <div class="submission-table-wrapper" id="tableWrapper" style="display: none">
+              <div
+                class="submission-table-wrapper"
+                id="tableWrapper"
+                style="display: none"
+              >
                 <table class="submission-table">
                   <thead>
                     <tr>
@@ -166,23 +185,36 @@
                 </table>
               </div>
 
-              <div class="submission-totals" id="totalsSection" style="display: none">
+              <div
+                class="submission-totals"
+                id="totalsSection"
+                style="display: none"
+              >
                 <div class="totals-row">
                   <span>Total Items:</span>
                   <span class="totals-value" id="totalItems">0</span>
                 </div>
                 <div class="totals-row totals-row--highlight">
                   <span>Estimated Total:</span>
-                  <span class="totals-value totals-value--large" id="totalAmount">$0.00</span>
+                  <span
+                    class="totals-value totals-value--large"
+                    id="totalAmount"
+                    >$0.00</span
+                  >
                 </div>
                 <p class="totals-note">
-                  Amounts are subject to final inspection and grading by our team.
+                  Amounts are subject to final inspection and grading by our
+                  team.
                 </p>
               </div>
             </div>
 
             <div class="step-actions">
-              <button class="button button--primary button--lg" id="nextStep1" disabled>
+              <button
+                class="button button--primary button--lg"
+                id="nextStep1"
+                disabled
+              >
                 Continue to Review →
               </button>
             </div>
@@ -213,12 +245,16 @@
                 <span class="summary-amount" id="reviewTotalAmount">$0.00</span>
               </div>
               <p class="summary-note">
-                Final amounts depend on inspection and may vary slightly from quoted values.
+                Final amounts depend on inspection and may vary slightly from
+                quoted values.
               </p>
             </div>
 
             <div class="step-actions">
-              <button class="button button--secondary button--lg" id="backStep2">
+              <button
+                class="button button--secondary button--lg"
+                id="backStep2"
+              >
                 ← Back
               </button>
               <button class="button button--primary button--lg" id="nextStep2">
@@ -238,66 +274,38 @@
             <div class="shipping-form">
               <div class="form-group">
                 <label>Full Name *</label>
-                <input
-                  type="text"
-                  placeholder="John Collector"
-                  required
-                />
+                <input type="text" placeholder="John Collector" required />
               </div>
 
               <div class="form-group">
                 <label>Email Address *</label>
-                <input
-                  type="email"
-                  placeholder="your@email.com"
-                  required
-                />
+                <input type="email" placeholder="your@email.com" required />
               </div>
 
               <div class="form-group">
                 <label>Phone Number *</label>
-                <input
-                  type="tel"
-                  placeholder="(555) 123-4567"
-                  required
-                />
+                <input type="tel" placeholder="(555) 123-4567" required />
               </div>
 
               <div class="form-group">
                 <label>Street Address *</label>
-                <input
-                  type="text"
-                  placeholder="123 Music Lane"
-                  required
-                />
+                <input type="text" placeholder="123 Music Lane" required />
               </div>
 
               <div class="form-row">
                 <div class="form-group">
                   <label>City *</label>
-                  <input
-                    type="text"
-                    placeholder="Springfield"
-                    required
-                  />
+                  <input type="text" placeholder="Springfield" required />
                 </div>
 
                 <div class="form-group">
                   <label>State / Province *</label>
-                  <input
-                    type="text"
-                    placeholder="IL"
-                    required
-                  />
+                  <input type="text" placeholder="IL" required />
                 </div>
 
                 <div class="form-group">
                   <label>ZIP / Postal Code *</label>
-                  <input
-                    type="text"
-                    placeholder="62701"
-                    required
-                  />
+                  <input type="text" placeholder="62701" required />
                 </div>
               </div>
 
@@ -316,7 +324,12 @@
                 <label>Shipping Method *</label>
                 <div class="shipping-options">
                   <label class="shipping-option">
-                    <input type="radio" name="shipping" value="standard" checked />
+                    <input
+                      type="radio"
+                      name="shipping"
+                      value="standard"
+                      checked
+                    />
                     <span>Standard (5-7 business days)</span>
                     <span class="shipping-cost">FREE</span>
                   </label>
@@ -350,15 +363,18 @@
                 <label class="checkbox-label">
                   <input type="checkbox" required />
                   <span>
-                    I agree to the terms and conditions. I understand that offers
-                    are subject to final inspection and grading.
+                    I agree to the terms and conditions. I understand that
+                    offers are subject to final inspection and grading.
                   </span>
                 </label>
               </div>
             </div>
 
             <div class="step-actions">
-              <button class="button button--secondary button--lg" id="backStep3">
+              <button
+                class="button button--secondary button--lg"
+                id="backStep3"
+              >
                 ← Back
               </button>
               <button class="button button--primary button--lg" id="nextStep3">
@@ -371,14 +387,19 @@
           <div class="form-step" data-step="4">
             <div class="completion-card">
               <div class="completion-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
               </div>
               <h2 class="completion-title">Submission Complete!</h2>
               <p class="completion-message">
-                Your submission has been received. We'll review your records and send you
-                a prepaid shipping label via email within 24 hours.
+                Your submission has been received. We'll review your records and
+                send you a prepaid shipping label via email within 24 hours.
               </p>
 
               <div class="completion-details">
@@ -386,17 +407,26 @@
                 <ol class="steps-list">
                   <li>Check your email for the shipping label</li>
                   <li>Pack your records securely in a box</li>
-                  <li>Print the label and take it to your nearest shipping location</li>
+                  <li>
+                    Print the label and take it to your nearest shipping
+                    location
+                  </li>
                   <li>We'll inspect your records when they arrive</li>
                   <li>Receive payment via your chosen method</li>
                 </ol>
               </div>
 
               <div class="completion-buttons">
-                <a href="submissions.html" class="button button--primary button--lg">
+                <a
+                  href="submissions.html"
+                  class="button button--primary button--lg"
+                >
                   View My Submissions
                 </a>
-                <a href="index.html" class="button button--secondary button--lg">
+                <a
+                  href="index.html"
+                  class="button button--secondary button--lg"
+                >
                   Return to Dashboard
                 </a>
               </div>

@@ -1,458 +1,567 @@
-<!DOCTYPE html>
-<html lang="en" style="height: auto; overflow: auto;">
-<head>
+<!doctype html>
+<html lang="en" style="height: auto; overflow: auto">
+  <head>
     <style>
-      html { height: auto !important; overflow: auto !important; }
-      body { min-height: 100vh !important; overflow-y: auto !important; }
+      html {
+        height: auto !important;
+        overflow: auto !important;
+      }
+      body {
+        min-height: 100vh !important;
+        overflow-y: auto !important;
+      }
     </style>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Alerts & Notifications - Style Guide</title>
-  <link rel="stylesheet" href="../../styles/design-system.css">
-  <link rel="stylesheet" href="../../styles/utilities.css">
-  <style>
-    body {
-      background: var(--color-secondary);
-    }
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: var(--space-3xl) var(--space-xl);
-    }
-    .page-header {
-      margin-bottom: var(--space-3xl);
-      text-align: center;
-    }
-    .page-header h1 {
-      font-size: var(--font-size-4xl);
-      margin-bottom: var(--space-sm);
-    }
-    .page-header p {
-      font-size: var(--font-size-lg);
-      color: var(--color-text-light);
-    }
-    .component-section {
-      background: white;
-      border-radius: var(--radius-lg);
-      padding: var(--space-2xl);
-      margin-bottom: var(--space-2xl);
-      box-shadow: var(--shadow-sm);
-    }
-    .component-section h2 {
-      font-size: var(--font-size-2xl);
-      margin-bottom: var(--space-lg);
-      padding-bottom: var(--space-lg);
-      border-bottom: 2px solid var(--color-border);
-    }
-    .component-demo {
-      margin-bottom: var(--space-2xl);
-    }
-    .demo-label {
-      font-size: var(--font-size-sm);
-      font-weight: var(--font-weight-semibold);
-      color: var(--color-text-light);
-      margin-bottom: var(--space-md);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .demo-box {
-      background: var(--color-secondary);
-      padding: var(--space-lg);
-      border-radius: var(--radius-md);
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-md);
-      margin-bottom: var(--space-lg);
-    }
-    .code-block {
-      background: #f5f5f5;
-      padding: var(--space-md);
-      border-radius: var(--radius-md);
-      border-left: 4px solid var(--color-accent);
-      margin-top: var(--space-md);
-      overflow-x: auto;
-    }
-    .code-block code {
-      font-family: var(--font-family-mono);
-      font-size: var(--font-size-sm);
-      color: #333;
-      background: none;
-      padding: 0;
-    }
-    .section-title {
-      font-size: var(--font-size-xl);
-      font-weight: var(--font-weight-semibold);
-      margin: var(--space-xl) 0 var(--space-lg) 0;
-    }
-    .accessibility-note {
-      background: #dbeafe;
-      border-left: 4px solid #0284c7;
-      padding: var(--space-lg);
-      border-radius: var(--radius-md);
-      margin-top: var(--space-lg);
-      font-size: var(--font-size-sm);
-    }
-    .nav-breadcrumb {
-      margin-bottom: var(--space-2xl);
-    }
-    .nav-breadcrumb a {
-      color: var(--color-accent);
-      text-decoration: none;
-      font-size: var(--font-size-sm);
-    }
-    .nav-breadcrumb a:hover {
-      text-decoration: underline;
-    }
-    /* Alert Styles */
-    .alert {
-      padding: var(--space-lg);
-      border-radius: var(--radius-md);
-      border-left: 4px solid transparent;
-      display: flex;
-      align-items: flex-start;
-      gap: var(--space-md);
-    }
-    .alert-content {
-      flex: 1;
-    }
-    .alert-title {
-      font-weight: var(--font-weight-semibold);
-      margin-bottom: var(--space-xs);
-    }
-    .alert-message {
-      font-size: var(--font-size-sm);
-      line-height: var(--line-height-normal);
-    }
-    .alert-icon {
-      font-size: var(--font-size-lg);
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-    .alert-close {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: var(--font-size-lg);
-      color: inherit;
-      padding: 0;
-      opacity: 0.7;
-      transition: opacity var(--transition-fast);
-      flex-shrink: 0;
-    }
-    .alert-close:hover {
-      opacity: 1;
-    }
-    .alert-success {
-      background-color: #d1fae5;
-      border-left-color: #059669;
-      color: #065f46;
-    }
-    .alert-danger {
-      background-color: #fee2e2;
-      border-left-color: #dc2626;
-      color: #7f1d1d;
-    }
-    .alert-warning {
-      background-color: #fef3c7;
-      border-left-color: #d97706;
-      color: #78350f;
-    }
-    .alert-info {
-      background-color: #dbeafe;
-      border-left-color: #2563eb;
-      color: #082f49;
-    }
-    .alert-actions {
-      margin-top: var(--space-md);
-      display: flex;
-      gap: var(--space-sm);
-    }
-    .alert-actions button {
-      padding: var(--space-xs) var(--space-md);
-      border: none;
-      border-radius: var(--radius-sm);
-      font-size: var(--font-size-sm);
-      cursor: pointer;
-      transition: all var(--transition-fast);
-      background: rgba(0, 0, 0, 0.1);
-      color: inherit;
-    }
-    .alert-actions button:hover {
-      background: rgba(0, 0, 0, 0.2);
-    }
-  </style>
-</head>
-<body style="min-height: 100vh; overflow-y: auto;">
-  <div class="container">
-    <!-- Navigation -->
-    <div class="nav-breadcrumb">
-      <a href="index.html">← Back to Components</a>
-    </div>
-
-    <!-- Page Header -->
-    <div class="page-header">
-      <h1>Alerts & Notifications</h1>
-      <p>Messages to inform, warn, or confirm user actions</p>
-    </div>
-
-    <!-- Success Alert -->
-    <section class="component-section">
-      <h2>Success Alert</h2>
-      <p>Use to confirm that an action was completed successfully.</p>
-
-      <div class="component-demo">
-        <div class="demo-label">Basic Success Alert</div>
-        <div class="demo-box">
-          <div class="alert alert-success">
-            <div class="alert-icon">✓</div>
-            <div class="alert-content">
-              <div class="alert-message">Your changes have been saved successfully.</div>
-            </div>
-          </div>
-        </div>
-        <div class="code-block"><code>&lt;div class="alert alert-success"&gt;<br>  &lt;div class="alert-icon"&gt;✓&lt;/div&gt;<br>  &lt;div class="alert-content"&gt;<br>    &lt;div class="alert-message"&gt;...&lt;/div&gt;<br>  &lt;/div&gt;<br>&lt;/div&gt;</code></div>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alerts & Notifications - Style Guide</title>
+    <link rel="stylesheet" href="../../styles/design-system.css" />
+    <link rel="stylesheet" href="../../styles/utilities.css" />
+    <style>
+      body {
+        background: var(--color-secondary);
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: var(--space-3xl) var(--space-xl);
+      }
+      .page-header {
+        margin-bottom: var(--space-3xl);
+        text-align: center;
+      }
+      .page-header h1 {
+        font-size: var(--font-size-4xl);
+        margin-bottom: var(--space-sm);
+      }
+      .page-header p {
+        font-size: var(--font-size-lg);
+        color: var(--color-text-light);
+      }
+      .component-section {
+        background: white;
+        border-radius: var(--radius-lg);
+        padding: var(--space-2xl);
+        margin-bottom: var(--space-2xl);
+        box-shadow: var(--shadow-sm);
+      }
+      .component-section h2 {
+        font-size: var(--font-size-2xl);
+        margin-bottom: var(--space-lg);
+        padding-bottom: var(--space-lg);
+        border-bottom: 2px solid var(--color-border);
+      }
+      .component-demo {
+        margin-bottom: var(--space-2xl);
+      }
+      .demo-label {
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-light);
+        margin-bottom: var(--space-md);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .demo-box {
+        background: var(--color-secondary);
+        padding: var(--space-lg);
+        border-radius: var(--radius-md);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-md);
+        margin-bottom: var(--space-lg);
+      }
+      .code-block {
+        background: #f5f5f5;
+        padding: var(--space-md);
+        border-radius: var(--radius-md);
+        border-left: 4px solid var(--color-accent);
+        margin-top: var(--space-md);
+        overflow-x: auto;
+      }
+      .code-block code {
+        font-family: var(--font-family-mono);
+        font-size: var(--font-size-sm);
+        color: #333;
+        background: none;
+        padding: 0;
+      }
+      .section-title {
+        font-size: var(--font-size-xl);
+        font-weight: var(--font-weight-semibold);
+        margin: var(--space-xl) 0 var(--space-lg) 0;
+      }
+      .accessibility-note {
+        background: #dbeafe;
+        border-left: 4px solid #0284c7;
+        padding: var(--space-lg);
+        border-radius: var(--radius-md);
+        margin-top: var(--space-lg);
+        font-size: var(--font-size-sm);
+      }
+      .nav-breadcrumb {
+        margin-bottom: var(--space-2xl);
+      }
+      .nav-breadcrumb a {
+        color: var(--color-accent);
+        text-decoration: none;
+        font-size: var(--font-size-sm);
+      }
+      .nav-breadcrumb a:hover {
+        text-decoration: underline;
+      }
+      /* Alert Styles */
+      .alert {
+        padding: var(--space-lg);
+        border-radius: var(--radius-md);
+        border-left: 4px solid transparent;
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-md);
+      }
+      .alert-content {
+        flex: 1;
+      }
+      .alert-title {
+        font-weight: var(--font-weight-semibold);
+        margin-bottom: var(--space-xs);
+      }
+      .alert-message {
+        font-size: var(--font-size-sm);
+        line-height: var(--line-height-normal);
+      }
+      .alert-icon {
+        font-size: var(--font-size-lg);
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+      .alert-close {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: var(--font-size-lg);
+        color: inherit;
+        padding: 0;
+        opacity: 0.7;
+        transition: opacity var(--transition-fast);
+        flex-shrink: 0;
+      }
+      .alert-close:hover {
+        opacity: 1;
+      }
+      .alert-success {
+        background-color: #d1fae5;
+        border-left-color: #059669;
+        color: #065f46;
+      }
+      .alert-danger {
+        background-color: #fee2e2;
+        border-left-color: #dc2626;
+        color: #7f1d1d;
+      }
+      .alert-warning {
+        background-color: #fef3c7;
+        border-left-color: #d97706;
+        color: #78350f;
+      }
+      .alert-info {
+        background-color: #dbeafe;
+        border-left-color: #2563eb;
+        color: #082f49;
+      }
+      .alert-actions {
+        margin-top: var(--space-md);
+        display: flex;
+        gap: var(--space-sm);
+      }
+      .alert-actions button {
+        padding: var(--space-xs) var(--space-md);
+        border: none;
+        border-radius: var(--radius-sm);
+        font-size: var(--font-size-sm);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        background: rgba(0, 0, 0, 0.1);
+        color: inherit;
+      }
+      .alert-actions button:hover {
+        background: rgba(0, 0, 0, 0.2);
+      }
+    </style>
+  </head>
+  <body style="min-height: 100vh; overflow-y: auto">
+    <div class="container">
+      <!-- Navigation -->
+      <div class="nav-breadcrumb">
+        <a href="index.html">← Back to Components</a>
       </div>
 
-      <div class="component-demo">
-        <div class="demo-label">Success with Title</div>
-        <div class="demo-box">
-          <div class="alert alert-success">
-            <div class="alert-icon">✓</div>
-            <div class="alert-content">
-              <div class="alert-title">Success!</div>
-              <div class="alert-message">Your item "The Beatles - Abbey Road" has been added to inventory.</div>
-            </div>
-          </div>
-        </div>
-        <div class="code-block"><code>&lt;div class="alert alert-success"&gt;<br>  &lt;div class="alert-title"&gt;Success!&lt;/div&gt;<br>  &lt;div class="alert-message"&gt;...&lt;/div&gt;<br>&lt;/div&gt;</code></div>
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1>Alerts & Notifications</h1>
+        <p>Messages to inform, warn, or confirm user actions</p>
       </div>
 
-      <div class="component-demo">
-        <div class="demo-label">Success with Dismiss</div>
-        <div class="demo-box">
-          <div class="alert alert-success">
-            <div class="alert-icon">✓</div>
-            <div class="alert-content">
-              <div class="alert-title">Great!</div>
-              <div class="alert-message">Your bulk import completed successfully (45 items added).</div>
-            </div>
-            <button class="alert-close" onclick="this.parentElement.style.display='none';" aria-label="Close alert">×</button>
-          </div>
-        </div>
-        <div class="code-block"><code>&lt;button class="alert-close" onclick="..."&gt;×&lt;/button&gt;</code></div>
-      </div>
-    </section>
+      <!-- Success Alert -->
+      <section class="component-section">
+        <h2>Success Alert</h2>
+        <p>Use to confirm that an action was completed successfully.</p>
 
-    <!-- Danger Alert -->
-    <section class="component-section">
-      <h2>Danger Alert</h2>
-      <p>Use to alert the user to errors or destructive actions.</p>
-
-      <div class="component-demo">
-        <div class="demo-label">Basic Error Alert</div>
-        <div class="demo-box">
-          <div class="alert alert-danger">
-            <div class="alert-icon">⚠</div>
-            <div class="alert-content">
-              <div class="alert-message">An error occurred. Please try again.</div>
-            </div>
-          </div>
-        </div>
-        <div class="code-block"><code>&lt;div class="alert alert-danger"&gt;</code></div>
-      </div>
-
-      <div class="component-demo">
-        <div class="demo-label">Error with Details</div>
-        <div class="demo-box">
-          <div class="alert alert-danger">
-            <div class="alert-icon">✕</div>
-            <div class="alert-content">
-              <div class="alert-title">Deletion Failed</div>
-              <div class="alert-message">Cannot delete this item because it has active orders associated with it.</div>
-            </div>
-          </div>
-        </div>
-        <div class="code-block"><code>&lt;div class="alert alert-danger"&gt;<br>  &lt;div class="alert-title"&gt;...&lt;/div&gt;</code></div>
-      </div>
-
-      <div class="component-demo">
-        <div class="demo-label">Destructive Action Confirmation</div>
-        <div class="demo-box">
-          <div class="alert alert-danger">
-            <div class="alert-icon">⚠</div>
-            <div class="alert-content">
-              <div class="alert-title">Confirm Delete</div>
-              <div class="alert-message">You are about to permanently delete this item. This action cannot be undone.</div>
-              <div class="alert-actions">
-                <button style="background: #dc2626; color: white;">Confirm Delete</button>
-                <button>Cancel</button>
+        <div class="component-demo">
+          <div class="demo-label">Basic Success Alert</div>
+          <div class="demo-box">
+            <div class="alert alert-success">
+              <div class="alert-icon">✓</div>
+              <div class="alert-content">
+                <div class="alert-message">
+                  Your changes have been saved successfully.
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div class="code-block"><code>&lt;div class="alert-actions"&gt;<br>  &lt;button&gt;Confirm&lt;/button&gt;<br>  &lt;button&gt;Cancel&lt;/button&gt;<br>&lt;/div&gt;</code></div>
-      </div>
-    </section>
-
-    <!-- Warning Alert -->
-    <section class="component-section">
-      <h2>Warning Alert</h2>
-      <p>Use to draw attention to potentially problematic situations.</p>
-
-      <div class="component-demo">
-        <div class="demo-label">Basic Warning</div>
-        <div class="demo-box">
-          <div class="alert alert-warning">
-            <div class="alert-icon">⚠</div>
-            <div class="alert-content">
-              <div class="alert-message">This feature is experimental and may change.</div>
-            </div>
+          <div class="code-block">
+            <code
+              >&lt;div class="alert alert-success"&gt;<br />
+              &lt;div class="alert-icon"&gt;✓&lt;/div&gt;<br />
+              &lt;div class="alert-content"&gt;<br />
+              &lt;div class="alert-message"&gt;...&lt;/div&gt;<br />
+              &lt;/div&gt;<br />&lt;/div&gt;</code
+            >
           </div>
         </div>
-        <div class="code-block"><code>&lt;div class="alert alert-warning"&gt;</code></div>
-      </div>
 
-      <div class="component-demo">
-        <div class="demo-label">Warning with Action</div>
-        <div class="demo-box">
-          <div class="alert alert-warning">
-            <div class="alert-icon">⚠</div>
-            <div class="alert-content">
-              <div class="alert-title">Low Stock Alert</div>
-              <div class="alert-message">You have 3 items left for "Pink Floyd - The Wall". Consider reordering soon.</div>
-              <div class="alert-actions">
-                <button>Reorder Now</button>
+        <div class="component-demo">
+          <div class="demo-label">Success with Title</div>
+          <div class="demo-box">
+            <div class="alert alert-success">
+              <div class="alert-icon">✓</div>
+              <div class="alert-content">
+                <div class="alert-title">Success!</div>
+                <div class="alert-message">
+                  Your item "The Beatles - Abbey Road" has been added to
+                  inventory.
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div class="code-block"><code>&lt;div class="alert alert-warning"&gt;</code></div>
-      </div>
-    </section>
-
-    <!-- Info Alert -->
-    <section class="component-section">
-      <h2>Info Alert</h2>
-      <p>Use to provide helpful information or tips.</p>
-
-      <div class="component-demo">
-        <div class="demo-label">Basic Info Alert</div>
-        <div class="demo-box">
-          <div class="alert alert-info">
-            <div class="alert-icon">ℹ</div>
-            <div class="alert-content">
-              <div class="alert-message">Tip: Use drag and drop to reorder items in your collection.</div>
-            </div>
+          <div class="code-block">
+            <code
+              >&lt;div class="alert alert-success"&gt;<br />
+              &lt;div class="alert-title"&gt;Success!&lt;/div&gt;<br />
+              &lt;div class="alert-message"&gt;...&lt;/div&gt;<br />&lt;/div&gt;</code
+            >
           </div>
         </div>
-        <div class="code-block"><code>&lt;div class="alert alert-info"&gt;</code></div>
-      </div>
 
-      <div class="component-demo">
-        <div class="demo-label">Info with Dismiss</div>
-        <div class="demo-box">
-          <div class="alert alert-info">
-            <div class="alert-icon">ℹ</div>
-            <div class="alert-content">
-              <div class="alert-title">Helpful Tip</div>
-              <div class="alert-message">You can filter inventory by condition grade, genre, and price range for faster searching.</div>
+        <div class="component-demo">
+          <div class="demo-label">Success with Dismiss</div>
+          <div class="demo-box">
+            <div class="alert alert-success">
+              <div class="alert-icon">✓</div>
+              <div class="alert-content">
+                <div class="alert-title">Great!</div>
+                <div class="alert-message">
+                  Your bulk import completed successfully (45 items added).
+                </div>
+              </div>
+              <button
+                class="alert-close"
+                onclick="this.parentElement.style.display = 'none'"
+                aria-label="Close alert"
+              >
+                ×
+              </button>
             </div>
-            <button class="alert-close" onclick="this.parentElement.style.display='none';" aria-label="Close alert">×</button>
+          </div>
+          <div class="code-block">
+            <code
+              >&lt;button class="alert-close"
+              onclick="..."&gt;×&lt;/button&gt;</code
+            >
           </div>
         </div>
-        <div class="code-block"><code>&lt;div class="alert alert-info"&gt;</code></div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Multiple Alerts -->
-    <section class="component-section">
-      <h2>Alert Stack</h2>
-      <p>Multiple alerts displayed together (common in forms with multiple errors).</p>
+      <!-- Danger Alert -->
+      <section class="component-section">
+        <h2>Danger Alert</h2>
+        <p>Use to alert the user to errors or destructive actions.</p>
 
-      <div class="component-demo">
-        <div class="demo-label">Stacked Alerts</div>
-        <div class="demo-box">
-          <div class="alert alert-danger" style="margin-bottom: var(--space-md);">
-            <div class="alert-icon">✕</div>
-            <div class="alert-content">
-              <div class="alert-message">Title is required</div>
+        <div class="component-demo">
+          <div class="demo-label">Basic Error Alert</div>
+          <div class="demo-box">
+            <div class="alert alert-danger">
+              <div class="alert-icon">⚠</div>
+              <div class="alert-content">
+                <div class="alert-message">
+                  An error occurred. Please try again.
+                </div>
+              </div>
             </div>
           </div>
-          <div class="alert alert-danger" style="margin-bottom: var(--space-md);">
-            <div class="alert-icon">✕</div>
-            <div class="alert-content">
-              <div class="alert-message">Price must be greater than $0</div>
-            </div>
-          </div>
-          <div class="alert alert-danger">
-            <div class="alert-icon">✕</div>
-            <div class="alert-content">
-              <div class="alert-message">At least one image is required</div>
-            </div>
+          <div class="code-block">
+            <code>&lt;div class="alert alert-danger"&gt;</code>
           </div>
         </div>
-        <div class="code-block"><code>&lt;div class="alert alert-danger"&gt;...&lt;/div&gt;<br>&lt;div class="alert alert-danger"&gt;...&lt;/div&gt;</code></div>
-      </div>
-    </section>
 
-    <!-- Usage Guidelines -->
-    <section class="component-section">
-      <h2>Usage Guidelines</h2>
+        <div class="component-demo">
+          <div class="demo-label">Error with Details</div>
+          <div class="demo-box">
+            <div class="alert alert-danger">
+              <div class="alert-icon">✕</div>
+              <div class="alert-content">
+                <div class="alert-title">Deletion Failed</div>
+                <div class="alert-message">
+                  Cannot delete this item because it has active orders
+                  associated with it.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="code-block">
+            <code
+              >&lt;div class="alert alert-danger"&gt;<br />
+              &lt;div class="alert-title"&gt;...&lt;/div&gt;</code
+            >
+          </div>
+        </div>
 
-      <div class="section-title">When to Use Each Type</div>
-      <ul>
-        <li><strong>Success:</strong> Action completed (save, submit, upload)</li>
-        <li><strong>Danger:</strong> Errors or destructive actions (failed operations, deletions)</li>
-        <li><strong>Warning:</strong> Caution situations (low inventory, unusual conditions)</li>
-        <li><strong>Info:</strong> Helpful information (tips, notices, system status)</li>
-      </ul>
+        <div class="component-demo">
+          <div class="demo-label">Destructive Action Confirmation</div>
+          <div class="demo-box">
+            <div class="alert alert-danger">
+              <div class="alert-icon">⚠</div>
+              <div class="alert-content">
+                <div class="alert-title">Confirm Delete</div>
+                <div class="alert-message">
+                  You are about to permanently delete this item. This action
+                  cannot be undone.
+                </div>
+                <div class="alert-actions">
+                  <button style="background: #dc2626; color: white">
+                    Confirm Delete
+                  </button>
+                  <button>Cancel</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="code-block">
+            <code
+              >&lt;div class="alert-actions"&gt;<br />
+              &lt;button&gt;Confirm&lt;/button&gt;<br />
+              &lt;button&gt;Cancel&lt;/button&gt;<br />&lt;/div&gt;</code
+            >
+          </div>
+        </div>
+      </section>
 
-      <div class="section-title">Alert Content</div>
-      <ul>
-        <li>Keep messages clear and actionable</li>
-        <li>Use title for quick context, message for details</li>
-        <li>Include relevant information (item names, counts, etc.)</li>
-        <li>Don't use only color to convey meaning (use icons/text)</li>
-      </ul>
+      <!-- Warning Alert -->
+      <section class="component-section">
+        <h2>Warning Alert</h2>
+        <p>Use to draw attention to potentially problematic situations.</p>
 
-      <div class="section-title">Dismissible Alerts</div>
-      <ul>
-        <li>Success and info alerts can be dismissible</li>
-        <li>Error alerts should persist until resolved</li>
-        <li>Include close button (×) for dismissible alerts</li>
-        <li>Provide keyboard shortcut (Escape key)</li>
-      </ul>
+        <div class="component-demo">
+          <div class="demo-label">Basic Warning</div>
+          <div class="demo-box">
+            <div class="alert alert-warning">
+              <div class="alert-icon">⚠</div>
+              <div class="alert-content">
+                <div class="alert-message">
+                  This feature is experimental and may change.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="code-block">
+            <code>&lt;div class="alert alert-warning"&gt;</code>
+          </div>
+        </div>
 
-      <div class="section-title">Positioning</div>
-      <ul>
-        <li>Place at top of form for validation errors</li>
-        <li>Place near affected element for contextual alerts</li>
-        <li>Success/confirm messages in prominent position</li>
-        <li>Stack multiple related alerts vertically</li>
-      </ul>
+        <div class="component-demo">
+          <div class="demo-label">Warning with Action</div>
+          <div class="demo-box">
+            <div class="alert alert-warning">
+              <div class="alert-icon">⚠</div>
+              <div class="alert-content">
+                <div class="alert-title">Low Stock Alert</div>
+                <div class="alert-message">
+                  You have 3 items left for "Pink Floyd - The Wall". Consider
+                  reordering soon.
+                </div>
+                <div class="alert-actions">
+                  <button>Reorder Now</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="code-block">
+            <code>&lt;div class="alert alert-warning"&gt;</code>
+          </div>
+        </div>
+      </section>
 
-      <div class="section-title">Duration</div>
-      <ul>
-        <li>Errors: Persist until fixed (don't auto-dismiss)</li>
-        <li>Success: Auto-dismiss after 5-8 seconds (optional)</li>
-        <li>Warnings: Persist (important information)</li>
-        <li>Info/Tips: Dismissible (nice-to-know, not critical)</li>
-      </ul>
+      <!-- Info Alert -->
+      <section class="component-section">
+        <h2>Info Alert</h2>
+        <p>Use to provide helpful information or tips.</p>
 
-      <div class="accessibility-note">
-        <strong>Accessibility Checklist:</strong>
-        <ul style="margin: var(--space-md) 0 0 var(--space-lg);">
-          <li>✓ Sufficient color contrast (4.5:1 minimum)</li>
-          <li>✓ Not conveyed by color alone (use icons/text)</li>
-          <li>✓ role="alert" for dynamic/auto-appearing alerts</li>
-          <li>✓ Close button has aria-label</li>
-          <li>✓ Focus managed when alert appears</li>
-          <li>✓ Screen reader announces alerts immediately</li>
-          <li>✓ Keyboard dismissible (close button accessible)</li>
+        <div class="component-demo">
+          <div class="demo-label">Basic Info Alert</div>
+          <div class="demo-box">
+            <div class="alert alert-info">
+              <div class="alert-icon">ℹ</div>
+              <div class="alert-content">
+                <div class="alert-message">
+                  Tip: Use drag and drop to reorder items in your collection.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="code-block">
+            <code>&lt;div class="alert alert-info"&gt;</code>
+          </div>
+        </div>
+
+        <div class="component-demo">
+          <div class="demo-label">Info with Dismiss</div>
+          <div class="demo-box">
+            <div class="alert alert-info">
+              <div class="alert-icon">ℹ</div>
+              <div class="alert-content">
+                <div class="alert-title">Helpful Tip</div>
+                <div class="alert-message">
+                  You can filter inventory by condition grade, genre, and price
+                  range for faster searching.
+                </div>
+              </div>
+              <button
+                class="alert-close"
+                onclick="this.parentElement.style.display = 'none'"
+                aria-label="Close alert"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+          <div class="code-block">
+            <code>&lt;div class="alert alert-info"&gt;</code>
+          </div>
+        </div>
+      </section>
+
+      <!-- Multiple Alerts -->
+      <section class="component-section">
+        <h2>Alert Stack</h2>
+        <p>
+          Multiple alerts displayed together (common in forms with multiple
+          errors).
+        </p>
+
+        <div class="component-demo">
+          <div class="demo-label">Stacked Alerts</div>
+          <div class="demo-box">
+            <div
+              class="alert alert-danger"
+              style="margin-bottom: var(--space-md)"
+            >
+              <div class="alert-icon">✕</div>
+              <div class="alert-content">
+                <div class="alert-message">Title is required</div>
+              </div>
+            </div>
+            <div
+              class="alert alert-danger"
+              style="margin-bottom: var(--space-md)"
+            >
+              <div class="alert-icon">✕</div>
+              <div class="alert-content">
+                <div class="alert-message">Price must be greater than $0</div>
+              </div>
+            </div>
+            <div class="alert alert-danger">
+              <div class="alert-icon">✕</div>
+              <div class="alert-content">
+                <div class="alert-message">At least one image is required</div>
+              </div>
+            </div>
+          </div>
+          <div class="code-block">
+            <code
+              >&lt;div class="alert alert-danger"&gt;...&lt;/div&gt;<br />&lt;div
+              class="alert alert-danger"&gt;...&lt;/div&gt;</code
+            >
+          </div>
+        </div>
+      </section>
+
+      <!-- Usage Guidelines -->
+      <section class="component-section">
+        <h2>Usage Guidelines</h2>
+
+        <div class="section-title">When to Use Each Type</div>
+        <ul>
+          <li>
+            <strong>Success:</strong> Action completed (save, submit, upload)
+          </li>
+          <li>
+            <strong>Danger:</strong> Errors or destructive actions (failed
+            operations, deletions)
+          </li>
+          <li>
+            <strong>Warning:</strong> Caution situations (low inventory, unusual
+            conditions)
+          </li>
+          <li>
+            <strong>Info:</strong> Helpful information (tips, notices, system
+            status)
+          </li>
         </ul>
-      </div>
-    </section>
 
-  </div>
-</body>
+        <div class="section-title">Alert Content</div>
+        <ul>
+          <li>Keep messages clear and actionable</li>
+          <li>Use title for quick context, message for details</li>
+          <li>Include relevant information (item names, counts, etc.)</li>
+          <li>Don't use only color to convey meaning (use icons/text)</li>
+        </ul>
+
+        <div class="section-title">Dismissible Alerts</div>
+        <ul>
+          <li>Success and info alerts can be dismissible</li>
+          <li>Error alerts should persist until resolved</li>
+          <li>Include close button (×) for dismissible alerts</li>
+          <li>Provide keyboard shortcut (Escape key)</li>
+        </ul>
+
+        <div class="section-title">Positioning</div>
+        <ul>
+          <li>Place at top of form for validation errors</li>
+          <li>Place near affected element for contextual alerts</li>
+          <li>Success/confirm messages in prominent position</li>
+          <li>Stack multiple related alerts vertically</li>
+        </ul>
+
+        <div class="section-title">Duration</div>
+        <ul>
+          <li>Errors: Persist until fixed (don't auto-dismiss)</li>
+          <li>Success: Auto-dismiss after 5-8 seconds (optional)</li>
+          <li>Warnings: Persist (important information)</li>
+          <li>Info/Tips: Dismissible (nice-to-know, not critical)</li>
+        </ul>
+
+        <div class="accessibility-note">
+          <strong>Accessibility Checklist:</strong>
+          <ul style="margin: var(--space-md) 0 0 var(--space-lg)">
+            <li>✓ Sufficient color contrast (4.5:1 minimum)</li>
+            <li>✓ Not conveyed by color alone (use icons/text)</li>
+            <li>✓ role="alert" for dynamic/auto-appearing alerts</li>
+            <li>✓ Close button has aria-label</li>
+            <li>✓ Focus managed when alert appears</li>
+            <li>✓ Screen reader announces alerts immediately</li>
+            <li>✓ Keyboard dismissible (close button accessible)</li>
+          </ul>
+        </div>
+      </section>
+    </div>
+  </body>
 </html>

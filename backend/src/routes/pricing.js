@@ -175,6 +175,11 @@ router.get('/:type/history', authenticate, getPricingPolicyHistory);
  *       200:
  *         description: Policy rolled back
  */
-router.post('/:type/rollback', authenticate, requireRole('ADMIN'), rollbackPricingPolicy);
+router.post(
+  '/:type/rollback',
+  authenticate,
+  requireRole('ADMIN'),
+  rollbackPricingPolicy
+);
 
 export default router;

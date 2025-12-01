@@ -40,9 +40,11 @@ function updateBreadcrumbActiveState(currentFilename) {
  * Marks nav links that match current page
  */
 function updateNavLinkActiveState(currentFilename) {
-  const navLinks = document.querySelectorAll('.navbar__links a, .navbar__mobile-menu a');
+  const navLinks = document.querySelectorAll(
+    '.navbar__links a, .navbar__mobile-menu a'
+  );
 
-  navLinks.forEach(link => {
+  navLinks.forEach((link) => {
     const href = link.getAttribute('href');
 
     // Check if link matches current page
@@ -50,7 +52,8 @@ function updateNavLinkActiveState(currentFilename) {
       href === currentFilename ||
       href === '/' + currentFilename ||
       href.endsWith(currentFilename) ||
-      (currentFilename === 'index.html' && (href === 'index.html' || href === './' || href === './index.html'));
+      (currentFilename === 'index.html' &&
+        (href === 'index.html' || href === './' || href === './index.html'));
 
     if (isActive && href !== '../index.html' && href !== '../../index.html') {
       link.classList.add('active');

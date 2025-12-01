@@ -1,378 +1,433 @@
-<!DOCTYPE html>
-<html lang="en" style="height: auto; overflow: auto;">
-<head>
+<!doctype html>
+<html lang="en" style="height: auto; overflow: auto">
+  <head>
     <style>
-      html { height: auto !important; overflow: auto !important; }
-      body { min-height: 100vh !important; overflow-y: auto !important; }
+      html {
+        height: auto !important;
+        overflow: auto !important;
+      }
+      body {
+        min-height: 100vh !important;
+        overflow-y: auto !important;
+      }
     </style>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Component Guide - Vinyl Catalog Admin</title>
-  <link rel="stylesheet" href="../../styles/design-system.css">
-  <link rel="stylesheet" href="../../styles/utilities.css">
-  <style>
-    body {
-      background: var(--color-secondary);
-    }
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: var(--space-3xl) var(--space-xl);
-    }
-    .page-header {
-      text-align: center;
-      margin-bottom: var(--space-3xl);
-    }
-    .page-header h1 {
-      font-size: var(--font-size-4xl);
-      margin-bottom: var(--space-sm);
-      color: var(--color-primary);
-    }
-    .page-header p {
-      font-size: var(--font-size-lg);
-      color: var(--color-text-light);
-      margin-bottom: var(--space-xl);
-    }
-    .intro-box {
-      background: white;
-      border-radius: var(--radius-lg);
-      padding: var(--space-2xl);
-      margin-bottom: var(--space-3xl);
-      box-shadow: var(--shadow-sm);
-      border-left: 4px solid var(--color-accent);
-    }
-    .intro-box p {
-      margin-bottom: var(--space-md);
-      line-height: var(--line-height-relaxed);
-    }
-    .intro-box p:last-child {
-      margin-bottom: 0;
-    }
-    .component-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: var(--space-2xl);
-      margin-bottom: var(--space-3xl);
-    }
-    .component-card {
-      background: white;
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      box-shadow: var(--shadow-sm);
-      transition: all var(--transition-base);
-      text-decoration: none;
-      color: inherit;
-      display: flex;
-      flex-direction: column;
-    }
-    .component-card:hover {
-      box-shadow: var(--shadow-lg);
-      transform: translateY(-2px);
-    }
-    .component-card-header {
-      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-text) 100%);
-      color: white;
-      padding: var(--space-xl);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      min-height: 120px;
-    }
-    .component-card-body {
-      padding: var(--space-lg);
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    .component-card-title {
-      font-size: var(--font-size-lg);
-      font-weight: var(--font-weight-semibold);
-      margin-bottom: var(--space-sm);
-      color: var(--color-primary);
-    }
-    .component-card-description {
-      font-size: var(--font-size-sm);
-      color: var(--color-text-light);
-      line-height: var(--line-height-normal);
-      margin-bottom: var(--space-md);
-      flex: 1;
-    }
-    .component-card-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-top: var(--space-md);
-      border-top: 1px solid var(--color-border);
-    }
-    .component-status {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: var(--radius-full);
-      font-size: var(--font-size-xs);
-      font-weight: var(--font-weight-semibold);
-      background-color: #d1fae5;
-      color: #059669;
-    }
-    .component-arrow {
-      color: var(--color-accent);
-      font-size: var(--font-size-lg);
-    }
-    .section-title {
-      font-size: var(--font-size-2xl);
-      font-weight: var(--font-weight-semibold);
-      margin-bottom: var(--space-lg);
-      padding-bottom: var(--space-lg);
-      border-bottom: 2px solid var(--color-border);
-    }
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: var(--space-2xl);
-      margin-top: var(--space-2xl);
-      margin-bottom: var(--space-3xl);
-    }
-    .info-card {
-      background: white;
-      border-radius: var(--radius-lg);
-      padding: var(--space-lg);
-      box-shadow: var(--shadow-sm);
-    }
-    .info-card h3 {
-      font-size: var(--font-size-base);
-      font-weight: var(--font-weight-semibold);
-      margin-bottom: var(--space-sm);
-      color: var(--color-primary);
-    }
-    .info-card p {
-      font-size: var(--font-size-sm);
-      color: var(--color-text-light);
-      line-height: var(--line-height-normal);
-    }
-    .info-card ul {
-      font-size: var(--font-size-sm);
-      color: var(--color-text-light);
-      margin: var(--space-sm) 0 0 var(--space-lg);
-      padding: 0;
-      list-style: none;
-    }
-    .info-card li {
-      margin-bottom: var(--space-xs);
-    }
-    .info-card li::before {
-      content: '✓ ';
-      color: var(--color-success);
-      font-weight: bold;
-      margin-right: 4px;
-    }
-    .icon {
-      display: inline-block;
-      width: 24px;
-      height: 24px;
-      text-align: center;
-      line-height: 24px;
-    }
-    @media (max-width: 768px) {
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Component Guide - Vinyl Catalog Admin</title>
+    <link rel="stylesheet" href="../../styles/design-system.css" />
+    <link rel="stylesheet" href="../../styles/utilities.css" />
+    <style>
+      body {
+        background: var(--color-secondary);
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: var(--space-3xl) var(--space-xl);
+      }
+      .page-header {
+        text-align: center;
+        margin-bottom: var(--space-3xl);
+      }
       .page-header h1 {
-        font-size: var(--font-size-3xl);
+        font-size: var(--font-size-4xl);
+        margin-bottom: var(--space-sm);
+        color: var(--color-primary);
+      }
+      .page-header p {
+        font-size: var(--font-size-lg);
+        color: var(--color-text-light);
+        margin-bottom: var(--space-xl);
+      }
+      .intro-box {
+        background: white;
+        border-radius: var(--radius-lg);
+        padding: var(--space-2xl);
+        margin-bottom: var(--space-3xl);
+        box-shadow: var(--shadow-sm);
+        border-left: 4px solid var(--color-accent);
+      }
+      .intro-box p {
+        margin-bottom: var(--space-md);
+        line-height: var(--line-height-relaxed);
+      }
+      .intro-box p:last-child {
+        margin-bottom: 0;
       }
       .component-grid {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--space-2xl);
+        margin-bottom: var(--space-3xl);
       }
-    }
-  </style>
-</head>
-<body style="min-height: 100vh; overflow-y: auto;">
-  <div class="container">
-    <!-- Page Header -->
-    <div class="page-header">
-      <h1>Component Style Guide</h1>
-      <p>Comprehensive reference for all UI components</p>
-    </div>
+      .component-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-base);
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+      }
+      .component-card:hover {
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-2px);
+      }
+      .component-card-header {
+        background: linear-gradient(
+          135deg,
+          var(--color-primary) 0%,
+          var(--color-text) 100%
+        );
+        color: white;
+        padding: var(--space-xl);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        min-height: 120px;
+      }
+      .component-card-body {
+        padding: var(--space-lg);
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .component-card-title {
+        font-size: var(--font-size-lg);
+        font-weight: var(--font-weight-semibold);
+        margin-bottom: var(--space-sm);
+        color: var(--color-primary);
+      }
+      .component-card-description {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-light);
+        line-height: var(--line-height-normal);
+        margin-bottom: var(--space-md);
+        flex: 1;
+      }
+      .component-card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: var(--space-md);
+        border-top: 1px solid var(--color-border);
+      }
+      .component-status {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: var(--radius-full);
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-semibold);
+        background-color: #d1fae5;
+        color: #059669;
+      }
+      .component-arrow {
+        color: var(--color-accent);
+        font-size: var(--font-size-lg);
+      }
+      .section-title {
+        font-size: var(--font-size-2xl);
+        font-weight: var(--font-weight-semibold);
+        margin-bottom: var(--space-lg);
+        padding-bottom: var(--space-lg);
+        border-bottom: 2px solid var(--color-border);
+      }
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--space-2xl);
+        margin-top: var(--space-2xl);
+        margin-bottom: var(--space-3xl);
+      }
+      .info-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        padding: var(--space-lg);
+        box-shadow: var(--shadow-sm);
+      }
+      .info-card h3 {
+        font-size: var(--font-size-base);
+        font-weight: var(--font-weight-semibold);
+        margin-bottom: var(--space-sm);
+        color: var(--color-primary);
+      }
+      .info-card p {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-light);
+        line-height: var(--line-height-normal);
+      }
+      .info-card ul {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-light);
+        margin: var(--space-sm) 0 0 var(--space-lg);
+        padding: 0;
+        list-style: none;
+      }
+      .info-card li {
+        margin-bottom: var(--space-xs);
+      }
+      .info-card li::before {
+        content: '✓ ';
+        color: var(--color-success);
+        font-weight: bold;
+        margin-right: 4px;
+      }
+      .icon {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        text-align: center;
+        line-height: 24px;
+      }
+      @media (max-width: 768px) {
+        .page-header h1 {
+          font-size: var(--font-size-3xl);
+        }
+        .component-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body style="min-height: 100vh; overflow-y: auto">
+    <div class="container">
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1>Component Style Guide</h1>
+        <p>Comprehensive reference for all UI components</p>
+      </div>
 
-    <!-- Introduction -->
-    <div class="intro-box">
-      <p><strong>Welcome to the Component Style Guide!</strong></p>
-      <p>This guide documents all reusable UI components used in the Vinyl Catalog admin dashboard. Each component includes interactive examples, usage guidelines, accessibility information, and copy-paste code examples.</p>
-      <p>Built on the <strong>Design System</strong> (see backend/styles/design-system.css) with 100+ design tokens and 200+ utility classes for consistent, maintainable frontend development.</p>
-    </div>
+      <!-- Introduction -->
+      <div class="intro-box">
+        <p><strong>Welcome to the Component Style Guide!</strong></p>
+        <p>
+          This guide documents all reusable UI components used in the Vinyl
+          Catalog admin dashboard. Each component includes interactive examples,
+          usage guidelines, accessibility information, and copy-paste code
+          examples.
+        </p>
+        <p>
+          Built on the <strong>Design System</strong> (see
+          backend/styles/design-system.css) with 100+ design tokens and 200+
+          utility classes for consistent, maintainable frontend development.
+        </p>
+      </div>
 
-    <!-- Components Section -->
-    <h2 class="section-title">Components</h2>
-    <div class="component-grid">
-      <!-- Button -->
-      <a href="buttons.html" class="component-card">
-        <div class="component-card-header">
-          <span class="icon">🔘</span>
+      <!-- Components Section -->
+      <h2 class="section-title">Components</h2>
+      <div class="component-grid">
+        <!-- Button -->
+        <a href="buttons.html" class="component-card">
+          <div class="component-card-header">
+            <span class="icon">🔘</span>
+          </div>
+          <div class="component-card-body">
+            <h3 class="component-card-title">Button</h3>
+            <p class="component-card-description">
+              Interactive elements for user actions with multiple variants,
+              sizes, and states.
+            </p>
+            <div class="component-card-footer">
+              <span class="component-status">COMPLETE</span>
+              <span class="component-arrow">→</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- Form Inputs -->
+        <a href="forms.html" class="component-card">
+          <div class="component-card-header">
+            <span class="icon">📝</span>
+          </div>
+          <div class="component-card-body">
+            <h3 class="component-card-title">Form Inputs</h3>
+            <p class="component-card-description">
+              Text inputs, selects, textareas, checkboxes, and radio buttons
+              with validation states.
+            </p>
+            <div class="component-card-footer">
+              <span class="component-status">COMPLETE</span>
+              <span class="component-arrow">→</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- Alerts -->
+        <a href="alerts.html" class="component-card">
+          <div class="component-card-header">
+            <span class="icon">⚠️</span>
+          </div>
+          <div class="component-card-body">
+            <h3 class="component-card-title">Alerts</h3>
+            <p class="component-card-description">
+              Success, error, warning, and info messages for user feedback and
+              notifications.
+            </p>
+            <div class="component-card-footer">
+              <span class="component-status">COMPLETE</span>
+              <span class="component-arrow">→</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- Badges -->
+        <a href="badges.html" class="component-card">
+          <div class="component-card-header">
+            <span class="icon">🏷️</span>
+          </div>
+          <div class="component-card-body">
+            <h3 class="component-card-title">Badges</h3>
+            <p class="component-card-description">
+              Status indicators and category tags with semantic colors and
+              multiple sizes.
+            </p>
+            <div class="component-card-footer">
+              <span class="component-status">COMPLETE</span>
+              <span class="component-arrow">→</span>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <!-- About This Guide -->
+      <h2 class="section-title">About This Guide</h2>
+      <div class="info-grid">
+        <div class="info-card">
+          <h3>What's Included</h3>
+          <ul>
+            <li>Interactive component examples</li>
+            <li>Live state demonstrations</li>
+            <li>Copy-paste code snippets</li>
+            <li>Usage guidelines</li>
+            <li>Accessibility notes</li>
+          </ul>
         </div>
-        <div class="component-card-body">
-          <h3 class="component-card-title">Button</h3>
-          <p class="component-card-description">Interactive elements for user actions with multiple variants, sizes, and states.</p>
-          <div class="component-card-footer">
-            <span class="component-status">COMPLETE</span>
-            <span class="component-arrow">→</span>
+
+        <div class="info-card">
+          <h3>Design System</h3>
+          <ul>
+            <li>100+ design tokens</li>
+            <li>CSS variables (--color-*, --space-*, etc.)</li>
+            <li>200+ utility classes</li>
+            <li>Mobile-first responsive design</li>
+            <li>WCAG AA accessibility</li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <h3>Files</h3>
+          <ul>
+            <li>design-system.css - All tokens</li>
+            <li>utilities.css - Utility classes</li>
+            <li>DESIGN_TOKENS.md - Token reference</li>
+            <li>COMPONENT_GUIDE.md - Full documentation</li>
+            <li>components/ - Showcase pages</li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <h3>Quick Start</h3>
+          <p>Import design system in your HTML:</p>
+          <div
+            style="
+              background: #f5f5f5;
+              padding: var(--space-sm);
+              border-radius: var(--radius-sm);
+              margin-top: var(--space-sm);
+              font-family: monospace;
+              font-size: var(--font-size-xs);
+              overflow-x: auto;
+            "
+          >
+            &lt;link rel="stylesheet" href="design-system.css"&gt;<br />&lt;link
+            rel="stylesheet" href="utilities.css"&gt;
           </div>
         </div>
-      </a>
 
-      <!-- Form Inputs -->
-      <a href="forms.html" class="component-card">
-        <div class="component-card-header">
-          <span class="icon">📝</span>
+        <div class="info-card">
+          <h3>Responsive Breakpoints</h3>
+          <ul>
+            <li>xs: 320px (mobile)</li>
+            <li>sm: 480px (tablet)</li>
+            <li>md: 768px (medium)</li>
+            <li>lg: 1024px (desktop)</li>
+            <li>xl: 1280px (large)</li>
+          </ul>
         </div>
-        <div class="component-card-body">
-          <h3 class="component-card-title">Form Inputs</h3>
-          <p class="component-card-description">Text inputs, selects, textareas, checkboxes, and radio buttons with validation states.</p>
-          <div class="component-card-footer">
-            <span class="component-status">COMPLETE</span>
-            <span class="component-arrow">→</span>
-          </div>
-        </div>
-      </a>
 
-      <!-- Alerts -->
-      <a href="alerts.html" class="component-card">
-        <div class="component-card-header">
-          <span class="icon">⚠️</span>
-        </div>
-        <div class="component-card-body">
-          <h3 class="component-card-title">Alerts</h3>
-          <p class="component-card-description">Success, error, warning, and info messages for user feedback and notifications.</p>
-          <div class="component-card-footer">
-            <span class="component-status">COMPLETE</span>
-            <span class="component-arrow">→</span>
-          </div>
-        </div>
-      </a>
-
-      <!-- Badges -->
-      <a href="badges.html" class="component-card">
-        <div class="component-card-header">
-          <span class="icon">🏷️</span>
-        </div>
-        <div class="component-card-body">
-          <h3 class="component-card-title">Badges</h3>
-          <p class="component-card-description">Status indicators and category tags with semantic colors and multiple sizes.</p>
-          <div class="component-card-footer">
-            <span class="component-status">COMPLETE</span>
-            <span class="component-arrow">→</span>
-          </div>
-        </div>
-      </a>
-    </div>
-
-    <!-- About This Guide -->
-    <h2 class="section-title">About This Guide</h2>
-    <div class="info-grid">
-      <div class="info-card">
-        <h3>What's Included</h3>
-        <ul>
-          <li>Interactive component examples</li>
-          <li>Live state demonstrations</li>
-          <li>Copy-paste code snippets</li>
-          <li>Usage guidelines</li>
-          <li>Accessibility notes</li>
-        </ul>
-      </div>
-
-      <div class="info-card">
-        <h3>Design System</h3>
-        <ul>
-          <li>100+ design tokens</li>
-          <li>CSS variables (--color-*, --space-*, etc.)</li>
-          <li>200+ utility classes</li>
-          <li>Mobile-first responsive design</li>
-          <li>WCAG AA accessibility</li>
-        </ul>
-      </div>
-
-      <div class="info-card">
-        <h3>Files</h3>
-        <ul>
-          <li>design-system.css - All tokens</li>
-          <li>utilities.css - Utility classes</li>
-          <li>DESIGN_TOKENS.md - Token reference</li>
-          <li>COMPONENT_GUIDE.md - Full documentation</li>
-          <li>components/ - Showcase pages</li>
-        </ul>
-      </div>
-
-      <div class="info-card">
-        <h3>Quick Start</h3>
-        <p>Import design system in your HTML:</p>
-        <div style="background: #f5f5f5; padding: var(--space-sm); border-radius: var(--radius-sm); margin-top: var(--space-sm); font-family: monospace; font-size: var(--font-size-xs); overflow-x: auto;">
-&lt;link rel="stylesheet" href="design-system.css"&gt;<br>&lt;link rel="stylesheet" href="utilities.css"&gt;
+        <div class="info-card">
+          <h3>Key Features</h3>
+          <ul>
+            <li>CSS custom properties</li>
+            <li>No framework required</li>
+            <li>Easy to maintain</li>
+            <li>Highly customizable</li>
+            <li>Future Storybook ready</li>
+          </ul>
         </div>
       </div>
 
-      <div class="info-card">
-        <h3>Responsive Breakpoints</h3>
-        <ul>
-          <li>xs: 320px (mobile)</li>
-          <li>sm: 480px (tablet)</li>
-          <li>md: 768px (medium)</li>
-          <li>lg: 1024px (desktop)</li>
-          <li>xl: 1280px (large)</li>
-        </ul>
+      <!-- Future Components -->
+      <h2 class="section-title">Planned Components</h2>
+      <div class="info-grid">
+        <div class="info-card">
+          <h3>Phase 2.2 (Upcoming)</h3>
+          <ul>
+            <li>Form layouts & patterns</li>
+            <li>Tables & data display</li>
+            <li>Cards & containers</li>
+            <li>Modals & overlays</li>
+            <li>Pagination</li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <h3>Phase 2.3+ (Future)</h3>
+          <ul>
+            <li>Typography scale</li>
+            <li>Spacing guide</li>
+            <li>Color palette</li>
+            <li>Animation guide</li>
+            <li>Storybook integration</li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <h3>Contributing</h3>
+          <p>To add new components:</p>
+          <ul>
+            <li>Create showcase page</li>
+            <li>Document variants</li>
+            <li>Include accessibility notes</li>
+            <li>Add to this index</li>
+            <li>Update COMPONENT_GUIDE.md</li>
+          </ul>
+        </div>
       </div>
 
-      <div class="info-card">
-        <h3>Key Features</h3>
-        <ul>
-          <li>CSS custom properties</li>
-          <li>No framework required</li>
-          <li>Easy to maintain</li>
-          <li>Highly customizable</li>
-          <li>Future Storybook ready</li>
-        </ul>
+      <!-- Footer -->
+      <div
+        style="
+          text-align: center;
+          margin-top: var(--space-3xl);
+          padding-top: var(--space-2xl);
+          border-top: 1px solid var(--color-border);
+        "
+      >
+        <p
+          style="color: var(--color-text-light); font-size: var(--font-size-sm)"
+        >
+          Component Guide v1.0 • Issue #62 •
+          <a
+            href="../design-system-guide.html"
+            style="color: var(--color-accent); text-decoration: none"
+            >Design System Reference</a
+          >
+        </p>
       </div>
     </div>
-
-    <!-- Future Components -->
-    <h2 class="section-title">Planned Components</h2>
-    <div class="info-grid">
-      <div class="info-card">
-        <h3>Phase 2.2 (Upcoming)</h3>
-        <ul>
-          <li>Form layouts & patterns</li>
-          <li>Tables & data display</li>
-          <li>Cards & containers</li>
-          <li>Modals & overlays</li>
-          <li>Pagination</li>
-        </ul>
-      </div>
-
-      <div class="info-card">
-        <h3>Phase 2.3+ (Future)</h3>
-        <ul>
-          <li>Typography scale</li>
-          <li>Spacing guide</li>
-          <li>Color palette</li>
-          <li>Animation guide</li>
-          <li>Storybook integration</li>
-        </ul>
-      </div>
-
-      <div class="info-card">
-        <h3>Contributing</h3>
-        <p>To add new components:</p>
-        <ul>
-          <li>Create showcase page</li>
-          <li>Document variants</li>
-          <li>Include accessibility notes</li>
-          <li>Add to this index</li>
-          <li>Update COMPONENT_GUIDE.md</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <div style="text-align: center; margin-top: var(--space-3xl); padding-top: var(--space-2xl); border-top: 1px solid var(--color-border);">
-      <p style="color: var(--color-text-light); font-size: var(--font-size-sm);">
-        Component Guide v1.0 • Issue #62 • <a href="../design-system-guide.html" style="color: var(--color-accent); text-decoration: none;">Design System Reference</a>
-      </p>
-    </div>
-
-  </div>
-</body>
+  </body>
 </html>

@@ -32,13 +32,13 @@ This guide documents the high-priority UI components for Phase 2.2 implementatio
 
 ### Component Showcase Pages
 
-| Component | Path | Status |
-|-----------|------|--------|
-| Button | `/admin/components/buttons.html` | ✅ Complete |
-| Form Inputs | `/admin/components/forms.html` | ✅ Complete |
-| Alerts | `/admin/components/alerts.html` | ✅ Complete |
-| Badges | `/admin/components/badges.html` | ✅ Complete |
-| Index | `/admin/components/index.html` | ✅ Complete |
+| Component   | Path                             | Status      |
+| ----------- | -------------------------------- | ----------- |
+| Button      | `/admin/components/buttons.html` | ✅ Complete |
+| Form Inputs | `/admin/components/forms.html`   | ✅ Complete |
+| Alerts      | `/admin/components/alerts.html`  | ✅ Complete |
+| Badges      | `/admin/components/badges.html`  | ✅ Complete |
+| Index       | `/admin/components/index.html`   | ✅ Complete |
 
 ---
 
@@ -50,6 +50,7 @@ This guide documents the high-priority UI components for Phase 2.2 implementatio
 ### Variants
 
 #### Primary Button
+
 Used for main actions and prominent call-to-actions.
 
 ```html
@@ -57,11 +58,13 @@ Used for main actions and prominent call-to-actions.
 ```
 
 **When to use:**
+
 - Main action on page (Save, Submit, Send)
 - Call-to-action that moves user forward
 - Only one primary button per section
 
 #### Secondary Button
+
 Used for alternative actions less important than primary.
 
 ```html
@@ -69,6 +72,7 @@ Used for alternative actions less important than primary.
 ```
 
 **When to use:**
+
 - Alternative actions (Cancel, Close, Back)
 - Less prominent than primary action
 - Multiple secondary buttons acceptable
@@ -146,7 +150,7 @@ Used for alternative actions less important than primary.
 ```html
 <div class="form-group">
   <label for="email">Email Address</label>
-  <input type="email" id="email" placeholder="your@email.com">
+  <input type="email" id="email" placeholder="your@email.com" />
   <div class="form-help">We'll never share your email.</div>
 </div>
 ```
@@ -178,7 +182,11 @@ Used for alternative actions less important than primary.
 ```html
 <div class="form-group">
   <label for="description">Description</label>
-  <textarea id="description" rows="4" placeholder="Enter description..."></textarea>
+  <textarea
+    id="description"
+    rows="4"
+    placeholder="Enter description..."
+  ></textarea>
 </div>
 ```
 
@@ -187,11 +195,11 @@ Used for alternative actions less important than primary.
 ```html
 <div class="checkbox-group">
   <div class="checkbox-item">
-    <input type="checkbox" id="mint">
+    <input type="checkbox" id="mint" />
     <label for="mint">Mint</label>
   </div>
   <div class="checkbox-item">
-    <input type="checkbox" id="nm">
+    <input type="checkbox" id="nm" />
     <label for="nm">Near Mint</label>
   </div>
 </div>
@@ -204,11 +212,11 @@ Used for alternative actions less important than primary.
   <label>Status</label>
   <div class="radio-group">
     <div class="radio-item">
-      <input type="radio" id="live" name="status" value="live">
+      <input type="radio" id="live" name="status" value="live" />
       <label for="live">Live</label>
     </div>
     <div class="radio-item">
-      <input type="radio" id="sold" name="status" value="sold">
+      <input type="radio" id="sold" name="status" value="sold" />
       <label for="sold">Sold</label>
     </div>
   </div>
@@ -223,11 +231,11 @@ Used for alternative actions less important than primary.
 <div class="form-row">
   <div class="form-group">
     <label for="first">First Name</label>
-    <input type="text" id="first">
+    <input type="text" id="first" />
   </div>
   <div class="form-group">
     <label for="last">Last Name</label>
-    <input type="text" id="last">
+    <input type="text" id="last" />
   </div>
 </div>
 ```
@@ -236,7 +244,7 @@ Used for alternative actions less important than primary.
 
 ```html
 <div class="form-group" style="display: flex; gap: var(--space-md);">
-  <input type="email" placeholder="your@email.com" style="flex: 1;">
+  <input type="email" placeholder="your@email.com" style="flex: 1;" />
   <button class="button button--primary">Subscribe</button>
 </div>
 ```
@@ -249,13 +257,13 @@ Used for alternative actions less important than primary.
 
 <!-- Error Message -->
 <div class="form-group error">
-  <input type="text" value="invalid@">
+  <input type="text" value="invalid@" />
   <div class="form-error">Invalid email format</div>
 </div>
 
 <!-- Success Message -->
 <div class="form-group success">
-  <input type="text" value="johndoe">
+  <input type="text" value="johndoe" />
   <div class="form-success">Username is available!</div>
 </div>
 ```
@@ -292,6 +300,7 @@ Used for alternative actions less important than primary.
 ```
 
 **Use when:**
+
 - Action completed successfully
 - User submission accepted
 - Data saved or updated
@@ -309,6 +318,7 @@ Used for alternative actions less important than primary.
 ```
 
 **Use when:**
+
 - Operation failed
 - Validation errors
 - Destructive action warning
@@ -326,6 +336,7 @@ Used for alternative actions less important than primary.
 ```
 
 **Use when:**
+
 - Caution situation
 - Unusual condition
 - Potential problem
@@ -343,6 +354,7 @@ Used for alternative actions less important than primary.
 ```
 
 **Use when:**
+
 - Helpful information
 - System tips
 - Non-urgent notices
@@ -400,6 +412,7 @@ Used for alternative actions less important than primary.
 ```
 
 **Use for:**
+
 - Item status (LIVE, SOLD, RESERVED)
 - Prominent in lists and cards
 - Uppercase text
@@ -446,6 +459,7 @@ Adds a colored dot indicator to the badge.
 ```
 
 **Use when:**
+
 - Multiple attributes to show
 - Status + category + condition
 - Keep to 3-4 badges maximum
@@ -479,19 +493,19 @@ Adds a colored dot indicator to the badge.
 ```html
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Page</title>
-  <!-- Import Design System -->
-  <link rel="stylesheet" href="path/to/design-system.css">
-  <link rel="stylesheet" href="path/to/utilities.css">
-</head>
-<body>
-  <div class="container">
-    <!-- Your components here -->
-  </div>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Page</title>
+    <!-- Import Design System -->
+    <link rel="stylesheet" href="path/to/design-system.css" />
+    <link rel="stylesheet" href="path/to/utilities.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Your components here -->
+    </div>
+  </body>
 </html>
 ```
 
@@ -504,7 +518,7 @@ Adds a colored dot indicator to the badge.
 <!-- Form Group -->
 <div class="form-group">
   <label for="name">Name</label>
-  <input type="text" id="name">
+  <input type="text" id="name" />
 </div>
 
 <!-- Badge -->
@@ -538,9 +552,7 @@ Combine utility classes for quick styling:
 </div>
 
 <!-- Responsive padding -->
-<div class="p-md md:p-lg lg:p-xl">
-  Content with responsive padding
-</div>
+<div class="p-md md:p-lg lg:p-xl">Content with responsive padding</div>
 ```
 
 ---
@@ -552,6 +564,7 @@ Combine utility classes for quick styling:
 The design system defines 100+ design tokens for consistent styling:
 
 **Colors:**
+
 - Primary: `#1a1a1a`
 - Secondary: `#f5f5f5`
 - Accent: `#2563eb`
@@ -560,6 +573,7 @@ The design system defines 100+ design tokens for consistent styling:
 - Danger: `#dc2626`
 
 **Spacing Scale:**
+
 - xs: 4px
 - sm: 8px
 - md: 16px
@@ -568,14 +582,17 @@ The design system defines 100+ design tokens for consistent styling:
 - 2xl: 48px
 
 **Typography:**
+
 - Font sizes: xs (12px) to 4xl (36px)
 - Font weights: 300 to 700
 - Line heights: 1.2 to 1.75
 
 **Shadows:**
+
 - sm, md, lg, xl, soft, elevated
 
 **Radius:**
+
 - sm: 4px
 - md: 8px
 - lg: 12px
@@ -597,6 +614,7 @@ The design system includes 200+ utility classes for rapid development:
 ### Responsive Design
 
 Mobile-first breakpoints:
+
 - xs: 320px (default)
 - sm: 480px
 - md: 768px
@@ -698,12 +716,14 @@ To add a new component to the style guide:
 ## Roadmap
 
 ### Phase 2.2 (Current)
+
 ✅ Button component
 ✅ Form inputs
 ✅ Alerts & notifications
 ✅ Badges & status indicators
 
 ### Phase 2.3 (Planned)
+
 - Tables & data display
 - Cards & containers
 - Modals & overlays
@@ -711,6 +731,7 @@ To add a new component to the style guide:
 - Pagination
 
 ### Phase 2.4+ (Future)
+
 - Typography scale
 - Spacing visualization
 - Color palette guide

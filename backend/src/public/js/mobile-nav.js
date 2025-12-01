@@ -21,7 +21,7 @@ function initMobileNav() {
 
   // Close menu when a link is clicked
   const links = navLinks.querySelectorAll('a');
-  links.forEach(link => {
+  links.forEach((link) => {
     link.addEventListener('click', function () {
       menuToggle.setAttribute('aria-expanded', 'false');
       menuToggle.classList.remove('active');

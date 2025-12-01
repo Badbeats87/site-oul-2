@@ -18,8 +18,12 @@ const sellerApp = {
     this.searchButton = document.querySelector('.search-box__button');
     this.searchDropdown = document.getElementById('searchDropdown');
     this.searchResultsContainer = document.getElementById('searchResults');
-    this.searchLoadingElement = this.searchDropdown?.querySelector('.search-dropdown__loading');
-    this.searchNoResultsElement = this.searchDropdown?.querySelector('.search-dropdown__no-results');
+    this.searchLoadingElement = this.searchDropdown?.querySelector(
+      '.search-dropdown__loading'
+    );
+    this.searchNoResultsElement = this.searchDropdown?.querySelector(
+      '.search-dropdown__no-results'
+    );
     this.conditionBtns = document.querySelectorAll('.condition-btn');
     this.albumCard = document.querySelector('.album-card');
     this.albumCardInfo = document.querySelector('.album-card__info');
@@ -183,12 +187,14 @@ const sellerApp = {
       .join('');
 
     // Attach click listeners
-    this.searchResultsContainer.querySelectorAll('.search-result-item').forEach((item) => {
-      item.addEventListener('click', () => {
-        const resultIdx = parseInt(item.dataset.index);
-        this.selectFromDropdown(this.state.searchResults[resultIdx]);
+    this.searchResultsContainer
+      .querySelectorAll('.search-result-item')
+      .forEach((item) => {
+        item.addEventListener('click', () => {
+          const resultIdx = parseInt(item.dataset.index);
+          this.selectFromDropdown(this.state.searchResults[resultIdx]);
+        });
       });
-    });
 
     this.showDropdown();
   },
@@ -202,10 +208,10 @@ const sellerApp = {
       <div class="search-result-item" data-index="${idx}">
         <div class="search-result-item__cover">
           ${
-            coverUrl
-              ? `<img src="${coverUrl}" alt="${album.title}" />`
-              : `<div class="search-result-item__cover-placeholder">♫</div>`
-          }
+  coverUrl
+    ? `<img src="${coverUrl}" alt="${album.title}" />`
+    : '<div class="search-result-item__cover-placeholder">♫</div>'
+}
         </div>
         <div class="search-result-item__content">
           <h4 class="search-result-item__title">${album.title || 'Unknown'}</h4>
@@ -329,7 +335,11 @@ const sellerApp = {
       quoteItems[2].innerHTML = `<span>Your Offer</span><span class="quote-value quote-value--large">$${finalOffer.toFixed(2)}</span>`;
     }
 
-    console.log('Quote updated:', { baseOffer, conditionAdjustment, finalOffer });
+    console.log('Quote updated:', {
+      baseOffer,
+      conditionAdjustment,
+      finalOffer,
+    });
   },
 };
 
