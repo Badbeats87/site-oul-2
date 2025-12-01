@@ -53,16 +53,29 @@ const submitForm = {
     this.stepButtons.next3.addEventListener('click', () => this.submitForm());
 
     // Search
-    this.elements.searchButton.addEventListener('click', () => this.performSearch());
-    this.elements.searchInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
+    if (this.elements.searchButton) {
+      console.log('Attaching search button listener');
+      this.elements.searchButton.addEventListener('click', () => {
+        console.log('Search button clicked!');
         this.performSearch();
-      }
-    });
+      });
+    } else {
+      console.error('Search button not found! Selector: .search-box__button');
+    }
+
+    if (this.elements.searchInput) {
+      this.elements.searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          this.performSearch();
+        }
+      });
+    }
   },
 
   async performSearch() {
     const query = this.elements.searchInput.value.trim();
+    console.log('Search clicked with query:', query);
+
     if (!query) {
       alert('Please enter a search term');
       return;
