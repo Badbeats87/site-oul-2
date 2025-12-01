@@ -1,7 +1,9 @@
 import axios from 'axios';
+import crypto from 'crypto';
 import { ApiError } from '../middleware/errorHandler.js';
 import logger from '../../config/logger.js';
 import { getOrSet, generateCacheKey } from '../utils/cache.js';
+import discogsOAuthService from './discogsOAuthService.js';
 
 const DISCOGS_API_BASE = 'https://api.discogs.com';
 
@@ -277,7 +279,36 @@ class DiscogsService {
   }
 
   /**
-   * Get marketplace price suggestions for a release
+   * Build OAuth 1.0a signed request for marketplace endpoints
+   * @private
+   */
+  _buildOAuthHeader(method, url, oauthToken, oauthTokenSecret, consumerSecret) {
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const nonce = crypto.randomBytes(16).toString('hex');
+
+    const params = {
+      oauth_consumer_key: process.env.DISCOGS_CONSUMER_KEY,
+      oauth_nonce: nonce,
+      oauth_signature_method: 'PLAINTEXT',
+      oauth_timestamp: timestamp,
+      oauth_token: oauthToken,
+      oauth_version: '1.0',
+    };
+
+    // PLAINTEXT signature: consumer_secret&token_secret
+    params.oauth_signature = `${consumerSecret}&${oauthTokenSecret}`;
+
+    // Build Authorization header
+    const sortedParams = Object.keys(params)
+      .sort()
+      .map((key) => `${key}="${encodeURIComponent(params[key])}"`)
+      .join(',');
+
+    return `OAuth ${sortedParams}`;
+  }
+
+  /**
+   * Get marketplace price suggestions for a release (requires OAuth)
    * @param {number} releaseId - Discogs release ID
    * @returns {Promise<Object>} - Price suggestions with marketplace data
    */
@@ -293,29 +324,55 @@ class DiscogsService {
         cacheKey,
         async () => {
           try {
-            const response = await this.client.get(`/marketplace/price_suggestions/${releaseId}`);
+            // Try to use OAuth token for marketplace access
+            const oauthToken = await discogsOAuthService.getLatestAccessToken();
 
-            // Price suggestions response format:
-            // { "Mint (M)": {"value": 50, "currency": "USD"}, ... }
-            if (!response.data || Object.keys(response.data).length === 0) {
+            if (oauthToken && oauthToken.accessToken) {
+              logger.debug('Using OAuth token for marketplace price suggestions', { releaseId });
+
+              const url = `${DISCOGS_API_BASE}/marketplace/price_suggestions/${releaseId}`;
+              const authHeader = this._buildOAuthHeader(
+                'GET',
+                url,
+                oauthToken.accessToken,
+                oauthToken.accessTokenSecret,
+                process.env.DISCOGS_CONSUMER_SECRET
+              );
+
+              const response = await axios.get(url, {
+                headers: {
+                  'Authorization': authHeader,
+                  'User-Agent': 'VinylCatalogAPI/1.0',
+                },
+              });
+
+              // Price suggestions response format:
+              // { "Mint (M)": {"value": 50, "currency": "USD"}, ... }
+              if (!response.data || Object.keys(response.data).length === 0) {
+                return null;
+              }
+
+              // Return aggregated price data from all conditions
+              const prices = Object.values(response.data).map((p) => p.value).filter((v) => v);
+              if (prices.length === 0) return null;
+
+              return {
+                release_id: releaseId,
+                currency: Object.values(response.data)[0]?.currency || 'USD',
+                lowest: Math.min(...prices),
+                highest: Math.max(...prices),
+                average: Math.round(prices.reduce((a, b) => a + b, 0) / prices.length * 100) / 100,
+                median: prices.sort((a, b) => a - b)[Math.floor(prices.length / 2)],
+              };
+            } else {
+              logger.debug('No OAuth token available for marketplace pricing, falling back to stats', {
+                releaseId,
+              });
               return null;
             }
-
-            // Return aggregated price data from all conditions
-            const prices = Object.values(response.data).map((p) => p.value).filter((v) => v);
-            if (prices.length === 0) return null;
-
-            return {
-              release_id: releaseId,
-              currency: Object.values(response.data)[0]?.currency || 'USD',
-              lowest: Math.min(...prices),
-              highest: Math.max(...prices),
-              average: Math.round(prices.reduce((a, b) => a + b, 0) / prices.length * 100) / 100,
-              median: prices.sort((a, b) => a - b)[Math.floor(prices.length / 2)],
-            };
           } catch (suggestionError) {
             // If price suggestions fail, fall back to stats endpoint
-            logger.debug('Price suggestions endpoint failed, trying stats endpoint', {
+            logger.debug('OAuth marketplace price suggestions failed', {
               releaseId,
               error: suggestionError.message,
             });
