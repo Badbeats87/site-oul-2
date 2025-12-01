@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import prisma from '../utils/db.js';
 import pricingService from '../services/pricingService.js';
+import { clearCache } from '../utils/cache.js';
 import logger from '../../config/logger.js';
 import { ApiError } from '../middleware/errorHandler.js';
 
@@ -151,10 +152,11 @@ export const savePricingPolicy = async (req, res, next) => {
       },
     });
 
-    // Clear policy cache so new pricing takes effect immediately
+    // Clear both policy and search result caches so new pricing takes effect immediately
     if (pricingService.clearPolicyCache) {
       pricingService.clearPolicyCache();
     }
+    clearCache(); // Clear all API caches including search results
 
     logger.info(`Pricing policy saved: ${type} v${newVersion}`, {
       policyId: policy.id,
@@ -309,10 +311,11 @@ export const rollbackPricingPolicy = async (req, res, next) => {
       },
     });
 
-    // Clear policy cache so new pricing takes effect immediately
+    // Clear both policy and search result caches so new pricing takes effect immediately
     if (pricingService.clearPolicyCache) {
       pricingService.clearPolicyCache();
     }
+    clearCache(); // Clear all API caches including search results
 
     return res.status(200).json({
       success: true,
