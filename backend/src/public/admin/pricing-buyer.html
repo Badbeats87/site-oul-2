@@ -547,14 +547,21 @@
 
         bindEvents() {
           // Save Policy button
-          document
-            .querySelector('.button--success')
-            ?.addEventListener('click', () => this.savePolicy());
+          const saveButton = document.querySelector('.button--success');
+          console.log('Save button found:', saveButton);
+          if (saveButton) {
+            saveButton.addEventListener('click', (e) => {
+              console.log('Save button clicked!', e);
+              this.savePolicy();
+            });
+          }
 
           // Reset to Default button
-          document
-            .querySelector('.button--secondary:nth-of-type(3)')
-            ?.addEventListener('click', () => this.resetToDefault());
+          const resetButton = document.querySelector('.button--secondary:nth-of-type(3)');
+          console.log('Reset button found:', resetButton);
+          if (resetButton) {
+            resetButton.addEventListener('click', () => this.resetToDefault());
+          }
         },
 
         async loadPolicy() {
