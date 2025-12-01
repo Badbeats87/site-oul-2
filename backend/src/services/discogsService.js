@@ -352,7 +352,7 @@ class DiscogsService {
               }
             }
 
-            const url = `${DISCOGS_API_BASE}/marketplace/stats/${releaseId}?curr_abbr=${currencyCode}`;
+            const url = `${DISCOGS_API_BASE}/marketplace/stats/${releaseId}?curr_abbr=${currencyCode}&format=Vinyl`;
 
             const response = await axios.get(url, { headers });
 
