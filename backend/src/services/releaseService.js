@@ -742,8 +742,19 @@ class ReleaseService {
         releaseIdForStats = resultId;
         isMaster = true;
       } else {
-        release = await discogsService.getRelease(resultId);
-        releaseIdForStats = resultId;
+        // For individual releases, fetch the release first to get the master ID
+        const individualRelease = await discogsService.getRelease(resultId);
+
+        // If this release has a master, use the master for pricing
+        if (individualRelease.master_id) {
+          release = await discogsService.getMaster(individualRelease.master_id);
+          releaseIdForStats = individualRelease.master_id;
+          isMaster = true;
+        } else {
+          // Fallback to the individual release if no master exists
+          release = individualRelease;
+          releaseIdForStats = resultId;
+        }
       }
 
       if (releaseIdForStats) {
