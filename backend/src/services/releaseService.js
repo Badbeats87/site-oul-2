@@ -696,7 +696,11 @@ class ReleaseService {
         topResults.map((result) => this._enrichDiscogsResult(result))
       );
 
-      // Filter out top results without marketplace data
+      // Filter out top results without marketplace data (but keep going if rate limited)
+      const rateLimit429 = enrichedTopResults.some((r) => r === null);
+      if (rateLimit429) {
+        logger.warn('Discogs rate limited on top results, returning partial results');
+      }
       let finalResults = enrichedTopResults.filter(
         (result) => result && result.marketSnapshots && result.marketSnapshots.length > 0
       );
@@ -868,6 +872,15 @@ class ReleaseService {
         ourPrice,
       };
     } catch (error) {
+      // Return null on rate limit errors to signal that we should retry later
+      if (error.response?.status === 429) {
+        logger.warn('Discogs rate limited', {
+          releaseId: result.id,
+          error: error.message,
+        });
+        return null;
+      }
+
       logger.warn('Failed to enrich Discogs result', {
         releaseId: result.id,
         error: error.message,
