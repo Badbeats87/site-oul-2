@@ -65,9 +65,17 @@ app.use(compression());
 // Configure to serve index.html for directory requests
 const staticOptions = { index: ['index.html'] };
 
-// Log CSS requests for debugging
+// Prevent browser caching of HTML files (especially dashboard)
+// Set cache headers before serving static files
 app.use((req, res, next) => {
-  if (req.path.endsWith('.css') || req.path.endsWith('.js')) {
+  if (req.path.endsWith('.html') || req.path.endsWith('.htm')) {
+    // No caching for HTML files - always get fresh version
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+  } else if (req.path.endsWith('.css') || req.path.endsWith('.js')) {
+    // Cache assets for 1 hour with validation
+    res.set('Cache-Control', 'public, max-age=3600, must-revalidate');
     logger.debug(`Static file request: ${req.path}`);
   }
   next();
