@@ -59,25 +59,29 @@ class ReleaseService {
       }
 
       const marketSnapshot = marketSnapshots[0];
-      if (!marketSnapshot.statMedian) {
+      const statMedian = marketSnapshot.statMedian ? parseFloat(marketSnapshot.statMedian) : null;
+
+      if (!statMedian) {
         return null;
       }
 
       // Get active BUYER pricing policy (what we offer to buy records for)
       const buyerFormula = await pricingService.getBuyerFormula();
 
-      // Calculate buy price using the market statistic and BUYER policy formula
-      // Since we don't have condition data in search results, use default NM conditions
-      const priceCalculation = await pricingService.calculateBuyPrice({
-        releaseId: 'search-result', // Placeholder, not used for search
-        mediaCondition: 'NM',
-        sleeveCondition: 'NM',
-        marketSource: 'HYBRID',
-        marketStatistic: 'median',
-        formula: buyerFormula,
-      });
+      if (!buyerFormula) {
+        return null;
+      }
 
-      return priceCalculation.price;
+      // Apply buyer formula directly: median price * buy percentage
+      // Since we don't have condition data in search results, assume NM/NM (1.0 multiplier)
+      const buyPercentage = buyerFormula.percentage || 0.55;
+      const basePrice = statMedian * buyPercentage;
+
+      // Apply standard rounding
+      const roundIncrement = buyerFormula.roundIncrement || 0.99;
+      const ourPrice = pricingService.roundToIncrement(basePrice, roundIncrement);
+
+      return ourPrice;
     } catch (error) {
       logger.warn('Failed to calculate ourPrice', { error: error.message });
       return null;
