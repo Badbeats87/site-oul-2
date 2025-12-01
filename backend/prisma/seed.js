@@ -194,9 +194,9 @@ async function main() {
   } catch (error) {
     console.error('❌ Error seeding database:', error);
     throw error;
-  } finally {
-    await prisma.$disconnect();
   }
+  // Don't disconnect - let the main app handle the connection lifecycle
+  // Disconnecting here would break the app if seed runs in background
 }
 
 main();
