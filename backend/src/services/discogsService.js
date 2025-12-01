@@ -409,6 +409,104 @@ class DiscogsService {
   }
 
   /**
+   * Get marketplace stats for vinyl format only by checking all vinyl variants
+   * @param {number} masterId - Discogs master ID
+   * @param {string} currencyCode - Currency code (default: 'USD')
+   * @returns {Promise<Object>} - Lowest vinyl marketplace stats
+   */
+  async getVinylMarketplaceStats(masterId, currencyCode = 'USD') {
+    try {
+      if (!masterId || typeof masterId !== 'number') {
+        throw new ApiError('Invalid master ID', 400);
+      }
+
+      const cacheKey = generateCacheKey('discogs', `vinyl_marketplace_stats_${masterId}_${currencyCode}`, {});
+
+      return await getOrSet(
+        cacheKey,
+        async () => {
+          try {
+            logger.debug('Fetching vinyl variants for master', { masterId });
+
+            // Get all vinyl variants of this master
+            const response = await this.client.get(`/masters/${masterId}/versions`, {
+              params: { per_page: 500 },
+            });
+
+            if (!response.data.versions || response.data.versions.length === 0) {
+              return null;
+            }
+
+            // Filter for vinyl format only
+            const vinylVariants = response.data.versions.filter(
+              (v) => v.format && v.format.toLowerCase() === 'vinyl'
+            );
+
+            if (vinylVariants.length === 0) {
+              logger.debug('No vinyl variants found for master', { masterId });
+              return null;
+            }
+
+            logger.debug('Found vinyl variants', {
+              masterId,
+              count: vinylVariants.length,
+            });
+
+            // Check marketplace stats for each vinyl variant in parallel
+            const statsPromises = vinylVariants.map((variant) =>
+              this.getMarketplaceStats(variant.id, currencyCode)
+                .then((stats) => ({
+                  releaseId: variant.id,
+                  stats,
+                }))
+                .catch(() => ({ releaseId: variant.id, stats: null }))
+            );
+
+            const allStats = await Promise.all(statsPromises);
+
+            // Filter out null results and find the lowest price
+            const validStats = allStats.filter((s) => s.stats && s.stats.lowest);
+
+            if (validStats.length === 0) {
+              logger.debug('No vinyl variants with marketplace prices', { masterId });
+              return null;
+            }
+
+            // Find the lowest priced vinyl
+            const lowestVinyl = validStats.reduce((lowest, current) =>
+              current.stats.lowest < lowest.stats.lowest ? current : lowest
+            );
+
+            logger.debug('Found lowest vinyl marketplace price', {
+              masterId,
+              releaseId: lowestVinyl.releaseId,
+              price: lowestVinyl.stats.lowest,
+              currency: lowestVinyl.stats.currency,
+              numForSale: lowestVinyl.stats.num_for_sale,
+            });
+
+            return lowestVinyl.stats;
+          } catch (error) {
+            logger.debug('Failed to fetch vinyl marketplace stats', {
+              masterId,
+              error: error.message,
+            });
+            return null;
+          }
+        },
+        1800 // Cache for 30 minutes
+      );
+    } catch (error) {
+      if (error.isApiError) throw error;
+      logger.debug('Failed to process vinyl marketplace stats', {
+        masterId,
+        error: error.message,
+      });
+      return null;
+    }
+  }
+
+  /**
    * Get marketplace price suggestions for a release (requires OAuth)
    * @param {number} releaseId - Discogs release ID
    * @returns {Promise<Object>} - Price suggestions with marketplace data
