@@ -110,29 +110,34 @@ const sellerApp = {
 
   estimatePrice(album) {
     // Fallback pricing estimation when market data unavailable
-    // Base: €12 for vinyl, adjusted by age and demand signals
-    let baseEstimate = 12;
+    // Based on vinyl record market analysis
+    let baseEstimate = 20; // Modern vinyl baseline €20
 
-    // Adjust by genre (classic/collectible genres worth more)
-    const premiumGenres = [
-      'Jazz',
-      'Electronic',
-      'Hip-Hop',
-      'Soul',
-      'Rock',
-    ];
-    if (
-      album.genre &&
-      premiumGenres.some((g) => album.genre.toLowerCase().includes(g.toLowerCase()))
-    ) {
-      baseEstimate += 3;
+    // Adjust by genre (collectible genres worth more)
+    const highValueGenres = ['Jazz', 'Electronic', 'Hip-Hop', 'Soul'];
+    const standardGenres = ['Rock', 'Pop', 'Indie', 'Metal'];
+
+    if (album.genre) {
+      const genreLower = album.genre.toLowerCase();
+      if (highValueGenres.some((g) => genreLower.includes(g.toLowerCase()))) {
+        baseEstimate += 10; // Hip-Hop, Electronic, Jazz: +€10
+      } else if (standardGenres.some((g) => genreLower.includes(g.toLowerCase()))) {
+        baseEstimate += 5; // Standard genres: +€5
+      }
     }
 
-    // Adjust by age (older records often more valuable)
+    // Adjust by age (older records often more valuable, recent releases command premium)
     if (album.releaseYear) {
       const age = new Date().getFullYear() - album.releaseYear;
-      if (age > 30) baseEstimate += 5; // Vintage
-      else if (age > 10) baseEstimate += 2; // Classic era
+      if (age > 30) {
+        baseEstimate += 15; // Vintage (pre-1995)
+      } else if (age > 20) {
+        baseEstimate += 10; // Older records (1995-2005)
+      } else if (age > 10) {
+        baseEstimate += 5; // Established records (2005-2015)
+      } else if (age <= 3) {
+        baseEstimate += 8; // Recent releases often command premium (within 3 years)
+      }
     }
 
     return baseEstimate;
