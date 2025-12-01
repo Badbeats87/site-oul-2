@@ -151,8 +151,10 @@ export const savePricingPolicy = async (req, res, next) => {
       },
     });
 
-    // Clear cache
-    pricingService.clearPolicyCache?.();
+    // Clear policy cache so new pricing takes effect immediately
+    if (pricingService.clearPolicyCache) {
+      pricingService.clearPolicyCache();
+    }
 
     logger.info(`Pricing policy saved: ${type} v${newVersion}`, {
       policyId: policy.id,
@@ -307,8 +309,10 @@ export const rollbackPricingPolicy = async (req, res, next) => {
       },
     });
 
-    // Clear cache
-    pricingService.clearPolicyCache?.();
+    // Clear policy cache so new pricing takes effect immediately
+    if (pricingService.clearPolicyCache) {
+      pricingService.clearPolicyCache();
+    }
 
     return res.status(200).json({
       success: true,
