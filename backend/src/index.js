@@ -110,21 +110,29 @@ app.use('/api/v1/tracking', trackingRoutes);
 // API documentation (available without authentication)
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Authentication middleware
-app.use(authenticate);
-
 logger.info(`🚀 ${config.app.name} starting up...`);
 logger.info(`Environment: ${config.app.env}`);
 
 // ============================================================================
-// ROUTES
+// ROUTES (PUBLIC - before authentication middleware)
 // ============================================================================
 
 // Health check endpoint
 app.use('/api/v1/health', healthRoutes);
 
-// Auth routes (before other protected routes)
+// Auth routes (public and protected - registered before auth middleware so it can handle both)
 app.use('/api/v1/auth', authRoutes);
+
+// ============================================================================
+// AUTHENTICATION MIDDLEWARE (after public routes)
+// ============================================================================
+
+// Authentication middleware
+app.use(authenticate);
+
+// ============================================================================
+// ROUTES (PROTECTED - after authentication middleware)
+// ============================================================================
 
 // Catalog routes
 app.use('/api/v1/catalog', catalogRoutes);
