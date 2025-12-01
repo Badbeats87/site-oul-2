@@ -666,16 +666,9 @@ class ReleaseService {
 
                   if (result.type === 'master') {
                     // For master releases, get the master metadata
-                    // and fetch pricing from the first release variation
-                    const [masterData, firstReleaseId] = await Promise.all([
-                      discogsService.getMaster(resultId),
-                      discogsService
-                        .getFirstReleaseFromMaster(resultId)
-                        .catch(() => null),
-                    ]);
-
-                    release = masterData;
-                    releaseIdForStats = firstReleaseId;
+                    // and use the master ID itself for marketplace pricing
+                    release = await discogsService.getMaster(resultId);
+                    releaseIdForStats = resultId; // Use master ID for marketplace stats to get aggregated pricing
                   } else {
                     // For regular releases, use them directly
                     release = await discogsService.getRelease(resultId);
