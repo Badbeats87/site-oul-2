@@ -41,7 +41,18 @@ const app = express();
 // ============================================================================
 
 // Security
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", 'data:', 'https://i.discogs.com', 'https://*.discogs.com'],
+      },
+    },
+  })
+);
 app.use(cors(config.cors));
 app.use(compression());
 
