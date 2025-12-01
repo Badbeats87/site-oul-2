@@ -49,7 +49,7 @@ class ReleaseService {
   /**
    * Calculate ourPrice from market snapshots using BUYER pricing policy
    * This represents what we will BUY the record for from sellers
-   * @param {Array} marketSnapshots - Array of market snapshot objects with statMedian
+   * @param {Array} marketSnapshots - Array of market snapshot objects with statLowest/statMedian/statHigh
    * @returns {Promise<number|null>} Calculated buy price or null if no market data
    */
   async calculateOurPrice(marketSnapshots) {
@@ -59,11 +59,6 @@ class ReleaseService {
       }
 
       const marketSnapshot = marketSnapshots[0];
-      const statMedian = marketSnapshot.statMedian ? parseFloat(marketSnapshot.statMedian) : null;
-
-      if (!statMedian) {
-        return null;
-      }
 
       // Get active BUYER pricing policy (what we offer to buy records for)
       const buyerFormula = await pricingService.getBuyerFormula();
@@ -72,11 +67,28 @@ class ReleaseService {
         return null;
       }
 
-      // Apply buyer formula directly: median price * buy percentage
+      // Select price statistic based on policy (LOW, MEDIAN, HIGH)
+      const priceStatistic = buyerFormula.priceStatistic || 'MEDIAN';
+      let baseStat = null;
+
+      if (priceStatistic === 'LOW') {
+        baseStat = marketSnapshot.statLowest ? parseFloat(marketSnapshot.statLowest) : null;
+      } else if (priceStatistic === 'HIGH') {
+        baseStat = marketSnapshot.statHighest ? parseFloat(marketSnapshot.statHighest) : null;
+      } else {
+        // Default to MEDIAN
+        baseStat = marketSnapshot.statMedian ? parseFloat(marketSnapshot.statMedian) : null;
+      }
+
+      if (!baseStat) {
+        return null;
+      }
+
+      // Apply buyer formula: base stat * buy percentage
       // Since we don't have condition data in search results, assume NM/NM (1.0 multiplier)
       // Handle both { percentage: x } and { buyPercentage: x } formats
-      const buyPercentage = buyerFormula.percentage ?? buyerFormula.buyPercentage ?? 0.55;
-      const basePrice = statMedian * buyPercentage;
+      const buyPercentage = buyerFormula.buyPercentage ?? buyerFormula.percentage ?? 0.55;
+      const basePrice = baseStat * buyPercentage;
 
       // Apply standard rounding (defaults to 0.25 if not specified)
       const roundIncrement = buyerFormula.roundIncrement ?? 0.25;
