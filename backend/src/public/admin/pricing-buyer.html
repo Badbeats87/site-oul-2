@@ -815,6 +815,7 @@
             };
 
             // Send to API
+            console.log('Sending payload:', JSON.stringify(payload, null, 2));
             const response = await fetch(
               `/api/v1/admin/pricing/${this.policyType}`,
               {
@@ -827,12 +828,15 @@
               }
             );
 
+            console.log('Save response status:', response.status, response.statusText);
             if (!response.ok) {
               const error = await response.json();
-              throw new Error(error.error?.message || 'Failed to save policy');
+              console.error('API error response:', error);
+              throw new Error(error.error?.message || `Failed to save policy (${response.status})`);
             }
 
             const result = await response.json();
+            console.log('Save successful:', result.data);
             alert(
               `✓ Policy saved successfully!\nVersion: ${result.data.version}`
             );
