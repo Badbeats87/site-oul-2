@@ -146,17 +146,16 @@ async function main() {
 
     // Seed default BUYER pricing policy
     const existingBuyerPolicy = await prisma.pricingPolicy.findFirst({
-      where: { type: 'BUYER' },
+      where: { scope: 'BUYER' },
     });
 
     if (!existingBuyerPolicy) {
       await prisma.pricingPolicy.create({
         data: {
           id: uuidv4(),
-          type: 'BUYER',
+          scope: 'BUYER',
           name: 'Global Buyer Policy',
           version: 1,
-          policyScope: 'GLOBAL',
           buyFormula: {
             percentage: 0.55,
             weights: {
