@@ -531,37 +531,53 @@ class ReleaseService {
       if (finalResults.length === 0) {
         try {
           logger.info('No local results, searching Discogs', { query });
-          const discogsResults = await discogsService.searchEnriched({
+          const discogsResults = await discogsService.search({
             q: query,
           });
 
           if (discogsResults && discogsResults.results.length > 0) {
             // Transform Discogs results to match our schema
-            finalResults = discogsResults.results.slice(0, limit).map((result) => ({
-              id: `discogs_${result.id}`,
-              title: result.title,
-              artist: result.artists?.[0]?.name || result.artist || 'Unknown Artist',
-              label: result.label || null,
-              barcode: result.barcode || null,
-              releaseYear: result.year || null,
-              genre: result.genre || null,
-              coverArtUrl: result.cover_image || null,
-              description: null,
-              // Market data from Discogs
-              marketSnapshots: result.price_data
-                ? [
-                    {
-                      releaseId: `discogs_${result.id}`,
-                      source: 'DISCOGS',
-                      statLow: result.price_data.median_price,
-                      statMedian: result.price_data.median_price,
-                      statHigh: result.price_data.highest_price,
-                      fetchedAt: new Date(),
-                    },
-                  ]
-                : [],
-            }));
+            finalResults = discogsResults.results.slice(0, limit).map((result) => {
+              // Extract artist name from various formats
+              let artistName = 'Unknown Artist';
+              if (result.artists) {
+                artistName = Array.isArray(result.artists)
+                  ? result.artists.map((a) => a.name).join(', ')
+                  : result.artists.name;
+              } else if (result.artist) {
+                artistName = result.artist;
+              }
+
+              return {
+                id: `discogs_${result.id}`,
+                title: result.title || result.name || 'Unknown Album',
+                artist: artistName,
+                label: result.label || null,
+                barcode: result.barcode || null,
+                releaseYear: result.year || null,
+                genre: result.genre || null,
+                coverArtUrl: result.cover_image || null,
+                description: null,
+                // Basic market data (Discogs doesn't provide rich price data in basic search)
+                marketSnapshots: result.price_data
+                  ? [
+                      {
+                        releaseId: `discogs_${result.id}`,
+                        source: 'DISCOGS',
+                        statLow: result.price_data.median_price || 0,
+                        statMedian: result.price_data.median_price || 0,
+                        statHigh: result.price_data.highest_price || 0,
+                        fetchedAt: new Date(),
+                      },
+                    ]
+                  : [],
+              };
+            });
             source = 'DISCOGS';
+            logger.info('Discogs fallback search succeeded', {
+              query,
+              resultCount: finalResults.length,
+            });
           }
         } catch (discogsError) {
           logger.warn('Discogs fallback search failed', {
