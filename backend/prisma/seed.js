@@ -144,6 +144,53 @@ async function main() {
       }
     }
 
+    // Seed default BUYER pricing policy
+    const existingBuyerPolicy = await prisma.pricingPolicy.findFirst({
+      where: { type: 'BUYER' },
+    });
+
+    if (!existingBuyerPolicy) {
+      await prisma.pricingPolicy.create({
+        data: {
+          id: uuidv4(),
+          type: 'BUYER',
+          name: 'Global Buyer Policy',
+          version: 1,
+          policyScope: 'GLOBAL',
+          buyFormula: {
+            percentage: 0.55,
+            weights: {
+              media: 0.6,
+              sleeve: 0.4,
+            },
+          },
+          sellFormula: {
+            percentage: 0.0,
+            weights: {
+              media: 0.6,
+              sleeve: 0.4,
+            },
+          },
+          conditionCurve: {
+            MINT: 1.1,
+            NM: 1.0,
+            VG_PLUS: 0.85,
+            VG: 0.6,
+            VG_MINUS: 0.45,
+            G: 0.3,
+            FAIR: 0.2,
+            POOR: 0.1,
+          },
+          description:
+            'Global buyer pricing - we buy records for 55% of median market price',
+          isActive: true,
+          offerExpiryDays: 30,
+          createdAt: new Date(),
+        },
+      });
+      console.log('✅ Default BUYER pricing policy created');
+    }
+
     console.log('✅ Database seed completed successfully!');
   } catch (error) {
     console.error('❌ Error seeding database:', error);
