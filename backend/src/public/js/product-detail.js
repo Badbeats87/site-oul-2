@@ -317,13 +317,13 @@ class ProductDetailManager {
       <div class="product-card">
         <div class="product-card__image">
           ${
-  product.coverArtUrl
-    ? `<img src="${product.coverArtUrl}" alt="${product.title}" style="width: 100%; height: 100%; object-fit: cover;">`
-    : `<svg viewBox="0 0 240 240" fill="none">
+            product.coverArtUrl
+              ? `<img src="${product.coverArtUrl}" alt="${product.title}" style="width: 100%; height: 100%; object-fit: cover;">`
+              : `<svg viewBox="0 0 240 240" fill="none">
               <rect width="240" height="240" fill="#e5e7eb"/>
               <text x="120" y="120" text-anchor="middle" dominant-baseline="middle" font-size="18" fill="#9ca3af">Album Cover</text>
             </svg>`
-}
+          }
         </div>
         <div class="product-card__content">
           <h3 class="product-card__title">

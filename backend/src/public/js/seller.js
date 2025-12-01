@@ -88,7 +88,6 @@ const sellerApp = {
     });
   },
 
-
   calculateBuyingPrice(album) {
     const basePrice = this.getBasePrice(album);
     if (!basePrice) return null;
@@ -196,10 +195,10 @@ const sellerApp = {
       <div class="search-result-item" data-index="${idx}">
         <div class="search-result-item__cover">
           ${
-  coverUrl
-    ? `<img src="${coverUrl}" alt="${album.title}" />`
-    : '<div class="search-result-item__cover-placeholder">♫</div>'
-}
+            coverUrl
+              ? `<img src="${coverUrl}" alt="${album.title}" />`
+              : '<div class="search-result-item__cover-placeholder">♫</div>'
+          }
         </div>
         <div class="search-result-item__content">
           <h4 class="search-result-item__title">${album.title || 'Unknown'}</h4>
