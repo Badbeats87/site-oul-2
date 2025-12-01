@@ -47,7 +47,7 @@ app.use(
       directives: {
         defaultSrc: ['\'self\''],
         styleSrc: ['\'self\'', '\'unsafe-inline\''],
-        scriptSrc: ['\'self\''],
+        scriptSrc: ['\'self\'', '\'unsafe-inline\''], // Allow inline scripts for admin dashboard
         imgSrc: [
           '\'self\'',
           'data:',
