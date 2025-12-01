@@ -39,11 +39,53 @@ class DiscogsService {
       (error) => {
         if (error.response?.status === 429) {
           logger.warn('Discogs rate limit exceeded, backing off');
-          // Could implement exponential backoff here
+          // Store rate limit info for retry logic
+          error.isRateLimited = true;
         }
         return Promise.reject(error);
       }
     );
+  }
+
+  /**
+   * Retry with exponential backoff for rate-limited requests
+   * @param {Function} fn - Async function to retry
+   * @param {number} maxRetries - Maximum number of retries (default: 3)
+   * @param {number} baseDelay - Base delay in ms (default: 1000)
+   * @returns {Promise} - Result of the function
+   */
+  async retryWithBackoff(fn, maxRetries = 3, baseDelay = 1000) {
+    let lastError;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        return await fn();
+      } catch (error) {
+        lastError = error;
+
+        // Only retry on rate limit (429) errors
+        if (error.response?.status !== 429) {
+          throw error;
+        }
+
+        // Don't retry after last attempt
+        if (attempt === maxRetries) {
+          throw error;
+        }
+
+        // Calculate exponential backoff: baseDelay * 2^attempt
+        const delay = baseDelay * Math.pow(2, attempt);
+        logger.warn(`Rate limited, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`, {
+          endpoint: error.config?.url,
+          delay,
+        });
+
+        // Wait before retrying
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+
+    throw lastError;
   }
 
   /**
@@ -85,16 +127,24 @@ class DiscogsService {
             masterSearchParams.year = year;
           }
 
-          let response = await this.client.get('/database/search', {
-            params: masterSearchParams,
-          });
+          let response = await this.retryWithBackoff(
+            () => this.client.get('/database/search', {
+              params: masterSearchParams,
+            }),
+            3,
+            1500
+          );
 
           // If no master results, fallback to release search
           if (!response.data.results || response.data.results.length === 0) {
             masterSearchParams.type = 'release';
-            response = await this.client.get('/database/search', {
-              params: masterSearchParams,
-            });
+            response = await this.retryWithBackoff(
+              () => this.client.get('/database/search', {
+                params: masterSearchParams,
+              }),
+              3,
+              1500
+            );
           }
 
           return {
@@ -354,7 +404,11 @@ class DiscogsService {
 
             const url = `${DISCOGS_API_BASE}/marketplace/stats/${releaseId}?curr_abbr=${currencyCode}&format=Vinyl`;
 
-            const response = await axios.get(url, { headers });
+            const response = await this.retryWithBackoff(
+              () => axios.get(url, { headers }),
+              3,
+              1500
+            );
 
             logger.debug('Marketplace stats response', {
               releaseId,
@@ -434,9 +488,13 @@ class DiscogsService {
             logger.debug('Fetching vinyl variants for master', { masterId });
 
             // Get all vinyl variants of this master
-            const response = await this.client.get(`/masters/${masterId}/versions`, {
-              params: { per_page: 500 },
-            });
+            const response = await this.retryWithBackoff(
+              () => this.client.get(`/masters/${masterId}/versions`, {
+                params: { per_page: 500 },
+              }),
+              3,
+              1500
+            );
 
             if (!response.data.versions || response.data.versions.length === 0) {
               return null;
