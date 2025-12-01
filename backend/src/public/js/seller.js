@@ -158,7 +158,9 @@ const sellerApp = {
 
     try {
       const response = await fetch(
-        `/api/v1/catalog/search?q=${encodeURIComponent(query)}&limit=20`
+        `/api/v1/catalog/search?q=${encodeURIComponent(
+          query
+        )}&limit=20&source=DISCOGS`
       );
 
       if (!response.ok) {

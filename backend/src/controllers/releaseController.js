@@ -136,7 +136,7 @@ export const deleteRelease = async (req, res, next) => {
 
 export const searchReleases = async (req, res, next) => {
   try {
-    const { q, limit } = req.query;
+    const { q, limit, source } = req.query;
 
     if (!q || q.length < 2) {
       return res.status(400).json({
@@ -150,7 +150,10 @@ export const searchReleases = async (req, res, next) => {
 
     const results = await releaseService.search(
       q,
-      limit ? parseInt(limit, 10) : 50
+      limit ? parseInt(limit, 10) : 50,
+      {
+        source: source ? String(source).toUpperCase() : undefined,
+      }
     );
 
     res.json({
