@@ -47,6 +47,42 @@ class ReleaseService {
   }
 
   /**
+   * Estimate base price for a release when market data is unavailable
+   * Based on genre and release year
+   */
+  estimateBasePrice(release, result) {
+    let baseEstimate = 20; // Modern vinyl baseline €20
+
+    // Adjust by genre
+    const genre = (release.genres?.[0] || result.genres?.[0] || '').toLowerCase();
+    const highValueGenres = ['jazz', 'electronic', 'hip-hop', 'hip hop', 'soul', 'funk'];
+    const standardGenres = ['rock', 'pop', 'indie', 'metal'];
+
+    if (highValueGenres.some((g) => genre.includes(g))) {
+      baseEstimate += 10; // Hip-Hop, Electronic, Jazz: +€10
+    } else if (standardGenres.some((g) => genre.includes(g))) {
+      baseEstimate += 5; // Standard genres: +€5
+    }
+
+    // Adjust by age
+    const year = release.year || result.year;
+    if (year) {
+      const age = new Date().getFullYear() - year;
+      if (age > 30) {
+        baseEstimate += 15; // Vintage (pre-1995)
+      } else if (age > 20) {
+        baseEstimate += 10; // Older records (1995-2005)
+      } else if (age > 10) {
+        baseEstimate += 5; // Established records (2005-2015)
+      } else if (age <= 3) {
+        baseEstimate += 8; // Recent releases often command premium
+      }
+    }
+
+    return baseEstimate;
+  }
+
+  /**
    * Calculate ourPrice from market snapshots using BUYER pricing policy
    * This represents what we will BUY the record for from sellers
    * @param {Array} marketSnapshots - Array of market snapshot objects with statLow/statMedian/statHigh
@@ -685,7 +721,7 @@ class ReleaseService {
                   });
 
                   // Build market snapshots from price data
-                  const marketSnapshots =
+                  let marketSnapshots =
                     priceStats &&
                     (priceStats.lowest ||
                       priceStats.average ||
@@ -702,7 +738,26 @@ class ReleaseService {
                       ]
                       : [];
 
-                  const ourPrice = await this.calculateOurPrice(marketSnapshots);
+                  // If Discogs market data isn't available, create estimated data
+                  // so pricing policy can still be applied
+                  let ourPrice = await this.calculateOurPrice(marketSnapshots);
+                  if (!ourPrice && marketSnapshots.length === 0) {
+                    // Fallback: estimate base price and let pricing policy apply to it
+                    const estimatedBase = this.estimateBasePrice(release, result);
+                    if (estimatedBase > 0) {
+                      const buyerFormula = await pricingService.getBuyerFormula();
+                      if (buyerFormula) {
+                        const buyPercentage = buyerFormula.buyPercentage ?? buyerFormula.percentage ?? 0.55;
+                        ourPrice = estimatedBase * buyPercentage;
+                        logger.debug('Applied pricing policy to estimated price', {
+                          resultId: result.id,
+                          estimatedBase,
+                          buyPercentage,
+                          ourPrice,
+                        });
+                      }
+                    }
+                  }
                   return {
                     id: `discogs_${result.id}`,
                     title: release.title || result.title || 'Unknown Album',
