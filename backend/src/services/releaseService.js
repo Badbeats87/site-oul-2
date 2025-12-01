@@ -711,6 +711,12 @@ class ReleaseService {
                     priceStats = null;
                   }
 
+                  console.log('[Price Fetch] Release:', {
+                    resultId: result.id,
+                    releaseIdForStats,
+                    fullPriceStats: priceStats,
+                  });
+
                   logger.debug('Discogs price fetch result', {
                     resultId: result.id,
                     releaseIdForStats,
@@ -718,6 +724,7 @@ class ReleaseService {
                     lowest: priceStats?.lowest,
                     median: priceStats?.median,
                     highest: priceStats?.highest,
+                    fullObject: priceStats,
                   });
 
                   // Build market snapshots from price data
