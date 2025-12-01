@@ -359,13 +359,13 @@ const sellerApp = {
     // Update quote display
     const quoteItems = document.querySelectorAll('.quote-item');
     if (quoteItems[0]) {
-      quoteItems[0].innerHTML = `<span>Base Offer</span><span class="quote-value">$${baseOffer.toFixed(2)}</span>`;
+      quoteItems[0].innerHTML = `<span>Base Offer</span><span class="quote-value">€${baseOffer.toFixed(2)}</span>`;
     }
     if (quoteItems[1]) {
       quoteItems[1].innerHTML = `<span>Condition Adjustment</span><span class="quote-value quote-value--muted">${adjustmentPercent}%</span>`;
     }
     if (quoteItems[2]) {
-      quoteItems[2].innerHTML = `<span>Your Offer</span><span class="quote-value quote-value--large">$${finalOffer.toFixed(2)}</span>`;
+      quoteItems[2].innerHTML = `<span>Your Offer</span><span class="quote-value quote-value--large">€${finalOffer.toFixed(2)}</span>`;
     }
 
     console.log('Quote updated:', {
