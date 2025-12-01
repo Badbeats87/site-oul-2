@@ -160,3 +160,4 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 export default app;
+// Trigger rebuild - environment variables need to be reloaded
