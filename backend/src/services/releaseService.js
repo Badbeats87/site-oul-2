@@ -682,20 +682,33 @@ class ReleaseService {
                     releaseIdForStats = resultId;
                   }
 
-                  // Fetch price data from marketplace (try price suggestions first, then stats)
+                  // Fetch price data from marketplace
                   if (releaseIdForStats) {
-                    // Try marketplace price suggestions first (real marketplace data)
+                    // Try marketplace stats first (real current marketplace prices)
                     priceStats = await discogsService
-                      .getPriceSuggestions(releaseIdForStats)
+                      .getMarketplaceStats(releaseIdForStats, 'EUR')
                       .catch((err) => {
-                        logger.debug('getPriceSuggestions failed', {
+                        logger.debug('getMarketplaceStats failed', {
                           releaseId: releaseIdForStats,
                           error: err.message,
                         });
                         return null;
                       });
 
-                    // If suggestions not available, try stats endpoint
+                    // If stats not available, try price suggestions (fallback)
+                    if (!priceStats) {
+                      priceStats = await discogsService
+                        .getPriceSuggestions(releaseIdForStats)
+                        .catch((err) => {
+                          logger.debug('getPriceSuggestions failed', {
+                            releaseId: releaseIdForStats,
+                            error: err.message,
+                          });
+                          return null;
+                        });
+                    }
+
+                    // If suggestions not available, try stats endpoint (last fallback)
                     if (!priceStats) {
                       priceStats = await discogsService
                         .getPriceStatistics(releaseIdForStats)
