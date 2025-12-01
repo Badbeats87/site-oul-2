@@ -10,7 +10,6 @@ const sellerApp = {
   init() {
     this.cacheElements();
     this.bindEvents();
-    this.loadPricingPolicy();
   },
 
   cacheElements() {
@@ -89,17 +88,6 @@ const sellerApp = {
     });
   },
 
-  async loadPricingPolicy() {
-    try {
-      const response = await fetch('/api/v1/admin/pricing/BUYER');
-      if (response.ok) {
-        const data = await response.json();
-        this.state.pricingPolicy = data.data;
-      }
-    } catch (error) {
-      console.warn('Failed to load pricing policy:', error);
-    }
-  },
 
   calculateBuyingPrice(album) {
     const basePrice = this.getBasePrice(album);
