@@ -700,31 +700,13 @@ class ReleaseService {
 
       if (discogsResults.results.length > topResults.length) {
         const remainingResults = discogsResults.results.slice(topResults.length);
-        const buyerFormula = await pricingService.getBuyerFormula();
-        const buyPercentage =
-          buyerFormula?.buyPercentage ?? buyerFormula?.percentage ?? 0.55;
-
         const availableSlots = Math.max(limit - finalResults.length, 0);
         if (availableSlots > 0) {
-          const remainingEnriched = remainingResults
-            .slice(0, availableSlots)
-            .map((result) => {
-              const estimatedPrice = this.estimateBasePrice(null, result);
-              return {
-                id: `discogs_${result.id}`,
-                title: result.title || 'Unknown Album',
-                artist: result.artists?.[0]?.name || 'Unknown Artist',
-                label: null,
-                barcode: null,
-                releaseYear: result.year || null,
-                genre: null,
-                coverArtUrl: result.cover_image || null,
-                description: null,
-                marketSnapshots: [],
-                ourPrice: estimatedPrice * buyPercentage,
-              };
-            });
-
+          const remainingEnriched = await Promise.all(
+            remainingResults
+              .slice(0, availableSlots)
+              .map((result) => this._enrichDiscogsResult(result))
+          );
           finalResults = [...finalResults, ...remainingEnriched];
         }
       }
