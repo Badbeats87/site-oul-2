@@ -859,10 +859,69 @@ class ReleaseService {
         }
       }
 
+      // For Discogs results, recalculate pricing on each request
+      // rather than caching the calculated ourPrice
+      // This ensures we always get fresh marketplace pricing
+      let resultsToReturn = finalResults;
+      if (source === 'DISCOGS') {
+        // Recalculate ourPrice for each Discogs result to ensure fresh pricing
+        resultsToReturn = await Promise.all(
+          finalResults.map(async (result) => {
+            // Re-fetch marketplace stats in case they've updated
+            const releaseId = result.id.replace('discogs_', '');
+            let freshPriceStats = null;
+
+            try {
+              // Try marketplace stats (real current marketplace prices)
+              freshPriceStats = await discogsService
+                .getMarketplaceStats(parseInt(releaseId), 'EUR')
+                .catch(() => null);
+
+              // If stats not available, try vinyl-specific pricing
+              if (!freshPriceStats) {
+                freshPriceStats = await discogsService
+                  .getVinylMarketplaceStats(parseInt(releaseId), 'EUR')
+                  .catch(() => null);
+              }
+            } catch (err) {
+              logger.debug('Failed to fetch fresh marketplace stats', {
+                releaseId,
+                error: err.message,
+              });
+            }
+
+            // Build market snapshots from fresh price data
+            const freshMarketSnapshots =
+              freshPriceStats &&
+              (freshPriceStats.lowest || freshPriceStats.median)
+                ? [
+                  {
+                    releaseId: result.id,
+                    source: 'DISCOGS',
+                    statLow: freshPriceStats.lowest,
+                    statMedian: freshPriceStats.median,
+                    statHigh: freshPriceStats.highest,
+                    fetchedAt: new Date(),
+                  },
+                ]
+                : [];
+
+            // Recalculate ourPrice with fresh data
+            const freshOurPrice = await this.calculateOurPrice(freshMarketSnapshots);
+
+            return {
+              ...result,
+              marketSnapshots: freshMarketSnapshots,
+              ourPrice: freshOurPrice ?? result.ourPrice, // Fallback to cached value if fresh fetch fails
+            };
+          })
+        );
+      }
+
       const result = {
         query,
-        total: finalResults.length,
-        results: finalResults,
+        total: resultsToReturn.length,
+        results: resultsToReturn,
         source, // LOCAL or DISCOGS
         executedAt: new Date(),
       };

@@ -110,6 +110,7 @@ class PricingService {
     if (policy && policy.buyFormula) {
       return {
         ...this.defaults,
+        buyPercentage: policy.buyFormula.percentage || policy.buyFormula.buyPercentage || this.defaults.buyPercentage,
         ...policy.buyFormula,
         policyId: policy.id,
         conditionCurve: policy.conditionCurve || this.defaultConditionCurve,
@@ -135,6 +136,7 @@ class PricingService {
     if (policy && policy.sellFormula) {
       return {
         ...this.defaults,
+        sellPercentage: policy.sellFormula.percentage || policy.sellFormula.sellPercentage || this.defaults.sellPercentage,
         ...policy.sellFormula,
         policyId: policy.id,
         conditionCurve: policy.conditionCurve || this.defaultConditionCurve,
