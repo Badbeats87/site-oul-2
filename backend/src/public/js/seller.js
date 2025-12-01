@@ -89,6 +89,11 @@ const sellerApp = {
   },
 
   calculateBuyingPrice(album) {
+    // If backend calculated ourPrice (respects current pricing policy), use that
+    if (album.ourPrice !== null && album.ourPrice !== undefined) {
+      return album.ourPrice;
+    }
+
     let basePrice = this.getBasePrice(album);
 
     // If no market data, use estimated price based on format/age
@@ -98,7 +103,7 @@ const sellerApp = {
 
     if (!basePrice) return null;
 
-    const buyerPercentage = 0.55; // We offer sellers 55% of market value
+    const buyerPercentage = 0.55; // Fallback: We offer sellers 55% of market value
     return basePrice * buyerPercentage;
   },
 
@@ -297,14 +302,19 @@ const sellerApp = {
   },
 
   updateQuote(album) {
-    // Get base price (uses market data or estimation)
-    let basePrice = this.getBasePrice(album);
-    if (!basePrice) {
-      basePrice = this.estimatePrice(album);
+    // Get base price from backend calculation (respects current pricing policy)
+    // If backend calculated ourPrice, use that; otherwise fall back to local calculation
+    let baseOffer;
+    if (album.ourPrice !== null && album.ourPrice !== undefined) {
+      baseOffer = album.ourPrice;
+    } else {
+      let basePrice = this.getBasePrice(album);
+      if (!basePrice) {
+        basePrice = this.estimatePrice(album);
+      }
+      const sellerPercentage = 0.55;
+      baseOffer = basePrice * sellerPercentage;
     }
-
-    const sellerPercentage = 0.55;
-    let baseOffer = basePrice * sellerPercentage;
 
     // Get selected condition
     const mediaCondition = document.querySelector(
