@@ -180,8 +180,6 @@ async function main() {
             FAIR: 0.2,
             POOR: 0.1,
           },
-          description:
-            'Global buyer pricing - we buy records for 55% of median market price',
           isActive: true,
           offerExpiryDays: 30,
           createdAt: new Date(),
