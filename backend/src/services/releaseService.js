@@ -521,7 +521,7 @@ class ReleaseService {
    * Title > Artist > Label > Barcode
    * Returns results sorted by relevance
    */
-  async search(query, limit = 50) {
+  async search(query, limit = 50, options = {}) {
     try {
       if (!query || query.trim().length === 0) {
         throw new ApiError('Search query is required', 400);
@@ -531,14 +531,34 @@ class ReleaseService {
         throw new ApiError('Limit cannot exceed 200', 400);
       }
 
-      const cacheKey = this.generateSearchCacheKey(query, {}, { limit });
+      const normalizedSource = this._normalizeSearchSource(options.source);
+      const cacheKey = this.generateSearchCacheKey(
+        query,
+        { source: normalizedSource },
+        { limit }
+      );
 
       // Try cache first (30 minute TTL for search)
       // BUT: skip cache for searches that previously had 0 results (to allow Discogs fallback)
       const cached = getCached(cacheKey);
       if (cached && cached.total > 0) {
-        logger.debug('Cache hit for search', { query, limit });
+        logger.debug('Cache hit for search', {
+          query,
+          limit,
+          source: normalizedSource,
+        });
         return cached;
+      }
+
+      if (normalizedSource === 'DISCOGS') {
+        const discogsResults = await this._fetchDiscogsResults(query, limit);
+        const discogsResponse = this._buildSearchResponse(
+          query,
+          discogsResults,
+          'DISCOGS'
+        );
+        setCached(cacheKey, discogsResponse, 1800);
+        return discogsResponse;
       }
 
       const searchQuery = query.toLowerCase();
@@ -629,282 +649,264 @@ class ReleaseService {
       let finalResults = resultsWithMarketData;
       let source = 'LOCAL';
 
-      if (finalResults.length === 0) {
-        try {
-          const hasToken = !!process.env.DISCOGS_API_TOKEN;
-          logger.info('No local results, searching Discogs', {
-            query,
-            discogsTokenAvailable: hasToken,
-          });
-          console.log('[Discogs Fallback] Starting search for:', query, {
-            tokenAvailable: hasToken,
-          });
+      const shouldAugmentWithDiscogs =
+        normalizedSource !== 'LOCAL' &&
+        (finalResults.length === 0 || normalizedSource === 'HYBRID');
 
-          const discogsResults = await discogsService.search({
-            query: query,
-          });
-
-          console.log(
-            '[Discogs Fallback] Got results:',
-            discogsResults?.results?.length || 0
-          );
-          logger.info('Discogs search response', {
-            query,
-            resultCount: discogsResults?.results?.length || 0,
-          });
-
-          if (
-            discogsResults &&
-            discogsResults.results &&
-            discogsResults.results.length > 0
-          ) {
-            // Fetch full metadata for top results only
-            // Limit to 3 results to avoid rate limiting while still providing accurate pricing for top matches
-            const topResults = discogsResults.results.slice(
-              0,
-              Math.min(limit, 3)
-            );
-            const enrichedResults = await Promise.all(
-              topResults.map(async (result) => {
-                try {
-                  const resultId = parseInt(result.id);
-                  let release, priceStats, releaseIdForStats;
-
-                  let isMaster = false;
-                  if (result.type === 'master') {
-                    // For master releases, get the master metadata
-                    // and fetch vinyl-specific marketplace pricing
-                    release = await discogsService.getMaster(resultId);
-                    releaseIdForStats = resultId;
-                    isMaster = true;
-                  } else {
-                    // For regular releases, use them directly
-                    release = await discogsService.getRelease(resultId);
-                    releaseIdForStats = resultId;
-                  }
-
-                  // Fetch price data from marketplace
-                  if (releaseIdForStats) {
-                    // For master releases, try vinyl-specific pricing first
-                    if (isMaster) {
-                      priceStats = await discogsService
-                        .getVinylMarketplaceStats(releaseIdForStats, 'EUR')
-                        .catch((err) => {
-                          logger.debug('getVinylMarketplaceStats failed', {
-                            masterId: releaseIdForStats,
-                            error: err.message,
-                          });
-                          return null;
-                        });
-                    }
-
-                    // Try marketplace stats first (real current marketplace prices)
-                    if (!priceStats) {
-                      priceStats = await discogsService
-                        .getMarketplaceStats(releaseIdForStats, 'EUR')
-                        .catch((err) => {
-                          logger.debug('getMarketplaceStats failed', {
-                            releaseId: releaseIdForStats,
-                            error: err.message,
-                          });
-                          return null;
-                        });
-                    }
-
-                    // If stats not available, try price suggestions (fallback)
-                    if (!priceStats) {
-                      priceStats = await discogsService
-                        .getPriceSuggestions(releaseIdForStats)
-                        .catch((err) => {
-                          logger.debug('getPriceSuggestions failed', {
-                            releaseId: releaseIdForStats,
-                            error: err.message,
-                          });
-                          return null;
-                        });
-                    }
-
-                    // If suggestions not available, try stats endpoint (last fallback)
-                    if (!priceStats) {
-                      priceStats = await discogsService
-                        .getPriceStatistics(releaseIdForStats)
-                        .catch((err) => {
-                          logger.debug('getPriceStatistics failed', {
-                            releaseId: releaseIdForStats,
-                            error: err.message,
-                          });
-                          return null;
-                        });
-                    }
-                  } else {
-                    priceStats = null;
-                  }
-
-                  console.log('[Price Fetch] Release:', {
-                    resultId: result.id,
-                    releaseIdForStats,
-                    fullPriceStats: priceStats,
-                  });
-
-                  logger.debug('Discogs price fetch result', {
-                    resultId: result.id,
-                    releaseIdForStats,
-                    hasPriceStats: !!priceStats,
-                    lowest: priceStats?.lowest,
-                    median: priceStats?.median,
-                    highest: priceStats?.highest,
-                    fullObject: priceStats,
-                  });
-
-                  // Build market snapshots from price data
-                  let marketSnapshots =
-                    priceStats &&
-                    (priceStats.lowest ||
-                      priceStats.average ||
-                      priceStats.median)
-                      ? [
-                        {
-                          releaseId: `discogs_${result.id}`,
-                          source: 'DISCOGS',
-                          statLow: priceStats.lowest,
-                          statMedian: priceStats.median,
-                          statHigh: priceStats.highest,
-                          fetchedAt: new Date(),
-                        },
-                      ]
-                      : [];
-
-                  // If Discogs market data isn't available, create estimated data
-                  // so pricing policy can still be applied
-                  let ourPrice = await this.calculateOurPrice(marketSnapshots);
-                  if (!ourPrice && marketSnapshots.length === 0) {
-                    // Fallback: estimate base price and let pricing policy apply to it
-                    const estimatedBase = this.estimateBasePrice(release, result);
-                    if (estimatedBase > 0) {
-                      const buyerFormula = await pricingService.getBuyerFormula();
-                      if (buyerFormula) {
-                        const buyPercentage = buyerFormula.buyPercentage ?? buyerFormula.percentage ?? 0.55;
-                        ourPrice = estimatedBase * buyPercentage;
-                        logger.debug('Applied pricing policy to estimated price', {
-                          resultId: result.id,
-                          estimatedBase,
-                          buyPercentage,
-                          ourPrice,
-                        });
-                      }
-                    }
-                  }
-                  return {
-                    id: `discogs_${result.id}`,
-                    title: release.title || result.title || 'Unknown Album',
-                    artist:
-                      release.artists?.[0]?.name ||
-                      release.artist ||
-                      result.artists?.[0]?.name ||
-                      'Unknown Artist',
-                    label: release.labels?.[0]?.name || null,
-                    barcode:
-                      release.identifiers?.find((id) => id.type === 'Barcode')
-                        ?.value || null,
-                    releaseYear: release.year || null,
-                    genre: release.genres?.[0] || null,
-                    coverArtUrl: release.images?.[0]?.uri || null,
-                    description: null,
-                    marketSnapshots,
-                    ourPrice,
-                  };
-                } catch (err) {
-                  logger.warn('Failed to fetch Discogs metadata', {
-                    releaseId: result.id,
-                    error: err.message,
-                  });
-                  // Return basic info if metadata fetch fails
-                  return {
-                    id: `discogs_${result.id}`,
-                    title: result.title || 'Unknown Album',
-                    artist: 'Unknown Artist',
-                    label: null,
-                    barcode: null,
-                    releaseYear: null,
-                    genre: null,
-                    coverArtUrl: null,
-                    description: null,
-                    marketSnapshots: [],
-                    ourPrice: null,
-                  };
-                }
-              })
-            );
-
-            // Add remaining results with estimated prices to avoid rate limiting
-            let finalResults = enrichedResults;
-            if (discogsResults.results.length > 3) {
-              const remainingResults = discogsResults.results.slice(3);
-              const buyerFormula = await pricingService.getBuyerFormula();
-              const buyPercentage = buyerFormula?.buyPercentage ?? buyerFormula?.percentage ?? 0.55;
-
-              const remainingEnriched = remainingResults
-                .slice(0, Math.min(remainingResults.length, limit - 3))
-                .map((result) => {
-                  const estimatedPrice = this.estimateBasePrice(null, result);
-
-                  return {
-                    id: `discogs_${result.id}`,
-                    title: result.title || 'Unknown Album',
-                    artist: result.artists?.[0]?.name || 'Unknown Artist',
-                    label: null,
-                    barcode: null,
-                    releaseYear: result.year || null,
-                    genre: null,
-                    coverArtUrl: result.cover_image || null,
-                    description: null,
-                    marketSnapshots: [], // No marketplace data for these
-                    ourPrice: estimatedPrice * buyPercentage,
-                  };
-                });
-
-              finalResults = [...enrichedResults, ...remainingEnriched];
-            }
-
-            source = 'DISCOGS';
-            logger.info('Discogs fallback search succeeded', {
-              query,
-              resultCount: finalResults.length,
-            });
-          }
-        } catch (discogsError) {
-          console.error('[Discogs Fallback] Error:', {
-            message: discogsError.message,
-            status: discogsError.response?.status,
-            statusText: discogsError.response?.statusText,
-          });
-          logger.error('Discogs fallback search failed', {
-            query,
-            error: discogsError.message,
-            status: discogsError.response?.status,
-            statusText: discogsError.response?.statusText,
-            code: discogsError.code,
-          });
-          // Continue with empty results
+      if (shouldAugmentWithDiscogs) {
+        const discogsResults = await this._fetchDiscogsResults(query, limit);
+        if (finalResults.length === 0) {
+          finalResults = discogsResults;
+          source = 'DISCOGS';
+        } else if (discogsResults.length > 0) {
+          const combined = [...finalResults, ...discogsResults];
+          finalResults = combined.slice(0, limit);
+          source = 'HYBRID';
         }
       }
 
-      const result = {
-        query,
-        total: finalResults.length,
-        results: finalResults,
-        source, // LOCAL or DISCOGS
-        executedAt: new Date(),
-      };
+      const response = this._buildSearchResponse(query, finalResults, source);
 
       // Cache the result (30 minute TTL)
-      setCached(cacheKey, result, 1800);
-      return result;
+      setCached(cacheKey, response, 1800);
+      return response;
     } catch (error) {
       if (error instanceof ApiError) throw error;
       logger.error('Error searching releases', { query, error: error.message });
       throw new ApiError('Failed to search releases', 500);
     }
+  }
+
+  async _fetchDiscogsResults(query, limit) {
+    try {
+      const hasToken = !!process.env.DISCOGS_API_TOKEN;
+      logger.info('Searching Discogs for releases', {
+        query,
+        discogsTokenAvailable: hasToken,
+      });
+
+      const discogsResults = await discogsService.search({ query });
+
+      if (!discogsResults?.results || discogsResults.results.length === 0) {
+        return [];
+      }
+
+      const topResults = discogsResults.results.slice(0, Math.min(limit, 3));
+      const enrichedTopResults = await Promise.all(
+        topResults.map((result) => this._enrichDiscogsResult(result))
+      );
+
+      let finalResults = enrichedTopResults;
+
+      if (discogsResults.results.length > topResults.length) {
+        const remainingResults = discogsResults.results.slice(topResults.length);
+        const buyerFormula = await pricingService.getBuyerFormula();
+        const buyPercentage =
+          buyerFormula?.buyPercentage ?? buyerFormula?.percentage ?? 0.55;
+
+        const availableSlots = Math.max(limit - finalResults.length, 0);
+        if (availableSlots > 0) {
+          const remainingEnriched = remainingResults
+            .slice(0, availableSlots)
+            .map((result) => {
+              const estimatedPrice = this.estimateBasePrice(null, result);
+              return {
+                id: `discogs_${result.id}`,
+                title: result.title || 'Unknown Album',
+                artist: result.artists?.[0]?.name || 'Unknown Artist',
+                label: null,
+                barcode: null,
+                releaseYear: result.year || null,
+                genre: null,
+                coverArtUrl: result.cover_image || null,
+                description: null,
+                marketSnapshots: [],
+                ourPrice: estimatedPrice * buyPercentage,
+              };
+            });
+
+          finalResults = [...finalResults, ...remainingEnriched];
+        }
+      }
+
+      logger.info('Discogs search completed', {
+        query,
+        resultCount: finalResults.length,
+      });
+
+      return finalResults;
+    } catch (discogsError) {
+      logger.error('Discogs search failed', {
+        query,
+        error: discogsError.message,
+        status: discogsError.response?.status,
+        statusText: discogsError.response?.statusText,
+        code: discogsError.code,
+      });
+      return [];
+    }
+  }
+
+  async _enrichDiscogsResult(result) {
+    try {
+      const resultId = parseInt(result.id, 10);
+      let release;
+      let priceStats;
+      let releaseIdForStats;
+      let isMaster = false;
+
+      if (result.type === 'master') {
+        release = await discogsService.getMaster(resultId);
+        releaseIdForStats = resultId;
+        isMaster = true;
+      } else {
+        release = await discogsService.getRelease(resultId);
+        releaseIdForStats = resultId;
+      }
+
+      if (releaseIdForStats) {
+        if (isMaster) {
+          priceStats = await discogsService
+            .getVinylMarketplaceStats(releaseIdForStats, 'EUR')
+            .catch((err) => {
+              logger.debug('getVinylMarketplaceStats failed', {
+                masterId: releaseIdForStats,
+                error: err.message,
+              });
+              return null;
+            });
+        }
+
+        if (!priceStats) {
+          priceStats = await discogsService
+            .getMarketplaceStats(releaseIdForStats, 'EUR')
+            .catch((err) => {
+              logger.debug('getMarketplaceStats failed', {
+                releaseId: releaseIdForStats,
+                error: err.message,
+              });
+              return null;
+            });
+        }
+
+        if (!priceStats) {
+          priceStats = await discogsService
+            .getPriceSuggestions(releaseIdForStats)
+            .catch((err) => {
+              logger.debug('getPriceSuggestions failed', {
+                releaseId: releaseIdForStats,
+                error: err.message,
+              });
+              return null;
+            });
+        }
+
+        if (!priceStats) {
+          priceStats = await discogsService
+            .getPriceStatistics(releaseIdForStats)
+            .catch((err) => {
+              logger.debug('getPriceStatistics failed', {
+                releaseId: releaseIdForStats,
+                error: err.message,
+              });
+              return null;
+            });
+        }
+      }
+
+      let marketSnapshots =
+        priceStats &&
+        (priceStats.lowest || priceStats.average || priceStats.median)
+          ? [
+              {
+                releaseId: `discogs_${result.id}`,
+                source: 'DISCOGS',
+                statLow: priceStats.lowest,
+                statMedian: priceStats.median,
+                statHigh: priceStats.highest,
+                fetchedAt: new Date(),
+              },
+            ]
+          : [];
+
+      let ourPrice = await this.calculateOurPrice(marketSnapshots);
+      if (!ourPrice && marketSnapshots.length === 0) {
+        const estimatedBase = this.estimateBasePrice(release, result);
+        if (estimatedBase > 0) {
+          const buyerFormula = await pricingService.getBuyerFormula();
+          if (buyerFormula) {
+            const buyPercentage =
+              buyerFormula.buyPercentage ?? buyerFormula.percentage ?? 0.55;
+            ourPrice = estimatedBase * buyPercentage;
+            logger.debug('Applied pricing policy to estimated price', {
+              resultId: result.id,
+              estimatedBase,
+              buyPercentage,
+              ourPrice,
+            });
+          }
+        }
+      }
+
+      return {
+        id: `discogs_${result.id}`,
+        title: release.title || result.title || 'Unknown Album',
+        artist:
+          release.artists?.[0]?.name ||
+          release.artist ||
+          result.artists?.[0]?.name ||
+          'Unknown Artist',
+        label: release.labels?.[0]?.name || null,
+        barcode:
+          release.identifiers?.find((id) => id.type === 'Barcode')?.value ||
+          null,
+        releaseYear: release.year || null,
+        genre: release.genres?.[0] || null,
+        coverArtUrl: release.images?.[0]?.uri || null,
+        description: null,
+        marketSnapshots,
+        ourPrice,
+      };
+    } catch (error) {
+      logger.warn('Failed to enrich Discogs result', {
+        releaseId: result.id,
+        error: error.message,
+      });
+      return {
+        id: `discogs_${result.id}`,
+        title: result.title || 'Unknown Album',
+        artist: result.artists?.[0]?.name || 'Unknown Artist',
+        label: null,
+        barcode: null,
+        releaseYear: result.year || null,
+        genre: null,
+        coverArtUrl: result.cover_image || null,
+        description: null,
+        marketSnapshots: [],
+        ourPrice: null,
+      };
+    }
+  }
+
+  _buildSearchResponse(query, results, source) {
+    return {
+      query,
+      total: results.length,
+      results,
+      source,
+      executedAt: new Date(),
+    };
+  }
+
+  _normalizeSearchSource(source) {
+    if (!source) {
+      return 'AUTO';
+    }
+    const value = source.toUpperCase();
+    if (['DISCOGS', 'LOCAL', 'HYBRID'].includes(value)) {
+      return value;
+    }
+    return 'AUTO';
   }
 
   /**
