@@ -550,7 +550,7 @@ class ReleaseService {
             const enrichedResults = await Promise.all(
               topResults.map(async (result) => {
                 try {
-                  const release = await discogsService.getRelease(result.id);
+                  const release = await discogsService.getRelease(parseInt(result.id));
 
                   return {
                     id: `discogs_${result.id}`,
