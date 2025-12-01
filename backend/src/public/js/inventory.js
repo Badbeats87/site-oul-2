@@ -78,9 +78,9 @@ class InventoryManager {
       .map((item) => {
         const margin = item.costBasis
           ? (
-              ((item.listPrice - item.costBasis) / item.listPrice) *
+            ((item.listPrice - item.costBasis) / item.listPrice) *
               100
-            ).toFixed(1)
+          ).toFixed(1)
           : '0';
         const statusBadge = this.getStatusBadge(item.status);
         return `
@@ -93,16 +93,16 @@ class InventoryManager {
           </td>
           <td data-label="Condition">
             <span class="condition-badge">${item.conditionMedia || 'N/A'} / ${
-              item.conditionSleeve || 'N/A'
-            }</span>
+  item.conditionSleeve || 'N/A'
+}</span>
           </td>
           <td data-label="Status">${statusBadge}</td>
           <td data-label="Cost"><span class="price-value">$${parseFloat(
-            item.costBasis || 0
-          ).toFixed(2)}</span></td>
+    item.costBasis || 0
+  ).toFixed(2)}</span></td>
           <td data-label="List Price"><span class="price-value">$${parseFloat(
-            item.listPrice || 0
-          ).toFixed(2)}</span></td>
+    item.listPrice || 0
+  ).toFixed(2)}</span></td>
           <td data-label="Margin"><span class="margin-value">${margin}%</span></td>
           <td class="actions">
             <button
