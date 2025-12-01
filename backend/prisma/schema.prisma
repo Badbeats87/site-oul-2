@@ -23,6 +23,7 @@ model Release {
   genre           String?  @db.VarChar(100)
   coverArtUrl     String?  @map("cover_art_url") @db.VarChar(1000)
   description     String?  @db.Text
+  discogsId       Int?     @map("discogs_id") @unique
 
   // Full-text search (tsvector for PostgreSQL)
   searchVector    Unsupported("tsvector")? @map("search_vector")
@@ -45,6 +46,7 @@ model Release {
   @@index([releaseYear])
   @@index([createdAt])
   @@index([genre, releaseYear])
+  @@index([discogsId])
   @@map("releases")
 }
 
