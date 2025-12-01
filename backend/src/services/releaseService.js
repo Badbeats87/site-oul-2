@@ -531,11 +531,19 @@ class ReleaseService {
       if (finalResults.length === 0) {
         try {
           logger.info('No local results, searching Discogs', { query });
+          console.log('[Discogs Fallback] Starting search for:', query);
+
           const discogsResults = await discogsService.search({
             q: query,
           });
 
-          if (discogsResults && discogsResults.results.length > 0) {
+          console.log('[Discogs Fallback] Got results:', discogsResults?.results?.length || 0);
+          logger.info('Discogs search response', {
+            query,
+            resultCount: discogsResults?.results?.length || 0,
+          });
+
+          if (discogsResults && discogsResults.results && discogsResults.results.length > 0) {
             // Transform Discogs results to match our schema
             finalResults = discogsResults.results.slice(0, limit).map((result) => {
               // Extract artist name from various formats
@@ -580,9 +588,11 @@ class ReleaseService {
             });
           }
         } catch (discogsError) {
+          console.error('[Discogs Fallback] Error:', discogsError.message);
           logger.warn('Discogs fallback search failed', {
             query,
             error: discogsError.message,
+            stack: discogsError.stack,
           });
           // Continue with empty results
         }
