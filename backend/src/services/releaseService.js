@@ -550,7 +550,25 @@ class ReleaseService {
             const enrichedResults = await Promise.all(
               topResults.map(async (result) => {
                 try {
-                  const release = await discogsService.getRelease(parseInt(result.id));
+                  const releaseId = parseInt(result.id);
+                  const [release, priceStats] = await Promise.all([
+                    discogsService.getRelease(releaseId),
+                    discogsService.getPriceStatistics(releaseId).catch(() => null), // Fallback to null if price fetching fails
+                  ]);
+
+                  // Build market snapshots from price data
+                  const marketSnapshots = priceStats && (priceStats.lowest || priceStats.average || priceStats.median)
+                    ? [
+                        {
+                          releaseId: `discogs_${result.id}`,
+                          source: 'DISCOGS',
+                          statLow: priceStats.lowest,
+                          statMedian: priceStats.median,
+                          statHigh: priceStats.highest,
+                          fetchedAt: new Date(),
+                        },
+                      ]
+                    : [];
 
                   return {
                     id: `discogs_${result.id}`,
@@ -565,19 +583,7 @@ class ReleaseService {
                     genre: release.genres?.[0] || null,
                     coverArtUrl: release.images?.[0]?.uri || null,
                     description: null,
-                    // Market data from Discogs
-                    marketSnapshots: release.lowest_price
-                      ? [
-                          {
-                            releaseId: `discogs_${result.id}`,
-                            source: 'DISCOGS',
-                            statLow: release.lowest_price,
-                            statMedian: release.lowest_price,
-                            statHigh: release.lowest_price,
-                            fetchedAt: new Date(),
-                          },
-                        ]
-                      : [],
+                    marketSnapshots,
                   };
                 } catch (err) {
                   logger.warn('Failed to fetch Discogs metadata', {
