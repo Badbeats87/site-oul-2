@@ -99,7 +99,7 @@ class DiscogsService {
             results: response.data.results.map((result) => ({
               id: result.id,
               title: result.title,
-              type: result.type,
+              type: result.type, // 'master' or 'release'
               resource_url: result.resource_url,
               uri: result.uri,
               basic_information: result.basic_information,
@@ -118,6 +118,90 @@ class DiscogsService {
       if (error.isApiError) throw error;
       logger.error('Discogs search failed', { error: error.message });
       throw new ApiError('Failed to search Discogs', 500);
+    }
+  }
+
+  /**
+   * Get first release variation from a master release
+   * @param {number} masterId - Discogs master ID
+   * @returns {Promise<number>} - Release ID of first variation
+   */
+  async getFirstReleaseFromMaster(masterId) {
+    try {
+      const cacheKey = generateCacheKey('discogs', `master_first_release_${masterId}`, {});
+
+      return await getOrSet(
+        cacheKey,
+        async () => {
+          const response = await this.client.get(`/masters/${masterId}/versions`, {
+            params: { per_page: 1 },
+          });
+
+          if (response.data.versions && response.data.versions.length > 0) {
+            return response.data.versions[0].id;
+          }
+
+          throw new ApiError('No release variations found for master', 404);
+        },
+        3600 // Cache for 1 hour
+      );
+    } catch (error) {
+      if (error.isApiError) throw error;
+      logger.debug('Failed to get first release from master', {
+        masterId,
+        error: error.message,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get master release metadata
+   * @param {number} masterId - Discogs master ID
+   * @returns {Promise<Object>} - Master metadata
+   */
+  async getMaster(masterId) {
+    try {
+      if (!masterId || typeof masterId !== 'number') {
+        throw new ApiError('Invalid master ID', 400);
+      }
+
+      const cacheKey = generateCacheKey('discogs', `master_${masterId}`, {});
+
+      return await getOrSet(
+        cacheKey,
+        async () => {
+          const response = await this.client.get(`/masters/${masterId}`);
+
+          return {
+            id: response.data.id,
+            title: response.data.title,
+            artists: response.data.artists?.map((a) => ({
+              name: a.name,
+              resource_url: a.resource_url,
+            })) || [],
+            year: response.data.year,
+            genres: response.data.genres,
+            styles: response.data.styles,
+            images: response.data.images?.map((i) => ({
+              type: i.type,
+              uri: i.uri,
+              resource_url: i.resource_url,
+              uri150: i.uri150,
+            })) || [],
+            resource_url: response.data.resource_url,
+            uri: response.data.uri,
+          };
+        },
+        7200 // Cache for 2 hours
+      );
+    } catch (error) {
+      if (error.isApiError) throw error;
+      logger.error('Failed to fetch Discogs master', {
+        masterId,
+        error: error.message,
+      });
+      throw new ApiError('Failed to fetch master metadata', 500);
     }
   }
 
@@ -222,6 +306,19 @@ class DiscogsService {
           );
 
           const priceData = statsResponse.data.prices;
+
+          // If no price data available, return null values
+          if (!priceData) {
+            return {
+              release_id: releaseId,
+              currency: null,
+              lowest: null,
+              highest: null,
+              average: null,
+              median: null,
+              note: 'Price data not available for this release',
+            };
+          }
 
           return {
             release_id: releaseId,

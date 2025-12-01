@@ -560,13 +560,33 @@ class ReleaseService {
             const enrichedResults = await Promise.all(
               topResults.map(async (result) => {
                 try {
-                  const releaseId = parseInt(result.id);
-                  const [release, priceStats] = await Promise.all([
-                    discogsService.getRelease(releaseId),
-                    discogsService
-                      .getPriceStatistics(releaseId)
-                      .catch(() => null), // Fallback to null if price fetching fails
-                  ]);
+                  const resultId = parseInt(result.id);
+                  let release, priceStats, releaseIdForStats;
+
+                  if (result.type === 'master') {
+                    // For master releases, get the master metadata
+                    // and fetch pricing from the first release variation
+                    const [masterData, firstReleaseId] = await Promise.all([
+                      discogsService.getMaster(resultId),
+                      discogsService
+                        .getFirstReleaseFromMaster(resultId)
+                        .catch(() => null),
+                    ]);
+
+                    release = masterData;
+                    releaseIdForStats = firstReleaseId;
+                  } else {
+                    // For regular releases, use them directly
+                    release = await discogsService.getRelease(resultId);
+                    releaseIdForStats = resultId;
+                  }
+
+                  // Fetch price statistics from the appropriate release ID
+                  priceStats = releaseIdForStats
+                    ? await discogsService
+                        .getPriceStatistics(releaseIdForStats)
+                        .catch(() => null)
+                    : null;
 
                   // Build market snapshots from price data
                   const marketSnapshots =
