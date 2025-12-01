@@ -531,8 +531,14 @@ class ReleaseService {
 
       if (finalResults.length === 0) {
         try {
-          logger.info('No local results, searching Discogs', { query });
-          console.log('[Discogs Fallback] Starting search for:', query);
+          const hasToken = !!process.env.DISCOGS_API_TOKEN;
+          logger.info('No local results, searching Discogs', {
+            query,
+            discogsTokenAvailable: hasToken,
+          });
+          console.log('[Discogs Fallback] Starting search for:', query, {
+            tokenAvailable: hasToken,
+          });
 
           const discogsResults = await discogsService.search({
             query: query,
@@ -654,11 +660,17 @@ class ReleaseService {
             });
           }
         } catch (discogsError) {
-          console.error('[Discogs Fallback] Error:', discogsError.message);
-          logger.warn('Discogs fallback search failed', {
+          console.error('[Discogs Fallback] Error:', {
+            message: discogsError.message,
+            status: discogsError.response?.status,
+            statusText: discogsError.response?.statusText,
+          });
+          logger.error('Discogs fallback search failed', {
             query,
             error: discogsError.message,
-            stack: discogsError.stack,
+            status: discogsError.response?.status,
+            statusText: discogsError.response?.statusText,
+            code: discogsError.code,
           });
           // Continue with empty results
         }
