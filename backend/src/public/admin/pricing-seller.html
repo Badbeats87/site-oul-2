@@ -669,11 +669,11 @@
             sleeveWeightInput.value = policy.sellFormula?.sleeveWeight * 100 || 50;
           }
 
-          // Price statistic
-          const listPriceFormulaSection = Array.from(document.querySelectorAll('.policy-section')).find(
-            section => section.textContent?.includes('List Price Formula')
+          // Price statistic - find the select within form-row that has "Price Statistic" label
+          const priceStatisticLabel = Array.from(document.querySelectorAll('label')).find(
+            label => label.textContent?.includes('Price Statistic')
           );
-          const priceStatisticSelect = listPriceFormulaSection?.querySelector('select');
+          const priceStatisticSelect = priceStatisticLabel?.closest('.form-group')?.querySelector('select');
           if (priceStatisticSelect && policy.sellFormula?.priceStatistic) {
             const statMap = { LOW: 0, MEDIAN: 1, HIGH: 2 };
             const optionIndex = statMap[policy.sellFormula.priceStatistic] ?? 1;
@@ -782,11 +782,11 @@
             const sleeveWeightInput = getInputByLabel('Sleeve Weight');
             const sleeveWeight = parseFloat(sleeveWeightInput?.value || 50) / 100;
 
-            // Get price statistic from select (must be in List Price Formula section)
-            const listPriceFormulaSection = Array.from(document.querySelectorAll('.policy-section')).find(
-              section => section.textContent?.includes('List Price Formula')
+            // Get price statistic from the correct select element (by label)
+            const priceStatisticLabel = Array.from(document.querySelectorAll('label')).find(
+              label => label.textContent?.includes('Price Statistic')
             );
-            const priceStatisticSelect = listPriceFormulaSection?.querySelector('select');
+            const priceStatisticSelect = priceStatisticLabel?.closest('.form-group')?.querySelector('select');
             const priceStatisticMap = ['LOW', 'MEDIAN', 'HIGH'];
             const selectedStatistic = priceStatisticSelect ?
               priceStatisticMap[priceStatisticSelect.selectedIndex] || 'MEDIAN' : 'MEDIAN';
