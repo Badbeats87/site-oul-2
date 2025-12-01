@@ -609,10 +609,24 @@
         },
 
         populateForm(policy) {
+          // Helper: Find input by label text
+          const getInputByLabel = (labelText) => {
+            const label = Array.from(document.querySelectorAll('label')).find(
+              l => l.textContent.includes(labelText)
+            );
+            const container = label?.closest('.form-group') || label?.closest('.form-row');
+            return container?.querySelector('input[type="number"]');
+          };
+
           // Policy name
-          document.querySelector(
+          const nameInput = document.querySelector(
+            'input[placeholder="e.g., Classic Rock Premium"]'
+          ) || document.querySelector(
             'input[placeholder="e.g., Premium Rock Collection"]'
-          ).value = policy.name || 'Standard Global';
+          );
+          if (nameInput) {
+            nameInput.value = policy.name || 'Standard Global';
+          }
 
           // Media condition curve
           const mediaInputs = document.querySelectorAll(
@@ -644,24 +658,33 @@
             }
           });
 
-          // Weights
-          document.querySelectorAll('.input-with-unit input')[0].value =
-            policy.sellFormula?.mediaWeight * 100 || 50;
-          document.querySelectorAll('.input-with-unit input')[1].value =
-            policy.sellFormula?.sleeveWeight * 100 || 50;
+          // Weights - use specific selectors
+          const mediaWeightInput = getInputByLabel('Media Weight');
+          if (mediaWeightInput) {
+            mediaWeightInput.value = policy.sellFormula?.mediaWeight * 100 || 50;
+          }
+
+          const sleeveWeightInput = getInputByLabel('Sleeve Weight');
+          if (sleeveWeightInput) {
+            sleeveWeightInput.value = policy.sellFormula?.sleeveWeight * 100 || 50;
+          }
 
           // Sell percentage
-          document.querySelectorAll(
-            '.form-group input[type="number"]'
-          )[4].value = policy.sellFormula?.sellPercentage * 100 || 125;
+          const sellPercentageInput = getInputByLabel('Sell Percentage');
+          if (sellPercentageInput) {
+            sellPercentageInput.value = policy.sellFormula?.sellPercentage * 100 || 125;
+          }
 
           // Min/Max prices
-          document.querySelectorAll(
-            '.form-group input[type="number"]'
-          )[5].value = policy.minOffer || 10.0;
-          document.querySelectorAll(
-            '.form-group input[type="number"]'
-          )[6].value = policy.maxOffer || 999.99;
+          const minPriceInput = getInputByLabel('Minimum Price');
+          if (minPriceInput) {
+            minPriceInput.value = policy.minOffer || 10.0;
+          }
+
+          const maxPriceInput = getInputByLabel('Maximum Price');
+          if (maxPriceInput) {
+            maxPriceInput.value = policy.maxOffer || 999.99;
+          }
 
           // Channel multipliers
           const channelInputs = document.querySelectorAll(
@@ -672,9 +695,11 @@
             IN_STORE: 1.1,
             MARKETPLACE: 0.95,
           };
-          channelInputs[0].value = multipliers.WEB || 1.0;
-          channelInputs[1].value = multipliers.IN_STORE || 1.1;
-          channelInputs[2].value = multipliers.MARKETPLACE || 0.95;
+          if (channelInputs.length >= 3) {
+            channelInputs[0].value = multipliers.WEB || 1.0;
+            channelInputs[1].value = multipliers.IN_STORE || 1.1;
+            channelInputs[2].value = multipliers.MARKETPLACE || 0.95;
+          }
         },
 
         async savePolicy() {
@@ -684,10 +709,22 @@
               return;
             }
 
+            // Helper: Find input by label text
+            const getInputByLabel = (labelText) => {
+              const label = Array.from(document.querySelectorAll('label')).find(
+                l => l.textContent.includes(labelText)
+              );
+              const container = label?.closest('.form-group') || label?.closest('.form-row');
+              return container?.querySelector('input[type="number"]');
+            };
+
             // Collect form data
-            const policyName = document.querySelector(
+            const policyNameInput = document.querySelector(
+              'input[placeholder="e.g., Classic Rock Premium"]'
+            ) || document.querySelector(
               'input[placeholder="e.g., Premium Rock Collection"]'
-            ).value;
+            );
+            const policyName = policyNameInput?.value || 'Standard Global';
 
             // Media condition curve
             const mediaConditions = [
@@ -722,20 +759,15 @@
               ...sleeveConditionCurve,
             };
 
-            // Sell formula
-            const sellPercentage =
-              parseFloat(
-                document.querySelectorAll('.form-group input[type="number"]')[4]
-                  .value
-              ) / 100;
-            const mediaWeight =
-              parseFloat(
-                document.querySelectorAll('.input-with-unit input')[0].value
-              ) / 100;
-            const sleeveWeight =
-              parseFloat(
-                document.querySelectorAll('.input-with-unit input')[1].value
-              ) / 100;
+            // Sell formula - use label-based selectors
+            const sellPercentageInput = getInputByLabel('Sell Percentage');
+            const sellPercentage = parseFloat(sellPercentageInput?.value || 125) / 100;
+
+            const mediaWeightInput = getInputByLabel('Media Weight');
+            const mediaWeight = parseFloat(mediaWeightInput?.value || 50) / 100;
+
+            const sleeveWeightInput = getInputByLabel('Sleeve Weight');
+            const sleeveWeight = parseFloat(sleeveWeightInput?.value || 50) / 100;
 
             const channelInputs = document.querySelectorAll(
               '.table:last-of-type .input-small'
@@ -746,9 +778,9 @@
               sleeveWeight,
               priceStatistic: 'MEDIAN',
               channelMultipliers: {
-                WEB: parseFloat(channelInputs[0].value),
-                IN_STORE: parseFloat(channelInputs[1].value),
-                MARKETPLACE: parseFloat(channelInputs[2].value),
+                WEB: parseFloat(channelInputs[0]?.value || 1.0),
+                IN_STORE: parseFloat(channelInputs[1]?.value || 1.1),
+                MARKETPLACE: parseFloat(channelInputs[2]?.value || 0.95),
               },
             };
 
@@ -759,17 +791,14 @@
               sleeveWeight,
             };
 
-            const minPrice = parseFloat(
-              document.querySelectorAll('.form-group input[type="number"]')[5]
-                .value
-            );
-            const maxPrice = parseFloat(
-              document.querySelectorAll('.form-group input[type="number"]')[6]
-                .value
-            );
+            const minPriceInput = getInputByLabel('Minimum Price');
+            const minPrice = parseFloat(minPriceInput?.value || 10.0);
+
+            const maxPriceInput = getInputByLabel('Maximum Price');
+            const maxPrice = parseFloat(maxPriceInput?.value || 999.99);
 
             const payload = {
-              name: policyName || 'Standard Global',
+              name: policyName,
               buyFormula,
               sellFormula,
               conditionCurve,
