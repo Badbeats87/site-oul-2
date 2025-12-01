@@ -587,12 +587,22 @@ class ReleaseService {
                     releaseIdForStats = resultId;
                   }
 
-                  // Fetch price statistics from the appropriate release ID
-                  priceStats = releaseIdForStats
-                    ? await discogsService
+                  // Fetch price data from marketplace (try price suggestions first, then stats)
+                  if (releaseIdForStats) {
+                    // Try marketplace price suggestions first (real marketplace data)
+                    priceStats = await discogsService
+                      .getPriceSuggestions(releaseIdForStats)
+                      .catch(() => null);
+
+                    // If suggestions not available, try stats endpoint
+                    if (!priceStats) {
+                      priceStats = await discogsService
                         .getPriceStatistics(releaseIdForStats)
-                        .catch(() => null)
-                    : null;
+                        .catch(() => null);
+                    }
+                  } else {
+                    priceStats = null;
+                  }
 
                   // Build market snapshots from price data
                   const marketSnapshots =

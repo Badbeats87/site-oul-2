@@ -277,6 +277,64 @@ class DiscogsService {
   }
 
   /**
+   * Get marketplace price suggestions for a release
+   * @param {number} releaseId - Discogs release ID
+   * @returns {Promise<Object>} - Price suggestions with marketplace data
+   */
+  async getPriceSuggestions(releaseId) {
+    try {
+      if (!releaseId || typeof releaseId !== 'number') {
+        throw new ApiError('Invalid release ID', 400);
+      }
+
+      const cacheKey = generateCacheKey('discogs', `price_suggestions_${releaseId}`, {});
+
+      return await getOrSet(
+        cacheKey,
+        async () => {
+          try {
+            const response = await this.client.get(`/marketplace/price_suggestions/${releaseId}`);
+
+            // Price suggestions response format:
+            // { "Mint (M)": {"value": 50, "currency": "USD"}, ... }
+            if (!response.data || Object.keys(response.data).length === 0) {
+              return null;
+            }
+
+            // Return aggregated price data from all conditions
+            const prices = Object.values(response.data).map((p) => p.value).filter((v) => v);
+            if (prices.length === 0) return null;
+
+            return {
+              release_id: releaseId,
+              currency: Object.values(response.data)[0]?.currency || 'USD',
+              lowest: Math.min(...prices),
+              highest: Math.max(...prices),
+              average: Math.round(prices.reduce((a, b) => a + b, 0) / prices.length * 100) / 100,
+              median: prices.sort((a, b) => a - b)[Math.floor(prices.length / 2)],
+            };
+          } catch (suggestionError) {
+            // If price suggestions fail, fall back to stats endpoint
+            logger.debug('Price suggestions endpoint failed, trying stats endpoint', {
+              releaseId,
+              error: suggestionError.message,
+            });
+            return null;
+          }
+        },
+        1800 // Cache for 30 minutes
+      );
+    } catch (error) {
+      if (error.isApiError) throw error;
+      logger.debug('Failed to fetch price suggestions', {
+        releaseId,
+        error: error.message,
+      });
+      return null;
+    }
+  }
+
+  /**
    * Get price statistics for a release from sold listings
    * @param {number} releaseId - Discogs release ID
    * @returns {Promise<Object>} - Price statistics
