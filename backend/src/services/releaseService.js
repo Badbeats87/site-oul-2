@@ -112,8 +112,13 @@ class ReleaseService {
       } else if (priceStatistic === 'HIGH') {
         baseStat = marketSnapshot.statHigh ? parseFloat(marketSnapshot.statHigh) : null;
       } else {
-        // Default to MEDIAN
-        baseStat = marketSnapshot.statMedian ? parseFloat(marketSnapshot.statMedian) : null;
+        // Default to MEDIAN, but fallback to LOW if MEDIAN not available
+        // (Discogs marketplace stats only provides lowest_price)
+        baseStat = marketSnapshot.statMedian
+          ? parseFloat(marketSnapshot.statMedian)
+          : marketSnapshot.statLow
+            ? parseFloat(marketSnapshot.statLow)
+            : null;
       }
 
       if (!baseStat) {

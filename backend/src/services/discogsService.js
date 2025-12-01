@@ -409,10 +409,12 @@ class DiscogsService {
   }
 
   /**
-   * Get marketplace stats for vinyl format only by checking all vinyl variants
+   * Get marketplace stats for vinyl format only using master aggregated data
+   * Uses Discogs' built-in format=Vinyl filter instead of fetching individual variants
+   * This avoids rate limiting by making a single request instead of N requests
    * @param {number} masterId - Discogs master ID
    * @param {string} currencyCode - Currency code (default: 'USD')
-   * @returns {Promise<Object>} - Lowest vinyl marketplace stats
+   * @returns {Promise<Object>} - Master-level vinyl marketplace stats
    */
   async getVinylMarketplaceStats(masterId, currencyCode = 'USD') {
     try {
@@ -420,87 +422,25 @@ class DiscogsService {
         throw new ApiError('Invalid master ID', 400);
       }
 
-      const cacheKey = generateCacheKey('discogs', `vinyl_marketplace_stats_${masterId}_${currencyCode}`, {});
+      logger.debug('Fetching vinyl marketplace stats for master (single request)', { masterId, currencyCode });
 
-      return await getOrSet(
-        cacheKey,
-        async () => {
-          try {
-            logger.debug('Fetching vinyl variants for master', { masterId });
+      // Use getMarketplaceStats on the master ID directly
+      // The format=Vinyl parameter in that method automatically filters to vinyl format
+      // This works with both release and master IDs, and avoids fetching all variants
+      const stats = await this.getMarketplaceStats(masterId, currencyCode);
 
-            // Get all vinyl variants of this master
-            const response = await this.client.get(`/masters/${masterId}/versions`, {
-              params: { per_page: 500 },
-            });
+      if (stats) {
+        logger.debug('Found vinyl marketplace stats for master', {
+          masterId,
+          price: stats.lowest,
+          currency: stats.currency,
+          numForSale: stats.num_for_sale,
+        });
+      }
 
-            if (!response.data.versions || response.data.versions.length === 0) {
-              return null;
-            }
-
-            // Filter for vinyl format only (check if format contains LP or Vinyl)
-            const vinylVariants = response.data.versions.filter((v) => {
-              if (!v.format) return false;
-              const formatLower = v.format.toLowerCase();
-              return formatLower.includes('lp') || formatLower.includes('vinyl');
-            });
-
-            if (vinylVariants.length === 0) {
-              logger.debug('No vinyl variants found for master', { masterId });
-              return null;
-            }
-
-            logger.debug('Found vinyl variants', {
-              masterId,
-              count: vinylVariants.length,
-            });
-
-            // Check marketplace stats for each vinyl variant in parallel
-            const statsPromises = vinylVariants.map((variant) =>
-              this.getMarketplaceStats(variant.id, currencyCode)
-                .then((stats) => ({
-                  releaseId: variant.id,
-                  stats,
-                }))
-                .catch(() => ({ releaseId: variant.id, stats: null }))
-            );
-
-            const allStats = await Promise.all(statsPromises);
-
-            // Filter out null results and find the lowest price
-            const validStats = allStats.filter((s) => s.stats && s.stats.lowest);
-
-            if (validStats.length === 0) {
-              logger.debug('No vinyl variants with marketplace prices', { masterId });
-              return null;
-            }
-
-            // Find the lowest priced vinyl
-            const lowestVinyl = validStats.reduce((lowest, current) =>
-              current.stats.lowest < lowest.stats.lowest ? current : lowest
-            );
-
-            logger.debug('Found lowest vinyl marketplace price', {
-              masterId,
-              releaseId: lowestVinyl.releaseId,
-              price: lowestVinyl.stats.lowest,
-              currency: lowestVinyl.stats.currency,
-              numForSale: lowestVinyl.stats.num_for_sale,
-            });
-
-            return lowestVinyl.stats;
-          } catch (error) {
-            logger.debug('Failed to fetch vinyl marketplace stats', {
-              masterId,
-              error: error.message,
-            });
-            return null;
-          }
-        },
-        1800 // Cache for 30 minutes
-      );
+      return stats;
     } catch (error) {
-      if (error.isApiError) throw error;
-      logger.debug('Failed to process vinyl marketplace stats', {
+      logger.debug('Failed to fetch vinyl marketplace stats', {
         masterId,
         error: error.message,
       });
