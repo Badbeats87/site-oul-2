@@ -66,21 +66,34 @@ class DiscogsService {
       return await getOrSet(
         cacheKey,
         async () => {
-          const searchParams = { type: 'release', per_page: 20, page };
+          // Search for master releases first (have better marketplace data)
+          const masterSearchParams = {
+            type: 'master',
+            per_page: 20,
+            page,
+          };
 
           if (query) {
-            searchParams.q = query;
+            masterSearchParams.q = query;
           }
           if (barcode) {
-            searchParams.barcode = barcode;
+            masterSearchParams.barcode = barcode;
           }
           if (year) {
-            searchParams.year = year;
+            masterSearchParams.year = year;
           }
 
-          const response = await this.client.get('/database/search', {
-            params: searchParams,
+          let response = await this.client.get('/database/search', {
+            params: masterSearchParams,
           });
+
+          // If no master results, fallback to release search
+          if (!response.data.results || response.data.results.length === 0) {
+            masterSearchParams.type = 'release';
+            response = await this.client.get('/database/search', {
+              params: masterSearchParams,
+            });
+          }
 
           return {
             results: response.data.results.map((result) => ({
