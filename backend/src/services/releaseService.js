@@ -49,7 +49,7 @@ class ReleaseService {
   /**
    * Calculate ourPrice from market snapshots using BUYER pricing policy
    * This represents what we will BUY the record for from sellers
-   * @param {Array} marketSnapshots - Array of market snapshot objects with statLowest/statMedian/statHigh
+   * @param {Array} marketSnapshots - Array of market snapshot objects with statLow/statMedian/statHigh
    * @returns {Promise<number|null>} Calculated buy price or null if no market data
    */
   async calculateOurPrice(marketSnapshots) {
@@ -72,9 +72,9 @@ class ReleaseService {
       let baseStat = null;
 
       if (priceStatistic === 'LOW') {
-        baseStat = marketSnapshot.statLowest ? parseFloat(marketSnapshot.statLowest) : null;
+        baseStat = marketSnapshot.statLow ? parseFloat(marketSnapshot.statLow) : null;
       } else if (priceStatistic === 'HIGH') {
-        baseStat = marketSnapshot.statHighest ? parseFloat(marketSnapshot.statHighest) : null;
+        baseStat = marketSnapshot.statHigh ? parseFloat(marketSnapshot.statHigh) : null;
       } else {
         // Default to MEDIAN
         baseStat = marketSnapshot.statMedian ? parseFloat(marketSnapshot.statMedian) : null;
