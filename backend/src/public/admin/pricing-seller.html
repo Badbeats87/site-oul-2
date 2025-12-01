@@ -669,6 +669,18 @@
             sleeveWeightInput.value = policy.sellFormula?.sleeveWeight * 100 || 50;
           }
 
+          // Price statistic
+          const priceStatisticSelect = Array.from(document.querySelectorAll('select')).find(
+            select => select.parentElement?.textContent?.includes('Price Statistic')
+          );
+          if (priceStatisticSelect && policy.sellFormula?.priceStatistic) {
+            const statMap = { LOW: 0, MEDIAN: 1, HIGH: 2 };
+            const optionIndex = statMap[policy.sellFormula.priceStatistic] ?? 1;
+            if (priceStatisticSelect.options[optionIndex]) {
+              priceStatisticSelect.selectedIndex = optionIndex;
+            }
+          }
+
           // Sell percentage
           const sellPercentageInput = getInputByLabel('Sell Percentage');
           if (sellPercentageInput) {
@@ -769,6 +781,14 @@
             const sleeveWeightInput = getInputByLabel('Sleeve Weight');
             const sleeveWeight = parseFloat(sleeveWeightInput?.value || 50) / 100;
 
+            // Get price statistic from select
+            const priceStatisticSelect = Array.from(document.querySelectorAll('select')).find(
+              select => select.parentElement?.textContent?.includes('Price Statistic')
+            );
+            const priceStatisticMap = ['LOW', 'MEDIAN', 'HIGH'];
+            const selectedStatistic = priceStatisticSelect ?
+              priceStatisticMap[priceStatisticSelect.selectedIndex] || 'MEDIAN' : 'MEDIAN';
+
             const channelInputs = document.querySelectorAll(
               '.table:last-of-type .input-small'
             );
@@ -776,7 +796,7 @@
               sellPercentage,
               mediaWeight,
               sleeveWeight,
-              priceStatistic: 'MEDIAN',
+              priceStatistic: selectedStatistic,
               channelMultipliers: {
                 WEB: parseFloat(channelInputs[0]?.value || 1.0),
                 IN_STORE: parseFloat(channelInputs[1]?.value || 1.1),
