@@ -545,43 +545,63 @@ class ReleaseService {
           });
 
           if (discogsResults && discogsResults.results && discogsResults.results.length > 0) {
-            // Transform Discogs results to match our schema
-            finalResults = discogsResults.results.slice(0, limit).map((result) => {
-              // Extract artist name from various formats
-              let artistName = 'Unknown Artist';
-              if (result.artists) {
-                artistName = Array.isArray(result.artists)
-                  ? result.artists.map((a) => a.name).join(', ')
-                  : result.artists.name;
-              } else if (result.artist) {
-                artistName = result.artist;
-              }
+            // Fetch full metadata for top results
+            const topResults = discogsResults.results.slice(0, Math.min(limit, 10));
+            const enrichedResults = await Promise.all(
+              topResults.map(async (result) => {
+                try {
+                  const metadata = await discogsService.getMetadata(result.id);
 
-              return {
-                id: `discogs_${result.id}`,
-                title: result.title || result.name || 'Unknown Album',
-                artist: artistName,
-                label: result.label || null,
-                barcode: result.barcode || null,
-                releaseYear: result.year || null,
-                genre: result.genre || null,
-                coverArtUrl: result.cover_image || null,
-                description: null,
-                // Basic market data (Discogs doesn't provide rich price data in basic search)
-                marketSnapshots: result.price_data
-                  ? [
-                      {
-                        releaseId: `discogs_${result.id}`,
-                        source: 'DISCOGS',
-                        statLow: result.price_data.median_price || 0,
-                        statMedian: result.price_data.median_price || 0,
-                        statHigh: result.price_data.highest_price || 0,
-                        fetchedAt: new Date(),
-                      },
-                    ]
-                  : [],
-              };
-            });
+                  return {
+                    id: `discogs_${result.id}`,
+                    title: metadata.title || result.title || 'Unknown Album',
+                    artist: metadata.artists?.[0]?.name ||
+                            metadata.artist ||
+                            result.artists?.[0]?.name ||
+                            'Unknown Artist',
+                    label: metadata.labels?.[0]?.name || null,
+                    barcode: metadata.identifiers?.find(id => id.type === 'Barcode')?.value || null,
+                    releaseYear: metadata.year || null,
+                    genre: metadata.genres?.[0] || null,
+                    coverArtUrl: metadata.images?.[0]?.uri || null,
+                    description: null,
+                    // Market data from Discogs
+                    marketSnapshots: metadata.lowest_price
+                      ? [
+                          {
+                            releaseId: `discogs_${result.id}`,
+                            source: 'DISCOGS',
+                            statLow: metadata.lowest_price,
+                            statMedian: metadata.lowest_price,
+                            statHigh: metadata.lowest_price,
+                            fetchedAt: new Date(),
+                          },
+                        ]
+                      : [],
+                  };
+                } catch (err) {
+                  logger.warn('Failed to fetch Discogs metadata', {
+                    releaseId: result.id,
+                    error: err.message,
+                  });
+                  // Return basic info if metadata fetch fails
+                  return {
+                    id: `discogs_${result.id}`,
+                    title: result.title || 'Unknown Album',
+                    artist: 'Unknown Artist',
+                    label: null,
+                    barcode: null,
+                    releaseYear: null,
+                    genre: null,
+                    coverArtUrl: null,
+                    description: null,
+                    marketSnapshots: [],
+                  };
+                }
+              })
+            );
+
+            finalResults = enrichedResults;
             source = 'DISCOGS';
             logger.info('Discogs fallback search succeeded', {
               query,
