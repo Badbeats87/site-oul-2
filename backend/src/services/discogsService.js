@@ -437,10 +437,12 @@ class DiscogsService {
               return null;
             }
 
-            // Filter for vinyl format only
-            const vinylVariants = response.data.versions.filter(
-              (v) => v.format && v.format.toLowerCase() === 'vinyl'
-            );
+            // Filter for vinyl format only (check if format contains LP or Vinyl)
+            const vinylVariants = response.data.versions.filter((v) => {
+              if (!v.format) return false;
+              const formatLower = v.format.toLowerCase();
+              return formatLower.includes('lp') || formatLower.includes('vinyl');
+            });
 
             if (vinylVariants.length === 0) {
               logger.debug('No vinyl variants found for master', { masterId });
