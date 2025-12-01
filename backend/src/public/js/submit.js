@@ -9,7 +9,7 @@ const submitForm = {
   submission: {
     records: [],
     shipping: {},
-    payout: ''
+    payout: '',
   },
 
   init() {
@@ -26,7 +26,7 @@ const submitForm = {
       back2: document.getElementById('backStep2'),
       next2: document.getElementById('nextStep2'),
       back3: document.getElementById('backStep3'),
-      next3: document.getElementById('nextStep3')
+      next3: document.getElementById('nextStep3'),
     };
     this.elements = {
       searchInput: document.getElementById('searchInput'),
@@ -40,7 +40,7 @@ const submitForm = {
       reviewTotalRecords: document.getElementById('reviewTotalRecords'),
       reviewTotalAmount: document.getElementById('reviewTotalAmount'),
       searchResults: document.getElementById('searchResults'),
-      searchButton: document.querySelector('.search-box__button')
+      searchButton: document.querySelector('.search-box__button'),
     };
   },
 
@@ -83,10 +83,12 @@ const submitForm = {
 
     try {
       // Get auth token if available
-      const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+      const token =
+        localStorage.getItem('auth_token') ||
+        sessionStorage.getItem('auth_token');
 
       const headers = {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       };
 
       if (token) {
@@ -100,7 +102,11 @@ const submitForm = {
       );
 
       if (!response.ok) {
-        console.error('Search response status:', response.status, response.statusText);
+        console.error(
+          'Search response status:',
+          response.status,
+          response.statusText
+        );
         const errorData = await response.json().catch(() => ({}));
         console.error('Search error data:', errorData);
 
@@ -122,8 +128,11 @@ const submitForm = {
       const transformedResults = results.map((release) => {
         // Get lowest Discogs price as base
         const marketSnapshot = release.marketSnapshots?.[0];
-        const lowestPrice = marketSnapshot?.statLow ? parseFloat(marketSnapshot.statLow) :
-                           marketSnapshot?.statMedian ? parseFloat(marketSnapshot.statMedian) : 0;
+        const lowestPrice = marketSnapshot?.statLow
+          ? parseFloat(marketSnapshot.statLow)
+          : marketSnapshot?.statMedian
+            ? parseFloat(marketSnapshot.statMedian)
+            : 0;
 
         // Calculate estimated offer: lowest_price × 55% (standard buyer percentage)
         // For NM/NM condition (default)
@@ -139,7 +148,7 @@ const submitForm = {
           year: release.year || 'N/A',
           quote: estimatedQuote,
           marketData: marketSnapshot,
-          releaseData: release
+          releaseData: release,
         };
       });
 
@@ -151,13 +160,15 @@ const submitForm = {
   },
 
   displaySearchResults(results) {
-    const resultsList = this.elements.searchResults.querySelector('.results-list');
+    const resultsList =
+      this.elements.searchResults.querySelector('.results-list');
     resultsList.innerHTML = '';
 
-    results.forEach(result => {
+    results.forEach((result) => {
       const card = document.createElement('div');
       card.className = 'result-card';
-      const quoteDisplay = result.quote > 0 ? `$${result.quote.toFixed(2)}` : 'Needs Review';
+      const quoteDisplay =
+        result.quote > 0 ? `$${result.quote.toFixed(2)}` : 'Needs Review';
       card.innerHTML = `
         <div class="result-card__title">${result.title}</div>
         <div class="result-card__artist">${result.artist} • ${result.year}</div>
@@ -176,7 +187,11 @@ const submitForm = {
     this.elements.searchResults.style.display = 'block';
   },
 
-  calculateEstimatedQuote(record, mediaCondition = 'NM', sleeveCondition = 'NM') {
+  calculateEstimatedQuote(
+    record,
+    mediaCondition = 'NM',
+    sleeveCondition = 'NM'
+  ) {
     if (!record.marketData || record.marketData.statLow <= 0) {
       return 0;
     }
@@ -186,29 +201,31 @@ const submitForm = {
 
     // Apply condition adjustments (simplified: NM = 100%, others adjusted accordingly)
     const conditionMultipliers = {
-      'MINT': 1.15,
-      'M': 1.15,
-      'NM': 1.0,
-      'VG_PLUS': 0.80,
-      'VG+': 0.80,
-      'VG': 0.65,
-      'VG_MINUS': 0.50,
-      'VG-': 0.50,
-      'G': 0.30,
+      MINT: 1.15,
+      M: 1.15,
+      NM: 1.0,
+      VG_PLUS: 0.8,
+      'VG+': 0.8,
+      VG: 0.65,
+      VG_MINUS: 0.5,
+      'VG-': 0.5,
+      G: 0.3,
     };
 
     const mediaMultiplier = conditionMultipliers[mediaCondition] || 1.0;
     const sleeveMultiplier = conditionMultipliers[sleeveCondition] || 1.0;
 
     // Weighted average: 70% media, 30% sleeve (buyer emphasizes media condition)
-    const conditionAdjustment = (mediaMultiplier * 0.7) + (sleeveMultiplier * 0.3);
+    const conditionAdjustment = mediaMultiplier * 0.7 + sleeveMultiplier * 0.3;
     const estimatedQuote = baseOffer * conditionAdjustment;
 
     return Math.round(estimatedQuote * 100) / 100;
   },
 
   addRecordToSubmission(record) {
-    const existingRecord = this.submission.records.find(r => r.id === record.id);
+    const existingRecord = this.submission.records.find(
+      (r) => r.id === record.id
+    );
 
     if (existingRecord) {
       existingRecord.quantity += 1;
@@ -219,7 +236,7 @@ const submitForm = {
         quantity: 1,
         mediaCondition: 'NM',
         sleeveCondition: 'NM',
-        quote: estimatedQuote
+        quote: estimatedQuote,
       });
     }
 
@@ -268,7 +285,10 @@ const submitForm = {
       this.elements.submissionTableBody.appendChild(row);
     });
 
-    this.elements.totalItems.textContent = this.submission.records.reduce((sum, r) => sum + r.quantity, 0);
+    this.elements.totalItems.textContent = this.submission.records.reduce(
+      (sum, r) => sum + r.quantity,
+      0
+    );
     this.elements.totalAmount.textContent = `$${totalAmount.toFixed(2)}`;
   },
 
@@ -303,7 +323,7 @@ const submitForm = {
   },
 
   showStep(stepNumber) {
-    this.steps.forEach(step => {
+    this.steps.forEach((step) => {
       const stepNum = step.getAttribute('data-step');
       if (stepNum == stepNumber) {
         step.classList.add('form-step--active');
@@ -314,7 +334,7 @@ const submitForm = {
   },
 
   updateProgressIndicator() {
-    this.progressSteps.forEach(step => {
+    this.progressSteps.forEach((step) => {
       const stepNum = parseInt(step.getAttribute('data-step'));
       if (stepNum === this.currentStep) {
         step.classList.add('progress-step--active');
@@ -326,7 +346,7 @@ const submitForm = {
     // Scroll to top of form
     document.querySelector('.submit-form-container').scrollIntoView({
       behavior: 'smooth',
-      block: 'start'
+      block: 'start',
     });
   },
 
@@ -335,7 +355,7 @@ const submitForm = {
     let totalRecords = 0;
     let totalAmount = 0;
 
-    this.submission.records.forEach(record => {
+    this.submission.records.forEach((record) => {
       const itemTotal = record.quote * record.quantity;
       totalRecords += record.quantity;
       totalAmount += itemTotal;
@@ -361,8 +381,12 @@ const submitForm = {
 
   async submitForm() {
     // Get form values
-    const name = document.querySelector('.shipping-form input[placeholder="John Collector"]')?.value;
-    const email = document.querySelector('.shipping-form input[placeholder="your@email.com"]')?.value;
+    const name = document.querySelector(
+      '.shipping-form input[placeholder="John Collector"]'
+    )?.value;
+    const email = document.querySelector(
+      '.shipping-form input[placeholder="your@email.com"]'
+    )?.value;
 
     if (!name || !email) {
       alert('Please fill in all required fields');
@@ -384,23 +408,25 @@ const submitForm = {
         body: JSON.stringify({
           name,
           email,
-          notes: 'Seller submission from web form'
-        })
+          notes: 'Seller submission from web form',
+        }),
       });
 
       if (!sellerResponse.ok) {
-        throw new Error(`Seller registration failed: ${sellerResponse.statusText}`);
+        throw new Error(
+          `Seller registration failed: ${sellerResponse.statusText}`
+        );
       }
 
       const sellerData = await sellerResponse.json();
       const sellerId = sellerData.data.id;
 
       // Step 2: Submit the records
-      const items = this.submission.records.map(record => ({
+      const items = this.submission.records.map((record) => ({
         releaseId: record.id,
         quantity: record.quantity,
         conditionMedia: record.mediaCondition || 'NM',
-        conditionSleeve: record.sleeveCondition || 'NM'
+        conditionSleeve: record.sleeveCondition || 'NM',
       }));
 
       const submissionResponse = await fetch(
@@ -410,7 +436,7 @@ const submitForm = {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ items })
+          body: JSON.stringify({ items }),
         }
       );
 
@@ -421,14 +447,20 @@ const submitForm = {
       const submissionData = await submissionResponse.json();
 
       // Store submission info for confirmation page
-      localStorage.setItem('pending_submission', JSON.stringify({
-        sellerId,
-        submissionId: submissionData.data.id,
-        email,
-        name,
-        totalAmount: this.submission.records.reduce((sum, r) => sum + (r.quote * r.quantity), 0),
-        timestamp: new Date().toISOString()
-      }));
+      localStorage.setItem(
+        'pending_submission',
+        JSON.stringify({
+          sellerId,
+          submissionId: submissionData.data.id,
+          email,
+          name,
+          totalAmount: this.submission.records.reduce(
+            (sum, r) => sum + r.quote * r.quantity,
+            0
+          ),
+          timestamp: new Date().toISOString(),
+        })
+      );
 
       // Move to completion step
       this.currentStep = 4;
@@ -438,7 +470,7 @@ const submitForm = {
       console.error('Submission error:', error);
       alert(`Submission failed: ${error.message}`);
     }
-  }
+  },
 };
 
 // Initialize when DOM is ready

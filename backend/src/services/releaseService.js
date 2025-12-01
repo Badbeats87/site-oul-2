@@ -538,27 +538,43 @@ class ReleaseService {
             query: query,
           });
 
-          console.log('[Discogs Fallback] Got results:', discogsResults?.results?.length || 0);
+          console.log(
+            '[Discogs Fallback] Got results:',
+            discogsResults?.results?.length || 0
+          );
           logger.info('Discogs search response', {
             query,
             resultCount: discogsResults?.results?.length || 0,
           });
 
-          if (discogsResults && discogsResults.results && discogsResults.results.length > 0) {
+          if (
+            discogsResults &&
+            discogsResults.results &&
+            discogsResults.results.length > 0
+          ) {
             // Fetch full metadata for top results
-            const topResults = discogsResults.results.slice(0, Math.min(limit, 10));
+            const topResults = discogsResults.results.slice(
+              0,
+              Math.min(limit, 10)
+            );
             const enrichedResults = await Promise.all(
               topResults.map(async (result) => {
                 try {
                   const releaseId = parseInt(result.id);
                   const [release, priceStats] = await Promise.all([
                     discogsService.getRelease(releaseId),
-                    discogsService.getPriceStatistics(releaseId).catch(() => null), // Fallback to null if price fetching fails
+                    discogsService
+                      .getPriceStatistics(releaseId)
+                      .catch(() => null), // Fallback to null if price fetching fails
                   ]);
 
                   // Build market snapshots from price data
-                  const marketSnapshots = priceStats && (priceStats.lowest || priceStats.average || priceStats.median)
-                    ? [
+                  const marketSnapshots =
+                    priceStats &&
+                    (priceStats.lowest ||
+                      priceStats.average ||
+                      priceStats.median)
+                      ? [
                         {
                           releaseId: `discogs_${result.id}`,
                           source: 'DISCOGS',
@@ -568,17 +584,20 @@ class ReleaseService {
                           fetchedAt: new Date(),
                         },
                       ]
-                    : [];
+                      : [];
 
                   return {
                     id: `discogs_${result.id}`,
                     title: release.title || result.title || 'Unknown Album',
-                    artist: release.artists?.[0]?.name ||
-                            release.artist ||
-                            result.artists?.[0]?.name ||
-                            'Unknown Artist',
+                    artist:
+                      release.artists?.[0]?.name ||
+                      release.artist ||
+                      result.artists?.[0]?.name ||
+                      'Unknown Artist',
                     label: release.labels?.[0]?.name || null,
-                    barcode: release.identifiers?.find(id => id.type === 'Barcode')?.value || null,
+                    barcode:
+                      release.identifiers?.find((id) => id.type === 'Barcode')
+                        ?.value || null,
                     releaseYear: release.year || null,
                     genre: release.genres?.[0] || null,
                     coverArtUrl: release.images?.[0]?.uri || null,

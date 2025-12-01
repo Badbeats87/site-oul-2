@@ -18,7 +18,7 @@ const settingsManager = {
   },
 
   bindEvents() {
-    this.navItems.forEach(item => {
+    this.navItems.forEach((item) => {
       item.addEventListener('click', (e) => {
         const section = item.getAttribute('data-section');
         if (section) {
@@ -29,8 +29,10 @@ const settingsManager = {
     });
 
     // Handle Save buttons
-    const saveButtons = document.querySelectorAll('.settings-group .button--primary');
-    saveButtons.forEach(btn => {
+    const saveButtons = document.querySelectorAll(
+      '.settings-group .button--primary'
+    );
+    saveButtons.forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
         this.saveSettings();
@@ -38,7 +40,9 @@ const settingsManager = {
     });
 
     // Handle Test Email Connection button
-    const testEmailBtn = document.querySelector('.settings-group .button--secondary');
+    const testEmailBtn = document.querySelector(
+      '.settings-group .button--secondary'
+    );
     if (testEmailBtn && testEmailBtn.textContent.includes('Test Email')) {
       testEmailBtn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -47,7 +51,9 @@ const settingsManager = {
     }
 
     // Handle Add New Admin button
-    const addAdminBtn = document.querySelector('.settings-group .button--primary');
+    const addAdminBtn = document.querySelector(
+      '.settings-group .button--primary'
+    );
     if (addAdminBtn && addAdminBtn.textContent.includes('Add New Admin')) {
       addAdminBtn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -58,7 +64,7 @@ const settingsManager = {
 
   showSection(sectionName) {
     // Update active nav item
-    this.navItems.forEach(item => {
+    this.navItems.forEach((item) => {
       const itemSection = item.getAttribute('data-section');
       if (itemSection === sectionName) {
         item.classList.add('settings-nav__item--active');
@@ -68,7 +74,7 @@ const settingsManager = {
     });
 
     // Show/hide sections
-    this.sections.forEach(section => {
+    this.sections.forEach((section) => {
       const sectionName_ = section.getAttribute('data-section');
       if (sectionName_ === sectionName) {
         section.classList.add('settings-section--active');
@@ -82,7 +88,7 @@ const settingsManager = {
     // Scroll to top of content
     document.querySelector('.settings-content').scrollIntoView({
       behavior: 'smooth',
-      block: 'start'
+      block: 'start',
     });
   },
 
@@ -92,7 +98,7 @@ const settingsManager = {
     const inputs = section.querySelectorAll('input, select, textarea');
     const data = {};
 
-    inputs.forEach(input => {
+    inputs.forEach((input) => {
       const key = input.id || input.name;
       if (input.type === 'checkbox') {
         data[key] = input.checked;
@@ -114,11 +120,16 @@ const settingsManager = {
       port: document.getElementById('smtp-port').value,
       user: document.getElementById('smtp-user').value,
       password: document.getElementById('smtp-password').value,
-      from: document.getElementById('from-email').value
+      from: document.getElementById('from-email').value,
     };
 
     // Validate required fields
-    if (!emailConfig.host || !emailConfig.port || !emailConfig.user || !emailConfig.password) {
+    if (
+      !emailConfig.host ||
+      !emailConfig.port ||
+      !emailConfig.user ||
+      !emailConfig.password
+    ) {
       this.showNotification('Please fill in all required SMTP fields', 'error');
       return;
     }
@@ -159,7 +170,7 @@ const settingsManager = {
       notification.style.animation = 'slideOut 0.3s ease-out forwards';
       setTimeout(() => notification.remove(), 300);
     }, 3000);
-  }
+  },
 };
 
 // Initialize when DOM is ready

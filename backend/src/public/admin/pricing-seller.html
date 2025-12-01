@@ -1,9 +1,15 @@
 <!doctype html>
-<html lang="en" style="height: auto; overflow: auto;">
+<html lang="en" style="height: auto; overflow: auto">
   <head>
     <style>
-      html { height: auto !important; overflow: auto !important; }
-      body { min-height: 100vh !important; overflow-y: auto !important; }
+      html {
+        height: auto !important;
+        overflow: auto !important;
+      }
+      body {
+        min-height: 100vh !important;
+        overflow-y: auto !important;
+      }
     </style>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,7 +18,7 @@
     <link rel="stylesheet" href="../../styles/admin.css" />
     <link rel="stylesheet" href="../../styles/pricing-editor.css" />
   </head>
-  <body style="min-height: 100vh; overflow-y: auto;">
+  <body style="min-height: 100vh; overflow-y: auto">
     <!-- Navigation -->
     <nav class="navbar">
       <div class="navbar__container">
@@ -258,7 +264,9 @@
           <div class="form-row">
             <div class="form-group">
               <label>Media Weight</label>
-              <p class="input-help">How much media condition affects seller list prices</p>
+              <p class="input-help">
+                How much media condition affects seller list prices
+              </p>
               <div class="input-with-unit">
                 <input type="number" value="50" min="0" max="100" />
                 <span class="unit">%</span>
@@ -427,15 +435,19 @@
 
         <!-- Preview -->
         <section class="policy-section">
-          <h2 class="section-title">Preview: Example List Price Calculations</h2>
+          <h2 class="section-title">
+            Preview: Example List Price Calculations
+          </h2>
           <p class="section-subtitle">
-            How this policy would price a sample album under different conditions
+            How this policy would price a sample album under different
+            conditions
           </p>
 
           <div class="preview-album">
             <strong>Sample: Dark Side of the Moon by Pink Floyd</strong><br />
             <span class="text-muted"
-              >Market Data: Discogs Median $85 | eBay Median $92 | Hybrid Average $88.50</span
+              >Market Data: Discogs Median $85 | eBay Median $92 | Hybrid
+              Average $88.50</span
             >
           </div>
 
@@ -542,15 +554,21 @@
         },
 
         cacheAuthToken() {
-          this.authToken = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+          this.authToken =
+            localStorage.getItem('auth_token') ||
+            sessionStorage.getItem('auth_token');
         },
 
         bindEvents() {
           // Save Policy button
-          document.querySelector('.button--success')?.addEventListener('click', () => this.savePolicy());
+          document
+            .querySelector('.button--success')
+            ?.addEventListener('click', () => this.savePolicy());
 
           // Reset to Default button
-          document.querySelector('.button--secondary:nth-of-type(3)')?.addEventListener('click', () => this.resetToDefault());
+          document
+            .querySelector('.button--secondary:nth-of-type(3)')
+            ?.addEventListener('click', () => this.resetToDefault());
         },
 
         async loadPolicy() {
@@ -560,11 +578,14 @@
               return;
             }
 
-            const response = await fetch(`/api/v1/admin/pricing/${this.policyType}`, {
-              headers: {
-                'Authorization': `Bearer ${this.authToken}`,
-              },
-            });
+            const response = await fetch(
+              `/api/v1/admin/pricing/${this.policyType}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${this.authToken}`,
+                },
+              }
+            );
 
             if (!response.ok) {
               console.warn('Failed to load policy:', response.status);
@@ -582,11 +603,22 @@
 
         populateForm(policy) {
           // Policy name
-          document.querySelector('input[placeholder="e.g., Premium Rock Collection"]').value = policy.name || 'Standard Global';
+          document.querySelector(
+            'input[placeholder="e.g., Premium Rock Collection"]'
+          ).value = policy.name || 'Standard Global';
 
           // Media condition curve
-          const mediaInputs = document.querySelectorAll('.condition-table:nth-of-type(1) .input-percentage');
-          const mediaConditions = ['MINT', 'NM', 'VG_PLUS', 'VG', 'VG_MINUS', 'G'];
+          const mediaInputs = document.querySelectorAll(
+            '.condition-table:nth-of-type(1) .input-percentage'
+          );
+          const mediaConditions = [
+            'MINT',
+            'NM',
+            'VG_PLUS',
+            'VG',
+            'VG_MINUS',
+            'G',
+          ];
           mediaInputs.forEach((input, idx) => {
             const condition = mediaConditions[idx];
             if (policy.conditionCurve?.[condition]) {
@@ -595,7 +627,9 @@
           });
 
           // Sleeve condition curve
-          const sleeveInputs = document.querySelectorAll('.condition-table:nth-of-type(2) .input-percentage');
+          const sleeveInputs = document.querySelectorAll(
+            '.condition-table:nth-of-type(2) .input-percentage'
+          );
           sleeveInputs.forEach((input, idx) => {
             const condition = mediaConditions[idx];
             if (policy.conditionCurve?.[`SLEEVE_${condition}`]) {
@@ -604,19 +638,33 @@
           });
 
           // Weights
-          document.querySelectorAll('.input-with-unit input')[0].value = policy.sellFormula?.mediaWeight * 100 || 50;
-          document.querySelectorAll('.input-with-unit input')[1].value = policy.sellFormula?.sleeveWeight * 100 || 50;
+          document.querySelectorAll('.input-with-unit input')[0].value =
+            policy.sellFormula?.mediaWeight * 100 || 50;
+          document.querySelectorAll('.input-with-unit input')[1].value =
+            policy.sellFormula?.sleeveWeight * 100 || 50;
 
           // Sell percentage
-          document.querySelectorAll('.form-group input[type="number"]')[4].value = policy.sellFormula?.sellPercentage * 100 || 125;
+          document.querySelectorAll(
+            '.form-group input[type="number"]'
+          )[4].value = policy.sellFormula?.sellPercentage * 100 || 125;
 
           // Min/Max prices
-          document.querySelectorAll('.form-group input[type="number"]')[5].value = policy.minOffer || 10.00;
-          document.querySelectorAll('.form-group input[type="number"]')[6].value = policy.maxOffer || 999.99;
+          document.querySelectorAll(
+            '.form-group input[type="number"]'
+          )[5].value = policy.minOffer || 10.0;
+          document.querySelectorAll(
+            '.form-group input[type="number"]'
+          )[6].value = policy.maxOffer || 999.99;
 
           // Channel multipliers
-          const channelInputs = document.querySelectorAll('.table:last-of-type .input-small');
-          const multipliers = policy.sellFormula?.channelMultipliers || { WEB: 1.0, IN_STORE: 1.1, MARKETPLACE: 0.95 };
+          const channelInputs = document.querySelectorAll(
+            '.table:last-of-type .input-small'
+          );
+          const multipliers = policy.sellFormula?.channelMultipliers || {
+            WEB: 1.0,
+            IN_STORE: 1.1,
+            MARKETPLACE: 0.95,
+          };
           channelInputs[0].value = multipliers.WEB || 1.0;
           channelInputs[1].value = multipliers.IN_STORE || 1.1;
           channelInputs[2].value = multipliers.MARKETPLACE || 0.95;
@@ -630,31 +678,61 @@
             }
 
             // Collect form data
-            const policyName = document.querySelector('input[placeholder="e.g., Premium Rock Collection"]').value;
+            const policyName = document.querySelector(
+              'input[placeholder="e.g., Premium Rock Collection"]'
+            ).value;
 
             // Media condition curve
-            const mediaConditions = ['MINT', 'NM', 'VG_PLUS', 'VG', 'VG_MINUS', 'G'];
-            const mediaInputs = document.querySelectorAll('.condition-table:nth-of-type(1) .input-percentage');
+            const mediaConditions = [
+              'MINT',
+              'NM',
+              'VG_PLUS',
+              'VG',
+              'VG_MINUS',
+              'G',
+            ];
+            const mediaInputs = document.querySelectorAll(
+              '.condition-table:nth-of-type(1) .input-percentage'
+            );
             const mediaConditionCurve = {};
             mediaInputs.forEach((input, idx) => {
-              mediaConditionCurve[mediaConditions[idx]] = parseFloat(input.value) / 100;
+              mediaConditionCurve[mediaConditions[idx]] =
+                parseFloat(input.value) / 100;
             });
 
             // Sleeve condition curve
-            const sleeveInputs = document.querySelectorAll('.condition-table:nth-of-type(2) .input-percentage');
+            const sleeveInputs = document.querySelectorAll(
+              '.condition-table:nth-of-type(2) .input-percentage'
+            );
             const sleeveConditionCurve = {};
             sleeveInputs.forEach((input, idx) => {
-              sleeveConditionCurve[`SLEEVE_${mediaConditions[idx]}`] = parseFloat(input.value) / 100;
+              sleeveConditionCurve[`SLEEVE_${mediaConditions[idx]}`] =
+                parseFloat(input.value) / 100;
             });
 
-            const conditionCurve = { ...mediaConditionCurve, ...sleeveConditionCurve };
+            const conditionCurve = {
+              ...mediaConditionCurve,
+              ...sleeveConditionCurve,
+            };
 
             // Sell formula
-            const sellPercentage = parseFloat(document.querySelectorAll('.form-group input[type="number"]')[4].value) / 100;
-            const mediaWeight = parseFloat(document.querySelectorAll('.input-with-unit input')[0].value) / 100;
-            const sleeveWeight = parseFloat(document.querySelectorAll('.input-with-unit input')[1].value) / 100;
+            const sellPercentage =
+              parseFloat(
+                document.querySelectorAll('.form-group input[type="number"]')[4]
+                  .value
+              ) / 100;
+            const mediaWeight =
+              parseFloat(
+                document.querySelectorAll('.input-with-unit input')[0].value
+              ) / 100;
+            const sleeveWeight =
+              parseFloat(
+                document.querySelectorAll('.input-with-unit input')[1].value
+              ) / 100;
 
-            const channelInputs = document.querySelectorAll('.table:last-of-type .input-small');
+            const channelInputs = document.querySelectorAll(
+              '.table:last-of-type .input-small'
+            );
             const sellFormula = {
               sellPercentage,
               mediaWeight,
@@ -674,8 +752,14 @@
               sleeveWeight,
             };
 
-            const minPrice = parseFloat(document.querySelectorAll('.form-group input[type="number"]')[5].value);
-            const maxPrice = parseFloat(document.querySelectorAll('.form-group input[type="number"]')[6].value);
+            const minPrice = parseFloat(
+              document.querySelectorAll('.form-group input[type="number"]')[5]
+                .value
+            );
+            const maxPrice = parseFloat(
+              document.querySelectorAll('.form-group input[type="number"]')[6]
+                .value
+            );
 
             const payload = {
               name: policyName || 'Standard Global',
@@ -688,14 +772,17 @@
             };
 
             // Send to API
-            const response = await fetch(`/api/v1/admin/pricing/${this.policyType}`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${this.authToken}`,
-              },
-              body: JSON.stringify(payload),
-            });
+            const response = await fetch(
+              `/api/v1/admin/pricing/${this.policyType}`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${this.authToken}`,
+                },
+                body: JSON.stringify(payload),
+              }
+            );
 
             if (!response.ok) {
               const error = await response.json();
@@ -703,7 +790,9 @@
             }
 
             const result = await response.json();
-            alert(`✓ Policy saved successfully!\nVersion: ${result.data.version}`);
+            alert(
+              `✓ Policy saved successfully!\nVersion: ${result.data.version}`
+            );
           } catch (error) {
             console.error('Error saving policy:', error);
             alert(`Error: ${error.message}`);
@@ -716,19 +805,23 @@
               name: 'Standard Global',
               sellFormula: {
                 sellPercentage: 1.25,
-                mediaWeight: 0.50,
-                sleeveWeight: 0.50,
-                channelMultipliers: { WEB: 1.0, IN_STORE: 1.1, MARKETPLACE: 0.95 },
+                mediaWeight: 0.5,
+                sleeveWeight: 0.5,
+                channelMultipliers: {
+                  WEB: 1.0,
+                  IN_STORE: 1.1,
+                  MARKETPLACE: 0.95,
+                },
               },
               conditionCurve: {
                 MINT: 1.25,
                 NM: 1.0,
-                VG_PLUS: 0.70,
+                VG_PLUS: 0.7,
                 VG: 0.55,
-                VG_MINUS: 0.40,
-                G: 0.20,
+                VG_MINUS: 0.4,
+                G: 0.2,
               },
-              minOffer: 10.00,
+              minOffer: 10.0,
               maxOffer: 999.99,
             });
           }
@@ -737,7 +830,9 @@
 
       // Initialize when DOM is ready
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => sellerPricingManager.init());
+        document.addEventListener('DOMContentLoaded', () =>
+          sellerPricingManager.init()
+        );
       } else {
         sellerPricingManager.init();
       }

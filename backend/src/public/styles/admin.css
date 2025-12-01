@@ -611,7 +611,7 @@ main {
 
 /* Breadcrumb responsive */
 @media (max-width: 768px) {
-  .breadcrumb-item:nth-child(n+2):not(:last-child) {
+  .breadcrumb-item:nth-child(n + 2):not(:last-child) {
     display: none;
   }
 

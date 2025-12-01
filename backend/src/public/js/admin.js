@@ -12,14 +12,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Load dashboard stats (optional - doesn't block page)
   if (typeof dashboardStats !== 'undefined' && dashboardStats) {
-    dashboardStats.initialize().catch(error => {
+    dashboardStats.initialize().catch((error) => {
       console.warn('Dashboard stats failed to load:', error.message);
     });
   }
 
   // Initialize submissions manager (optional - doesn't block page)
   if (typeof submissionsManager !== 'undefined' && submissionsManager) {
-    submissionsManager.initialize().catch(error => {
+    submissionsManager.initialize().catch((error) => {
       console.warn('Submissions manager failed to load:', error.message);
     });
   }

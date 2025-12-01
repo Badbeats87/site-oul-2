@@ -18,7 +18,7 @@ const accountManager = {
   },
 
   bindEvents() {
-    this.navItems.forEach(item => {
+    this.navItems.forEach((item) => {
       item.addEventListener('click', (e) => {
         const tab = item.getAttribute('data-tab');
         if (tab) {
@@ -66,7 +66,7 @@ const accountManager = {
 
   showTab(tabName) {
     // Update active nav item
-    this.navItems.forEach(item => {
+    this.navItems.forEach((item) => {
       const itemTab = item.getAttribute('data-tab');
       if (itemTab === tabName) {
         item.classList.add('account-nav__item--active');
@@ -76,7 +76,7 @@ const accountManager = {
     });
 
     // Show/hide panels
-    this.panels.forEach(panel => {
+    this.panels.forEach((panel) => {
       const panelName = panel.getAttribute('data-panel');
       if (panelName === tabName) {
         panel.classList.add('account-panel--active');
@@ -90,9 +90,9 @@ const accountManager = {
     // Scroll to top of content area
     document.querySelector('.account-content').scrollIntoView({
       behavior: 'smooth',
-      block: 'start'
+      block: 'start',
     });
-  }
+  },
 };
 
 // Initialize when DOM is ready

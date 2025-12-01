@@ -1,362 +1,474 @@
-<!DOCTYPE html>
-<html lang="en" style="height: auto; overflow: auto;">
-<head>
+<!doctype html>
+<html lang="en" style="height: auto; overflow: auto">
+  <head>
     <style>
-      html { height: auto !important; overflow: auto !important; }
-      body { min-height: 100vh !important; overflow-y: auto !important; }
+      html {
+        height: auto !important;
+        overflow: auto !important;
+      }
+      body {
+        min-height: 100vh !important;
+        overflow-y: auto !important;
+      }
     </style>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Button Component - Style Guide</title>
-  <link rel="stylesheet" href="../../styles/design-system.css">
-  <link rel="stylesheet" href="../../styles/utilities.css">
-  <style>
-    body {
-      background: var(--color-secondary);
-    }
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: var(--space-3xl) var(--space-xl);
-    }
-    .page-header {
-      margin-bottom: var(--space-3xl);
-      text-align: center;
-    }
-    .page-header h1 {
-      font-size: var(--font-size-4xl);
-      margin-bottom: var(--space-sm);
-    }
-    .page-header p {
-      font-size: var(--font-size-lg);
-      color: var(--color-text-light);
-    }
-    .component-section {
-      background: white;
-      border-radius: var(--radius-lg);
-      padding: var(--space-2xl);
-      margin-bottom: var(--space-2xl);
-      box-shadow: var(--shadow-sm);
-    }
-    .component-section h2 {
-      font-size: var(--font-size-2xl);
-      margin-bottom: var(--space-lg);
-      padding-bottom: var(--space-lg);
-      border-bottom: 2px solid var(--color-border);
-    }
-    .component-demo {
-      margin-bottom: var(--space-2xl);
-    }
-    .demo-label {
-      font-size: var(--font-size-sm);
-      font-weight: var(--font-weight-semibold);
-      color: var(--color-text-light);
-      margin-bottom: var(--space-md);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .demo-box {
-      background: var(--color-secondary);
-      padding: var(--space-lg);
-      border-radius: var(--radius-md);
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-md);
-      align-items: center;
-      margin-bottom: var(--space-lg);
-    }
-    .code-block {
-      background: #f5f5f5;
-      padding: var(--space-md);
-      border-radius: var(--radius-md);
-      border-left: 4px solid var(--color-accent);
-      margin-top: var(--space-md);
-      overflow-x: auto;
-    }
-    .code-block code {
-      font-family: var(--font-family-mono);
-      font-size: var(--font-size-sm);
-      color: #333;
-      background: none;
-      padding: 0;
-    }
-    .section-title {
-      font-size: var(--font-size-xl);
-      font-weight: var(--font-weight-semibold);
-      margin: var(--space-xl) 0 var(--space-lg) 0;
-    }
-    .accessibility-note {
-      background: #dbeafe;
-      border-left: 4px solid #0284c7;
-      padding: var(--space-lg);
-      border-radius: var(--radius-md);
-      margin-top: var(--space-lg);
-      font-size: var(--font-size-sm);
-    }
-    .button-group-demo {
-      display: flex;
-      gap: var(--space-md);
-      flex-wrap: wrap;
-    }
-    .nav-breadcrumb {
-      margin-bottom: var(--space-2xl);
-    }
-    .nav-breadcrumb a {
-      color: var(--color-accent);
-      text-decoration: none;
-      font-size: var(--font-size-sm);
-    }
-    .nav-breadcrumb a:hover {
-      text-decoration: underline;
-    }
-  </style>
-</head>
-<body style="min-height: 100vh; overflow-y: auto;">
-  <div class="container">
-    <!-- Navigation -->
-    <div class="nav-breadcrumb">
-      <a href="index.html">← Back to Components</a>
-    </div>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Button Component - Style Guide</title>
+    <link rel="stylesheet" href="../../styles/design-system.css" />
+    <link rel="stylesheet" href="../../styles/utilities.css" />
+    <style>
+      body {
+        background: var(--color-secondary);
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: var(--space-3xl) var(--space-xl);
+      }
+      .page-header {
+        margin-bottom: var(--space-3xl);
+        text-align: center;
+      }
+      .page-header h1 {
+        font-size: var(--font-size-4xl);
+        margin-bottom: var(--space-sm);
+      }
+      .page-header p {
+        font-size: var(--font-size-lg);
+        color: var(--color-text-light);
+      }
+      .component-section {
+        background: white;
+        border-radius: var(--radius-lg);
+        padding: var(--space-2xl);
+        margin-bottom: var(--space-2xl);
+        box-shadow: var(--shadow-sm);
+      }
+      .component-section h2 {
+        font-size: var(--font-size-2xl);
+        margin-bottom: var(--space-lg);
+        padding-bottom: var(--space-lg);
+        border-bottom: 2px solid var(--color-border);
+      }
+      .component-demo {
+        margin-bottom: var(--space-2xl);
+      }
+      .demo-label {
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-light);
+        margin-bottom: var(--space-md);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .demo-box {
+        background: var(--color-secondary);
+        padding: var(--space-lg);
+        border-radius: var(--radius-md);
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-md);
+        align-items: center;
+        margin-bottom: var(--space-lg);
+      }
+      .code-block {
+        background: #f5f5f5;
+        padding: var(--space-md);
+        border-radius: var(--radius-md);
+        border-left: 4px solid var(--color-accent);
+        margin-top: var(--space-md);
+        overflow-x: auto;
+      }
+      .code-block code {
+        font-family: var(--font-family-mono);
+        font-size: var(--font-size-sm);
+        color: #333;
+        background: none;
+        padding: 0;
+      }
+      .section-title {
+        font-size: var(--font-size-xl);
+        font-weight: var(--font-weight-semibold);
+        margin: var(--space-xl) 0 var(--space-lg) 0;
+      }
+      .accessibility-note {
+        background: #dbeafe;
+        border-left: 4px solid #0284c7;
+        padding: var(--space-lg);
+        border-radius: var(--radius-md);
+        margin-top: var(--space-lg);
+        font-size: var(--font-size-sm);
+      }
+      .button-group-demo {
+        display: flex;
+        gap: var(--space-md);
+        flex-wrap: wrap;
+      }
+      .nav-breadcrumb {
+        margin-bottom: var(--space-2xl);
+      }
+      .nav-breadcrumb a {
+        color: var(--color-accent);
+        text-decoration: none;
+        font-size: var(--font-size-sm);
+      }
+      .nav-breadcrumb a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body style="min-height: 100vh; overflow-y: auto">
+    <div class="container">
+      <!-- Navigation -->
+      <div class="nav-breadcrumb">
+        <a href="index.html">← Back to Components</a>
+      </div>
 
-    <!-- Page Header -->
-    <div class="page-header">
-      <h1>Button Component</h1>
-      <p>Interactive element for user actions</p>
-    </div>
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1>Button Component</h1>
+        <p>Interactive element for user actions</p>
+      </div>
 
-    <!-- Primary Buttons -->
-    <section class="component-section">
-      <h2>Primary Buttons</h2>
-      <p>Use for main actions. High emphasis, prominent call-to-action.</p>
+      <!-- Primary Buttons -->
+      <section class="component-section">
+        <h2>Primary Buttons</h2>
+        <p>Use for main actions. High emphasis, prominent call-to-action.</p>
 
-      <div class="component-demo">
-        <div class="demo-label">Default State</div>
-        <div class="demo-box">
-          <button class="button button--primary">Primary Button</button>
+        <div class="component-demo">
+          <div class="demo-label">Default State</div>
+          <div class="demo-box">
+            <button class="button button--primary">Primary Button</button>
+          </div>
+          <div class="code-block">
+            <code
+              >&lt;button class="button button--primary"&gt;Primary
+              Button&lt;/button&gt;</code
+            >
+          </div>
         </div>
-        <div class="code-block"><code>&lt;button class="button button--primary"&gt;Primary Button&lt;/button&gt;</code></div>
-      </div>
 
-      <div class="component-demo">
-        <div class="demo-label">Hover State</div>
-        <div class="demo-box">
-          <button class="button button--primary" style="opacity: 0.85; box-shadow: var(--shadow-lg);">Hovered</button>
+        <div class="component-demo">
+          <div class="demo-label">Hover State</div>
+          <div class="demo-box">
+            <button
+              class="button button--primary"
+              style="opacity: 0.85; box-shadow: var(--shadow-lg)"
+            >
+              Hovered
+            </button>
+          </div>
+          <div class="code-block">
+            <code>Hover shows darker background and shadow elevation</code>
+          </div>
         </div>
-        <div class="code-block"><code>Hover shows darker background and shadow elevation</code></div>
-      </div>
 
-      <div class="component-demo">
-        <div class="demo-label">Focus State</div>
-        <div class="demo-box">
-          <button class="button button--primary" style="outline: 2px solid #2563eb; outline-offset: 2px;">Focused</button>
+        <div class="component-demo">
+          <div class="demo-label">Focus State</div>
+          <div class="demo-box">
+            <button
+              class="button button--primary"
+              style="outline: 2px solid #2563eb; outline-offset: 2px"
+            >
+              Focused
+            </button>
+          </div>
+          <div class="code-block">
+            <code>Focus shows outline and box-shadow for accessibility</code>
+          </div>
         </div>
-        <div class="code-block"><code>Focus shows outline and box-shadow for accessibility</code></div>
-      </div>
 
-      <div class="component-demo">
-        <div class="demo-label">Disabled State</div>
-        <div class="demo-box">
-          <button class="button button--primary" disabled>Disabled</button>
+        <div class="component-demo">
+          <div class="demo-label">Disabled State</div>
+          <div class="demo-box">
+            <button class="button button--primary" disabled>Disabled</button>
+          </div>
+          <div class="code-block">
+            <code
+              >&lt;button class="button button--primary"
+              disabled&gt;Disabled&lt;/button&gt;</code
+            >
+          </div>
         </div>
-        <div class="code-block"><code>&lt;button class="button button--primary" disabled&gt;Disabled&lt;/button&gt;</code></div>
-      </div>
 
-      <div class="accessibility-note">
-        <strong>Accessibility:</strong> Primary buttons have sufficient contrast (7:1). Focus indicators are visible and distinct. Disabled state uses opacity to indicate non-interactivity.
-      </div>
-    </section>
-
-    <!-- Secondary Buttons -->
-    <section class="component-section">
-      <h2>Secondary Buttons</h2>
-      <p>Use for alternative actions. Medium emphasis, less prominent than primary.</p>
-
-      <div class="component-demo">
-        <div class="demo-label">Default State</div>
-        <div class="demo-box">
-          <button class="button button--secondary">Secondary Button</button>
+        <div class="accessibility-note">
+          <strong>Accessibility:</strong> Primary buttons have sufficient
+          contrast (7:1). Focus indicators are visible and distinct. Disabled
+          state uses opacity to indicate non-interactivity.
         </div>
-        <div class="code-block"><code>&lt;button class="button button--secondary"&gt;Secondary Button&lt;/button&gt;</code></div>
-      </div>
+      </section>
 
-      <div class="component-demo">
-        <div class="demo-label">With Other Buttons</div>
-        <div class="demo-box button-group-demo">
-          <button class="button button--primary">Save</button>
-          <button class="button button--secondary">Cancel</button>
+      <!-- Secondary Buttons -->
+      <section class="component-section">
+        <h2>Secondary Buttons</h2>
+        <p>
+          Use for alternative actions. Medium emphasis, less prominent than
+          primary.
+        </p>
+
+        <div class="component-demo">
+          <div class="demo-label">Default State</div>
+          <div class="demo-box">
+            <button class="button button--secondary">Secondary Button</button>
+          </div>
+          <div class="code-block">
+            <code
+              >&lt;button class="button button--secondary"&gt;Secondary
+              Button&lt;/button&gt;</code
+            >
+          </div>
         </div>
-        <div class="code-block"><code>Combine primary and secondary for action groups</code></div>
-      </div>
-    </section>
 
-    <!-- Size Variants -->
-    <section class="component-section">
-      <h2>Button Sizes</h2>
-      <p>Choose size based on context and importance.</p>
-
-      <div class="component-demo">
-        <div class="demo-label">Small Button</div>
-        <div class="demo-box">
-          <button class="button button--sm button--primary">Small</button>
+        <div class="component-demo">
+          <div class="demo-label">With Other Buttons</div>
+          <div class="demo-box button-group-demo">
+            <button class="button button--primary">Save</button>
+            <button class="button button--secondary">Cancel</button>
+          </div>
+          <div class="code-block">
+            <code>Combine primary and secondary for action groups</code>
+          </div>
         </div>
-        <div class="code-block"><code>&lt;button class="button button--sm button--primary"&gt;Small&lt;/button&gt;</code></div>
-      </div>
+      </section>
 
-      <div class="component-demo">
-        <div class="demo-label">Default/Base Button</div>
-        <div class="demo-box">
-          <button class="button button--primary">Default</button>
+      <!-- Size Variants -->
+      <section class="component-section">
+        <h2>Button Sizes</h2>
+        <p>Choose size based on context and importance.</p>
+
+        <div class="component-demo">
+          <div class="demo-label">Small Button</div>
+          <div class="demo-box">
+            <button class="button button--sm button--primary">Small</button>
+          </div>
+          <div class="code-block">
+            <code
+              >&lt;button class="button button--sm
+              button--primary"&gt;Small&lt;/button&gt;</code
+            >
+          </div>
         </div>
-        <div class="code-block"><code>&lt;button class="button button--primary"&gt;Default&lt;/button&gt;</code></div>
-      </div>
 
-      <div class="component-demo">
-        <div class="demo-label">Large Button</div>
-        <div class="demo-box">
-          <button class="button button--lg button--primary">Large</button>
+        <div class="component-demo">
+          <div class="demo-label">Default/Base Button</div>
+          <div class="demo-box">
+            <button class="button button--primary">Default</button>
+          </div>
+          <div class="code-block">
+            <code
+              >&lt;button class="button
+              button--primary"&gt;Default&lt;/button&gt;</code
+            >
+          </div>
         </div>
-        <div class="code-block"><code>&lt;button class="button button--lg button--primary"&gt;Large&lt;/button&gt;</code></div>
-      </div>
 
-      <div class="component-demo">
-        <div class="demo-label">Full Width Button</div>
-        <div class="demo-box" style="display: flex; flex-direction: column;">
-          <button class="button button--block button--primary">Full Width</button>
+        <div class="component-demo">
+          <div class="demo-label">Large Button</div>
+          <div class="demo-box">
+            <button class="button button--lg button--primary">Large</button>
+          </div>
+          <div class="code-block">
+            <code
+              >&lt;button class="button button--lg
+              button--primary"&gt;Large&lt;/button&gt;</code
+            >
+          </div>
         </div>
-        <div class="code-block"><code>&lt;button class="button button--block button--primary"&gt;Full Width&lt;/button&gt;</code></div>
-      </div>
-    </section>
 
-    <!-- Semantic Color Buttons -->
-    <section class="component-section">
-      <h2>Semantic Color Buttons</h2>
-      <p>Use semantic colors to indicate action type.</p>
-
-      <div class="component-demo">
-        <div class="demo-label">All Color Variants</div>
-        <div class="demo-box button-group-demo">
-          <button class="button button--primary">Primary</button>
-          <button class="button button--accent">Accent</button>
-          <button class="button button--success">Success</button>
-          <button class="button button--warning" style="color: white;">Warning</button>
-          <button class="button button--danger">Danger</button>
+        <div class="component-demo">
+          <div class="demo-label">Full Width Button</div>
+          <div class="demo-box" style="display: flex; flex-direction: column">
+            <button class="button button--block button--primary">
+              Full Width
+            </button>
+          </div>
+          <div class="code-block">
+            <code
+              >&lt;button class="button button--block button--primary"&gt;Full
+              Width&lt;/button&gt;</code
+            >
+          </div>
         </div>
-        <div class="code-block"><code>&lt;button class="button button--success"&gt;Success&lt;/button&gt;</code></div>
-      </div>
+      </section>
 
-      <div class="component-demo">
-        <div class="demo-label">Success Button (Use Case: Confirm, Save, Submit)</div>
-        <div class="demo-box">
-          <button class="button button--success">✓ Approve</button>
+      <!-- Semantic Color Buttons -->
+      <section class="component-section">
+        <h2>Semantic Color Buttons</h2>
+        <p>Use semantic colors to indicate action type.</p>
+
+        <div class="component-demo">
+          <div class="demo-label">All Color Variants</div>
+          <div class="demo-box button-group-demo">
+            <button class="button button--primary">Primary</button>
+            <button class="button button--accent">Accent</button>
+            <button class="button button--success">Success</button>
+            <button class="button button--warning" style="color: white">
+              Warning
+            </button>
+            <button class="button button--danger">Danger</button>
+          </div>
+          <div class="code-block">
+            <code
+              >&lt;button class="button
+              button--success"&gt;Success&lt;/button&gt;</code
+            >
+          </div>
         </div>
-        <div class="code-block"><code>&lt;button class="button button--success"&gt;✓ Approve&lt;/button&gt;</code></div>
-      </div>
 
-      <div class="component-demo">
-        <div class="demo-label">Danger Button (Use Case: Delete, Remove, Destructive)</div>
-        <div class="demo-box">
-          <button class="button button--danger">✕ Delete</button>
+        <div class="component-demo">
+          <div class="demo-label">
+            Success Button (Use Case: Confirm, Save, Submit)
+          </div>
+          <div class="demo-box">
+            <button class="button button--success">✓ Approve</button>
+          </div>
+          <div class="code-block">
+            <code
+              >&lt;button class="button button--success"&gt;✓
+              Approve&lt;/button&gt;</code
+            >
+          </div>
         </div>
-        <div class="code-block"><code>&lt;button class="button button--danger"&gt;✕ Delete&lt;/button&gt;</code></div>
-      </div>
-    </section>
 
-    <!-- Button Groups -->
-    <section class="component-section">
-      <h2>Button Groups</h2>
-      <p>Combine buttons for related actions.</p>
-
-      <div class="component-demo">
-        <div class="demo-label">Horizontal Group (Form Actions)</div>
-        <div class="demo-box button-group-demo">
-          <button class="button button--primary">Save</button>
-          <button class="button button--secondary">Cancel</button>
+        <div class="component-demo">
+          <div class="demo-label">
+            Danger Button (Use Case: Delete, Remove, Destructive)
+          </div>
+          <div class="demo-box">
+            <button class="button button--danger">✕ Delete</button>
+          </div>
+          <div class="code-block">
+            <code
+              >&lt;button class="button button--danger"&gt;✕
+              Delete&lt;/button&gt;</code
+            >
+          </div>
         </div>
-        <div class="code-block"><code>&lt;div class="d-flex gap-md"&gt;<br>  &lt;button class="button button--primary"&gt;Save&lt;/button&gt;<br>  &lt;button class="button button--secondary"&gt;Cancel&lt;/button&gt;<br>&lt;/div&gt;</code></div>
-      </div>
+      </section>
 
-      <div class="component-demo">
-        <div class="demo-label">Action Row (with Secondary Action)</div>
-        <div class="demo-box button-group-demo">
-          <button class="button button--success">✓ Approve</button>
-          <button class="button button--secondary">Reject</button>
-          <button class="button button--secondary">Review</button>
+      <!-- Button Groups -->
+      <section class="component-section">
+        <h2>Button Groups</h2>
+        <p>Combine buttons for related actions.</p>
+
+        <div class="component-demo">
+          <div class="demo-label">Horizontal Group (Form Actions)</div>
+          <div class="demo-box button-group-demo">
+            <button class="button button--primary">Save</button>
+            <button class="button button--secondary">Cancel</button>
+          </div>
+          <div class="code-block">
+            <code
+              >&lt;div class="d-flex gap-md"&gt;<br />
+              &lt;button class="button
+              button--primary"&gt;Save&lt;/button&gt;<br />
+              &lt;button class="button
+              button--secondary"&gt;Cancel&lt;/button&gt;<br />&lt;/div&gt;</code
+            >
+          </div>
         </div>
-      </div>
-    </section>
 
-    <!-- Usage Guidelines -->
-    <section class="component-section">
-      <h2>Usage Guidelines</h2>
+        <div class="component-demo">
+          <div class="demo-label">Action Row (with Secondary Action)</div>
+          <div class="demo-box button-group-demo">
+            <button class="button button--success">✓ Approve</button>
+            <button class="button button--secondary">Reject</button>
+            <button class="button button--secondary">Review</button>
+          </div>
+        </div>
+      </section>
 
-      <div class="section-title">When to Use Primary Buttons</div>
-      <ul>
-        <li>Main action on the page (Save, Submit, Send)</li>
-        <li>Call-to-action that moves user forward</li>
-        <li>Only one primary button per page section</li>
-      </ul>
+      <!-- Usage Guidelines -->
+      <section class="component-section">
+        <h2>Usage Guidelines</h2>
 
-      <div class="section-title">When to Use Secondary Buttons</div>
-      <ul>
-        <li>Alternative actions (Cancel, Close, Back)</li>
-        <li>Less important than primary action</li>
-        <li>Multiple secondary buttons acceptable</li>
-      </ul>
-
-      <div class="section-title">When to Use Size Variants</div>
-      <ul>
-        <li>Small: Inline actions, compact layouts, table actions</li>
-        <li>Default: Standard UI, forms, dialogs</li>
-        <li>Large: Hero sections, important CTAs, mobile</li>
-        <li>Block: Full-width on mobile, forms</li>
-      </ul>
-
-      <div class="section-title">When to Use Color Variants</div>
-      <ul>
-        <li>Success: Positive actions (approve, confirm, save)</li>
-        <li>Danger: Destructive actions (delete, remove)</li>
-        <li>Accent: Highlight, special attention</li>
-      </ul>
-
-      <div class="accessibility-note">
-        <strong>Accessibility Checklist:</strong>
-        <ul style="margin: var(--space-md) 0 0 var(--space-lg);">
-          <li>✓ Minimum 44x44px touch target</li>
-          <li>✓ Visible focus indicator (outline or shadow)</li>
-          <li>✓ Color not used alone to convey meaning (use text/icons)</li>
-          <li>✓ Sufficient contrast (4.5:1 for text)</li>
-          <li>✓ Clear, descriptive button text</li>
-          <li>✓ Disabled state visually distinct</li>
-          <li>✓ Keyboard accessible (Tab, Enter)</li>
+        <div class="section-title">When to Use Primary Buttons</div>
+        <ul>
+          <li>Main action on the page (Save, Submit, Send)</li>
+          <li>Call-to-action that moves user forward</li>
+          <li>Only one primary button per page section</li>
         </ul>
-      </div>
-    </section>
 
-    <!-- Code Examples -->
-    <section class="component-section">
-      <h2>Code Examples</h2>
+        <div class="section-title">When to Use Secondary Buttons</div>
+        <ul>
+          <li>Alternative actions (Cancel, Close, Back)</li>
+          <li>Less important than primary action</li>
+          <li>Multiple secondary buttons acceptable</li>
+        </ul>
 
-      <div class="component-demo">
-        <div class="demo-label">Simple Button</div>
-        <div class="code-block"><code>&lt;button class="button button--primary"&gt;Click Me&lt;/button&gt;</code></div>
-      </div>
+        <div class="section-title">When to Use Size Variants</div>
+        <ul>
+          <li>Small: Inline actions, compact layouts, table actions</li>
+          <li>Default: Standard UI, forms, dialogs</li>
+          <li>Large: Hero sections, important CTAs, mobile</li>
+          <li>Block: Full-width on mobile, forms</li>
+        </ul>
 
-      <div class="component-demo">
-        <div class="demo-label">Button with Icon</div>
-        <div class="code-block"><code>&lt;button class="button button--primary"&gt;<br>  ✓ Save Changes<br>&lt;/button&gt;</code></div>
-      </div>
+        <div class="section-title">When to Use Color Variants</div>
+        <ul>
+          <li>Success: Positive actions (approve, confirm, save)</li>
+          <li>Danger: Destructive actions (delete, remove)</li>
+          <li>Accent: Highlight, special attention</li>
+        </ul>
 
-      <div class="component-demo">
-        <div class="demo-label">Disabled Button</div>
-        <div class="code-block"><code>&lt;button class="button button--primary" disabled&gt;<br>  Processing...<br>&lt;/button&gt;</code></div>
-      </div>
+        <div class="accessibility-note">
+          <strong>Accessibility Checklist:</strong>
+          <ul style="margin: var(--space-md) 0 0 var(--space-lg)">
+            <li>✓ Minimum 44x44px touch target</li>
+            <li>✓ Visible focus indicator (outline or shadow)</li>
+            <li>✓ Color not used alone to convey meaning (use text/icons)</li>
+            <li>✓ Sufficient contrast (4.5:1 for text)</li>
+            <li>✓ Clear, descriptive button text</li>
+            <li>✓ Disabled state visually distinct</li>
+            <li>✓ Keyboard accessible (Tab, Enter)</li>
+          </ul>
+        </div>
+      </section>
 
-      <div class="component-demo">
-        <div class="demo-label">Button as Link</div>
-        <div class="code-block"><code>&lt;a href="/next-page" class="button button--primary"&gt;<br>  Go to Next Page<br>&lt;/a&gt;</code></div>
-      </div>
-    </section>
+      <!-- Code Examples -->
+      <section class="component-section">
+        <h2>Code Examples</h2>
 
-  </div>
-</body>
+        <div class="component-demo">
+          <div class="demo-label">Simple Button</div>
+          <div class="code-block">
+            <code
+              >&lt;button class="button button--primary"&gt;Click
+              Me&lt;/button&gt;</code
+            >
+          </div>
+        </div>
+
+        <div class="component-demo">
+          <div class="demo-label">Button with Icon</div>
+          <div class="code-block">
+            <code
+              >&lt;button class="button button--primary"&gt;<br />
+              ✓ Save Changes<br />&lt;/button&gt;</code
+            >
+          </div>
+        </div>
+
+        <div class="component-demo">
+          <div class="demo-label">Disabled Button</div>
+          <div class="code-block">
+            <code
+              >&lt;button class="button button--primary" disabled&gt;<br />
+              Processing...<br />&lt;/button&gt;</code
+            >
+          </div>
+        </div>
+
+        <div class="component-demo">
+          <div class="demo-label">Button as Link</div>
+          <div class="code-block">
+            <code
+              >&lt;a href="/next-page" class="button button--primary"&gt;<br />
+              Go to Next Page<br />&lt;/a&gt;</code
+            >
+          </div>
+        </div>
+      </section>
+    </div>
+  </body>
 </html>
