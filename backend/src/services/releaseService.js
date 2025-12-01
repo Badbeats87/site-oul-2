@@ -658,10 +658,11 @@ class ReleaseService {
             discogsResults.results &&
             discogsResults.results.length > 0
           ) {
-            // Fetch full metadata for top results
+            // Fetch full metadata for top results only
+            // Limit to 3 results to avoid rate limiting while still providing accurate pricing for top matches
             const topResults = discogsResults.results.slice(
               0,
-              Math.min(limit, 10)
+              Math.min(limit, 3)
             );
             const enrichedResults = await Promise.all(
               topResults.map(async (result) => {
@@ -835,7 +836,36 @@ class ReleaseService {
               })
             );
 
-            finalResults = enrichedResults;
+            // Add remaining results with estimated prices to avoid rate limiting
+            let finalResults = enrichedResults;
+            if (discogsResults.results.length > 3) {
+              const remainingResults = discogsResults.results.slice(3);
+              const buyerFormula = await pricingService.getBuyerFormula();
+              const buyPercentage = buyerFormula?.buyPercentage ?? buyerFormula?.percentage ?? 0.55;
+
+              const remainingEnriched = remainingResults
+                .slice(0, Math.min(remainingResults.length, limit - 3))
+                .map((result) => {
+                  const estimatedPrice = this.estimateBasePrice(null, result);
+
+                  return {
+                    id: `discogs_${result.id}`,
+                    title: result.title || 'Unknown Album',
+                    artist: result.artists?.[0]?.name || 'Unknown Artist',
+                    label: null,
+                    barcode: null,
+                    releaseYear: result.year || null,
+                    genre: null,
+                    coverArtUrl: result.cover_image || null,
+                    description: null,
+                    marketSnapshots: [], // No marketplace data for these
+                    ourPrice: estimatedPrice * buyPercentage,
+                  };
+                });
+
+              finalResults = [...enrichedResults, ...remainingEnriched];
+            }
+
             source = 'DISCOGS';
             logger.info('Discogs fallback search succeeded', {
               query,
@@ -859,69 +889,10 @@ class ReleaseService {
         }
       }
 
-      // For Discogs results, recalculate pricing on each request
-      // rather than caching the calculated ourPrice
-      // This ensures we always get fresh marketplace pricing
-      let resultsToReturn = finalResults;
-      if (source === 'DISCOGS') {
-        // Recalculate ourPrice for each Discogs result to ensure fresh pricing
-        resultsToReturn = await Promise.all(
-          finalResults.map(async (result) => {
-            // Re-fetch marketplace stats in case they've updated
-            const releaseId = result.id.replace('discogs_', '');
-            let freshPriceStats = null;
-
-            try {
-              // Try marketplace stats (real current marketplace prices)
-              freshPriceStats = await discogsService
-                .getMarketplaceStats(parseInt(releaseId), 'EUR')
-                .catch(() => null);
-
-              // If stats not available, try vinyl-specific pricing
-              if (!freshPriceStats) {
-                freshPriceStats = await discogsService
-                  .getVinylMarketplaceStats(parseInt(releaseId), 'EUR')
-                  .catch(() => null);
-              }
-            } catch (err) {
-              logger.debug('Failed to fetch fresh marketplace stats', {
-                releaseId,
-                error: err.message,
-              });
-            }
-
-            // Build market snapshots from fresh price data
-            const freshMarketSnapshots =
-              freshPriceStats &&
-              (freshPriceStats.lowest || freshPriceStats.median)
-                ? [
-                  {
-                    releaseId: result.id,
-                    source: 'DISCOGS',
-                    statLow: freshPriceStats.lowest,
-                    statMedian: freshPriceStats.median,
-                    statHigh: freshPriceStats.highest,
-                    fetchedAt: new Date(),
-                  },
-                ]
-                : [];
-
-            // Recalculate ourPrice with fresh data
-            const freshOurPrice = await this.calculateOurPrice(freshMarketSnapshots);
-
-            return {
-              ...result,
-              marketSnapshots: freshMarketSnapshots,
-              ourPrice: freshOurPrice ?? result.ourPrice, // Fallback to cached value if fresh fetch fails
-            };
-          })
-        );
-      }
-
       const result = {
         query,
-        total: resultsToReturn.length,
-        results: resultsToReturn,
+        total: finalResults.length,
+        results: finalResults,
         source, // LOCAL or DISCOGS
         executedAt: new Date(),
       };
