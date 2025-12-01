@@ -422,6 +422,12 @@ class DiscogsService {
 
           const priceData = statsResponse.data.prices;
 
+          logger.debug('Discogs price stats fetched', {
+            releaseId,
+            hasData: !!priceData,
+            currency: priceData?.currency,
+          });
+
           // If no price data available, return null values
           if (!priceData) {
             return {
@@ -449,6 +455,12 @@ class DiscogsService {
     } catch (error) {
       if (error.isApiError) throw error;
 
+      logger.error('Failed to fetch price statistics', {
+        releaseId,
+        errorStatus: error.response?.status,
+        errorMessage: error.message,
+      });
+
       // If stats endpoint doesn't exist, return minimal data
       if (error.response?.status === 404) {
         logger.debug('Price stats not available for release', { releaseId });
@@ -463,10 +475,6 @@ class DiscogsService {
         };
       }
 
-      logger.error('Failed to fetch price statistics', {
-        releaseId,
-        error: error.message,
-      });
       throw new ApiError('Failed to fetch price statistics', 500);
     }
   }

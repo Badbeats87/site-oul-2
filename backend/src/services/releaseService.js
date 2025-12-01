@@ -651,17 +651,38 @@ class ReleaseService {
                     // Try marketplace price suggestions first (real marketplace data)
                     priceStats = await discogsService
                       .getPriceSuggestions(releaseIdForStats)
-                      .catch(() => null);
+                      .catch((err) => {
+                        logger.debug('getPriceSuggestions failed', {
+                          releaseId: releaseIdForStats,
+                          error: err.message,
+                        });
+                        return null;
+                      });
 
                     // If suggestions not available, try stats endpoint
                     if (!priceStats) {
                       priceStats = await discogsService
                         .getPriceStatistics(releaseIdForStats)
-                        .catch(() => null);
+                        .catch((err) => {
+                          logger.debug('getPriceStatistics failed', {
+                            releaseId: releaseIdForStats,
+                            error: err.message,
+                          });
+                          return null;
+                        });
                     }
                   } else {
                     priceStats = null;
                   }
+
+                  logger.debug('Discogs price fetch result', {
+                    resultId: result.id,
+                    releaseIdForStats,
+                    hasPriceStats: !!priceStats,
+                    lowest: priceStats?.lowest,
+                    median: priceStats?.median,
+                    highest: priceStats?.highest,
+                  });
 
                   // Build market snapshots from price data
                   const marketSnapshots =
