@@ -655,8 +655,9 @@
     // Populate form
     function populateForm(type, policy) {
       document.getElementById(`${type}-name`).value = policy.name || '';
-      document.getElementById(`${type}-buy-percentage`).value = policy.buyFormula?.percentage || '';
-      document.getElementById(`${type}-sell-percentage`).value = policy.sellFormula?.percentage || '';
+      // Convert decimal percentages (0.55) to whole numbers (55) for display
+      document.getElementById(`${type}-buy-percentage`).value = policy.buyFormula?.percentage ? policy.buyFormula.percentage * 100 : '';
+      document.getElementById(`${type}-sell-percentage`).value = policy.sellFormula?.percentage ? policy.sellFormula.percentage * 100 : '';
       document.getElementById(`${type}-buy-media-weight`).value = policy.buyFormula?.weights?.media || '';
       document.getElementById(`${type}-buy-sleeve-weight`).value = policy.buyFormula?.weights?.sleeve || '';
       document.getElementById(`${type}-sell-media-weight`).value = policy.sellFormula?.weights?.media || '';

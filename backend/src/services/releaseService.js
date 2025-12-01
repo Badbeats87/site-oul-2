@@ -74,11 +74,12 @@ class ReleaseService {
 
       // Apply buyer formula directly: median price * buy percentage
       // Since we don't have condition data in search results, assume NM/NM (1.0 multiplier)
-      const buyPercentage = buyerFormula.percentage || 0.55;
+      // Handle both { percentage: x } and { buyPercentage: x } formats
+      const buyPercentage = buyerFormula.percentage ?? buyerFormula.buyPercentage ?? 0.55;
       const basePrice = statMedian * buyPercentage;
 
-      // Apply standard rounding
-      const roundIncrement = buyerFormula.roundIncrement || 0.99;
+      // Apply standard rounding (defaults to 0.25 if not specified)
+      const roundIncrement = buyerFormula.roundIncrement ?? 0.25;
       const ourPrice = pricingService.roundToIncrement(basePrice, roundIncrement);
 
       return ourPrice;
