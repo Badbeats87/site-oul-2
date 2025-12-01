@@ -136,13 +136,13 @@ async function initializeDatabase() {
     // Don't re-throw - let app attempt to start
     return false;
   } finally {
-    // Always try to seed initial data after schema is ready
-    try {
-      await seedInitialData();
+    // Always try to seed initial data after schema is ready (non-blocking)
+    (async () => {
+      try {
+        await seedInitialData();
 
-      // Run the full seed script asynchronously (non-blocking)
-      // Don't await it - let it run in the background
-      (async () => {
+        // Run the full seed script asynchronously (non-blocking)
+        // Don't await it - let it run in the background
         try {
           logger.info('🌱 Running full database seed in background...');
           const { default: seed } = await import('../../prisma/seed.js');
@@ -152,10 +152,10 @@ async function initializeDatabase() {
             error: error.message,
           });
         }
-      })();
-    } catch (error) {
-      logger.warn('⚠️  Failed to seed initial data', { error: error.message });
-    }
+      } catch (error) {
+        logger.warn('⚠️  Failed to seed initial data', { error: error.message });
+      }
+    })();
   }
 }
 
