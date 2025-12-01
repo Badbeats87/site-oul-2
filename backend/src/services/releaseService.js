@@ -8,6 +8,7 @@ import {
   getOrSet,
 } from '../utils/cache.js';
 import inventoryService from './inventoryService.js';
+import discogsService from './discogsService.js';
 
 class ReleaseService {
   /**
@@ -523,10 +524,59 @@ class ReleaseService {
         })
       );
 
+      // If no local results found, try Discogs
+      let finalResults = resultsWithMarketData;
+      let source = 'LOCAL';
+
+      if (finalResults.length === 0) {
+        try {
+          logger.info('No local results, searching Discogs', { query });
+          const discogsResults = await discogsService.searchEnriched({
+            q: query,
+          });
+
+          if (discogsResults && discogsResults.results.length > 0) {
+            // Transform Discogs results to match our schema
+            finalResults = discogsResults.results.slice(0, limit).map((result) => ({
+              id: `discogs_${result.id}`,
+              title: result.title,
+              artist: result.artists?.[0]?.name || result.artist || 'Unknown Artist',
+              label: result.label || null,
+              barcode: result.barcode || null,
+              releaseYear: result.year || null,
+              genre: result.genre || null,
+              coverArtUrl: result.cover_image || null,
+              description: null,
+              // Market data from Discogs
+              marketSnapshots: result.price_data
+                ? [
+                    {
+                      releaseId: `discogs_${result.id}`,
+                      source: 'DISCOGS',
+                      statLow: result.price_data.median_price,
+                      statMedian: result.price_data.median_price,
+                      statHigh: result.price_data.highest_price,
+                      fetchedAt: new Date(),
+                    },
+                  ]
+                : [],
+            }));
+            source = 'DISCOGS';
+          }
+        } catch (discogsError) {
+          logger.warn('Discogs fallback search failed', {
+            query,
+            error: discogsError.message,
+          });
+          // Continue with empty results
+        }
+      }
+
       const result = {
         query,
-        total: resultsWithMarketData.length,
-        results: resultsWithMarketData,
+        total: finalResults.length,
+        results: finalResults,
+        source, // LOCAL or DISCOGS
         executedAt: new Date(),
       };
 
