@@ -550,30 +550,30 @@ class ReleaseService {
             const enrichedResults = await Promise.all(
               topResults.map(async (result) => {
                 try {
-                  const metadata = await discogsService.getMetadata(result.id);
+                  const release = await discogsService.getRelease(result.id);
 
                   return {
                     id: `discogs_${result.id}`,
-                    title: metadata.title || result.title || 'Unknown Album',
-                    artist: metadata.artists?.[0]?.name ||
-                            metadata.artist ||
+                    title: release.title || result.title || 'Unknown Album',
+                    artist: release.artists?.[0]?.name ||
+                            release.artist ||
                             result.artists?.[0]?.name ||
                             'Unknown Artist',
-                    label: metadata.labels?.[0]?.name || null,
-                    barcode: metadata.identifiers?.find(id => id.type === 'Barcode')?.value || null,
-                    releaseYear: metadata.year || null,
-                    genre: metadata.genres?.[0] || null,
-                    coverArtUrl: metadata.images?.[0]?.uri || null,
+                    label: release.labels?.[0]?.name || null,
+                    barcode: release.identifiers?.find(id => id.type === 'Barcode')?.value || null,
+                    releaseYear: release.year || null,
+                    genre: release.genres?.[0] || null,
+                    coverArtUrl: release.images?.[0]?.uri || null,
                     description: null,
                     // Market data from Discogs
-                    marketSnapshots: metadata.lowest_price
+                    marketSnapshots: release.lowest_price
                       ? [
                           {
                             releaseId: `discogs_${result.id}`,
                             source: 'DISCOGS',
-                            statLow: metadata.lowest_price,
-                            statMedian: metadata.lowest_price,
-                            statHigh: metadata.lowest_price,
+                            statLow: release.lowest_price,
+                            statMedian: release.lowest_price,
+                            statHigh: release.lowest_price,
                             fetchedAt: new Date(),
                           },
                         ]
