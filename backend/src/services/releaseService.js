@@ -9,6 +9,7 @@ import {
 } from '../utils/cache.js';
 import inventoryService from './inventoryService.js';
 import discogsService from './discogsService.js';
+import pricingService from './pricingService.js';
 
 class ReleaseService {
   /**
@@ -43,6 +44,44 @@ class ReleaseService {
 
     // Clear all search and list caches by pattern
     logger.debug('Invalidated release caches', { releaseId });
+  }
+
+  /**
+   * Calculate ourPrice from market snapshots using pricing policy
+   * @param {Array} marketSnapshots - Array of market snapshot objects with statMedian
+   * @returns {Promise<number|null>} Calculated selling price or null if no market data
+   */
+  async calculateOurPrice(marketSnapshots) {
+    try {
+      if (!marketSnapshots || marketSnapshots.length === 0) {
+        return null;
+      }
+
+      const marketSnapshot = marketSnapshots[0];
+      if (!marketSnapshot.statMedian) {
+        return null;
+      }
+
+      // Get active SELLER pricing policy
+      const sellerFormula = await pricingService.getSellerFormula();
+
+      // Calculate sell price using the market statistic and formula
+      // Since we don't have condition data in search results, use default NM conditions
+      const priceCalculation = await pricingService.calculateSellPrice({
+        releaseId: 'search-result', // Placeholder, not used for search
+        mediaCondition: 'NM',
+        sleeveCondition: 'NM',
+        costBasis: 0, // No cost basis for search results
+        marketSource: 'HYBRID',
+        marketStatistic: 'median',
+        formula: sellerFormula,
+      });
+
+      return priceCalculation.price;
+    } catch (error) {
+      logger.warn('Failed to calculate ourPrice', { error: error.message });
+      return null;
+    }
   }
 
   /**
@@ -508,7 +547,7 @@ class ReleaseService {
         .slice(0, limit)
         .map(({ _score, ...release }) => release);
 
-      // Fetch market data for top results
+      // Fetch market data and calculate ourPrice for top results
       const resultsWithMarketData = await Promise.all(
         sorted.map(async (release) => {
           const marketSnapshot = await prisma.marketSnapshot.findFirst({
@@ -518,9 +557,12 @@ class ReleaseService {
             },
             orderBy: { createdAt: 'desc' },
           });
+          const marketSnapshots = marketSnapshot ? [marketSnapshot] : [];
+          const ourPrice = await this.calculateOurPrice(marketSnapshots);
           return {
             ...release,
-            marketSnapshots: marketSnapshot ? [marketSnapshot] : [],
+            marketSnapshots,
+            ourPrice,
           };
         })
       );
@@ -622,6 +664,7 @@ class ReleaseService {
                       ]
                       : [];
 
+                  const ourPrice = await this.calculateOurPrice(marketSnapshots);
                   return {
                     id: `discogs_${result.id}`,
                     title: release.title || result.title || 'Unknown Album',
@@ -639,6 +682,7 @@ class ReleaseService {
                     coverArtUrl: release.images?.[0]?.uri || null,
                     description: null,
                     marketSnapshots,
+                    ourPrice,
                   };
                 } catch (err) {
                   logger.warn('Failed to fetch Discogs metadata', {
@@ -657,6 +701,7 @@ class ReleaseService {
                     coverArtUrl: null,
                     description: null,
                     marketSnapshots: [],
+                    ourPrice: null,
                   };
                 }
               })
