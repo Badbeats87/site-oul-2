@@ -11,6 +11,8 @@ import {
   updateSubmissionNotes,
   getSubmissionAudit,
 } from '../controllers/adminSubmissionController.js';
+import { clearCache } from '../utils/cache.js';
+import logger from '../../config/logger.js';
 
 const router = express.Router();
 
@@ -473,5 +475,34 @@ router.put(
   '/:submissionId/items/:itemId/counter-offer',
   updateItemCounterOffer
 );
+
+// ============================================================================
+// CACHE MANAGEMENT
+// ============================================================================
+
+/**
+ * @swagger
+ * /api/v1/admin/cache/clear:
+ *   post:
+ *     summary: Clear all API caches
+ *     description: Clears all cached data including search results, pricing, and Discogs API responses
+ *     tags:
+ *       - Admin - Utilities
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Cache cleared successfully
+ */
+router.post('/cache/clear', (req, res) => {
+  try {
+    clearCache();
+    logger.info('Admin cleared cache');
+    res.json({ success: true, message: 'Cache cleared successfully' });
+  } catch (error) {
+    logger.error('Failed to clear cache', { error: error.message });
+    res.status(500).json({ success: false, error: 'Failed to clear cache' });
+  }
+});
 
 export default router;

@@ -327,6 +327,12 @@ class DiscogsService {
             // Try to use OAuth token for marketplace access
             const oauthToken = await discogsOAuthService.getLatestAccessToken();
 
+            logger.debug('OAuth token lookup result', {
+              releaseId,
+              hasToken: !!oauthToken,
+              tokenUser: oauthToken?.discogsUsername,
+            });
+
             if (oauthToken && oauthToken.accessToken) {
               logger.debug('Using OAuth token for marketplace price suggestions', { releaseId });
 
@@ -421,6 +427,13 @@ class DiscogsService {
           );
 
           const priceData = statsResponse.data.prices;
+
+          logger.debug('Discogs price stats raw response', {
+            releaseId,
+            fullResponse: statsResponse.data,
+            pricesObject: priceData,
+            pricesKeys: priceData ? Object.keys(priceData) : null,
+          });
 
           logger.debug('Discogs price stats fetched', {
             releaseId,
