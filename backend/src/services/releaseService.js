@@ -791,10 +791,10 @@ class ReleaseService {
             stats: priceStats,
           });
 
-          // For masters, also check vinyl variants to find the lowest price across all pressings
+          // For masters, always check vinyl variants - vinyl pressing prices are more reliable than master aggregates
           if (isMaster) {
             try {
-              logger.debug('Master found, checking variants for lower prices', {
+              logger.debug('Master found, checking vinyl variants', {
                 masterId: releaseIdForStats,
               });
               // Get vinyl variant with best marketplace price
@@ -806,15 +806,14 @@ class ReleaseService {
                   variantPrice: vinylStats?.lowest,
                 });
 
-                // Use the lower of master or variant price
-                if (!priceStats || (vinylStats && vinylStats.lowest < priceStats.lowest)) {
-                  logger.debug('Using variant pricing (lower than master)', {
-                    masterId: releaseIdForStats,
-                    masterPrice: priceStats?.lowest,
-                    variantPrice: vinylStats.lowest,
-                  });
-                  priceStats = vinylStats;
-                }
+                // Prefer vinyl variant pricing over master - vinyl pressings are actual saleable items
+                // Masters can have fake/spam listings, so we trust the lowest vinyl variant price
+                logger.debug('Using vinyl variant pricing (preferred over master aggregate)', {
+                  masterId: releaseIdForStats,
+                  masterPrice: priceStats?.lowest,
+                  variantPrice: vinylStats.lowest,
+                });
+                priceStats = vinylStats;
               }
             } catch (variantErr) {
               logger.debug('Vinyl variant lookup failed, using master stats', {
