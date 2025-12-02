@@ -767,8 +767,8 @@ class ReleaseService {
       }
 
       if (releaseIdForStats) {
-        // Try to get marketplace stats with minimal fallback
-        // Focus on current marketplace listings as primary source
+        // Try to get marketplace stats with smart fallback
+        // First: Try current marketplace listings (most accurate when available)
         try {
           priceStats = await discogsService
             .getMarketplaceStats(releaseIdForStats, 'EUR');
@@ -784,6 +784,52 @@ class ReleaseService {
             errorStatus: err.response?.status,
           });
           priceStats = null;
+        }
+
+        // Second: If marketplace stats unavailable/filtered out, try price suggestions
+        if (!priceStats) {
+          try {
+            logger.debug('Marketplace stats unavailable, trying price suggestions', {
+              releaseId: releaseIdForStats,
+            });
+            const priceSuggestions = await discogsService
+              .getPriceSuggestions(releaseIdForStats);
+            if (priceSuggestions) {
+              logger.debug('Got price suggestions as fallback', {
+                releaseId: releaseIdForStats,
+                suggestions: priceSuggestions,
+              });
+              priceStats = priceSuggestions;
+            }
+          } catch (err) {
+            logger.debug('getPriceSuggestions failed', {
+              releaseId: releaseIdForStats,
+              error: err.message,
+            });
+          }
+        }
+
+        // Third: If still no pricing, try historical price statistics
+        if (!priceStats) {
+          try {
+            logger.debug('Trying historical price statistics', {
+              releaseId: releaseIdForStats,
+            });
+            const priceStats2 = await discogsService
+              .getPriceStatistics(releaseIdForStats);
+            if (priceStats2 && (priceStats2.lowest || priceStats2.median || priceStats2.average)) {
+              logger.debug('Got price statistics as second fallback', {
+                releaseId: releaseIdForStats,
+                stats: priceStats2,
+              });
+              priceStats = priceStats2;
+            }
+          } catch (err) {
+            logger.debug('getPriceStatistics failed', {
+              releaseId: releaseIdForStats,
+              error: err.message,
+            });
+          }
         }
       }
 
