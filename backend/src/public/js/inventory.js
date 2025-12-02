@@ -137,7 +137,7 @@ class InventoryManager {
     if (this.inventory.length === 0) {
       this.tbody.innerHTML = `
         <tr>
-          <td colspan="8" class="empty-state">
+          <td colspan="13" class="empty-state">
             <div class="empty-state-icon">📦</div>
             <div class="empty-state-title">No inventory items found</div>
             <div class="empty-state-message">
@@ -155,81 +155,44 @@ class InventoryManager {
   renderRow(item) {
     const margin = this.calculateMargin(item);
     const submissionDetail = item.submission
-      ? `<button class="button button--sm button--ghost"
-           data-inventory-view-submission
-           data-submission-id="${item.submission.submissionId}">
-            View Submission
-         </button>
-         <div class="text-muted">${item.submission.sellerName || ''}</div>`
-      : '<span class="text-muted">Manual entry</span>';
+      ? `
+        <div class="table-meta">${item.submission.sellerName || ''}</div>
+        <button class="button button--sm button--ghost"
+          data-inventory-view-submission
+          data-submission-id="${item.submission.submissionId}">
+          View
+        </button>`
+      : '<span class="text-muted">—</span>';
 
     return `
       <tr data-row-id="${item.id}">
         <td>
-          <div class="record-cell">
-            <div class="record-thumb">
-              ${
-  item.release?.coverArtUrl
-    ? `<img src="${item.release.coverArtUrl}" alt="${item.release?.title || 'Record'}">`
-    : '<div class="record-thumb__placeholder">♫</div>'
-}
-            </div>
-            <div>
-              <div class="record-title">${item.release?.title || 'Unknown Record'}</div>
-              <div class="record-meta">${item.release?.artist || ''} • ${item.release?.releaseYear || 'Year N/A'}</div>
-            </div>
-          </div>
+          <div class="table-title">${item.release?.title || 'Unknown Record'}</div>
+          <div class="table-meta text-muted">${item.release?.releaseYear || 'Year N/A'}</div>
+        </td>
+        <td>${item.release?.artist || '—'}</td>
+        <td>${item.release?.label || '—'}</td>
+        <td><input type="text" class="table-input" data-field="sku" value="${item.sku || ''}"></td>
+        <td>${item.channel || '—'}</td>
+        <td>${item.conditionMedia || 'N/A'} / ${item.conditionSleeve || 'N/A'}</td>
+        <td>${this.renderStatusSelect(item.status)}</td>
+        <td class="numeric">${this.formatCurrency(item.costBasis)}</td>
+        <td>
+          <input type="number" min="0" step="0.01" class="table-input" data-field="listPrice" value="${item.listPrice ?? ''}">
+          <div class="table-meta text-muted">Margin ${margin}%</div>
         </td>
         <td>
-          <div class="stacked">
-            <label>Label</label>
-            <input type="text" value="${item.release?.label || ''}" readonly>
-            <label>Catalog #</label>
-            <input type="text" value="${item.release?.catalogNumber || ''}" readonly>
-          </div>
+          <input type="number" min="0" step="0.01" class="table-input" data-field="salePrice" value="${item.salePrice ?? ''}">
         </td>
         <td>
-          <div class="stacked">
-            <label>SKU</label>
-            <input type="text" data-field="sku" value="${item.sku || ''}">
-            <label>Channel</label>
-            <input type="text" value="${item.channel || ''}" disabled>
-          </div>
+          <div class="table-meta">${this.formatDate(item.createdAt) || '—'}</div>
+          <div class="table-meta text-muted">${item.listedAt ? `Listed ${this.formatDate(item.listedAt)}` : 'Not listed'}</div>
         </td>
+        <td>${submissionDetail}</td>
         <td>
-          <span class="condition-badge">${item.conditionMedia || 'N/A'} / ${item.conditionSleeve || 'N/A'}</span>
-        </td>
-        <td>
-          <div class="stacked">
-            <label>Status</label>
-            ${this.renderStatusSelect(item.status)}
-          </div>
-        </td>
-        <td>
-          <div class="pricing-grid">
-            <label>Cost</label>
-            <input type="number" value="${item.costBasis ?? ''}" disabled>
-            <label>List Price</label>
-            <input type="number" min="0" step="0.01" data-field="listPrice" value="${item.listPrice ?? ''}">
-            <label>Sale Price</label>
-            <input type="number" min="0" step="0.01" data-field="salePrice" value="${item.salePrice ?? ''}">
-            <label>Margin</label>
-            <input type="text" value="${margin}%" readonly>
-          </div>
-        </td>
-        <td>
-          <div class="stacked">
-            <div><span class="text-muted">Listed</span> ${this.formatDate(item.listedAt) || 'Not listed'}</div>
-            <div><span class="text-muted">Sold</span> ${this.formatRelative(item.soldAt)}</div>
-          </div>
-        </td>
-        <td>
-          <div class="stacked">
-            ${submissionDetail}
-            <button class="button button--sm button--primary" data-inventory-save data-inventory-id="${item.id}">
-              Save
-            </button>
-          </div>
+          <button class="button button--sm button--primary" data-inventory-save data-inventory-id="${item.id}">
+            Save
+          </button>
         </td>
       </tr>
     `;

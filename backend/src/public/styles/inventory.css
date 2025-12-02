@@ -98,7 +98,7 @@
   padding: var(--space-md) var(--space-lg);
   font-size: var(--font-size-sm);
   color: var(--color-text);
-  vertical-align: middle;
+  vertical-align: top;
 }
 
 /* Record Info Column */
@@ -212,6 +212,28 @@
   font-size: var(--font-size-sm);
   color: var(--color-text-light);
   margin-bottom: var(--space-lg);
+}
+
+.table-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+}
+
+.table-title {
+  font-weight: var(--font-weight-semibold);
+}
+
+.table-meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-light);
+  margin-top: 2px;
+}
+
+.numeric {
+  white-space: nowrap;
 }
 
 /* Pagination */
