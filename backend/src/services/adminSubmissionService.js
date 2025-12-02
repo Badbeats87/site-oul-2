@@ -172,7 +172,15 @@ class AdminSubmissionService {
         where: { id: submissionId },
         include: {
           items: {
-            include: {
+            select: {
+              id: true,
+              status: true,
+              quantity: true,
+              autoOfferPrice: true,
+              counterOfferPrice: true,
+              finalOfferPrice: true,
+              sellerConditionMedia: true,
+              sellerConditionSleeve: true,
               release: {
                 select: {
                   id: true,
