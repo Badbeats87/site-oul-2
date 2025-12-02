@@ -136,51 +136,44 @@
                   placeholder="Search submissions..."
                   class="search-input"
                   style="width: 250px"
+                  data-submissions-search
                 />
+                <select data-submissions-status-filter style="margin-left: 10px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                  <option value="all">All Statuses</option>
+                  <option value="PENDING">Pending</option>
+                  <option value="ACCEPTED">Accepted</option>
+                  <option value="REJECTED">Rejected</option>
+                </select>
               </div>
             </div>
 
-            <div class="submissions-list">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th>Submission</th>
-                    <th>Seller</th>
-                    <th>Items</th>
-                    <th>Value</th>
-                    <th>Status</th>
-                    <th>Submitted</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>SUB-2024-001</td>
-                    <td>John Collector</td>
-                    <td>5</td>
-                    <td>$245.50</td>
-                    <td>
-                      <span class="badge badge--info">Pending Review</span>
-                    </td>
-                    <td>Nov 28, 2024</td>
-                  </tr>
-                  <tr>
-                    <td>SUB-2024-002</td>
-                    <td>Record Enthusiast</td>
-                    <td>3</td>
-                    <td>$128.75</td>
-                    <td><span class="badge badge--success">Accepted</span></td>
-                    <td>Nov 27, 2024</td>
-                  </tr>
-                  <tr>
-                    <td>SUB-2024-003</td>
-                    <td>Vinyl Collector Pro</td>
-                    <td>8</td>
-                    <td>$542.00</td>
-                    <td><span class="badge badge--warning">In Review</span></td>
-                    <td>Nov 26, 2024</td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="submissions-list" data-submissions-loading style="display: none; text-align: center; padding: 20px;">
+              Loading submissions...
+            </div>
+
+            <div class="submissions-error" data-submissions-error style="display: none; background: #fee; color: #c00; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+              <!-- Error message will be inserted here -->
+            </div>
+
+            <div class="submissions-container" data-submissions-container>
+              <div class="submissions-list">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Seller Email</th>
+                      <th>Items</th>
+                      <th>Total Value</th>
+                      <th>Status</th>
+                      <th>Submitted</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody data-submissions-tbody>
+                    <!-- Submissions will be populated by JavaScript -->
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
@@ -364,8 +357,27 @@
       </div>
     </footer>
 
-    <!-- Simple Tab Switching Script -->
+    <!-- Load JavaScript dependencies -->
+    <script src="../../js/api-client.js"></script>
+    <script src="../../js/submissions.js"></script>
+    <script src="../../js/admin.js"></script>
+
+    <!-- Admin Dashboard Initialization -->
     <script>
+      // Initialize API client and submissions manager when page loads
+      document.addEventListener('DOMContentLoaded', function () {
+        console.log('=== Admin Dashboard Initializing ===');
+
+        // Create API client instance
+        const apiClient = new APIClient('/api/v1');
+        console.log('API Client created');
+
+        // Create and initialize submissions manager
+        window.submissionsManager = new SubmissionsManager(apiClient);
+        console.log('Submissions Manager created');
+      });
+
+      // Simple Tab Switching Helper (used in onclick handlers)
       function switchTab(index) {
         // Hide all tabs
         const tabs = document.querySelectorAll('.tab-panel');
@@ -388,26 +400,6 @@
         buttons[index].classList.add('tab-btn--active');
         buttons[index].setAttribute('aria-selected', 'true');
       }
-
-      // Debug logging
-      window.addEventListener('load', function () {
-        console.log('=== ADMIN PAGE DEBUG INFO ===');
-        console.log('Document Height:', document.documentElement.scrollHeight);
-        console.log('Window Height:', window.innerHeight);
-        console.log('Body Height:', document.body.scrollHeight);
-        console.log(
-          'Can Scroll:',
-          document.documentElement.scrollHeight > window.innerHeight
-        );
-        console.log(
-          'Body computed overflow-y:',
-          window.getComputedStyle(document.body).overflowY
-        );
-        console.log(
-          'HTML computed overflow:',
-          window.getComputedStyle(document.documentElement).overflow
-        );
-      });
     </script>
   </body>
 </html>
