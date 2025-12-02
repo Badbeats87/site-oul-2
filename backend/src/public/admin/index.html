@@ -331,6 +331,29 @@
             </a>
           </div>
         </section>
+
+        <!-- Submission Details Modal -->
+        <div
+          class="modal-backdrop"
+          data-submission-details-modal
+          style="display: none"
+        >
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2>Submission Details</h2>
+              <button
+                class="modal-close-btn"
+                data-close-submission-modal
+                aria-label="Close submission details modal"
+              >
+                ×
+              </button>
+            </div>
+            <div class="modal-body" data-submission-details-body>
+              <!-- Content will be rendered by submissions.js -->
+            </div>
+          </div>
+        </div>
       </div>
     </main>
 
