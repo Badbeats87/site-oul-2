@@ -838,6 +838,7 @@ class InventoryService {
           'releaseYear',
           'genre',
           'description',
+          'discogsId',
         ];
         const releaseData = {};
         for (const field of allowedReleaseFields) {
@@ -852,6 +853,17 @@ class InventoryService {
             throw new ApiError('releaseYear must be a number', 400);
           }
           releaseData.releaseYear = year;
+        }
+        if (releaseData.discogsId !== undefined) {
+          if (releaseData.discogsId === null || releaseData.discogsId === '') {
+            releaseData.discogsId = null;
+          } else {
+            const discogsNumericId = Number(releaseData.discogsId);
+            if (Number.isNaN(discogsNumericId)) {
+              throw new ApiError('discogsId must be a number', 400);
+            }
+            releaseData.discogsId = discogsNumericId;
+          }
         }
         if (Object.keys(releaseData).length > 0) {
           await prisma.release.update({

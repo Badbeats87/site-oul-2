@@ -159,6 +159,33 @@
     white-space: nowrap;
 }
 
+.table-discogs {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.table-discogs .button {
+    white-space: nowrap;
+}
+
+.suggestion-hint {
+    display: none;
+    font-size: var(--font-size-xs);
+    color: var(--color-accent);
+    margin-top: 4px;
+}
+
+.suggestion-hint.is-visible {
+    display: block;
+}
+
+.suggestion-hint button {
+    margin-left: var(--space-xs);
+    padding: 2px 6px;
+    font-size: var(--font-size-xs);
+}
+
 .button--ghost {
     background: transparent;
     border: 1px solid var(--color-border);

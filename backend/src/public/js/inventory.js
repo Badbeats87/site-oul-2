@@ -101,6 +101,26 @@ class InventoryManager {
           window.open(`/admin/submission.html?id=${submissionId}`, '_blank');
         }
       }
+
+      if (event.target.matches('[data-discogs-fetch]')) {
+        const row = event.target.closest('tr[data-row-id]');
+        const discogsInput = row?.querySelector('[data-release-field="discogsId"]');
+        const discogsId = discogsInput?.value?.trim();
+        if (!row || !discogsId) {
+          this.showError('Enter a Discogs release ID first');
+          return;
+        }
+        this.loadDiscogsSuggestions(row, discogsId);
+      }
+
+      if (event.target.matches('[data-apply-suggestion]')) {
+        const row = event.target.closest('tr[data-row-id]');
+        if (!row) return;
+        const field = event.target.dataset.field;
+        const rawValue = event.target.dataset.value || '';
+        const value = decodeURIComponent(rawValue);
+        this.applySuggestion(row, field, value);
+      }
     });
   }
 
@@ -175,11 +195,26 @@ class InventoryManager {
           <div class="table-meta text-muted">${release.releaseYear || 'Year N/A'}</div>
         </td>
         <td>${release.artist || '—'}</td>
-        <td><input type="text" class="table-input" data-release-field="label" value="${release.label || ''}"></td>
-        <td><input type="text" class="table-input" data-release-field="catalogNumber" value="${release.catalogNumber || ''}"></td>
-        <td><input type="number" class="table-input" data-release-field="releaseYear" value="${release.releaseYear ?? ''}"></td>
-        <td><input type="text" class="table-input" data-release-field="genre" value="${release.genre || ''}"></td>
-        <td><input type="text" class="table-input" data-release-field="description" value="${release.description || ''}" placeholder="Variant / version"></td>
+        <td>
+          <input type="text" class="table-input" data-release-field="label" value="${release.label || ''}">
+          <div class="table-meta suggestion-hint" data-suggestion-for="label"></div>
+        </td>
+        <td>
+          <input type="text" class="table-input" data-release-field="catalogNumber" value="${release.catalogNumber || ''}">
+          <div class="table-meta suggestion-hint" data-suggestion-for="catalogNumber"></div>
+        </td>
+        <td>
+          <input type="number" class="table-input" data-release-field="releaseYear" value="${release.releaseYear ?? ''}">
+          <div class="table-meta suggestion-hint" data-suggestion-for="releaseYear"></div>
+        </td>
+        <td>
+          <input type="text" class="table-input" data-release-field="genre" value="${release.genre || ''}">
+          <div class="table-meta suggestion-hint" data-suggestion-for="genre"></div>
+        </td>
+        <td>
+          <input type="text" class="table-input" data-release-field="description" value="${release.description || ''}" placeholder="Variant / version">
+          <div class="table-meta suggestion-hint" data-suggestion-for="description"></div>
+        </td>
         <td><input type="text" class="table-input" data-field="sku" value="${item.sku || ''}"></td>
         <td>${item.channel || '—'}</td>
         <td>${item.conditionMedia || 'N/A'} / ${item.conditionSleeve || 'N/A'}</td>
@@ -193,11 +228,17 @@ class InventoryManager {
           <input type="number" min="0" step="0.01" class="table-input" data-field="salePrice" value="${item.salePrice ?? ''}">
         </td>
         <td>
-          ${
-            discogsLink
-              ? `<a href="${discogsLink}" target="_blank" rel="noopener">View</a>`
-              : '<span class="text-muted">No link</span>'
-          }
+          <div class="table-discogs">
+            <input type="number" class="table-input" data-release-field="discogsId" value="${release.discogsId ?? ''}" placeholder="Discogs ID">
+            <button type="button" class="button button--ghost button--sm" data-discogs-fetch>Fetch</button>
+          </div>
+          <div class="table-meta">
+            ${
+              discogsLink
+                ? `<a href="${discogsLink}" target="_blank" rel="noopener">Open</a>`
+                : '<span class="text-muted">No link</span>'
+            }
+          </div>
         </td>
         <td>${submissionDetail}</td>
         <td>
@@ -303,6 +344,15 @@ class InventoryManager {
         releasePayload.releaseYear = Number.isNaN(parsedYear) ? null : parsedYear;
       }
     }
+    const discogsInput = row.querySelector('[data-release-field="discogsId"]');
+    if (discogsInput) {
+      if (discogsInput.value === '') {
+        releasePayload.discogsId = null;
+      } else {
+        const parsedDiscogs = parseInt(discogsInput.value, 10);
+        releasePayload.discogsId = Number.isNaN(parsedDiscogs) ? null : parsedDiscogs;
+      }
+    }
     const sanitizedRelease = Object.fromEntries(
       Object.entries(releasePayload).filter(([, value]) => value !== undefined)
     );
@@ -386,6 +436,94 @@ class InventoryManager {
       clearTimeout(timeout);
       timeout = setTimeout(() => fn.apply(this, args), delay);
     };
+  }
+
+  async loadDiscogsSuggestions(row, discogsId) {
+    try {
+      this.showLoading(true);
+      const release = await this.api.get(`/integrations/discogs/releases/${discogsId}`);
+      const suggestions = this.extractDiscogsSuggestions(release);
+      const discogsInput = row.querySelector('[data-release-field="discogsId"]');
+      if (discogsInput && !discogsInput.value) {
+        discogsInput.value = discogsId;
+      }
+      this.showDiscogsSuggestions(row, suggestions);
+      this.showSuccess('Discogs suggestions loaded');
+    } catch (error) {
+      console.error('Discogs fetch failed', error);
+      this.showError('Failed to load Discogs data: ' + error.message);
+    } finally {
+      this.showLoading(false);
+    }
+  }
+
+  extractDiscogsSuggestions(release) {
+    const primaryLabel = release?.labels?.[0];
+    const year =
+      release?.year ||
+      (release?.released ? parseInt(release.released.split('-')[0], 10) : null);
+    const genreValue =
+      release?.genres?.join(', ') ||
+      release?.styles?.join(', ') ||
+      null;
+
+    return {
+      label: primaryLabel?.name || null,
+      catalogNumber: primaryLabel?.catno || null,
+      releaseYear: year ? String(year) : null,
+      genre: genreValue,
+      description: release?.notes || null,
+    };
+  }
+
+  showDiscogsSuggestions(row, suggestions) {
+    Object.entries(suggestions).forEach(([field, value]) => {
+      const hint = row.querySelector(`[data-suggestion-for="${field}"]`);
+      if (!hint) return;
+
+      if (!value) {
+        hint.classList.remove('is-visible');
+        hint.innerHTML = '';
+        return;
+      }
+
+      const encodedValue = encodeURIComponent(value);
+      hint.innerHTML = `
+        Discogs: <strong>${this.escapeHtml(value)}</strong>
+        <button type="button"
+          class="button button--ghost button--sm"
+          data-apply-suggestion
+          data-field="${field}"
+          data-value="${encodedValue}">
+          Apply
+        </button>
+      `;
+      hint.classList.add('is-visible');
+    });
+  }
+
+  applySuggestion(row, field, value) {
+    if (!field) return;
+    const target =
+      row.querySelector(`[data-release-field="${field}"]`) ||
+      row.querySelector(`[data-field="${field}"]`);
+    if (!target) return;
+    if (field === 'releaseYear' && value) {
+      const parsed = parseInt(value, 10);
+      target.value = Number.isNaN(parsed) ? '' : parsed;
+    } else {
+      target.value = value ?? '';
+    }
+  }
+
+  escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 }
 
