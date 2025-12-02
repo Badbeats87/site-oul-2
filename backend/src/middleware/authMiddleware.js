@@ -58,6 +58,11 @@ export const authenticate = async (req, res, next) => {
     return next();
   }
 
+  // Allow seller registration without authentication
+  if (req.path === '/api/v1/sellers/register' && req.method === 'POST') {
+    return next();
+  }
+
   // Allow static files without authentication
   // Admin dashboard, styles, and client-side JS
   const isStaticFile =
