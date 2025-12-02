@@ -791,23 +791,33 @@ class ReleaseService {
             stats: priceStats,
           });
 
-          // If this is a master and stats are null/low, try to find better-priced variants
-          if (!priceStats && isMaster && result.type === 'master') {
-            logger.debug('Master-level stats unavailable, checking variants', {
-              masterId: releaseIdForStats,
-            });
+          // For masters, also check vinyl variants to find the lowest price across all pressings
+          if (isMaster && result.type === 'master') {
             try {
+              logger.debug('Master found, checking variants for lower prices', {
+                masterId: releaseIdForStats,
+              });
               // Get vinyl variant with best marketplace price
               const vinylStats = await discogsService.getVinylMarketplaceStats(releaseIdForStats, 'EUR');
               if (vinylStats) {
-                logger.debug('Found vinyl variant with better pricing', {
+                logger.debug('Found vinyl variant pricing', {
                   masterId: releaseIdForStats,
-                  variantStats: vinylStats,
+                  masterPrice: priceStats?.lowest,
+                  variantPrice: vinylStats?.lowest,
                 });
-                priceStats = vinylStats;
+
+                // Use the lower of master or variant price
+                if (!priceStats || (vinylStats && vinylStats.lowest < priceStats.lowest)) {
+                  logger.debug('Using variant pricing (lower than master)', {
+                    masterId: releaseIdForStats,
+                    masterPrice: priceStats?.lowest,
+                    variantPrice: vinylStats.lowest,
+                  });
+                  priceStats = vinylStats;
+                }
               }
             } catch (variantErr) {
-              logger.debug('Vinyl variant lookup failed', {
+              logger.debug('Vinyl variant lookup failed, using master stats', {
                 masterId: releaseIdForStats,
                 error: variantErr.message,
               });
