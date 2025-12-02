@@ -669,12 +669,25 @@ const sellerApp = {
 
       // Step 2: Submit items
       console.log('Submitting items...');
-      const items = this.state.sellingList.map((item) => ({
-        discogsId: item.album.id,
-        quantity: item.quantity,
-        conditionMedia: this.mapConditionToCode(item.mediaCondition),
-        conditionSleeve: this.mapConditionToCode(item.sleeveCondition),
-      }));
+      const items = this.state.sellingList.map((item) => {
+        const payload = {
+          quantity: item.quantity,
+          conditionMedia: this.mapConditionToCode(item.mediaCondition),
+          conditionSleeve: this.mapConditionToCode(item.sleeveCondition),
+        };
+
+        if (this.isUuid(item.album.id)) {
+          payload.releaseId = item.album.id;
+        } else {
+          const discogsId = this.normalizeDiscogsId(item.album.id);
+          if (!discogsId) {
+            throw new Error('Selected record is missing a valid identifier');
+          }
+          payload.discogsId = discogsId;
+        }
+
+        return payload;
+      });
 
       const submissionResponse = await fetch(`/api/v1/submissions/${sellerId}`, {
         method: 'POST',
@@ -721,6 +734,23 @@ const sellerApp = {
       good: 'GOOD',
     };
     return conditionMap[condition] || condition.toUpperCase();
+  },
+
+  normalizeDiscogsId(rawId) {
+    if (!rawId) return null;
+    const cleaned = String(rawId).replace(/^discogs_/i, '');
+    if (!/^\d+$/.test(cleaned)) {
+      return null;
+    }
+    const parsed = parseInt(cleaned, 10);
+    return Number.isNaN(parsed) ? null : parsed;
+  },
+
+  isUuid(value) {
+    if (!value || typeof value !== 'string') return false;
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      value
+    );
   },
 };
 
