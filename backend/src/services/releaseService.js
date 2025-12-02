@@ -777,6 +777,29 @@ class ReleaseService {
             hasStats: !!priceStats,
             stats: priceStats,
           });
+
+          // If this is a master and stats are null/low, try to find better-priced variants
+          if (!priceStats && isMaster && result.type === 'master') {
+            logger.debug('Master-level stats unavailable, checking variants', {
+              masterId: releaseIdForStats,
+            });
+            try {
+              // Get vinyl variant with best marketplace price
+              const vinylStats = await discogsService.getVinylMarketplaceStats(releaseIdForStats, 'EUR');
+              if (vinylStats) {
+                logger.debug('Found vinyl variant with better pricing', {
+                  masterId: releaseIdForStats,
+                  variantStats: vinylStats,
+                });
+                priceStats = vinylStats;
+              }
+            } catch (variantErr) {
+              logger.debug('Vinyl variant lookup failed', {
+                masterId: releaseIdForStats,
+                error: variantErr.message,
+              });
+            }
+          }
         } catch (err) {
           logger.error('getMarketplaceStats failed', {
             releaseId: releaseIdForStats,
