@@ -691,41 +691,18 @@ class ReleaseService {
         return [];
       }
 
-      // Enrich only top 2 results fully (most relevant)
-      // Balance between speed (avoid many API calls) and accuracy (top results have real pricing)
-      const topResults = discogsResults.results.slice(0, Math.min(limit, 2));
+      // Enrich all results to ensure accurate pricing
+      // No more rapid requests since search is button-triggered, not live
+      const allResults = discogsResults.results.slice(0, limit);
 
-      const enrichedTopResults = await Promise.all(
-        topResults.map((result) => this._enrichDiscogsResult(result))
+      const enrichedResults = await Promise.all(
+        allResults.map((result) => this._enrichDiscogsResult(result))
       );
 
-      // Filter out top results without marketplace data
-      let finalResults = enrichedTopResults.filter(
+      // Filter out results without marketplace data
+      let finalResults = enrichedResults.filter(
         (result) => result && result.marketSnapshots && result.marketSnapshots.length > 0
       );
-
-      // For remaining results, return basic info without enrichment
-      // Remaining results will show "N/A" or can be clicked for enrichment on demand
-      if (discogsResults.results.length > topResults.length && finalResults.length < limit) {
-        const remainingResults = discogsResults.results.slice(topResults.length);
-        const availableSlots = Math.max(limit - finalResults.length, 0);
-        if (availableSlots > 0) {
-          const basicResults = remainingResults
-            .slice(0, availableSlots)
-            .map((result) => ({
-              id: result.id,
-              title: result.title,
-              type: result.type,
-              uri: result.uri,
-              resource_url: result.resource_url,
-              basic_information: result.basic_information,
-              source: 'DISCOGS',
-              marketSnapshots: [], // No pricing data available without full enrichment
-              ourPrice: null,
-            }));
-          finalResults = [...finalResults, ...basicResults];
-        }
-      }
 
       logger.info('Discogs search completed', {
         query,

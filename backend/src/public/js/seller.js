@@ -3,9 +3,7 @@ const sellerApp = {
   state: {
     searchResults: [],
     selectedAlbum: null,
-    searchTimeout: null,
     pricingPolicy: null,
-    abortController: null, // Cancel in-flight requests
   },
 
   init() {
@@ -32,46 +30,31 @@ const sellerApp = {
   },
 
   bindEvents() {
-    // Real-time search with debouncing
-    if (this.searchInput) {
-      this.searchInput.addEventListener('input', (e) => {
-        clearTimeout(this.state.searchTimeout);
-        // Cancel any in-flight requests
-        if (this.state.abortController) {
-          this.state.abortController.abort();
-        }
-        const query = e.target.value.trim();
-
-        if (query.length < 2) {
-          this.hideDropdown();
-          return;
-        }
-
-        // Increased debounce delay from 300ms to 800ms to reduce API pressure
-        this.state.searchTimeout = setTimeout(() => {
+    // Search button - explicit search only (no live search)
+    if (this.searchButton) {
+      this.searchButton.addEventListener('click', () => {
+        const query = this.searchInput?.value.trim();
+        if (query && query.length >= 2) {
           this.performSearch(query);
-        }, 800);
+        }
+      });
+    }
+
+    // Enter key also triggers search
+    if (this.searchInput) {
+      this.searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          const query = e.target.value.trim();
+          if (query.length >= 2) {
+            this.performSearch(query);
+          }
+        }
       });
 
       // Close dropdown when clicking outside
       document.addEventListener('click', (e) => {
         if (!e.target.closest('.search-box-container')) {
           this.hideDropdown();
-        }
-      });
-    }
-
-    // Search button (for manual search)
-    if (this.searchButton) {
-      this.searchButton.addEventListener('click', () => {
-        this.performSearch(this.searchInput.value.trim());
-      });
-    }
-
-    if (this.searchInput) {
-      this.searchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          this.performSearch(this.searchInput.value.trim());
         }
       });
     }
@@ -163,16 +146,10 @@ const sellerApp = {
     this.showLoading();
 
     try {
-      // Create new abort controller for this request
-      this.state.abortController = new AbortController();
-
       const response = await fetch(
         `/api/v1/catalog/search?q=${encodeURIComponent(
           query
-        )}&limit=20&source=DISCOGS`,
-        {
-          signal: this.state.abortController.signal,
-        }
+        )}&limit=20&source=DISCOGS`
       );
 
       if (!response.ok) {
@@ -191,11 +168,6 @@ const sellerApp = {
 
       this.displayDropdownResults();
     } catch (error) {
-      // Don't show error if request was aborted (user typed again)
-      if (error.name === 'AbortError') {
-        console.log('Search cancelled by new input');
-        return;
-      }
       console.error('Search error:', error);
       this.showNoResults();
     }
