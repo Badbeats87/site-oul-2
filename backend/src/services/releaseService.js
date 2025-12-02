@@ -691,34 +691,39 @@ class ReleaseService {
         return [];
       }
 
-      // Enrich all results but limit concurrent enrichment to avoid rate limiting
-      // Enrich top 5 results first (these will have marketplace data)
-      const allResults = discogsResults.results.slice(0, Math.min(limit, 10));
-      const topResults = allResults.slice(0, Math.min(limit, 5));
+      // Enrich only top 2 results fully (most relevant)
+      // Balance between speed (avoid many API calls) and accuracy (top results have real pricing)
+      const topResults = discogsResults.results.slice(0, Math.min(limit, 2));
 
       const enrichedTopResults = await Promise.all(
         topResults.map((result) => this._enrichDiscogsResult(result))
       );
 
-      // Filter out results without marketplace data (but keep going if rate limited)
+      // Filter out top results without marketplace data
       let finalResults = enrichedTopResults.filter(
         (result) => result && result.marketSnapshots && result.marketSnapshots.length > 0
       );
 
-      // Enrich remaining results without waiting (will still get correct pricing)
-      if (allResults.length > topResults.length && finalResults.length < limit) {
-        const remainingResults = allResults.slice(topResults.length);
+      // For remaining results, return basic info without enrichment
+      // Remaining results will show "N/A" or can be clicked for enrichment on demand
+      if (discogsResults.results.length > topResults.length && finalResults.length < limit) {
+        const remainingResults = discogsResults.results.slice(topResults.length);
         const availableSlots = Math.max(limit - finalResults.length, 0);
         if (availableSlots > 0) {
-          const remainingToEnrich = remainingResults.slice(0, availableSlots);
-          // Fire off enrichment in background without blocking (still respects throttling)
-          const backgroundEnriched = await Promise.all(
-            remainingToEnrich.map((result) => this._enrichDiscogsResult(result))
-          );
-          const validResults = backgroundEnriched.filter(
-            (result) => result && result.marketSnapshots && result.marketSnapshots.length > 0
-          );
-          finalResults = [...finalResults, ...validResults];
+          const basicResults = remainingResults
+            .slice(0, availableSlots)
+            .map((result) => ({
+              id: result.id,
+              title: result.title,
+              type: result.type,
+              uri: result.uri,
+              resource_url: result.resource_url,
+              basic_information: result.basic_information,
+              source: 'DISCOGS',
+              marketSnapshots: [], // No pricing data available without full enrichment
+              ourPrice: null,
+            }));
+          finalResults = [...finalResults, ...basicResults];
         }
       }
 
