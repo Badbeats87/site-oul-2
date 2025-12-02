@@ -397,6 +397,10 @@ class DiscogsService {
 
       const cacheKey = generateCacheKey('discogs', `marketplace_stats_${releaseId}_${currencyCode}`, {});
 
+      // Cache for 5 minutes in development, 30 minutes in production
+      // Marketplace prices change frequently and short cache helps with testing
+      const cacheTTL = process.env.NODE_ENV === 'development' ? 300 : 1800;
+
       return await getOrSet(
         cacheKey,
         async () => {
@@ -475,7 +479,7 @@ class DiscogsService {
             return null;
           }
         },
-        1800 // Cache for 30 minutes (marketplace prices change frequently)
+        cacheTTL
       );
     } catch (error) {
       if (error.isApiError) throw error;
@@ -601,7 +605,7 @@ class DiscogsService {
             return null;
           }
         },
-        1800 // Cache for 30 minutes
+        process.env.NODE_ENV === 'development' ? 300 : 1800 // Cache for 5 min (dev) or 30 min (prod)
       );
     } catch (error) {
       if (error.isApiError) throw error;
