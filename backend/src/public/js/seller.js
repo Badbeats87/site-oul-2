@@ -5,6 +5,7 @@ const sellerApp = {
     selectedAlbum: null,
     searchTimeout: null,
     pricingPolicy: null,
+    abortController: null, // Cancel in-flight requests
   },
 
   init() {
@@ -35,6 +36,10 @@ const sellerApp = {
     if (this.searchInput) {
       this.searchInput.addEventListener('input', (e) => {
         clearTimeout(this.state.searchTimeout);
+        // Cancel any in-flight requests
+        if (this.state.abortController) {
+          this.state.abortController.abort();
+        }
         const query = e.target.value.trim();
 
         if (query.length < 2) {
@@ -42,9 +47,10 @@ const sellerApp = {
           return;
         }
 
+        // Increased debounce delay from 300ms to 800ms to reduce API pressure
         this.state.searchTimeout = setTimeout(() => {
           this.performSearch(query);
-        }, 300);
+        }, 800);
       });
 
       // Close dropdown when clicking outside
@@ -157,10 +163,16 @@ const sellerApp = {
     this.showLoading();
 
     try {
+      // Create new abort controller for this request
+      this.state.abortController = new AbortController();
+
       const response = await fetch(
         `/api/v1/catalog/search?q=${encodeURIComponent(
           query
-        )}&limit=20&source=DISCOGS`
+        )}&limit=20&source=DISCOGS`,
+        {
+          signal: this.state.abortController.signal,
+        }
       );
 
       if (!response.ok) {
@@ -179,6 +191,11 @@ const sellerApp = {
 
       this.displayDropdownResults();
     } catch (error) {
+      // Don't show error if request was aborted (user typed again)
+      if (error.name === 'AbortError') {
+        console.log('Search cancelled by new input');
+        return;
+      }
       console.error('Search error:', error);
       this.showNoResults();
     }
