@@ -252,7 +252,7 @@ class SubmissionDetailPage {
     if (!item) return;
     const current = item.counterOfferPrice || item.autoOfferPrice || 0;
     const value = prompt(
-      `Enter counter offer price for \"${item.release?.title || 'record'}\"`,
+      `Enter counter offer price for "${item.release?.title || 'record'}"`,
       parseFloat(current).toFixed(2)
     );
     if (value === null) return;
