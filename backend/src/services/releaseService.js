@@ -131,9 +131,22 @@ class ReleaseService {
       const buyPercentage = buyerFormula.buyPercentage ?? buyerFormula.percentage ?? 0.55;
       const basePrice = baseStat * buyPercentage;
 
+      logger.debug('calculateOurPrice details', {
+        baseStat,
+        buyFormula: buyerFormula,
+        buyPercentage,
+        basePrice,
+      });
+
       // Apply standard rounding (defaults to 0.25 if not specified)
       const roundIncrement = buyerFormula.roundIncrement ?? 0.25;
       const ourPrice = pricingService.roundToIncrement(basePrice, roundIncrement);
+
+      logger.debug('calculateOurPrice result', {
+        basePrice,
+        roundIncrement,
+        ourPrice,
+      });
 
       return ourPrice;
     } catch (error) {
