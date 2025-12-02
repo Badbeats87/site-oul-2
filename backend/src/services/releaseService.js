@@ -968,19 +968,9 @@ class ReleaseService {
         releaseId: result.id,
         error: error.message,
       });
-      return {
-        id: `discogs_${result.id}`,
-        title: result.title || 'Unknown Album',
-        artist: result.artists?.[0]?.name || 'Unknown Artist',
-        label: null,
-        barcode: null,
-        releaseYear: result.year || null,
-        genre: null,
-        coverArtUrl: result.cover_image || null,
-        description: null,
-        marketSnapshots: [],
-        ourPrice: null,
-      };
+      // Return null on enrichment failure instead of fallback to incomplete data
+      // This prevents saving placeholder/incomplete data to database
+      return null;
     }
   }
 
@@ -988,10 +978,10 @@ class ReleaseService {
     try {
       logger.debug('Getting quote for Discogs ID', { discogsId, type });
 
-      // Create a minimal result object to enrichment
+      // Create a minimal result object for enrichment
+      // NOTE: Don't use placeholder title - leave it empty so enrichment doesn't fall back to it
       const minimalResult = {
         id: discogsId,
-        title: 'Loading...',
         type: type || 'master',
       };
 
