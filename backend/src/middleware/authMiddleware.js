@@ -63,6 +63,12 @@ export const authenticate = async (req, res, next) => {
     return next();
   }
 
+  // Allow seller submission without authentication
+  // Sellers who just registered need to submit items
+  if (req.path.startsWith('/api/v1/submissions/') && req.method === 'POST') {
+    return next();
+  }
+
   // Allow static files without authentication
   // Admin dashboard, styles, and client-side JS
   const isStaticFile =
