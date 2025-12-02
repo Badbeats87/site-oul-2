@@ -11,11 +11,33 @@ const DISCOGS_API_BASE = 'https://api.discogs.com';
 const getDiscogsToken = () => process.env.DISCOGS_API_TOKEN;
 
 /**
+ * Simple request throttler to respect Discogs rate limits
+ * Discogs allows 60 requests per minute, so we throttle to ~1 request per 1000ms
+ */
+class RequestThrottler {
+  constructor(minDelayMs = 1000) {
+    this.minDelayMs = minDelayMs;
+    this.lastRequestTime = 0;
+  }
+
+  async wait() {
+    const now = Date.now();
+    const timeSinceLastRequest = now - this.lastRequestTime;
+    if (timeSinceLastRequest < this.minDelayMs) {
+      const delayNeeded = this.minDelayMs - timeSinceLastRequest;
+      await new Promise((resolve) => setTimeout(resolve, delayNeeded));
+    }
+    this.lastRequestTime = Date.now();
+  }
+}
+
+/**
  * Discogs API Integration Service
  * Handles search, metadata fetching, and price data from Discogs
  */
 class DiscogsService {
   constructor() {
+    this.throttler = new RequestThrottler(1000); // 1 second between requests
     this.client = axios.create({
       baseURL: DISCOGS_API_BASE,
       timeout: 10000,
@@ -126,6 +148,9 @@ class DiscogsService {
           if (year) {
             masterSearchParams.year = year;
           }
+
+          // Throttle requests to respect Discogs rate limits
+          await this.throttler.wait();
 
           let response = await this.retryWithBackoff(
             () => this.client.get('/database/search', {
