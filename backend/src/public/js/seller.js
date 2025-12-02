@@ -86,6 +86,15 @@ const sellerApp = {
         this.addToSellingList();
       });
     });
+
+    // Submit selling list button
+    const submitButton = document.querySelector('.submission-section .button--primary');
+    if (submitButton) {
+      submitButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.submitSellingList();
+      });
+    }
   },
 
   calculateBuyingPrice(album) {
@@ -598,6 +607,120 @@ const sellerApp = {
         </p>
       `;
     }
+  },
+
+  async submitSellingList() {
+    // Validate
+    if (!this.state.sellingList || this.state.sellingList.length === 0) {
+      alert('Please add at least one record to your selling list before submitting');
+      return;
+    }
+
+    // Get form data
+    const email = document.getElementById('email')?.value.trim();
+    const phone = document.getElementById('phone')?.value.trim();
+    const payout = document.getElementById('payout')?.value;
+    const agreeCheckbox = document.querySelector('.checkbox-label input');
+    const agreed = agreeCheckbox?.checked || false;
+
+    // Validate required fields
+    if (!email) {
+      alert('Please enter your email address');
+      return;
+    }
+
+    if (!agreed) {
+      alert('Please agree to the terms and conditions');
+      return;
+    }
+
+    try {
+      // Get or create auth token
+      const token =
+        localStorage.getItem('auth_token') ||
+        sessionStorage.getItem('auth_token');
+
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      // Step 1: Register seller
+      console.log('Registering seller...');
+      const sellerResponse = await fetch('/api/v1/sellers/register', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          email,
+          name: email.split('@')[0], // Use email prefix as name if not provided
+          phone,
+        }),
+      });
+
+      if (!sellerResponse.ok) {
+        throw new Error(`Failed to register seller: ${sellerResponse.statusText}`);
+      }
+
+      const sellerData = await sellerResponse.json();
+      const sellerId = sellerData.data.id;
+      console.log('Seller registered:', sellerId);
+
+      // Step 2: Submit items
+      console.log('Submitting items...');
+      const items = this.state.sellingList.map((item) => ({
+        discogsId: item.album.id,
+        quantity: item.quantity,
+        conditionMedia: this.mapConditionToCode(item.mediaCondition),
+        conditionSleeve: this.mapConditionToCode(item.sleeveCondition),
+      }));
+
+      const submissionResponse = await fetch(`/api/v1/submissions/${sellerId}`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ items }),
+      });
+
+      if (!submissionResponse.ok) {
+        throw new Error(`Failed to submit items: ${submissionResponse.statusText}`);
+      }
+
+      const submissionData = await submissionResponse.json();
+      console.log('Submission created:', submissionData.data);
+
+      // Success!
+      alert(
+        `✅ Submission successful!\n\nWe received ${items.length} record${
+          items.length !== 1 ? 's' : ''
+        } valued at €${submissionData.data.totalOffered}.\n\nWe'll review your items and send you an offer within 24 hours.`
+      );
+
+      // Reset everything for next submission
+      this.state.sellingList = [];
+      this.updateSellingListUI();
+      this.resetForm();
+      document.getElementById('email').value = '';
+      document.getElementById('phone').value = '';
+      document.getElementById('payout').value = 'ACH Bank Transfer';
+      if (agreeCheckbox) agreeCheckbox.checked = false;
+    } catch (error) {
+      console.error('Submission error:', error);
+      alert(`Error submitting: ${error.message}`);
+    }
+  },
+
+  mapConditionToCode(condition) {
+    // Map display conditions to backend codes (e.g., "Near Mint" -> "NM")
+    const conditionMap = {
+      mint: 'MINT',
+      nm: 'NM',
+      vgp: 'VG_PLUS',
+      vg: 'VG',
+      vgm: 'VG_MINUS',
+      good: 'GOOD',
+    };
+    return conditionMap[condition] || condition.toUpperCase();
   },
 };
 
