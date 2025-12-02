@@ -785,7 +785,9 @@ class ReleaseService {
         }
 
         // If no current marketplace listings, try price suggestions (seller recommendations)
+        // Add delay to respect rate limits when making multiple API calls
         if (!priceStats) {
+          await new Promise((resolve) => setTimeout(resolve, 3100)); // 3.1s delay to match throttler
           try {
             const priceSuggestions = await discogsService
               .getPriceSuggestions(releaseIdForStats);
@@ -805,7 +807,9 @@ class ReleaseService {
         }
 
         // If still no pricing, try historical price statistics
+        // Add delay to respect rate limits when making multiple API calls
         if (!priceStats) {
+          await new Promise((resolve) => setTimeout(resolve, 3100)); // 3.1s delay to match throttler
           try {
             const priceStats2 = await discogsService
               .getPriceStatistics(releaseIdForStats);
