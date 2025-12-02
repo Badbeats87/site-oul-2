@@ -330,21 +330,24 @@ const sellerApp = {
   updateQuote(album) {
     // Get base price from backend calculation (respects current pricing policy)
     // If backend calculated ourPrice, use that; otherwise fall back to local calculation
-    console.log('updateQuote called with album:', {
-      title: album.title,
-      ourPrice: album.ourPrice,
-      marketSnapshots: album.marketSnapshots,
-    });
+    console.log('=== updateQuote DEBUG ===');
+    console.log('Album object keys:', Object.keys(album));
+    console.log('album.ourPrice type:', typeof album.ourPrice);
+    console.log('album.ourPrice value:', album.ourPrice);
+    console.log('album.ourPrice !== null:', album.ourPrice !== null);
+    console.log('album.ourPrice !== undefined:', album.ourPrice !== undefined);
 
     let baseOffer;
     if (album.ourPrice !== null && album.ourPrice !== undefined) {
       baseOffer = album.ourPrice;
-      console.log('Using API ourPrice:', baseOffer);
+      console.log('✓ Using API ourPrice:', baseOffer);
     } else {
-      console.log('ourPrice not available, calculating from market data');
+      console.log('✗ ourPrice not available, calculating from market data');
       let basePrice = this.getBasePrice(album);
+      console.log('Market basePrice:', basePrice);
       if (!basePrice) {
         basePrice = this.estimatePrice(album);
+        console.log('Estimated basePrice:', basePrice);
       }
       const sellerPercentage = 0.55;
       baseOffer = basePrice * sellerPercentage;
