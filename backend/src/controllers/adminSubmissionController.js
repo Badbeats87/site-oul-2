@@ -7,10 +7,11 @@ import logger from '../../config/logger.js';
  */
 export const getSubmissionQueue = async (req, res, next) => {
   try {
-    const { status, limit, page, sortBy, sortOrder } = req.query;
+    const { status, sellerSearch, limit, page, sortBy, sortOrder } = req.query;
 
     const result = await adminSubmissionService.getSubmissionQueue({
       status,
+      sellerSearch,
       limit: limit ? parseInt(limit, 10) : 50,
       page: page ? parseInt(page, 10) : 1,
       sortBy: sortBy || 'createdAt',

@@ -10,7 +10,7 @@ class SubmissionsManager {
     this.selectedSubmission = null;
     this.filters = {
       status: 'all',
-      search: '',
+      sellerSearch: '',
     };
     this.pagination = {
       page: 1,
@@ -35,7 +35,7 @@ class SubmissionsManager {
     const searchInput = document.querySelector('[data-submissions-search]');
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
-        this.filters.search = e.target.value;
+        this.filters.sellerSearch = e.target.value;
         this.pagination.page = 1;
         this.loadSubmissions();
       });
@@ -106,14 +106,15 @@ class SubmissionsManager {
         params.status = this.filters.status;
       }
 
-      if (this.filters.search) {
-        params.search = this.filters.search;
+      if (this.filters.sellerSearch) {
+        params.sellerSearch = this.filters.sellerSearch;
       }
 
       const response = await this.api.get('/admin/submissions', params);
 
       this.submissions = response.submissions || [];
-      this.pagination.total = response.total || 0;
+      this.pagination.total =
+        response.pagination?.total ?? response.total ?? 0;
 
       this.renderSubmissions();
       this.showLoading(false);
