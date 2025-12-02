@@ -391,7 +391,8 @@ class InventoryManager {
   }
 }
 
-const inventoryManager = new InventoryManager(api);
+const inventoryApi = typeof api !== "undefined" ? api : window.api;
+const inventoryManager = new InventoryManager(inventoryApi);
 document.addEventListener('DOMContentLoaded', () => {
   inventoryManager.initialize();
 });
