@@ -987,7 +987,7 @@ class ReleaseService {
     }
   }
 
-  async getQuoteForDiscogsId(discogsId, type = 'master') {
+  async getQuoteForDiscogsId(discogsId, type = 'release', allowFallback = true) {
     try {
       logger.debug('Getting quote for Discogs ID', { discogsId, type });
 
@@ -995,7 +995,7 @@ class ReleaseService {
       // NOTE: Don't use placeholder title - leave it empty so enrichment doesn't fall back to it
       const minimalResult = {
         id: discogsId,
-        type: type || 'master',
+        type: type || 'release',
       };
 
       // Enrich this result to get full pricing
@@ -1007,6 +1007,15 @@ class ReleaseService {
 
       return enrichedResult;
     } catch (error) {
+      if (allowFallback && type !== 'master') {
+        logger.warn('Discogs quote failed, retrying as master', {
+          discogsId,
+          originalType: type,
+          error: error.message,
+        });
+        return this.getQuoteForDiscogsId(discogsId, 'master', false);
+      }
+
       if (error instanceof ApiError) throw error;
       logger.error('Error getting quote for Discogs ID', {
         discogsId,

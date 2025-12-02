@@ -107,6 +107,7 @@ class SubmissionService {
         const {
           releaseId,
           discogsId,
+          discogsType,
           quantity = 1,
           conditionMedia,
           conditionSleeve,
@@ -133,10 +134,17 @@ class SubmissionService {
 
         // If discogsId provided, fetch release data from Discogs and create/update release
         if (discogsId) {
-          logger.debug('Fetching release from Discogs ID', { discogsId });
+          const typeToUse =
+            typeof discogsType === 'string' && discogsType.length > 0
+              ? discogsType
+              : 'release';
+          logger.debug('Fetching release from Discogs ID', {
+            discogsId,
+            type: typeToUse,
+          });
           discogsResult = await releaseService.getQuoteForDiscogsId(
             discogsId,
-            'master'
+            typeToUse
           );
           if (!discogsResult) {
             throw new ApiError(

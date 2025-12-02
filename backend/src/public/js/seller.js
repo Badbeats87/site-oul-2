@@ -300,6 +300,7 @@ const sellerApp = {
 
       const data = await response.json();
       const enrichedAlbum = data.data;
+      enrichedAlbum.discogsType = album.type || album.discogsType || 'release';
 
       // Now select the enriched album with pricing
       this.selectAlbum(enrichedAlbum);
@@ -684,6 +685,9 @@ const sellerApp = {
             throw new Error('Selected record is missing a valid identifier');
           }
           payload.discogsId = discogsId;
+          const type =
+            item.album.discogsType || item.album.type || 'release';
+          payload.discogsType = type;
         }
 
         return payload;
