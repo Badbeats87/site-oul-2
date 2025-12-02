@@ -608,14 +608,18 @@ class PricingService {
         },
       });
 
-      // Return the requested statistic
-      const stat = statistic.toLowerCase();
-      if (stat === 'low') return snapshot.statLow;
-      if (stat === 'median') return snapshot.statMedian;
-      if (stat === 'high') return snapshot.statHigh;
+      // Return the requested statistic with sensible fallbacks
+      const stat = (statistic || 'median').toLowerCase();
+      let result = null;
 
-      // If median not available, use low as fallback
-      const result = snapshot.statMedian || snapshot.statLow || null;
+      if (stat === 'low') {
+        result = snapshot.statLow || snapshot.statMedian || snapshot.statHigh || null;
+      } else if (stat === 'high') {
+        result = snapshot.statHigh || snapshot.statMedian || snapshot.statLow || null;
+      } else {
+        // Median path with fallback to low/high
+        result = snapshot.statMedian || snapshot.statLow || snapshot.statHigh || null;
+      }
       logger.debug('Returning market stat from database', {
         releaseId,
         statistic,
