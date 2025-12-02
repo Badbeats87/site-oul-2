@@ -224,12 +224,12 @@ const sellerApp = {
   },
 
   createResultItem(album, idx) {
-    const buyingPrice = this.calculateBuyingPrice(album);
-    const priceDisplay = buyingPrice ? `€${buyingPrice.toFixed(2)}` : 'N/A';
+    // Show "Click to quote" since we don't have pricing yet
+    const priceDisplay = 'Click to quote';
     const coverUrl = album.coverArtUrl || '';
 
     return `
-      <div class="search-result-item" data-index="${idx}">
+      <div class="search-result-item" data-index="${idx}" style="cursor: pointer;">
         <div class="search-result-item__cover">
           ${
   coverUrl
@@ -240,7 +240,7 @@ const sellerApp = {
         <div class="search-result-item__content">
           <h4 class="search-result-item__title">${album.title || 'Unknown'}</h4>
           <p class="search-result-item__artist">${album.artist || 'Unknown Artist'}</p>
-          <p class="search-result-item__meta">${album.label ? `${album.label} • ` : ''}${album.releaseYear || ''}</p>
+          <p class="search-result-item__meta">${album.year || ''}</p>
         </div>
         <div class="search-result-item__price">
           <div class="search-result-item__price-label">Our Price</div>
@@ -251,9 +251,33 @@ const sellerApp = {
   },
 
   selectFromDropdown(album) {
-    this.selectAlbum(album);
-    this.hideDropdown();
-    this.searchInput.value = `${album.title} - ${album.artist}`;
+    // Fetch actual quote when user selects
+    this.fetchDiscogsQuote(album);
+  },
+
+  async fetchDiscogsQuote(album) {
+    try {
+      this.showLoading();
+
+      const response = await fetch(
+        `/api/v1/catalog/discogs/quote?discogsId=${album.id}&type=${album.type}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch quote: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const enrichedAlbum = data.data;
+
+      // Now select the enriched album with pricing
+      this.selectAlbum(enrichedAlbum);
+      this.hideDropdown();
+      this.searchInput.value = `${enrichedAlbum.title} - ${enrichedAlbum.artist}`;
+    } catch (error) {
+      console.error('Error fetching quote:', error);
+      alert('Failed to fetch quote. Please try again.');
+    }
   },
 
   showDropdown() {
