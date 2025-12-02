@@ -968,9 +968,22 @@ class ReleaseService {
         releaseId: result.id,
         error: error.message,
       });
-      // Return null on enrichment failure instead of fallback to incomplete data
-      // This prevents saving placeholder/incomplete data to database
-      return null;
+      // On enrichment failure, return minimal data with what we know
+      // This allows submissions to proceed with basic Discogs ID reference
+      // even if full enrichment fails (network issues, rate limiting, etc)
+      return {
+        id: `discogs_${result.id}`,
+        title: result.title || null,
+        artist: result.artist || null,
+        label: null,
+        barcode: null,
+        releaseYear: result.year || null,
+        genre: null,
+        coverArtUrl: result.cover_image || null,
+        description: null,
+        marketSnapshots: [],
+        ourPrice: null,
+      };
     }
   }
 
