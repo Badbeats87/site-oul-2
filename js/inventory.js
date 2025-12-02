@@ -391,7 +391,43 @@ class InventoryManager {
   }
 }
 
-const inventoryApi = typeof api !== 'undefined' ? api : window.api;
+function createFallbackApi() {
+  const base = '/api/v1';
+
+  async function request(method, endpoint, body, params) {
+    const url = new URL(`${base}${endpoint}`, window.location.origin);
+    if (params) {
+      Object.entries(params)
+        .filter(([, value]) => value !== undefined && value !== null && value !== '')
+        .forEach(([key, value]) => url.searchParams.append(key, value));
+    }
+
+    const response = await fetch(url.toString(), {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(
+        data?.error?.message || data?.error || response.statusText || 'Request failed'
+      );
+    }
+    return data.data || data;
+  }
+
+  return {
+    get(endpoint, params) {
+      return request('GET', endpoint, null, params);
+    },
+    put(endpoint, payload) {
+      return request('PUT', endpoint, payload);
+    },
+  };
+}
+
+const inventoryApi = typeof api !== 'undefined' ? api : createFallbackApi();
 const inventoryManager = new InventoryManager(inventoryApi);
 document.addEventListener('DOMContentLoaded', () => {
   inventoryManager.initialize();
