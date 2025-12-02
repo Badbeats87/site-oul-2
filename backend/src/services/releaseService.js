@@ -767,65 +767,23 @@ class ReleaseService {
       }
 
       if (releaseIdForStats) {
-        // Try to get marketplace stats with intelligent fallback
-        // First try current marketplace listings (most accurate)
+        // Try to get marketplace stats with minimal fallback
+        // Focus on current marketplace listings as primary source
         try {
           priceStats = await discogsService
             .getMarketplaceStats(releaseIdForStats, 'EUR');
-          logger.debug('Successfully fetched marketplace stats', {
+          logger.debug('Marketplace stats fetch result', {
             releaseId: releaseIdForStats,
             hasStats: !!priceStats,
+            stats: priceStats,
           });
         } catch (err) {
-          logger.debug('getMarketplaceStats failed', {
+          logger.error('getMarketplaceStats failed', {
             releaseId: releaseIdForStats,
             error: err.message,
+            errorStatus: err.response?.status,
           });
           priceStats = null;
-        }
-
-        // If no current marketplace listings, try price suggestions (seller recommendations)
-        // Add delay to respect rate limits when making multiple API calls
-        if (!priceStats) {
-          await new Promise((resolve) => setTimeout(resolve, 3100)); // 3.1s delay to match throttler
-          try {
-            const priceSuggestions = await discogsService
-              .getPriceSuggestions(releaseIdForStats);
-            if (priceSuggestions) {
-              logger.debug('Got price suggestions as fallback', {
-                releaseId: releaseIdForStats,
-                suggestions: priceSuggestions,
-              });
-              priceStats = priceSuggestions;
-            }
-          } catch (err) {
-            logger.debug('getPriceSuggestions also failed', {
-              releaseId: releaseIdForStats,
-              error: err.message,
-            });
-          }
-        }
-
-        // If still no pricing, try historical price statistics
-        // Add delay to respect rate limits when making multiple API calls
-        if (!priceStats) {
-          await new Promise((resolve) => setTimeout(resolve, 3100)); // 3.1s delay to match throttler
-          try {
-            const priceStats2 = await discogsService
-              .getPriceStatistics(releaseIdForStats);
-            if (priceStats2) {
-              logger.debug('Got price statistics as second fallback', {
-                releaseId: releaseIdForStats,
-                stats: priceStats2,
-              });
-              priceStats = priceStats2;
-            }
-          } catch (err) {
-            logger.debug('getPriceStatistics also failed', {
-              releaseId: releaseIdForStats,
-              error: err.message,
-            });
-          }
         }
       }
 
@@ -844,16 +802,29 @@ class ReleaseService {
         // Only add to marketSnapshots if we have at least one price value
         if (snapshot.statLow || snapshot.statMedian || snapshot.statHigh) {
           marketSnapshots.push(snapshot);
-          logger.debug('Created market snapshot', {
+          logger.debug('Created market snapshot from Discogs pricing', {
             releaseId: result.id,
             snapshot,
+            priceStatsInput: priceStats,
           });
         }
+      } else {
+        logger.warn('No Discogs pricing available, will use estimate', {
+          releaseId: result.id,
+          priceStats,
+        });
       }
 
       let ourPrice = await this.calculateOurPrice(marketSnapshots);
       if (!ourPrice && marketSnapshots.length === 0) {
         const estimatedBase = this.estimateBasePrice(release, result);
+        logger.debug('Calculated estimated base price', {
+          releaseId: result.id,
+          releaseYear: release.year || result.year,
+          genre: release.genres?.[0] || result.genres?.[0],
+          estimatedBase,
+        });
+
         if (estimatedBase > 0) {
           const buyerFormula = await pricingService.getBuyerFormula();
           if (buyerFormula) {
@@ -864,8 +835,11 @@ class ReleaseService {
               resultId: result.id,
               estimatedBase,
               buyPercentage,
+              buyerFormula,
               ourPrice,
             });
+          } else {
+            logger.warn('No buyer formula available for pricing', { resultId: result.id });
           }
         }
       }
