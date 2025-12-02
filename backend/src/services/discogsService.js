@@ -538,11 +538,21 @@ class DiscogsService {
               return null;
             }
 
-            // Filter for vinyl format only (check if format contains LP or Vinyl)
+            // Filter for vinyl format only (check if format contains LP, Vinyl, or 12"/7"/10" etc)
             const vinylVariants = response.data.versions.filter((v) => {
               if (!v.format) return false;
               const formatLower = v.format.toLowerCase();
-              return formatLower.includes('lp') || formatLower.includes('vinyl');
+              // Match: lp, vinyl, 12", 7", 10", 33 RPM, 45 RPM, 78 RPM
+              return (
+                formatLower.includes('lp') ||
+                formatLower.includes('vinyl') ||
+                formatLower.includes('12"') ||
+                formatLower.includes('7"') ||
+                formatLower.includes('10"') ||
+                formatLower.includes('33') || // 33 RPM
+                formatLower.includes('45') || // 45 RPM
+                formatLower.includes('78')    // 78 RPM
+              );
             });
 
             if (vinylVariants.length === 0) {
