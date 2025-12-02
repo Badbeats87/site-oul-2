@@ -691,9 +691,8 @@ class ReleaseService {
         return [];
       }
 
-      // Return Discogs search results without enrichment
-      // Enrichment is too slow and causes rate limiting
-      // Users can click for details if needed
+      // Return Discogs search results quickly without enrichment
+      // Enrich only when user selects a result (not during search)
       const finalResults = discogsResults.results.slice(0, limit).map((result) => ({
         id: result.id,
         title: result.title,
@@ -705,8 +704,9 @@ class ReleaseService {
         resource_url: result.resource_url,
         basic_information: result.basic_information,
         source: 'DISCOGS',
-        marketSnapshots: [], // No pricing data - show "N/A" in UI
+        marketSnapshots: [],
         ourPrice: null,
+        _needsEnrichment: true, // Mark for enrichment on selection
       }));
 
       logger.info('Discogs search completed', {
@@ -896,6 +896,35 @@ class ReleaseService {
         marketSnapshots: [],
         ourPrice: null,
       };
+    }
+  }
+
+  async getQuoteForDiscogsId(discogsId, type = 'master') {
+    try {
+      logger.debug('Getting quote for Discogs ID', { discogsId, type });
+
+      // Create a minimal result object to enrichment
+      const minimalResult = {
+        id: discogsId,
+        title: 'Loading...',
+        type: type || 'master',
+      };
+
+      // Enrich this result to get full pricing
+      const enrichedResult = await this._enrichDiscogsResult(minimalResult);
+
+      if (!enrichedResult) {
+        throw new ApiError('Failed to fetch pricing from Discogs', 500);
+      }
+
+      return enrichedResult;
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      logger.error('Error getting quote for Discogs ID', {
+        discogsId,
+        error: error.message,
+      });
+      throw new ApiError('Failed to get quote', 500);
     }
   }
 

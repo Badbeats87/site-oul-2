@@ -324,3 +324,32 @@ export const facetedSearch = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getDiscogsQuote = async (req, res, next) => {
+  try {
+    const { discogsId, type } = req.query;
+
+    if (!discogsId) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: 'discogsId is required',
+          status: 400,
+        },
+      });
+    }
+
+    const quote = await releaseService.getQuoteForDiscogsId(
+      parseInt(discogsId, 10),
+      type
+    );
+
+    res.json({
+      success: true,
+      data: quote,
+      requestId: req.id,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

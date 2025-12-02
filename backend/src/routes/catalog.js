@@ -10,6 +10,7 @@ import {
   autocomplete,
   searchByAlbumArtistLabel,
   facetedSearch,
+  getDiscogsQuote,
 } from '../controllers/releaseController.js';
 
 const router = express.Router();
@@ -381,5 +382,34 @@ router.delete('/:id', deleteRelease);
  *                           type: array
  */
 router.get('/search/faceted', facetedSearch);
+
+/**
+ * @swagger
+ * /api/v1/catalog/discogs/quote:
+ *   get:
+ *     summary: Get quote for Discogs release
+ *     description: Get pricing and quote for a specific Discogs release ID
+ *     tags:
+ *       - Catalog
+ *     parameters:
+ *       - in: query
+ *         name: discogsId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Discogs release or master ID
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [master, release]
+ *         description: Type of Discogs ID
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Quote retrieved successfully
+ */
+router.get('/discogs/quote', getDiscogsQuote);
 
 export default router;
