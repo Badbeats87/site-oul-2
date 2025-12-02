@@ -613,6 +613,20 @@ class InventoryService {
                 title: true,
                 artist: true,
                 coverArtUrl: true,
+                releaseYear: true,
+                label: true,
+                catalogNumber: true,
+              },
+            },
+            submissionItem: {
+              include: {
+                submission: {
+                  select: {
+                    id: true,
+                    sellerContact: true,
+                    sellerName: true,
+                  },
+                },
               },
             },
           },
@@ -625,20 +639,24 @@ class InventoryService {
           id: lot.id,
           release: lot.release,
           sku: lot.sku,
-          condition: {
-            media: lot.conditionMedia,
-            sleeve: lot.conditionSleeve,
-          },
-          pricing: {
-            costBasis: parseFloat(lot.costBasis),
-            listPrice: parseFloat(lot.listPrice),
-            salePrice: lot.salePrice ? parseFloat(lot.salePrice) : null,
-          },
-          status: lot.status,
           channel: lot.channel,
+          status: lot.status,
+          conditionMedia: lot.conditionMedia,
+          conditionSleeve: lot.conditionSleeve,
+          costBasis: lot.costBasis ? parseFloat(lot.costBasis) : null,
+          listPrice: lot.listPrice ? parseFloat(lot.listPrice) : null,
+          salePrice: lot.salePrice ? parseFloat(lot.salePrice) : null,
           createdAt: lot.createdAt,
           listedAt: lot.listedAt,
           soldAt: lot.soldAt,
+          submission: lot.submissionItem
+            ? {
+              submissionId: lot.submissionItem.submission.id,
+              sellerName:
+                lot.submissionItem.submission.sellerName ||
+                lot.submissionItem.submission.sellerContact,
+            }
+            : null,
         })),
         pagination: {
           total,

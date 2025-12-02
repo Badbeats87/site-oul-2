@@ -10,6 +10,19 @@
     margin-bottom: var(--space-xl);
 }
 
+.inventory-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--space-md);
+    align-items: center;
+}
+
+.inventory-filter-grid .filter-input,
+.inventory-filter-grid .filter-select,
+.inventory-filter-grid .search-input {
+    width: 100%;
+}
+
 .search-bar {
     display: flex;
     gap: var(--space-md);
@@ -33,6 +46,13 @@
 
 .filter-bar .filter-select {
     width: 100%;
+}
+
+.filter-input {
+    padding: var(--space-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
 }
 
 .inventory-actions {
@@ -131,6 +151,53 @@
 .album-info .text-muted {
     font-size: var(--font-size-sm);
     color: var(--color-text-light);
+}
+
+.record-cell {
+    display: flex;
+    gap: var(--space-md);
+    align-items: center;
+}
+
+.record-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.record-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.record-thumb__placeholder {
+    font-size: 20px;
+    color: var(--color-text-light);
+}
+
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+    gap: var(--space-sm);
+}
+
+.stacked {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.button--ghost {
+    background: transparent;
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
 }
 
 /* Low Stock Indicator */

@@ -180,16 +180,42 @@
           </div>
 
           <!-- Inventory Tab -->
-          <div class="tab-panel" id="tab-1">
+          <div class="tab-panel" id="tab-1" data-inventory-container>
             <div class="section-header">
               <h2>Inventory Management</h2>
-              <div class="section-actions">
+              <div class="section-actions inventory-filter-grid">
                 <input
                   type="text"
-                  placeholder="Search inventory..."
+                  placeholder="Search by album, artist, or SKU..."
                   class="search-input"
-                  style="width: 250px"
+                  data-inventory-search
+                  style="width: 280px"
                 />
+                <select class="filter-select" data-inventory-status-filter>
+                  <option value="all">All Statuses</option>
+                  <option value="LIVE">Live</option>
+                  <option value="RESERVED">Reserved</option>
+                  <option value="SOLD">Sold</option>
+                  <option value="DRAFT">Draft</option>
+                </select>
+                <select class="filter-select" data-inventory-condition-filter>
+                  <option value="all">All Conditions</option>
+                  <option value="MINT">M / Mint</option>
+                  <option value="NM">NM / Near Mint</option>
+                  <option value="VG_PLUS">VG+ / Very Good Plus</option>
+                  <option value="VG">VG / Very Good</option>
+                  <option value="VG_MINUS">VG- / Very Good Minus</option>
+                  <option value="G">G / Good</option>
+                </select>
+                <input type="number" placeholder="Min $" class="filter-input" data-inventory-min-price />
+                <input type="number" placeholder="Max $" class="filter-input" data-inventory-max-price />
+                <select class="filter-select" data-inventory-sort>
+                  <option value="createdAt:desc">Newest</option>
+                  <option value="createdAt:asc">Oldest</option>
+                  <option value="listPrice:desc">Highest Price</option>
+                  <option value="listPrice:asc">Lowest Price</option>
+                  <option value="soldAt:desc">Recently Sold</option>
+                </select>
               </div>
             </div>
 
@@ -198,48 +224,18 @@
                 <thead>
                   <tr>
                     <th>Record</th>
+                    <th>SKU / Channel</th>
                     <th>Condition</th>
-                    <th>Stock</th>
-                    <th>List Price</th>
                     <th>Status</th>
+                    <th>Pricing</th>
+                    <th>Timeline</th>
+                    <th>Submission</th>
+                    <th></th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody data-inventory-tbody>
                   <tr>
-                    <td>
-                      <strong>Dark Side of the Moon</strong><br />
-                      <span style="color: #666; font-size: 0.9em"
-                        >Pink Floyd</span
-                      >
-                    </td>
-                    <td><span class="badge badge--success">NM / NM</span></td>
-                    <td>1</td>
-                    <td>$89.99</td>
-                    <td><span class="badge">LIVE</span></td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <strong>Abbey Road</strong><br />
-                      <span style="color: #666; font-size: 0.9em"
-                        >The Beatles</span
-                      >
-                    </td>
-                    <td><span class="badge badge--info">VG+ / VG+</span></td>
-                    <td>3</td>
-                    <td>$49.50</td>
-                    <td><span class="badge">LIVE</span></td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <strong>Rumours</strong><br />
-                      <span style="color: #666; font-size: 0.9em"
-                        >Fleetwood Mac</span
-                      >
-                    </td>
-                    <td><span class="badge badge--success">M / M</span></td>
-                    <td>1</td>
-                    <td>$89.99</td>
-                    <td><span class="badge badge--warning">LOW STOCK</span></td>
+                    <td colspan="8" style="text-align: center; padding: 40px;">Loading...</td>
                   </tr>
                 </tbody>
               </table>

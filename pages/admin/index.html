@@ -122,19 +122,38 @@
                 <div class="tab-panel" data-inventory-container>
                     <div class="section-header">
                         <h2>Inventory Management</h2>
-                        <div class="section-actions">
+                        <div class="section-actions inventory-filter-grid">
                             <input
                                 type="text"
-                                placeholder="Search..."
+                                placeholder="Search by album, artist, or SKU..."
                                 class="search-input"
                                 data-inventory-search
-                                style="width: 250px;"
+                                style="width: 280px;"
                             >
-                            <select class="filter-select" data-inventory-status-filter style="width: 150px;">
-                                <option value="all">All Status</option>
-                                <option value="LIVE">LIVE</option>
-                                <option value="SOLD">SOLD</option>
-                                <option value="RESERVED">RESERVED</option>
+                            <select class="filter-select" data-inventory-status-filter>
+                                <option value="all">All Statuses</option>
+                                <option value="LIVE">Live</option>
+                                <option value="RESERVED">Reserved</option>
+                                <option value="SOLD">Sold</option>
+                                <option value="DRAFT">Draft</option>
+                            </select>
+                            <select class="filter-select" data-inventory-condition-filter>
+                                <option value="all">All Conditions</option>
+                                <option value="MINT">M / Mint</option>
+                                <option value="NM">NM / Near Mint</option>
+                                <option value="VG_PLUS">VG+ / Very Good Plus</option>
+                                <option value="VG">VG / Very Good</option>
+                                <option value="VG_MINUS">VG- / Very Good Minus</option>
+                                <option value="G">G / Good</option>
+                            </select>
+                            <input type="number" placeholder="Min $" class="filter-input" data-inventory-min-price>
+                            <input type="number" placeholder="Max $" class="filter-input" data-inventory-max-price>
+                            <select class="filter-select" data-inventory-sort>
+                                <option value="createdAt:desc">Newest</option>
+                                <option value="createdAt:asc">Oldest</option>
+                                <option value="listPrice:desc">Highest Price</option>
+                                <option value="listPrice:asc">Lowest Price</option>
+                                <option value="soldAt:desc">Recently Sold</option>
                             </select>
                         </div>
                     </div>
@@ -144,17 +163,18 @@
                             <thead>
                                 <tr>
                                     <th>Record</th>
+                                    <th>SKU / Channel</th>
                                     <th>Condition</th>
                                     <th>Status</th>
-                                    <th>Cost</th>
-                                    <th>List Price</th>
-                                    <th>Margin</th>
+                                    <th>Pricing</th>
+                                    <th>Timeline</th>
+                                    <th>Submission</th>
                                     <th></th>
                                 </tr>
                             </thead>
                             <tbody data-inventory-tbody>
                                 <tr>
-                                    <td colspan="7" style="text-align: center; padding: 40px;">Loading...</td>
+                                    <td colspan="8" style="text-align: center; padding: 40px;">Loading...</td>
                                 </tr>
                             </tbody>
                         </table>
