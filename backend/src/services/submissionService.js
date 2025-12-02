@@ -106,28 +106,122 @@ class SubmissionService {
       for (const item of items) {
         const {
           releaseId,
+          discogsId,
           quantity = 1,
           conditionMedia,
           conditionSleeve,
         } = item;
 
         // Validate required fields
-        if (!releaseId || !conditionMedia || !conditionSleeve) {
+        if (!conditionMedia || !conditionSleeve) {
           throw new ApiError(
-            'releaseId, conditionMedia, and conditionSleeve are required',
+            'conditionMedia and conditionSleeve are required',
             400
           );
         }
 
+        if (!releaseId && !discogsId) {
+          throw new ApiError(
+            'Either releaseId (UUID) or discogsId (integer) is required',
+            400
+          );
+        }
+
+        let release;
+        let releaseIdToUse = releaseId;
+
+        // If discogsId provided, fetch release data from Discogs and create/update release
+        if (discogsId) {
+          logger.debug('Fetching release from Discogs ID', { discogsId });
+          const discogsResult = await releaseService.getQuoteForDiscogsId(
+            discogsId,
+            'master'
+          );
+          if (!discogsResult) {
+            throw new ApiError(
+              `Could not fetch release data for Discogs ID ${discogsId}`,
+              404
+            );
+          }
+
+          // Check if release already exists for this Discogs ID
+          const existingRelease = await prisma.release.findFirst({
+            where: { title: discogsResult.title, artist: discogsResult.artist },
+          });
+
+          if (existingRelease) {
+            releaseIdToUse = existingRelease.id;
+            logger.debug('Found existing release', {
+              discogsId,
+              releaseId: existingRelease.id,
+            });
+          } else {
+            // Create new release record with the Discogs data
+            const newRelease = await prisma.release.create({
+              data: {
+                title: discogsResult.title,
+                artist: discogsResult.artist,
+                label: discogsResult.label,
+                barcode: discogsResult.barcode,
+                releaseYear: discogsResult.releaseYear,
+                genre: discogsResult.genre,
+                coverArtUrl: discogsResult.coverArtUrl,
+                description: discogsResult.description,
+              },
+            });
+            releaseIdToUse = newRelease.id;
+            logger.debug('Created new release from Discogs data', {
+              discogsId,
+              releaseId: newRelease.id,
+            });
+
+            // Also create a market snapshot for the pricing data
+            if (discogsResult.marketSnapshots && discogsResult.marketSnapshots.length > 0) {
+              const snapshot = discogsResult.marketSnapshots[0];
+              await prisma.marketSnapshot.create({
+                data: {
+                  releaseId: newRelease.id,
+                  source: snapshot.source || 'DISCOGS',
+                  statLow: snapshot.statLow,
+                  statMedian: snapshot.statMedian,
+                  statHigh: snapshot.statHigh,
+                  fetchedAt: snapshot.fetchedAt ? new Date(snapshot.fetchedAt) : new Date(),
+                },
+              });
+            }
+          }
+        }
+
         // Verify release exists
-        const release = await releaseService.findById(releaseId);
+        if (!releaseIdToUse) {
+          throw new ApiError('Could not determine release ID', 400);
+        }
+
+        try {
+          release = await releaseService.findById(releaseIdToUse);
+        } catch (err) {
+          // If release not found and using Discogs ID, we just created it so this shouldn't happen
+          if (discogsId) {
+            logger.error('Release creation failed', {
+              discogsId,
+              releaseIdToUse,
+              error: err.message,
+            });
+            throw new ApiError(
+              `Failed to create/find release for Discogs ID ${discogsId}`,
+              500
+            );
+          }
+          throw new ApiError(`Release ${releaseIdToUse} not found`, 404);
+        }
+
         if (!release) {
-          throw new ApiError(`Release ${releaseId} not found`, 404);
+          throw new ApiError(`Release ${releaseIdToUse} not found`, 404);
         }
 
         // Generate automatic quote using pricing engine
         const quote = await pricingService.calculateBuyPrice({
-          releaseId: release.id,
+          releaseId: releaseIdToUse,
           mediaCondition: conditionMedia,
           sleeveCondition: conditionSleeve,
         });
@@ -139,7 +233,7 @@ class SubmissionService {
         const submissionItem = await prisma.submissionItem.create({
           data: {
             submissionId: sellerId,
-            releaseId,
+            releaseId: releaseIdToUse,
             quantity: quantity || 1,
             sellerConditionMedia: conditionMedia,
             sellerConditionSleeve: conditionSleeve,
