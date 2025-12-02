@@ -792,7 +792,7 @@ class ReleaseService {
           });
 
           // For masters, also check vinyl variants to find the lowest price across all pressings
-          if (isMaster && result.type === 'master') {
+          if (isMaster) {
             try {
               logger.debug('Master found, checking variants for lower prices', {
                 masterId: releaseIdForStats,
