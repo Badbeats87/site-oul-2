@@ -633,6 +633,9 @@ class InventoryService {
                 releaseYear: true,
                 label: true,
                 catalogNumber: true,
+                genre: true,
+                discogsId: true,
+                description: true,
               },
             },
             submissionItem: {
@@ -775,6 +778,7 @@ class InventoryService {
         internalNotes,
         publicDescription,
         sku,
+        release: releaseUpdates,
       } = updates;
 
       // Validate status transitions
@@ -827,15 +831,45 @@ class InventoryService {
         updateData.soldAt = new Date();
       }
 
-      const updated = await prisma.inventoryLot.update({
+      if (releaseUpdates) {
+        const allowedReleaseFields = [
+          'label',
+          'catalogNumber',
+          'releaseYear',
+          'genre',
+          'description',
+        ];
+        const releaseData = {};
+        for (const field of allowedReleaseFields) {
+          if (releaseUpdates[field] !== undefined) {
+            releaseData[field] =
+              releaseUpdates[field] === '' ? null : releaseUpdates[field];
+          }
+        }
+        if (releaseData.releaseYear !== undefined && releaseData.releaseYear !== null) {
+          const year = Number(releaseData.releaseYear);
+          if (Number.isNaN(year)) {
+            throw new ApiError('releaseYear must be a number', 400);
+          }
+          releaseData.releaseYear = year;
+        }
+        if (Object.keys(releaseData).length > 0) {
+          await prisma.release.update({
+            where: { id: lot.releaseId },
+            data: releaseData,
+          });
+        }
+      }
+
+      await prisma.inventoryLot.update({
         where: { id: inventoryLotId },
         data: updateData,
-        include: { release: true },
       });
 
       logger.info('Inventory updated', {
         inventoryLotId,
         changes: Object.keys(updateData),
+        releaseUpdated: !!releaseUpdates,
       });
 
       return this.getInventoryDetail(inventoryLotId);

@@ -56,6 +56,7 @@ export const updateInventory = async (req, res, next) => {
       internalNotes,
       publicDescription,
       sku,
+      release,
     } = req.body;
 
     const updated = await inventoryService.updateInventory(inventoryLotId, {
@@ -65,6 +66,7 @@ export const updateInventory = async (req, res, next) => {
       internalNotes,
       publicDescription,
       sku,
+      release,
     });
 
     res.json({

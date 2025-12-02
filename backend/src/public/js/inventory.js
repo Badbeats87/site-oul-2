@@ -137,7 +137,7 @@ class InventoryManager {
     if (this.inventory.length === 0) {
       this.tbody.innerHTML = `
         <tr>
-          <td colspan="13" class="empty-state">
+          <td colspan="17" class="empty-state">
             <div class="empty-state-icon">📦</div>
             <div class="empty-state-title">No inventory items found</div>
             <div class="empty-state-message">
@@ -154,6 +154,10 @@ class InventoryManager {
 
   renderRow(item) {
     const margin = this.calculateMargin(item);
+    const release = item.release || {};
+    const discogsLink = release.discogsId
+      ? `https://www.discogs.com/release/${release.discogsId}`
+      : null;
     const submissionDetail = item.submission
       ? `
         <div class="table-meta">${item.submission.sellerName || ''}</div>
@@ -167,11 +171,15 @@ class InventoryManager {
     return `
       <tr data-row-id="${item.id}">
         <td>
-          <div class="table-title">${item.release?.title || 'Unknown Record'}</div>
-          <div class="table-meta text-muted">${item.release?.releaseYear || 'Year N/A'}</div>
+          <div class="table-title">${release.title || 'Unknown Record'}</div>
+          <div class="table-meta text-muted">${release.releaseYear || 'Year N/A'}</div>
         </td>
-        <td>${item.release?.artist || '—'}</td>
-        <td>${item.release?.label || '—'}</td>
+        <td>${release.artist || '—'}</td>
+        <td><input type="text" class="table-input" data-release-field="label" value="${release.label || ''}"></td>
+        <td><input type="text" class="table-input" data-release-field="catalogNumber" value="${release.catalogNumber || ''}"></td>
+        <td><input type="number" class="table-input" data-release-field="releaseYear" value="${release.releaseYear ?? ''}"></td>
+        <td><input type="text" class="table-input" data-release-field="genre" value="${release.genre || ''}"></td>
+        <td><input type="text" class="table-input" data-release-field="description" value="${release.description || ''}" placeholder="Variant / version"></td>
         <td><input type="text" class="table-input" data-field="sku" value="${item.sku || ''}"></td>
         <td>${item.channel || '—'}</td>
         <td>${item.conditionMedia || 'N/A'} / ${item.conditionSleeve || 'N/A'}</td>
@@ -185,8 +193,11 @@ class InventoryManager {
           <input type="number" min="0" step="0.01" class="table-input" data-field="salePrice" value="${item.salePrice ?? ''}">
         </td>
         <td>
-          <div class="table-meta">${this.formatDate(item.createdAt) || '—'}</div>
-          <div class="table-meta text-muted">${item.listedAt ? `Listed ${this.formatDate(item.listedAt)}` : 'Not listed'}</div>
+          ${
+            discogsLink
+              ? `<a href="${discogsLink}" target="_blank" rel="noopener">View</a>`
+              : '<span class="text-muted">No link</span>'
+          }
         </td>
         <td>${submissionDetail}</td>
         <td>
@@ -274,6 +285,30 @@ class InventoryManager {
       salePrice: salePriceValue ? parseFloat(salePriceValue) : null,
       status: statusValue,
     };
+
+    const releasePayload = {};
+    const releaseFields = ['label', 'catalogNumber', 'genre', 'description'];
+    releaseFields.forEach((field) => {
+      const input = row.querySelector(`[data-release-field="${field}"]`);
+      if (input) {
+        releasePayload[field] = input.value?.trim() || null;
+      }
+    });
+    const releaseYearInput = row.querySelector('[data-release-field="releaseYear"]');
+    if (releaseYearInput) {
+      if (releaseYearInput.value === '') {
+        releasePayload.releaseYear = null;
+      } else {
+        const parsedYear = parseInt(releaseYearInput.value, 10);
+        releasePayload.releaseYear = Number.isNaN(parsedYear) ? null : parsedYear;
+      }
+    }
+    const sanitizedRelease = Object.fromEntries(
+      Object.entries(releasePayload).filter(([, value]) => value !== undefined)
+    );
+    if (Object.keys(sanitizedRelease).length > 0) {
+      payload.release = sanitizedRelease;
+    }
 
     try {
       this.showLoading(true);

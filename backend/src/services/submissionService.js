@@ -154,12 +154,20 @@ class SubmissionService {
           }
 
           // Check if release already exists for this Discogs ID
+          const discogsNumericId = Number(discogsId);
+
           const existingRelease = await prisma.release.findFirst({
             where: { title: discogsResult.title, artist: discogsResult.artist },
           });
 
           if (existingRelease) {
             releaseIdToUse = existingRelease.id;
+            if (!existingRelease.discogsId && !Number.isNaN(discogsNumericId)) {
+              await prisma.release.update({
+                where: { id: existingRelease.id },
+                data: { discogsId: discogsNumericId },
+              });
+            }
             logger.debug('Found existing release', {
               discogsId,
               releaseId: existingRelease.id,
@@ -176,6 +184,9 @@ class SubmissionService {
                 genre: discogsResult.genre,
                 coverArtUrl: discogsResult.coverArtUrl,
                 description: discogsResult.description,
+                discogsId: Number.isNaN(discogsNumericId)
+                  ? null
+                  : discogsNumericId,
               },
             });
             releaseIdToUse = newRelease.id;
