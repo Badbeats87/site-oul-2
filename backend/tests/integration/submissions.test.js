@@ -309,6 +309,56 @@ describe('Submissions Service - Integration Tests', () => {
       result = await submissionService.reviewSubmissionItem(seller.id, item2.id, 'reject');
       expect(result.status).toBe('PARTIALLY_ACCEPTED'); // Now all reviewed, some accepted
     });
+
+    it('should treat converted items as accepted when reviewing subsequent items', async () => {
+      const seller = await prisma.sellerSubmission.create({
+        data: {
+          sellerContact: 'test-converted@example.com',
+          status: 'PENDING_REVIEW',
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        },
+      });
+
+      const item1 = await prisma.submissionItem.create({
+        data: {
+          submissionId: seller.id,
+          releaseId: testReleaseId,
+          quantity: 1,
+          sellerConditionMedia: 'NM',
+          sellerConditionSleeve: 'NM',
+          autoOfferPrice: 30,
+          status: 'PENDING',
+        },
+      });
+
+      const item2 = await prisma.submissionItem.create({
+        data: {
+          submissionId: seller.id,
+          releaseId: testReleaseId,
+          quantity: 1,
+          sellerConditionMedia: 'VG',
+          sellerConditionSleeve: 'VG',
+          autoOfferPrice: 20,
+          status: 'PENDING',
+        },
+      });
+
+      // Accept the first item and then simulate conversion to inventory
+      await submissionService.reviewSubmissionItem(seller.id, item1.id, 'accept');
+      await prisma.submissionItem.update({
+        where: { id: item1.id },
+        data: { status: 'CONVERTED_TO_INVENTORY' },
+      });
+
+      const result = await submissionService.reviewSubmissionItem(
+        seller.id,
+        item2.id,
+        'accept'
+      );
+
+      expect(result.status).toBe('ACCEPTED');
+      expect(Number(result.totalAccepted)).toBeCloseTo(50);
+    });
   });
 
   describe('getSubmissionHistory', () => {

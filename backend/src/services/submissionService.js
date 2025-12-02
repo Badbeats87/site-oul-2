@@ -497,9 +497,17 @@ class SubmissionService {
         },
       });
 
+      const acceptedStatuses = ['ACCEPTED', 'CONVERTED_TO_INVENTORY'];
+      const reviewedStatuses = [
+        'ACCEPTED',
+        'REJECTED',
+        'CONVERTED_TO_INVENTORY',
+      ];
+
       const acceptedItems = submission.items.filter(
         (i) =>
-          i.status === 'ACCEPTED' || (i.id === itemId && action === 'accept')
+          acceptedStatuses.includes(i.status) ||
+          (i.id === itemId && action === 'accept')
       );
       const totalAccepted = acceptedItems.reduce(
         (sum, i) => sum + Number(i.finalOfferPrice || i.autoOfferPrice),
@@ -509,7 +517,7 @@ class SubmissionService {
       // Determine overall submission status
       let submissionStatus = submission.status;
       const allItemsReviewed = submission.items.every(
-        (i) => ['ACCEPTED', 'REJECTED'].includes(i.status) || i.id === itemId
+        (i) => reviewedStatuses.includes(i.status) || i.id === itemId
       );
 
       if (allItemsReviewed) {

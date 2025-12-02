@@ -468,22 +468,29 @@ class AdminSubmissionService {
         });
       }
 
-      // Immediately create inventory for the accepted item to keep seller flow unblocked
-      const inventoryLot = await inventoryService.createFromSubmissionItem(
-        itemId
-      );
+      let inventoryLot = null;
+      try {
+        inventoryLot = await inventoryService.createFromSubmissionItem(itemId);
+        logger.info('Inventory created for accepted item', {
+          submissionId,
+          itemId,
+          inventoryLotId: inventoryLot.id,
+        });
+      } catch (error) {
+        logger.error('Warning: Failed to create inventory for accepted item', {
+          submissionId,
+          itemId,
+          error: error.message,
+        });
+        // Do not block acceptance if inventory creation fails.
+      }
 
-      const updatedSubmission = await prisma.sellerSubmission.findUnique({
-        where: { id: submissionId },
-        include: { items: true },
-      });
-
-      logger.info('Item accepted and inventory created', {
+      logger.info('Item accepted', {
         submissionId,
         itemId,
-        inventoryLotId: inventoryLot.id,
+        inventoryLotId: inventoryLot?.id || null,
       });
-      return updatedSubmission;
+      return this.getSubmissionDetail(submissionId);
     } catch (error) {
       if (error instanceof ApiError) throw error;
       logger.error('Error accepting item', {
