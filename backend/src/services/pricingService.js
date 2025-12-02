@@ -228,12 +228,19 @@ class PricingService {
         buyCeiling: formula.buyCeiling ?? this.defaults.buyCeiling,
       };
 
-      // Get market stat
-      const marketStat = await this._getMarketStat(
+      // Get market stat - first try from database snapshots, then from external sources
+      let marketStat = await this._getMarketStatFromDatabase(
         releaseId,
-        marketSource,
         marketStatistic
       );
+
+      if (!marketStat) {
+        marketStat = await this._getMarketStat(
+          releaseId,
+          marketSource,
+          marketStatistic
+        );
+      }
 
       if (!marketStat) {
         throw new ApiError('Market data not available for pricing', 404);
@@ -565,6 +572,58 @@ class PricingService {
    * @param {string} statistic - low, median, or high
    * @returns {Promise<number>} Market price
    */
+  async _getMarketStatFromDatabase(releaseId, statistic) {
+    try {
+      logger.debug('Looking for market snapshot in database', {
+        releaseId,
+        statistic,
+      });
+
+      // Get the most recent market snapshot for this release
+      const snapshot = await prisma.marketSnapshot.findFirst({
+        where: { releaseId },
+        orderBy: { fetchedAt: 'desc' },
+      });
+
+      if (!snapshot) {
+        logger.debug('No market snapshot found in database', {
+          releaseId,
+        });
+        return null;
+      }
+
+      logger.debug('Found market snapshot in database', {
+        releaseId,
+        snapshot: {
+          statLow: snapshot.statLow,
+          statMedian: snapshot.statMedian,
+          statHigh: snapshot.statHigh,
+        },
+      });
+
+      // Return the requested statistic
+      const stat = statistic.toLowerCase();
+      if (stat === 'low') return snapshot.statLow;
+      if (stat === 'median') return snapshot.statMedian;
+      if (stat === 'high') return snapshot.statHigh;
+
+      // If median not available, use low as fallback
+      const result = snapshot.statMedian || snapshot.statLow || null;
+      logger.debug('Returning market stat from database', {
+        releaseId,
+        statistic,
+        result,
+      });
+      return result;
+    } catch (error) {
+      logger.debug('Failed to fetch market stat from database', {
+        releaseId,
+        error: error.message,
+      });
+      return null;
+    }
+  }
+
   async _getMarketStat(releaseId, source, statistic) {
     try {
       const stat = statistic.toLowerCase();

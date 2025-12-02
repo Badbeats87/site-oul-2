@@ -129,11 +129,12 @@ class SubmissionService {
 
         let release;
         let releaseIdToUse = releaseId;
+        let discogsResult = null;
 
         // If discogsId provided, fetch release data from Discogs and create/update release
         if (discogsId) {
           logger.debug('Fetching release from Discogs ID', { discogsId });
-          const discogsResult = await releaseService.getQuoteForDiscogsId(
+          discogsResult = await releaseService.getQuoteForDiscogsId(
             discogsId,
             'master'
           );
@@ -174,20 +175,45 @@ class SubmissionService {
               discogsId,
               releaseId: newRelease.id,
             });
+          }
 
-            // Also create a market snapshot for the pricing data
-            if (discogsResult.marketSnapshots && discogsResult.marketSnapshots.length > 0) {
-              const snapshot = discogsResult.marketSnapshots[0];
-              await prisma.marketSnapshot.create({
-                data: {
-                  releaseId: newRelease.id,
-                  source: snapshot.source || 'DISCOGS',
-                  statLow: snapshot.statLow,
-                  statMedian: snapshot.statMedian,
-                  statHigh: snapshot.statHigh,
-                  fetchedAt: snapshot.fetchedAt ? new Date(snapshot.fetchedAt) : new Date(),
-                },
+          // Ensure market snapshot exists for this release (create if needed)
+          if (discogsResult.marketSnapshots && discogsResult.marketSnapshots.length > 0) {
+            const snapshot = discogsResult.marketSnapshots[0];
+            // Only process snapshot if we have at least one price value
+            if (snapshot.statLow || snapshot.statMedian || snapshot.statHigh) {
+              // Check if snapshot already exists for this release
+              const existingSnapshot = await prisma.marketSnapshot.findFirst({
+                where: { releaseId: releaseIdToUse },
               });
+
+              if (!existingSnapshot) {
+                // Create new snapshot
+                await prisma.marketSnapshot.create({
+                  data: {
+                    releaseId: releaseIdToUse,
+                    source: snapshot.source || 'DISCOGS',
+                    statLow: parseFloat(snapshot.statLow) || null,
+                    statMedian: parseFloat(snapshot.statMedian) || null,
+                    statHigh: parseFloat(snapshot.statHigh) || null,
+                    fetchedAt: snapshot.fetchedAt ? new Date(snapshot.fetchedAt) : new Date(),
+                  },
+                });
+                logger.debug('Created market snapshot for release', {
+                  releaseId: releaseIdToUse,
+                  discogsId,
+                  snapshot: {
+                    statLow: snapshot.statLow,
+                    statMedian: snapshot.statMedian,
+                    statHigh: snapshot.statHigh,
+                  },
+                });
+              } else {
+                logger.debug('Market snapshot already exists for release', {
+                  releaseId: releaseIdToUse,
+                  discogsId,
+                });
+              }
             }
           }
         }
@@ -219,14 +245,40 @@ class SubmissionService {
           throw new ApiError(`Release ${releaseIdToUse} not found`, 404);
         }
 
-        // Generate automatic quote using pricing engine
-        const quote = await pricingService.calculateBuyPrice({
-          releaseId: releaseIdToUse,
-          mediaCondition: conditionMedia,
-          sleeveCondition: conditionSleeve,
-        });
-
-        const autoOfferPrice = Number(quote.finalPrice) * (quantity || 1);
+        // Use the quote from discogsResult if available, otherwise calculate
+        let autoOfferPrice = 0;
+        if (discogsResult && discogsResult.ourPrice) {
+          // Use the pre-calculated price from Discogs enrichment
+          autoOfferPrice = Number(discogsResult.ourPrice) * (quantity || 1);
+          logger.debug('Using pre-calculated price from Discogs', {
+            releaseId: releaseIdToUse,
+            basePrice: discogsResult.ourPrice,
+            quantity,
+            totalPrice: autoOfferPrice,
+          });
+        } else {
+          // Fallback: calculate price if not available from Discogs
+          try {
+            const quote = await pricingService.calculateBuyPrice({
+              releaseId: releaseIdToUse,
+              mediaCondition: conditionMedia,
+              sleeveCondition: conditionSleeve,
+            });
+            autoOfferPrice = Number(quote.finalPrice) * (quantity || 1);
+            logger.debug('Calculated price using pricing engine', {
+              releaseId: releaseIdToUse,
+              finalPrice: quote.finalPrice,
+              quantity,
+              totalPrice: autoOfferPrice,
+            });
+          } catch (pricingError) {
+            logger.warn('Failed to calculate price, using zero', {
+              releaseId: releaseIdToUse,
+              error: pricingError.message,
+            });
+            autoOfferPrice = 0;
+          }
+        }
         totalOffered += autoOfferPrice;
 
         // Create submission item

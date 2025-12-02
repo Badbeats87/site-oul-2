@@ -177,8 +177,12 @@ const submitForm = {
         </button>
       `;
 
-      card.querySelector('button').addEventListener('click', () => {
-        this.addRecordToSubmission(result);
+      const button = card.querySelector('button');
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Add to list clicked for:', result.title);
+        submitForm.addRecordToSubmission(result);
       });
 
       resultsList.appendChild(card);
