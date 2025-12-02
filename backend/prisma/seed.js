@@ -157,18 +157,21 @@ async function main() {
           name: 'Global Buyer Policy',
           version: 1,
           buyFormula: {
-            percentage: 0.55,
-            weights: {
-              media: 0.6,
-              sleeve: 0.4,
+            buyPercentage: 0.55,
+            mediaWeight: 0.6,
+            sleeveWeight: 0.4,
+            priceStatistic: 'MEDIAN',
+            channelMultipliers: {
+              WEB: 1.0,
+              WALK_IN: 0.95,
+              BULK: 0.85,
             },
           },
           sellFormula: {
-            percentage: 0.0,
-            weights: {
-              media: 0.6,
-              sleeve: 0.4,
-            },
+            sellPercentage: 1.25,
+            mediaWeight: 0.6,
+            sleeveWeight: 0.4,
+            priceStatistic: 'MEDIAN',
           },
           conditionCurve: {
             MINT: 1.1,

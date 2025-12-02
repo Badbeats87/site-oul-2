@@ -108,16 +108,33 @@ class PricingService {
     const policy = await this.getActivePricingPolicy('BUYER', context);
 
     if (policy && policy.buyFormula) {
+      // Normalize field names from database to internal format
+      // Handle both 'percentage' (old) and 'buyPercentage' (new) naming conventions
+      const buyPercentage = policy.buyFormula.buyPercentage ?? policy.buyFormula.percentage ?? this.defaults.buyPercentage;
+
+      // Handle weights: could be 'weights' object or separate 'mediaWeight'/'sleeveWeight' fields
+      const weights = policy.buyFormula.weights || {
+        media: policy.buyFormula.mediaWeight ?? this.defaultWeights.media,
+        sleeve: policy.buyFormula.sleeveWeight ?? this.defaultWeights.sleeve,
+      };
+
+      logger.debug('getBuyerFormula loaded from database', {
+        policyId: policy.id,
+        buyPercentage,
+        weights,
+      });
+
       return {
         ...this.defaults,
-        buyPercentage: policy.buyFormula.percentage || policy.buyFormula.buyPercentage || this.defaults.buyPercentage,
+        buyPercentage,
         ...policy.buyFormula,
         policyId: policy.id,
         conditionCurve: policy.conditionCurve || this.defaultConditionCurve,
-        weights: policy.buyFormula.weights || this.defaultWeights,
+        weights,
       };
     }
 
+    logger.debug('getBuyerFormula using defaults (no policy found)');
     return {
       ...this.defaults,
       conditionCurve: this.defaultConditionCurve,
@@ -134,16 +151,33 @@ class PricingService {
     const policy = await this.getActivePricingPolicy('SELLER', context);
 
     if (policy && policy.sellFormula) {
+      // Normalize field names from database to internal format
+      // Handle both 'percentage' (old) and 'sellPercentage' (new) naming conventions
+      const sellPercentage = policy.sellFormula.sellPercentage ?? policy.sellFormula.percentage ?? this.defaults.sellPercentage;
+
+      // Handle weights: could be 'weights' object or separate 'mediaWeight'/'sleeveWeight' fields
+      const weights = policy.sellFormula.weights || {
+        media: policy.sellFormula.mediaWeight ?? this.defaultWeights.media,
+        sleeve: policy.sellFormula.sleeveWeight ?? this.defaultWeights.sleeve,
+      };
+
+      logger.debug('getSellerFormula loaded from database', {
+        policyId: policy.id,
+        sellPercentage,
+        weights,
+      });
+
       return {
         ...this.defaults,
-        sellPercentage: policy.sellFormula.percentage || policy.sellFormula.sellPercentage || this.defaults.sellPercentage,
+        sellPercentage,
         ...policy.sellFormula,
         policyId: policy.id,
         conditionCurve: policy.conditionCurve || this.defaultConditionCurve,
-        weights: policy.sellFormula.weights || this.defaultWeights,
+        weights,
       };
     }
 
+    logger.debug('getSellerFormula using defaults (no policy found)');
     return {
       ...this.defaults,
       conditionCurve: this.defaultConditionCurve,
