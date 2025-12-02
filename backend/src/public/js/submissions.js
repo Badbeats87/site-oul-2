@@ -53,41 +53,15 @@ class SubmissionsManager {
       });
     }
 
-    // Review buttons
-    document.addEventListener('click', (e) => {
-      if (e.target.matches('[data-submission-review-btn]')) {
-        const submissionId = e.target.dataset.submissionId;
-        this.openDetailsModal(submissionId);
-      }
-
-      if (e.target.matches('[data-submission-accept-btn]')) {
-        const submissionId = e.target.dataset.submissionId;
-        this.acceptSubmission(submissionId);
-      }
-
-      if (e.target.matches('[data-submission-reject-btn]')) {
-        const submissionId = e.target.dataset.submissionId;
-        this.rejectSubmission(submissionId);
-      }
-
-      if (e.target.matches('[data-submission-item-accept]')) {
-        const submissionId = e.target.dataset.submissionId;
-        const itemId = e.target.dataset.itemId;
-        this.acceptItem(submissionId, itemId);
-      }
-
-      if (e.target.matches('[data-submission-item-reject]')) {
-        const submissionId = e.target.dataset.submissionId;
-        const itemId = e.target.dataset.itemId;
-        this.rejectItem(submissionId, itemId);
-      }
-
-      if (e.target.matches('[data-submission-item-quote]')) {
-        const submissionId = e.target.dataset.submissionId;
-        const itemId = e.target.dataset.itemId;
-        this.openQuoteModal(submissionId, itemId);
-      }
-    });
+    const submissionsTable = document.querySelector('[data-submissions-tbody]');
+    if (submissionsTable) {
+      submissionsTable.addEventListener('click', (e) => {
+        if (e.target.matches('[data-submission-review-btn]')) {
+          const submissionId = e.target.dataset.submissionId;
+          this.goToSubmissionDetail(submissionId);
+        }
+      });
+    }
   }
 
   /**
@@ -324,168 +298,9 @@ class SubmissionsManager {
     return date.toLocaleDateString();
   }
 
-  /**
-   * Open details modal for submission
-   */
-  async openDetailsModal(submissionId) {
-    try {
-      this.showLoading(true);
-
-      const submission = await this.api.get(
-        `/admin/submissions/${submissionId}`
-      );
-      this.selectedSubmission = submission;
-
-      const modal = document.querySelector('[data-submission-details-modal]');
-      if (modal) {
-        this.renderDetailsModal(submission);
-        modal.style.display = 'block';
-      }
-
-      this.showLoading(false);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to load submission details:', error);
-      this.showError('Failed to load submission details: ' + error.message);
-      this.showLoading(false);
-    }
-  }
-
-  /**
-   * Render details modal content
-   */
-  renderDetailsModal(submission) {
-    const modalBody = document.querySelector('[data-submission-details-body]');
-    if (!modalBody) return;
-
-    modalBody.innerHTML = `
-      <div class="submission-details">
-        <div class="details-header">
-          <div class="detail-row">
-            <span class="label">Seller</span>
-            <span class="value">${submission.sellerName || 'Unknown'}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Email</span>
-            <span class="value">
-              <a href="mailto:${submission.sellerContact}" style="color: var(--color-accent);">
-                ${submission.sellerContact || 'N/A'}
-              </a>
-            </span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Total Value</span>
-            <span class="value"><strong>$${parseFloat(submission.totalOffered || 0).toFixed(2)}</strong></span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Status</span>
-            <span class="value">${this.getStatusBadge(submission.status)}</span>
-          </div>
-        </div>
-
-        <div class="submission-items">
-          <h3>Items</h3>
-          ${this.renderSubmissionItems(submission)}
-        </div>
-
-        <div class="submission-actions">
-          <button
-            class="button button--primary"
-            data-submission-accept-btn
-            data-submission-id="${submission.id}"
-            aria-label="Accept all items in this submission"
-          >
-            Accept All
-          </button>
-          <button
-            class="button button--secondary"
-            data-submission-reject-btn
-            data-submission-id="${submission.id}"
-            aria-label="Reject all items in this submission"
-          >
-            Reject All
-          </button>
-        </div>
-      </div>
-    `;
-  }
-
-  /**
-   * Render submission items
-   */
-  renderSubmissionItems(submission) {
-    if (!submission.items || submission.items.length === 0) {
-      return '<p>No items in this submission</p>';
-    }
-
-    // eslint-disable-next-line indent
-    return `
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Album</th>
-            <th>Condition</th>
-            <th>Qty</th>
-            <th>Auto Offer</th>
-            <th>Counter Offer</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${submission.items
-    .map(
-      (item) => `
-              <tr>
-                <td data-label="Album">
-                  <strong>${item.release?.title || 'Unknown'}</strong><br>
-                  <span class="text-muted">${item.release?.artist || ''}</span>
-                </td>
-                <td data-label="Condition">${item.sellerConditionMedia}/${item.sellerConditionSleeve}</td>
-                <td data-label="Qty">${item.quantity}</td>
-                <td data-label="Auto Offer">$${parseFloat(item.autoOfferPrice || 0).toFixed(2)}</td>
-                <td data-label="Counter Offer">
-                  ${item.counterOfferPrice ? `$${parseFloat(item.counterOfferPrice).toFixed(2)}` : '—'}
-                </td>
-                <td data-label="Status">${this.getStatusBadge(item.status)}</td>
-                <td data-label="Actions" class="item-actions">
-                  <button
-                    class="button button--sm button--secondary"
-                    data-submission-item-quote
-                    data-submission-id="${submission.id}"
-                    data-item-id="${item.id}"
-                    aria-label="Set quote for ${item.release?.title || 'item'}"
-                  >
-                    Quote
-                  </button>
-                  <button
-                    class="button button--sm button--success"
-                    data-submission-item-accept
-                    data-submission-id="${submission.id}"
-                    data-item-id="${item.id}"
-                    aria-label="Accept ${item.release?.title || 'item'}"
-                    title="Accept this item"
-                  >
-                    ✓ Accept
-                  </button>
-                  <button
-                    class="button button--sm button--danger"
-                    data-submission-item-reject
-                    data-submission-id="${submission.id}"
-                    data-item-id="${item.id}"
-                    aria-label="Reject ${item.release?.title || 'item'}"
-                    title="Reject this item"
-                  >
-                    ✗ Reject
-                  </button>
-                </td>
-              </tr>
-            `
-    )
-    .join('')}
-        </tbody>
-      </table>
-    `;
+  goToSubmissionDetail(submissionId) {
+    if (!submissionId) return;
+    window.location.href = `/admin/submission.html?id=${submissionId}`;
   }
 
   /**

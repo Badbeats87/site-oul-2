@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submission Detail - Vinyl Catalog</title>
+    <link rel="stylesheet" href="../../styles/design-system.css">
+    <link rel="stylesheet" href="../../styles/admin.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar__container">
+            <a href="index.html" class="navbar__logo">
+                <svg class="navbar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <circle cx="12" cy="12" r="6"></circle>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <span>Vinyl Catalog</span>
+            </a>
+            <div class="navbar__links">
+                <a href="index.html" class="nav-link">Back to Dashboard</a>
+                <button class="nav-link button button--sm button--secondary" data-logout-btn>Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="page-content">
+        <div class="container">
+            <a href="index.html" class="breadcrumb-link">&larr; Back to submissions</a>
+
+            <header class="section-header" style="margin-top: 10px;">
+                <div>
+                    <h1>Submission Detail</h1>
+                    <p data-submission-id-display class="text-muted"></p>
+                </div>
+                <div class="button-group">
+                    <button class="button button--secondary" data-submission-reject-all disabled>Reject All</button>
+                    <button class="button button--primary" data-submission-accept-all disabled>Accept All</button>
+                </div>
+            </header>
+
+            <section class="section-panel" data-submission-summary>
+                <p>Loading submission details...</p>
+            </section>
+
+            <section class="section-panel" data-submission-items>
+                <div class="section-header">
+                    <div>
+                        <h2>Items</h2>
+                        <p class="text-muted">Review, counter and accept individual items</p>
+                    </div>
+                </div>
+                <div data-items-container></div>
+            </section>
+
+            <section class="section-panel" data-submission-audit>
+                <div class="section-header">
+                    <h2>Recent Activity</h2>
+                </div>
+                <div data-audit-container class="audit-list"></div>
+            </section>
+        </div>
+    </main>
+
+    <div data-loading class="loading-overlay" style="display: none;">Loading...</div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__content">
+                <div class="footer__section">
+                    <h4>Vinyl Catalog</h4>
+                    <p>Admin console for catalog management</p>
+                </div>
+                <div class="footer__section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="../seller/index.html">Sell Records</a></li>
+                        <li><a href="../buyer/index.html">Buy Records</a></li>
+                        <li><a href="../index.html">Home</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer__bottom">
+                <p>&copy; 2024 Vinyl Catalog. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../js/api-client.js"></script>
+    <script src="../../js/auth.js"></script>
+    <script src="../../js/submission-detail.js"></script>
+</body>
+</html>
