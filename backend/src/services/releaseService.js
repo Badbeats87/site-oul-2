@@ -767,69 +767,85 @@ class ReleaseService {
       }
 
       if (releaseIdForStats) {
-        if (isMaster) {
+        // Try to get marketplace stats with intelligent fallback
+        // First try current marketplace listings (most accurate)
+        try {
           priceStats = await discogsService
-            .getVinylMarketplaceStats(releaseIdForStats, 'EUR')
-            .catch((err) => {
-              logger.debug('getVinylMarketplaceStats failed', {
-                masterId: releaseIdForStats,
-                error: err.message,
-              });
-              return null;
-            });
+            .getMarketplaceStats(releaseIdForStats, 'EUR');
+          logger.debug('Successfully fetched marketplace stats', {
+            releaseId: releaseIdForStats,
+            hasStats: !!priceStats,
+          });
+        } catch (err) {
+          logger.debug('getMarketplaceStats failed', {
+            releaseId: releaseIdForStats,
+            error: err.message,
+          });
+          priceStats = null;
         }
 
+        // If no current marketplace listings, try price suggestions (seller recommendations)
         if (!priceStats) {
-          priceStats = await discogsService
-            .getMarketplaceStats(releaseIdForStats, 'EUR')
-            .catch((err) => {
-              logger.debug('getMarketplaceStats failed', {
+          try {
+            const priceSuggestions = await discogsService
+              .getPriceSuggestions(releaseIdForStats);
+            if (priceSuggestions) {
+              logger.debug('Got price suggestions as fallback', {
                 releaseId: releaseIdForStats,
-                error: err.message,
+                suggestions: priceSuggestions,
               });
-              return null;
+              priceStats = priceSuggestions;
+            }
+          } catch (err) {
+            logger.debug('getPriceSuggestions also failed', {
+              releaseId: releaseIdForStats,
+              error: err.message,
             });
+          }
         }
 
+        // If still no pricing, try historical price statistics
         if (!priceStats) {
-          priceStats = await discogsService
-            .getPriceSuggestions(releaseIdForStats)
-            .catch((err) => {
-              logger.debug('getPriceSuggestions failed', {
+          try {
+            const priceStats2 = await discogsService
+              .getPriceStatistics(releaseIdForStats);
+            if (priceStats2) {
+              logger.debug('Got price statistics as second fallback', {
                 releaseId: releaseIdForStats,
-                error: err.message,
+                stats: priceStats2,
               });
-              return null;
+              priceStats = priceStats2;
+            }
+          } catch (err) {
+            logger.debug('getPriceStatistics also failed', {
+              releaseId: releaseIdForStats,
+              error: err.message,
             });
-        }
-
-        if (!priceStats) {
-          priceStats = await discogsService
-            .getPriceStatistics(releaseIdForStats)
-            .catch((err) => {
-              logger.debug('getPriceStatistics failed', {
-                releaseId: releaseIdForStats,
-                error: err.message,
-              });
-              return null;
-            });
+          }
         }
       }
 
-      let marketSnapshots =
-        priceStats &&
-        (priceStats.lowest || priceStats.average || priceStats.median)
-          ? [
-              {
-                releaseId: `discogs_${result.id}`,
-                source: 'DISCOGS',
-                statLow: priceStats.lowest,
-                statMedian: priceStats.median,
-                statHigh: priceStats.highest,
-                fetchedAt: new Date(),
-              },
-            ]
-          : [];
+      let marketSnapshots = [];
+      if (priceStats && (priceStats.lowest || priceStats.median || priceStats.average || priceStats.highest)) {
+        // Ensure we have at least one price value
+        const snapshot = {
+          releaseId: `discogs_${result.id}`,
+          source: 'DISCOGS',
+          statLow: priceStats.lowest || null,
+          statMedian: priceStats.median || priceStats.average || null,
+          statHigh: priceStats.highest || null,
+          fetchedAt: new Date(),
+        };
+
+        // Only add to marketSnapshots if we have at least one price value
+        if (snapshot.statLow || snapshot.statMedian || snapshot.statHigh) {
+          marketSnapshots.push(snapshot);
+          logger.debug('Created market snapshot', {
+            releaseId: result.id,
+            snapshot,
+          });
+        }
+      }
 
       let ourPrice = await this.calculateOurPrice(marketSnapshots);
       if (!ourPrice && marketSnapshots.length === 0) {
