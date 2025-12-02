@@ -360,23 +360,20 @@
     <!-- Load JavaScript dependencies -->
     <script src="../../js/api-client.js"></script>
     <script src="../../js/submissions.js"></script>
+
+    <!-- Initialize admin services (before admin.js loads) -->
+    <script>
+      // Create API client and submissions manager early so admin.js can use them
+      const apiClient = new APIClient('/api/v1');
+      window.submissionsManager = new SubmissionsManager(apiClient);
+      console.log('Admin services initialized: APIClient and SubmissionsManager');
+    </script>
+
+    <!-- Load admin page handler (which expects submissionsManager to exist) -->
     <script src="../../js/admin.js"></script>
 
-    <!-- Admin Dashboard Initialization -->
+    <!-- Helper function for tab switching -->
     <script>
-      // Initialize API client and submissions manager when page loads
-      document.addEventListener('DOMContentLoaded', function () {
-        console.log('=== Admin Dashboard Initializing ===');
-
-        // Create API client instance
-        const apiClient = new APIClient('/api/v1');
-        console.log('API Client created');
-
-        // Create and initialize submissions manager
-        window.submissionsManager = new SubmissionsManager(apiClient);
-        console.log('Submissions Manager created');
-      });
-
       // Simple Tab Switching Helper (used in onclick handlers)
       function switchTab(index) {
         // Hide all tabs
