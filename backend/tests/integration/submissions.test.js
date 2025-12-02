@@ -1,5 +1,6 @@
 import prisma from '../../src/utils/db.js';
 import submissionService from '../../src/services/submissionService.js';
+import inventoryService from '../../src/services/inventoryService.js';
 import sellerService from '../../src/services/sellerService.js';
 import { ApiError } from '../../src/middleware/errorHandler.js';
 
@@ -9,7 +10,7 @@ describe('Submissions Service - Integration Tests', () => {
   let testPolicyId;
 
   beforeAll(async () => {
-    // Create test pricing policy
+    // Create test pricing policy used for submission calculations
     const policy = await prisma.pricingPolicy.create({
       data: {
         name: 'Test Policy',
@@ -36,6 +37,34 @@ describe('Submissions Service - Integration Tests', () => {
       },
     });
     testPolicyId = policy.id;
+
+    // Create SELLER policy to exercise inventory pricing fallback
+    await prisma.pricingPolicy.create({
+      data: {
+        name: 'Test Seller Policy',
+        scope: 'SELLER',
+        isActive: true,
+        buyFormula: {
+          buyPercentage: 0.55,
+          roundIncrement: 0.25,
+        },
+        sellFormula: {
+          sellPercentage: 1.25,
+          minProfitMargin: 0.3,
+          roundIncrement: 0.25,
+        },
+        conditionCurve: {
+          MINT: 1.1,
+          NM: 1.0,
+          VG_PLUS: 0.85,
+          VG: 0.75,
+          VG_MINUS: 0.65,
+          G: 0.5,
+          FAIR: 0.35,
+          POOR: 0.2,
+        },
+      },
+    });
 
     // Create test release
     const release = await prisma.release.create({
@@ -411,6 +440,59 @@ describe('Submissions Service - Integration Tests', () => {
       if (history.audits.length > 1) {
         expect(history.audits[0].changedAt >= history.audits[1].changedAt).toBe(true);
       }
+    });
+  });
+
+  describe('Inventory creation from accepted items', () => {
+    it('creates inventory using seller policy fallback when no release policy exists', async () => {
+      const release = await prisma.release.create({
+        data: {
+          title: 'Fallback Release',
+          artist: 'Fallback Artist',
+          label: 'Test Label',
+          releaseYear: 2010,
+        },
+      });
+
+      await prisma.marketSnapshot.create({
+        data: {
+          releaseId: release.id,
+          source: 'DISCOGS',
+          statLow: 20,
+          statMedian: 25,
+          statHigh: 30,
+          fetchedAt: new Date(),
+        },
+      });
+
+      const seller = await prisma.sellerSubmission.create({
+        data: {
+          sellerContact: 'fallback@example.com',
+          status: 'PENDING_REVIEW',
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        },
+      });
+
+      const item = await prisma.submissionItem.create({
+        data: {
+          submissionId: seller.id,
+          releaseId: release.id,
+          quantity: 1,
+          sellerConditionMedia: 'NM',
+          sellerConditionSleeve: 'NM',
+          autoOfferPrice: 15,
+          status: 'PENDING',
+        },
+      });
+
+      await submissionService.reviewSubmissionItem(seller.id, item.id, 'accept');
+
+      const inventoryLot = await inventoryService.createFromSubmissionItem(item.id);
+
+      expect(inventoryLot).toBeDefined();
+      expect(inventoryLot.status).toBe('DRAFT');
+      expect(Number(inventoryLot.costBasis)).toBeGreaterThan(0);
+      expect(Number(inventoryLot.listPrice)).toBeGreaterThan(Number(inventoryLot.costBasis));
     });
   });
 

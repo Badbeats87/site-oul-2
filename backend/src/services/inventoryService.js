@@ -340,16 +340,16 @@ class InventoryService {
         );
       }
 
-      // Use final offer price as cost basis
+      // Use final offer price as cost basis (what we paid per buyer policy)
       const costBasis =
-        item.finalOfferPrice || item.counterOfferPrice || item.autoOfferPrice;
+        Number(item.finalOfferPrice || item.counterOfferPrice || item.autoOfferPrice || 0);
 
-      // Calculate sell price using pricing service
-      const sellPrice = await this.calculateSellPrice(
-        item.release,
-        item.sellerConditionMedia,
-        item.sellerConditionSleeve
-      );
+      const sellPriceResult = await this.calculateSellPrice({
+        releaseId: item.releaseId,
+        conditionMedia: item.sellerConditionMedia,
+        conditionSleeve: item.sellerConditionSleeve,
+        costBasis,
+      });
 
       // Create inventory lot
       const inventoryLot = await prisma.inventoryLot.create({
@@ -359,7 +359,7 @@ class InventoryService {
           conditionMedia: item.sellerConditionMedia,
           conditionSleeve: item.sellerConditionSleeve,
           costBasis,
-          listPrice: sellPrice,
+          listPrice: sellPriceResult.price,
           channel,
           status: 'DRAFT',
           internalNotes: `Auto-created from submission by seller: ${item.submission.sellerContact}`,
@@ -382,7 +382,7 @@ class InventoryService {
         submissionItemId,
         releaseId: item.releaseId,
         costBasis: Number(costBasis),
-        listPrice: Number(sellPrice),
+        listPrice: Number(sellPriceResult.price),
       });
 
       return inventoryLot;
@@ -480,35 +480,52 @@ class InventoryService {
    * @param {string} conditionSleeve - Sleeve condition
    * @returns {Promise<number>} Calculated sell price
    */
-  async calculateSellPrice(release, conditionMedia, conditionSleeve) {
+  async calculateSellPrice({ releaseId, conditionMedia, conditionSleeve, costBasis }) {
     try {
-      // Get pricing policy for this release
-      const policy = await prisma.releasePricingPolicy.findFirst({
+      if (!releaseId) {
+        throw new ApiError('Release ID is required for sell price calculation', 400);
+      }
+      if (costBasis === undefined || costBasis === null) {
+        throw new ApiError('Cost basis is required to calculate sell price', 400);
+      }
+
+      // Get active release-specific policy if available
+      const policyLink = await prisma.releasePricingPolicy.findFirst({
         where: {
-          releaseId: release.id,
+          releaseId,
           isActive: true,
         },
         include: { policy: true },
         orderBy: { priority: 'asc' },
       });
 
-      if (!policy) {
-        throw new ApiError('No active pricing policy found for release', 400);
+      let formula = policyLink?.policy?.sellFormula || null;
+
+      if (!formula) {
+        const sellerFormula = await pricingService.getSellerFormula();
+        if (!sellerFormula) {
+          throw new ApiError('No active seller pricing policy configured', 400);
+        }
+        formula = sellerFormula;
       }
 
-      // Calculate sell price using pricing service
-      const sellPrice = await pricingService.calculateSellPrice(
-        release,
-        conditionMedia,
-        conditionSleeve,
-        policy.policy
-      );
+      const sellPrice = await pricingService.calculateSellPrice({
+        releaseId,
+        mediaCondition: conditionMedia,
+        sleeveCondition: conditionSleeve,
+        costBasis: Number(costBasis),
+        formula,
+      });
 
-      return sellPrice;
+      return {
+        price: sellPrice.price,
+        marginPercent: sellPrice.marginPercent,
+        policyId: policyLink?.policyId || formula.policyId || null,
+      };
     } catch (error) {
       if (error instanceof ApiError) throw error;
       logger.error('Error calculating sell price', {
-        releaseId: release.id,
+        releaseId,
         error: error.message,
       });
       throw new ApiError('Failed to calculate sell price', 500);
@@ -1185,12 +1202,14 @@ class InventoryService {
       for (const lot of inventoryLots) {
         try {
           // Calculate new sell price using the policy
-          const newListPrice = await pricingService.calculateSellPrice(
-            lot.release,
-            lot.conditionMedia,
-            lot.conditionSleeve,
-            policy
-          );
+          const pricingResult = await pricingService.calculateSellPrice({
+            releaseId: lot.releaseId,
+            mediaCondition: lot.conditionMedia,
+            sleeveCondition: lot.conditionSleeve,
+            costBasis: Number(lot.costBasis),
+            formula: policy,
+          });
+          const newListPrice = pricingResult.price;
 
           updates.push({
             inventoryLotId: lot.id,

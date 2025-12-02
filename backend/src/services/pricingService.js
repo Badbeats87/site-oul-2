@@ -354,12 +354,19 @@ class PricingService {
         sellCeiling: formula.sellCeiling ?? this.defaults.sellCeiling,
       };
 
-      // Get market stat
-      const marketStat = await this._getMarketStat(
+      // Get market stat - prefer stored snapshots, fallback to external sources
+      let marketStat = await this._getMarketStatFromDatabase(
         releaseId,
-        marketSource,
         marketStatistic
       );
+
+      if (!marketStat) {
+        marketStat = await this._getMarketStat(
+          releaseId,
+          marketSource,
+          marketStatistic
+        );
+      }
 
       if (!marketStat) {
         throw new ApiError('Market data not available for pricing', 404);
