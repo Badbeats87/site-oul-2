@@ -691,18 +691,23 @@ class ReleaseService {
         return [];
       }
 
-      // Enrich all results to ensure accurate pricing
-      // No more rapid requests since search is button-triggered, not live
-      const allResults = discogsResults.results.slice(0, limit);
-
-      const enrichedResults = await Promise.all(
-        allResults.map((result) => this._enrichDiscogsResult(result))
-      );
-
-      // Filter out results without marketplace data
-      let finalResults = enrichedResults.filter(
-        (result) => result && result.marketSnapshots && result.marketSnapshots.length > 0
-      );
+      // Return Discogs search results without enrichment
+      // Enrichment is too slow and causes rate limiting
+      // Users can click for details if needed
+      const finalResults = discogsResults.results.slice(0, limit).map((result) => ({
+        id: result.id,
+        title: result.title,
+        type: result.type,
+        artist: result.basic_information?.artists?.[0]?.name || 'Unknown Artist',
+        year: result.basic_information?.year || result.year || null,
+        coverArtUrl: result.basic_information?.cover_image || result.cover_image || null,
+        uri: result.uri,
+        resource_url: result.resource_url,
+        basic_information: result.basic_information,
+        source: 'DISCOGS',
+        marketSnapshots: [], // No pricing data - show "N/A" in UI
+        ourPrice: null,
+      }));
 
       logger.info('Discogs search completed', {
         query,
