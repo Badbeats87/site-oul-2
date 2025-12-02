@@ -324,6 +324,7 @@ class SubmissionService {
       });
 
       return {
+        id: sellerId,
         sellerId,
         items: createdItems,
         totalOffered,
