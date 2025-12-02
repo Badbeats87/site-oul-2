@@ -460,19 +460,6 @@ class DiscogsService {
               return null;
             }
 
-            // Filter out unreasonably low prices (likely damaged/defective items)
-            // For vinyl, prices below €5 are suspicious and usually indicate damage or errors
-            const MIN_REASONABLE_PRICE = 5;
-            if (lowestPrice < MIN_REASONABLE_PRICE) {
-              logger.warn('Lowest price is unreasonably low, likely damaged item', {
-                releaseId,
-                lowestPrice,
-                minReasonable: MIN_REASONABLE_PRICE,
-              });
-              // Return null to trigger fallback to price suggestions/statistics
-              return null;
-            }
-
             return {
               release_id: releaseId,
               currency: currencyCode,
