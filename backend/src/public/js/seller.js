@@ -75,6 +75,17 @@ const sellerApp = {
         }
       });
     });
+
+    // Add to list buttons (both in form and summary)
+    const addToListButtons = document.querySelectorAll(
+      '.quote-form .button--accent, .quote-summary .button--success'
+    );
+    addToListButtons.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.addToSellingList();
+      });
+    });
   },
 
   calculateBuyingPrice(album) {
@@ -420,6 +431,173 @@ const sellerApp = {
       conditionAdjustment,
       finalOffer,
     });
+  },
+
+  addToSellingList() {
+    if (!this.state.selectedAlbum) {
+      alert('Please select an album first');
+      return;
+    }
+
+    // Get conditions
+    const mediaCondition = document.querySelector(
+      '.condition-grid:nth-of-type(1) .condition-btn--selected'
+    );
+    const sleeveCondition = document.querySelector(
+      '.condition-grid:nth-of-type(2) .condition-btn--selected'
+    );
+    const quantityInput = document.getElementById('quantity');
+    const quantity = parseInt(quantityInput?.value) || 1;
+    const notes = document.getElementById('notes')?.value || '';
+
+    // Get current price from quote display
+    const quoteItems = document.querySelectorAll('.quote-item');
+    const priceDisplay = quoteItems[2]?.querySelector('.quote-value--large')?.textContent || '';
+    const finalPrice = parseFloat(priceDisplay.replace('€', '')) || 0;
+
+    // Create item object
+    const item = {
+      id: Date.now(), // Temporary ID for frontend
+      album: this.state.selectedAlbum,
+      mediaCondition: mediaCondition?.dataset.condition || 'nm',
+      sleeveCondition: sleeveCondition?.dataset.condition || 'nm',
+      quantity,
+      notes,
+      pricePerRecord: finalPrice,
+      totalPrice: finalPrice * quantity,
+    };
+
+    // Initialize list if it doesn't exist
+    if (!this.state.sellingList) {
+      this.state.sellingList = [];
+    }
+
+    // Add to list
+    this.state.sellingList.push(item);
+    console.log('Added to selling list:', item);
+    console.log('Selling list now:', this.state.sellingList);
+
+    // Update UI
+    this.updateSellingListUI();
+
+    // Show success message
+    alert(`Added "${item.album.title}" to your selling list!`);
+
+    // Reset form for next item
+    this.resetForm();
+  },
+
+  updateSellingListUI() {
+    const emptyState = document.getElementById('emptyState');
+    const listItems = document.getElementById('listItems');
+    const tableBody = document.getElementById('tableBody');
+
+    if (!this.state.sellingList || this.state.sellingList.length === 0) {
+      if (emptyState) emptyState.style.display = 'block';
+      if (listItems) listItems.style.display = 'none';
+      return;
+    }
+
+    // Hide empty state, show list
+    if (emptyState) emptyState.style.display = 'none';
+    if (listItems) listItems.style.display = 'block';
+
+    // Update table
+    if (tableBody) {
+      tableBody.innerHTML = this.state.sellingList
+        .map((item, idx) => `
+          <tr>
+            <td>
+              <strong>${item.album.title || 'Unknown Album'}</strong><br />
+              <span class="text-muted">${item.album.artist || 'Unknown Artist'}</span>
+            </td>
+            <td>
+              Media: ${this.formatCondition(item.mediaCondition)}<br />
+              Sleeve: ${this.formatCondition(item.sleeveCondition)}
+            </td>
+            <td>${item.quantity}</td>
+            <td class="text-right">€${item.pricePerRecord.toFixed(2)}</td>
+            <td class="text-right"><strong>€${item.totalPrice.toFixed(2)}</strong></td>
+            <td>
+              <button class="button button--sm button--secondary" onclick="sellerApp.removeFromList(${idx})">
+                Remove
+              </button>
+            </td>
+          </tr>
+        `)
+        .join('');
+    }
+
+    // Update totals
+    const totalPrice = this.state.sellingList.reduce((sum, item) => sum + item.totalPrice, 0);
+    const totalItems = this.state.sellingList.reduce((sum, item) => sum + item.quantity, 0);
+
+    const totalsSection = document.querySelector('.list-totals');
+    if (totalsSection) {
+      totalsSection.innerHTML = `
+        <div class="total-row">
+          <span>Subtotal (${totalItems} record${totalItems !== 1 ? 's' : ''})</span>
+          <span class="total-value">€${totalPrice.toFixed(2)}</span>
+        </div>
+      `;
+    }
+  },
+
+  formatCondition(condition) {
+    const conditionMap = {
+      mint: 'Mint',
+      nm: 'Near Mint',
+      vgp: 'VG+',
+      vg: 'VG',
+      vgm: 'VG-',
+      good: 'Good',
+    };
+    return conditionMap[condition] || condition;
+  },
+
+  removeFromList(index) {
+    if (this.state.sellingList) {
+      this.state.sellingList.splice(index, 1);
+      this.updateSellingListUI();
+    }
+  },
+
+  resetForm() {
+    // Reset quantity
+    const quantityInput = document.getElementById('quantity');
+    if (quantityInput) quantityInput.value = '1';
+
+    // Reset notes
+    const notesInput = document.getElementById('notes');
+    if (notesInput) notesInput.value = '';
+
+    // Reset search input
+    if (this.searchInput) this.searchInput.value = '';
+
+    // Clear selected album to prepare for next search
+    this.state.selectedAlbum = null;
+
+    // Reset condition buttons to defaults
+    const conditionBtns = document.querySelectorAll('.condition-btn');
+    conditionBtns.forEach((btn) => {
+      btn.classList.remove('condition-btn--selected');
+    });
+    // Re-select defaults
+    const defaultMediaBtn = document.querySelector('.condition-grid:nth-of-type(1) .condition-btn[data-condition="mint"]');
+    const defaultSleeveBtn = document.querySelector('.condition-grid:nth-of-type(2) .condition-btn[data-condition="nm"]');
+    if (defaultMediaBtn) defaultMediaBtn.classList.add('condition-btn--selected');
+    if (defaultSleeveBtn) defaultSleeveBtn.classList.add('condition-btn--selected');
+
+    // Reset card display
+    if (this.albumCardInfo) {
+      this.albumCardInfo.innerHTML = `
+        <h3>Dark Side of the Moon</h3>
+        <p class="album-artist">Pink Floyd</p>
+        <p class="album-details">
+          1973 • UK Pressing • Harvest Records
+        </p>
+      `;
+    }
   },
 };
 
