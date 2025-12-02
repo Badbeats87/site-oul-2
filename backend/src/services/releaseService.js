@@ -691,7 +691,8 @@ class ReleaseService {
         return [];
       }
 
-      const topResults = discogsResults.results.slice(0, Math.min(limit, 3));
+      // Limit enrichment to top 2 results to reduce API calls during search
+      const topResults = discogsResults.results.slice(0, Math.min(limit, 2));
       const enrichedTopResults = await Promise.all(
         topResults.map((result) => this._enrichDiscogsResult(result))
       );
@@ -705,20 +706,25 @@ class ReleaseService {
         (result) => result && result.marketSnapshots && result.marketSnapshots.length > 0
       );
 
+      // Don't enrich remaining results during search to avoid rate limiting
+      // Return basic Discogs info for remaining results (enrichment can happen on detail view)
       if (discogsResults.results.length > topResults.length) {
         const remainingResults = discogsResults.results.slice(topResults.length);
         const availableSlots = Math.max(limit - finalResults.length, 0);
         if (availableSlots > 0) {
-          const remainingEnriched = await Promise.all(
-            remainingResults
-              .slice(0, availableSlots)
-              .map((result) => this._enrichDiscogsResult(result))
-          );
-          // Filter out results without marketplace data (only include records with actual Discogs listings)
-          const validResults = remainingEnriched.filter(
-            (result) => result && result.marketSnapshots && result.marketSnapshots.length > 0
-          );
-          finalResults = [...finalResults, ...validResults];
+          const basicResults = remainingResults
+            .slice(0, availableSlots)
+            .map((result) => ({
+              id: result.id,
+              title: result.title,
+              type: result.type,
+              uri: result.uri,
+              resource_url: result.resource_url,
+              basic_information: result.basic_information,
+              source: 'DISCOGS',
+              _isBasic: true, // Flag to indicate this is non-enriched data
+            }));
+          finalResults = [...finalResults, ...basicResults];
         }
       }
 
@@ -729,13 +735,24 @@ class ReleaseService {
 
       return finalResults;
     } catch (discogsError) {
-      logger.error('Discogs search failed', {
+      // Log detailed error info for debugging
+      const errorInfo = {
         query,
         error: discogsError.message,
         status: discogsError.response?.status,
         statusText: discogsError.response?.statusText,
         code: discogsError.code,
-      });
+        isTimeout: discogsError.code === 'ECONNABORTED' || discogsError.code === 'ETIMEDOUT',
+        isRateLimit: discogsError.response?.status === 429,
+      };
+
+      if (errorInfo.isTimeout) {
+        logger.warn('Discogs search timeout - API may be slow or rate limited', errorInfo);
+      } else if (errorInfo.isRateLimit) {
+        logger.warn('Discogs rate limited - reducing request volume', errorInfo);
+      } else {
+        logger.error('Discogs search failed', errorInfo);
+      }
       return [];
     }
   }

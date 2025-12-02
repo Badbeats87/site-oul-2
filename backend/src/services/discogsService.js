@@ -37,10 +37,10 @@ class RequestThrottler {
  */
 class DiscogsService {
   constructor() {
-    this.throttler = new RequestThrottler(1000); // 1 second between requests
+    this.throttler = new RequestThrottler(3000); // 3 seconds between requests to respect rate limits
     this.client = axios.create({
       baseURL: DISCOGS_API_BASE,
-      timeout: 10000,
+      timeout: 30000, // 30s timeout to allow for rate limit retries
       headers: {
         'User-Agent': 'VinylCatalogAPI/1.0',
       },
