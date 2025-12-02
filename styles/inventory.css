@@ -14,38 +14,15 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: var(--space-md);
-    align-items: center;
+    align-items: stretch;
 }
 
-.inventory-filter-grid .filter-input,
-.inventory-filter-grid .filter-select,
-.inventory-filter-grid .search-input {
+.inventory-filter-grid > * {
     width: 100%;
 }
 
-.search-bar {
-    display: flex;
-    gap: var(--space-md);
-    margin-bottom: var(--space-lg);
-}
-
-.search-bar .search-input {
-    flex: 1;
-}
-
-.search-bar .button {
-    white-space: nowrap;
-}
-
-.filter-bar {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-md);
-    margin-bottom: var(--space-lg);
-}
-
-.filter-bar .filter-select {
-    width: 100%;
+.inventory-filter-grid .button {
+    width: auto;
 }
 
 .filter-input {
