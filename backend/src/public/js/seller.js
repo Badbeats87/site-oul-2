@@ -330,16 +330,25 @@ const sellerApp = {
   updateQuote(album) {
     // Get base price from backend calculation (respects current pricing policy)
     // If backend calculated ourPrice, use that; otherwise fall back to local calculation
+    console.log('updateQuote called with album:', {
+      title: album.title,
+      ourPrice: album.ourPrice,
+      marketSnapshots: album.marketSnapshots,
+    });
+
     let baseOffer;
     if (album.ourPrice !== null && album.ourPrice !== undefined) {
       baseOffer = album.ourPrice;
+      console.log('Using API ourPrice:', baseOffer);
     } else {
+      console.log('ourPrice not available, calculating from market data');
       let basePrice = this.getBasePrice(album);
       if (!basePrice) {
         basePrice = this.estimatePrice(album);
       }
       const sellerPercentage = 0.55;
       baseOffer = basePrice * sellerPercentage;
+      console.log('Calculated baseOffer from market:', { basePrice, sellerPercentage, baseOffer });
     }
 
     // Get selected condition
@@ -381,6 +390,15 @@ const sellerApp = {
 
     const finalOffer = Math.round(baseOffer * conditionAdjustment * 100) / 100;
     const adjustmentPercent = Math.round((conditionAdjustment - 1) * 100);
+
+    console.log('Final quote calculation:', {
+      baseOffer,
+      mediaConditionSelected: mediaCondition?.dataset.condition,
+      sleeveConditionSelected: sleeveCondition?.dataset.condition,
+      conditionAdjustment,
+      finalOffer,
+      adjustmentPercent,
+    });
 
     // Update quote display
     const quoteItems = document.querySelectorAll('.quote-item');
