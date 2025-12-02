@@ -259,8 +259,19 @@ const sellerApp = {
     try {
       this.showLoading();
 
+      // Get auth token
+      const token =
+        localStorage.getItem('auth_token') ||
+        sessionStorage.getItem('auth_token');
+
+      const headers = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(
-        `/api/v1/catalog/discogs/quote?discogsId=${album.id}&type=${album.type}`
+        `/api/v1/catalog/discogs/quote?discogsId=${album.id}&type=${album.type}`,
+        { headers }
       );
 
       if (!response.ok) {
