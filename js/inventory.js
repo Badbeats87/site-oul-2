@@ -404,7 +404,7 @@ function createFallbackApi() {
 
     const response = await fetch(url.toString(), {
       method,
-      headers: { 'Content-Type': 'application/json' },
+      headers: Object.assign({ 'Content-Type': 'application/json' }, storedToken ? { Authorization: `Bearer ${storedToken}` } : {}),
       body: body ? JSON.stringify(body) : undefined,
     });
 
@@ -427,6 +427,7 @@ function createFallbackApi() {
   };
 }
 
+const storedToken = typeof localStorage !== 'undefined' ? localStorage.getItem('auth_token') : null;
 const inventoryApi = typeof api !== 'undefined' ? api : createFallbackApi();
 const inventoryManager = new InventoryManager(inventoryApi);
 document.addEventListener('DOMContentLoaded', () => {
