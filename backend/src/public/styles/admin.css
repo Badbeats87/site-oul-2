@@ -17,9 +17,11 @@
     background: linear-gradient(120deg, #f8fafc 0%, #eef2ff 40%, #ffffff 100%);
 }
 
-.admin-shell--topnav {
-    display: block;
+.admin-body--topnav {
+    background: linear-gradient(120deg, #f8fafc 0%, #eef2ff 40%, #ffffff 100%);
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .admin-header {
@@ -247,8 +249,11 @@
     gap: var(--space-2xl);
 }
 
-.admin-shell--topnav .admin-main {
+.admin-main--wide {
     padding: var(--space-2xl) var(--space-3xl);
+    width: 100%;
+    max-width: none;
+    flex: 1;
 }
 
 .admin-toolbar {
