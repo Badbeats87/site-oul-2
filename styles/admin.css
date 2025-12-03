@@ -69,9 +69,9 @@
     font-size: var(--font-size-md);
 }
 
-.admin-body--inventory-topnav .admin-header,
-.admin-body--inventory-topnav .admin-header__user,
-.admin-body--inventory-topnav .admin-nav--horizontal {
+.admin-body--topnav .admin-header,
+.admin-body--topnav .admin-header__user,
+.admin-body--topnav .admin-nav--horizontal {
     display: none;
 }
 
@@ -307,10 +307,14 @@
 }
 
 .admin-main--wide {
-    padding: var(--space-2xl) var(--space-3xl);
+    padding: var(--space-lg);
     width: 100%;
     max-width: none;
     flex: 1;
+}
+
+.admin-body--topnav .admin-main {
+    padding: var(--space-lg);
 }
 
 .admin-body--inventory-topnav .admin-main {
