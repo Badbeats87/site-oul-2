@@ -204,6 +204,13 @@
     box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
 }
 
+.inventory-table td[data-column-id="status"] .filter-select {
+    width: auto;
+    max-width: 140px;
+    min-width: 120px;
+    display: inline-block;
+}
+
 .inventory-table .button--primary {
     background: #111827;
     border-color: #111827;
