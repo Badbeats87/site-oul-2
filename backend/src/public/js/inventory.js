@@ -315,6 +315,13 @@ class InventoryManager {
         if (!row) return;
         const field = event.target.dataset.suggestionSelect;
         const value = event.target.value;
+
+        // Handle "Edit Manually" option
+        if (value === '__edit__') {
+          this.switchToManualEdit(event.target, field, row);
+          return;
+        }
+
         if (!field || !value) return;
         this.applySuggestion(row, field, value);
       }
@@ -805,26 +812,36 @@ class InventoryManager {
         return;
       }
 
-    const selectOptions = allValues
-      .map(
-        (val) => `
+      // Convert input to select dropdown with suggestions
+      const selectOptions = allValues
+        .map(
+          (val) => `
             <option value="${encodeURIComponent(val)}" ${
               currentValue === val ? 'selected' : ''
             }>
               ${this.escapeHtml(val)}
             </option>`
-      )
-      .join('');
+        )
+        .join('');
 
-    hint.classList.add('is-inline');
-    hint.innerHTML = `
-        <select class="table-input" data-suggestion-select="${field}">
-          <option value="">Discogs suggestions</option>
+      // Replace the input field with a select dropdown
+      const selectHtml = `
+        <select class="table-input suggestion-select" data-suggestion-select="${field}" data-field="${field}">
+          <option value="">— Select or edit manually —</option>
           ${selectOptions}
+          <option value="" disabled style="border-top: 1px solid #ddd; padding-top: 4px;"></option>
+          <option value="__edit__" style="font-weight: 600; color: #4f46e5;">✎ Edit Manually</option>
         </select>
       `;
 
-      hint.classList.add('is-visible');
+      // Replace the input with the select
+      if (currentInput) {
+        currentInput.outerHTML = selectHtml;
+      }
+
+      // Hide the suggestion hint (no longer needed)
+      hint.classList.remove('is-visible');
+      hint.innerHTML = '';
     });
   }
 
@@ -840,6 +857,45 @@ class InventoryManager {
       normalized = Number.isNaN(parsed) ? '' : parsed;
     }
     target.value = normalized;
+  }
+
+  switchToManualEdit(selectElement, field, row) {
+    const currentValue = selectElement.value ? decodeURIComponent(selectElement.value) : '';
+
+    // Determine the correct data attribute name
+    const dataAttr = field === 'sku' ? 'data-field' : 'data-release-field';
+    const inputType = field === 'releaseYear' ? 'number' : 'text';
+    const placeholder = this.getFieldPlaceholder(field);
+
+    // Create input HTML
+    const inputHtml = `
+      <input type="${inputType}"
+        class="table-input"
+        ${dataAttr}="${field}"
+        value="${this.escapeAttribute(currentValue)}"
+        placeholder="${placeholder}">
+    `;
+
+    // Replace select with input
+    selectElement.outerHTML = inputHtml;
+
+    // Focus the new input so user can start typing
+    const newInput = row.querySelector(`[${dataAttr}="${field}"]`);
+    if (newInput) {
+      newInput.focus();
+      newInput.select();
+    }
+  }
+
+  getFieldPlaceholder(field) {
+    const placeholders = {
+      label: 'Record label',
+      catalogNumber: 'Catalog number',
+      releaseYear: 'Year',
+      genre: 'Genre',
+      description: 'Variant / version',
+    };
+    return placeholders[field] || field;
   }
 
   escapeHtml(str) {
