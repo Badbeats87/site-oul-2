@@ -76,14 +76,13 @@
 }
 
 .admin-topbar {
-    background: linear-gradient(180deg, #0f172a 0%, #111827 55%, #0b1120 100%);
+    background: #111827;
     color: #f3f4f6;
-    padding: var(--space-lg) var(--space-3xl);
-    display: flex;
-    align-items: center;
+    padding: var(--space-md) var(--space-3xl);
+    display: grid;
+    grid-template-columns: auto minmax(320px, 1fr) auto auto;
     gap: var(--space-lg);
-    flex-wrap: wrap;
-    justify-content: space-between;
+    align-items: center;
     box-shadow: var(--shadow-xl);
     position: sticky;
     top: 0;
@@ -97,16 +96,63 @@
     min-width: 220px;
 }
 
-.admin-topbar__nav {
+.admin-topbar__search {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-full);
+    padding: 0 var(--space-md);
+}
+
+.admin-topbar__search input {
+    border: none;
+    background: transparent;
+    color: #f3f4f6;
     flex: 1;
+    padding: var(--space-sm) 0;
+}
+
+.admin-topbar__search input::placeholder {
+    color: rgba(243, 244, 246, 0.7);
+}
+
+.admin-topbar__search button {
+    border: none;
+    background: none;
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-topbar__actions {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.admin-icon-button {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-topbar__nav {
     display: flex;
     gap: var(--space-sm);
     flex-wrap: wrap;
-    min-width: 320px;
 }
 
 .admin-topbar__nav .admin-nav__link {
-    flex: 1 1 180px;
+    flex: 0 0 auto;
+    padding: var(--space-sm) var(--space-md);
 }
 
 .admin-topbar__toggle {
@@ -119,40 +165,70 @@
     gap: var(--space-md);
     background: rgba(255, 255, 255, 0.08);
     border-radius: var(--radius-lg);
-    padding: var(--space-sm) var(--space-lg);
-    min-width: 220px;
+    padding: var(--space-xs) var(--space-md);
 }
 
 .admin-topbar__user .admin-avatar {
-    width: 42px;
-    height: 42px;
-    font-size: var(--font-size-md);
-    border-radius: 12px;
+    width: 38px;
+    height: 38px;
+    font-size: var(--font-size-base);
+    border-radius: 10px;
+}
+
+.admin-subnav {
+    background: #f7f7fb;
+    border-bottom: 1px solid var(--color-border);
+    padding: 0 var(--space-3xl);
+}
+
+.admin-subnav__links {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    overflow-x: auto;
+}
+
+.admin-subnav__links a {
+    color: var(--color-text);
+    padding: var(--space-md) 0;
+    font-weight: var(--font-weight-medium);
+}
+
+.admin-subnav__links .admin-nav__link--active {
+    border-bottom: 2px solid var(--color-accent);
+    color: var(--color-accent);
+}
+
+@media (max-width: 1280px) {
+    .admin-topbar {
+        grid-template-columns: auto auto auto;
+        grid-template-rows: auto auto;
+    }
+
+    .admin-topbar__search {
+        grid-column: 1 / -1;
+    }
 }
 
 @media (max-width: 1024px) {
     .admin-topbar {
-        justify-content: flex-start;
+        grid-template-columns: auto 1fr auto;
+    }
+
+    .admin-topbar__nav {
+        display: none;
     }
 
     .admin-topbar__toggle {
         display: inline-flex;
-        align-items: center;
-        gap: var(--space-xs);
-    }
-
-    .admin-topbar__nav {
-        order: 3;
-        width: 100%;
-        display: none;
+        justify-self: flex-end;
     }
 
     .topnav-menu-open .admin-topbar__nav {
         display: flex;
-    }
-
-    .topnav-menu-open [data-nav-toggle] {
-        background: rgba(255, 255, 255, 0.12);
+        width: 100%;
+        flex-wrap: wrap;
+        margin-top: var(--space-sm);
     }
 }
 
@@ -337,14 +413,14 @@
 }
 
 .admin-main--wide {
-    padding: var(--space-lg);
+    padding: var(--space-lg) var(--space-xl);
     width: 100%;
     max-width: none;
     flex: 1;
 }
 
 .admin-body--topnav .admin-main {
-    padding: var(--space-lg);
+    padding: var(--space-lg) var(--space-xl);
 }
 
 .admin-body--inventory-topnav .admin-main {

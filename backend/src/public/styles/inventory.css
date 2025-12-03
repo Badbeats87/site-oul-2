@@ -76,9 +76,9 @@
 }
 
 .admin-body--inventory .inventory-table-wrapper {
-    margin-left: calc(-1 * var(--space-lg));
-    margin-right: calc(-1 * var(--space-lg));
-    width: calc(100% + var(--space-lg) * 2);
+    margin-left: calc(-1 * var(--space-xl));
+    margin-right: calc(-1 * var(--space-xl));
+    width: calc(100% + var(--space-xl) * 2);
 }
 
 .inventory-table {

@@ -23,80 +23,51 @@
             </div>
         </div>
 
-        <button class="button button--ghost button--sm admin-topbar__toggle" type="button" data-nav-toggle aria-expanded="true">
+        <form class="admin-topbar__search" role="search">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="11" cy="11" r="7"></circle>
+                <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+            </svg>
+            <input type="search" placeholder="Search dashboards, queues…" aria-label="Search admin data">
+            <button type="submit" aria-label="Submit search">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </button>
+        </form>
+
+        <div class="admin-topbar__actions">
+            <button class="admin-icon-button" type="button" aria-label="View notifications">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7">
+                    <path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 01-3.46 0"></path>
+                </svg>
+            </button>
+            <div class="admin-topbar__user">
+                <div class="admin-avatar" aria-hidden="true">AM</div>
+                <div class="admin-header__user-meta">
+                    <span class="eyebrow" style="color: rgba(243,244,246,0.7);">On Duty • Super Admin</span>
+                    <strong>Alex Mercer</strong>
+                    <span>Authenticated 2m ago · SSO trusted</span>
+                </div>
+            </div>
+        </div>
+
+        <button class="button button--ghost button--sm admin-topbar__toggle" type="button" data-nav-toggle aria-expanded="false">
             Menu
         </button>
-
-        <nav class="admin-topbar__nav" aria-label="Admin navigation" id="admin-topbar-nav">
-            <a class="admin-nav__link admin-nav__link--active" href="index.html">
-                <span class="admin-nav__icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" aria-hidden="true">
-                        <rect x="3" y="3" width="8" height="8" rx="2"></rect>
-                        <rect x="13" y="3" width="8" height="5" rx="2"></rect>
-                        <rect x="13" y="10" width="8" height="11" rx="2"></rect>
-                        <rect x="3" y="13" width="8" height="8" rx="2"></rect>
-                    </svg>
-                </span>
-                <div class="admin-nav__details">
-                    <strong>Command Center</strong>
-                    <span>Dashboard + Health</span>
-                </div>
-                <span class="admin-nav__badge">Live</span>
-            </a>
-            <a class="admin-nav__link" href="submission.html">
-                <span class="admin-nav__icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" aria-hidden="true">
-                        <path d="M6 2h11l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"></path>
-                        <line x1="13" y1="2" x2="13" y2="9"></line>
-                        <line x1="8" y1="13" x2="16" y2="13"></line>
-                        <line x1="8" y1="17" x2="16" y2="17"></line>
-                    </svg>
-                </span>
-                <div class="admin-nav__details">
-                    <strong>Submissions</strong>
-                    <span>Queue + Communications</span>
-                </div>
-            </a>
-            <a class="admin-nav__link" href="inventory.html">
-                <span class="admin-nav__icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" aria-hidden="true">
-                        <path d="M3 7l9-4 9 4"></path>
-                        <path d="M4 7v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7"></path>
-                        <path d="M12 22V7"></path>
-                    </svg>
-                </span>
-                <div class="admin-nav__details">
-                    <strong>Inventory</strong>
-                    <span>Catalog + QA</span>
-                </div>
-            </a>
-            <a class="admin-nav__link" href="pricing-editor.html">
-                <span class="admin-nav__icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" aria-hidden="true">
-                        <path d="M20 12v6a2 2 0 0 1-2 2H6l-4-4V6a2 2 0 0 1 2-2h6"></path>
-                        <path d="M8 8h8"></path>
-                        <path d="M8 12h6"></path>
-                        <path d="M15 2l7 7"></path>
-                        <path d="M15 9h7V2"></path>
-                    </svg>
-                </span>
-                <div class="admin-nav__details">
-                    <strong>Pricing</strong>
-                    <span>Policies + Guardrails</span>
-                </div>
-            </a>
-        </nav>
-
-        <div class="admin-topbar__user">
-            <div class="admin-avatar" aria-hidden="true">AM</div>
-            <div class="admin-header__user-meta">
-                <span class="eyebrow" style="color: rgba(243,244,246,0.7);">On Duty • Super Admin</span>
-                <strong>Alex Mercer</strong>
-                <span>Authenticated 2m ago · SSO trusted</span>
-            </div>
-            <button class="button button--secondary button--sm" type="button">Start Review Session</button>
-        </div>
     </header>
+
+    <nav class="admin-subnav" aria-label="Admin navigation">
+        <div class="admin-topbar__nav admin-subnav__links" id="admin-topbar-nav">
+            <a class="admin-nav__link admin-nav__link--active" href="index.html">Dashboard</a>
+            <a class="admin-nav__link" href="submission.html">Submissions</a>
+            <a class="admin-nav__link" href="inventory.html">Inventory</a>
+            <a class="admin-nav__link" href="pricing-editor.html">Pricing</a>
+            <a class="admin-nav__link" href="#analytics">Analytics</a>
+        </div>
+    </nav>
 
     <div class="admin-announcement">
         Data synced <strong>34s ago</strong> · Discogs + eBay APIs healthy · SLA alerting enabled for Ops bridge.
