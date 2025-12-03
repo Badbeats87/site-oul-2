@@ -1,383 +1,256 @@
-<!doctype html>
-<html lang="en" style="height: auto; overflow: auto">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Console - Vinyl Catalog</title>
-    <link rel="stylesheet" href="../../styles/design-system.css" />
-    <link rel="stylesheet" href="../../styles/admin.css" />
-    <style>
-      html {
-        height: auto !important;
-        overflow: auto !important;
-      }
-      body {
-        min-height: 100vh !important;
-        overflow-y: auto !important;
-      }
-      main {
-        display: block !important;
-        width: 100% !important;
-      }
-    </style>
-  </head>
-  <body style="min-height: 100vh; overflow-y: auto">
+    <link rel="stylesheet" href="../../styles/design-system.css">
+    <link rel="stylesheet" href="../../styles/admin.css">
+</head>
+<body>
     <!-- Navigation -->
     <nav class="navbar">
-      <div class="navbar__container">
-        <a href="../index.html" class="navbar__logo">
-          <svg
-            class="navbar__icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-          >
-            <circle cx="12" cy="12" r="10"></circle>
-            <circle cx="12" cy="12" r="6"></circle>
-            <circle cx="12" cy="12" r="3"></circle>
-          </svg>
-          <span>Vinyl Catalog</span>
-        </a>
-        <div class="navbar__links">
-          <a href="../index.html" class="nav-link">Back to Site</a>
-          <a href="settings.html" class="nav-link">Settings</a>
-          <a href="pricing-buyer.html" class="nav-link">Buyer Pricing</a>
-          <a href="pricing-seller.html" class="nav-link">Seller Pricing</a>
+        <div class="navbar__container">
+            <a href="../index.html" class="navbar__logo">
+                <svg class="navbar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <circle cx="12" cy="12" r="6"></circle>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <span>Vinyl Catalog</span>
+            </a>
+            <div class="navbar__links">
+                <a href="../index.html" class="nav-link">Back to Site</a>
+                <span class="nav-link">Admin</span>
+                <button class="nav-link button button--sm button--secondary" data-logout-btn>Logout</button>
+            </div>
         </div>
-      </div>
     </nav>
 
     <!-- Header -->
     <header class="page-header">
-      <div class="container">
-        <h1>Admin Console</h1>
-        <p>Manage submissions, inventory, and pricing</p>
-      </div>
+        <div class="container">
+            <h1>Admin Console</h1>
+            <p>Manage submissions, inventory, and pricing</p>
+        </div>
     </header>
 
     <!-- Main Content -->
     <main class="page-content">
-      <div class="container">
-        <!-- Breadcrumb -->
-        <nav class="breadcrumb" aria-label="Breadcrumb">
-          <ol class="breadcrumb-list">
-            <li class="breadcrumb-item">
-              <a href="../index.html">Vinyl Catalog</a>
-            </li>
-            <li class="breadcrumb-item active" aria-current="page">
-              Admin Console
-            </li>
-          </ol>
-        </nav>
+        <div class="container">
+            <!-- Main Sections -->
+            <div class="admin-tabs">
+                <div class="tab-header">
+                    <button class="tab-btn tab-btn--active">Submissions</button>
+                    <button class="tab-btn">Inventory</button>
+                    <button class="tab-btn">Analytics</button>
+                </div>
 
-        <!-- Main Sections -->
-        <div class="admin-tabs">
-          <div class="tab-header" role="tablist" aria-label="Admin sections">
-            <button
-              class="tab-btn tab-btn--active"
-              onclick="switchTab(0)"
-              role="tab"
-              aria-selected="true"
-            >
-              Submissions
-            </button>
-            <button
-              class="tab-btn"
-              onclick="switchTab(1)"
-              role="tab"
-              aria-selected="false"
-            >
-              Inventory
-            </button>
-            <button
-              class="tab-btn"
-              onclick="switchTab(2)"
-              role="tab"
-              aria-selected="false"
-            >
-              Analytics
-            </button>
-          </div>
+                <!-- Submissions Tab -->
+                <div class="tab-panel tab-panel--active" data-submissions-container>
+                    <div class="section-header">
+                        <h2>Submission Queue</h2>
+                        <div class="section-actions">
+                            <input
+                                type="text"
+                                placeholder="Search submissions..."
+                                class="search-input"
+                                data-submissions-search
+                                style="width: 250px;"
+                            >
+                            <select class="filter-select" data-submissions-status-filter style="width: 150px;">
+                                <option value="all">All Status</option>
+                                <option value="PENDING_REVIEW">Pending Review</option>
+                                <option value="COUNTER_OFFERED">Counter Offered</option>
+                                <option value="PARTIALLY_ACCEPTED">Partially Accepted</option>
+                                <option value="ACCEPTED">Accepted</option>
+                                <option value="REJECTED">Rejected</option>
+                            </select>
+                        </div>
+                    </div>
 
-          <!-- Submissions Tab -->
-          <div class="tab-panel tab-panel--active" id="tab-0">
-            <div class="section-header">
-              <h2>Submission Queue</h2>
-              <div class="section-actions">
-                <input
-                  type="text"
-                  placeholder="Search submissions..."
-                  class="search-input"
-                  style="width: 250px"
-                  data-submissions-search
-                />
-                <select data-submissions-status-filter style="margin-left: 10px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
-                  <option value="all">All Statuses</option>
-                  <option value="PENDING_REVIEW">Pending Review</option>
-                  <option value="COUNTER_OFFERED">Counter Offered</option>
-                  <option value="PARTIALLY_ACCEPTED">Partially Accepted</option>
-                  <option value="ACCEPTED">Accepted</option>
-                  <option value="REJECTED">Rejected</option>
-                </select>
-              </div>
+                    <div class="submissions-list">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Submission</th>
+                                    <th>Seller</th>
+                                    <th>Items</th>
+                                    <th>Value</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody data-submissions-tbody>
+                                <tr>
+                                    <td colspan="7" style="text-align: center; padding: 40px;">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Inventory Tab -->
+                <div class="tab-panel" data-inventory-container>
+                    <div class="section-header">
+                        <h2>Inventory Management</h2>
+                        <div class="section-actions inventory-filter-grid">
+                            <input
+                                type="text"
+                                placeholder="Search by album, artist, or SKU..."
+                                class="search-input"
+                                data-inventory-search
+                                style="width: 280px;"
+                            >
+                            <select class="filter-select" data-inventory-status-filter>
+                                <option value="all">All Statuses</option>
+                                <option value="LIVE">Live</option>
+                                <option value="RESERVED">Reserved</option>
+                                <option value="SOLD">Sold</option>
+                                <option value="DRAFT">Draft</option>
+                            </select>
+                            <select class="filter-select" data-inventory-condition-filter>
+                                <option value="all">All Conditions</option>
+                                <option value="MINT">M / Mint</option>
+                                <option value="NM">NM / Near Mint</option>
+                                <option value="VG_PLUS">VG+ / Very Good Plus</option>
+                                <option value="VG">VG / Very Good</option>
+                                <option value="VG_MINUS">VG- / Very Good Minus</option>
+                                <option value="G">G / Good</option>
+                            </select>
+                            <input type="number" placeholder="Min $" class="filter-input" data-inventory-min-price>
+                            <input type="number" placeholder="Max $" class="filter-input" data-inventory-max-price>
+                            <select class="filter-select" data-inventory-sort>
+                                <option value="createdAt:desc">Newest</option>
+                                <option value="createdAt:asc">Oldest</option>
+                                <option value="listPrice:desc">Highest Price</option>
+                                <option value="listPrice:asc">Lowest Price</option>
+                                <option value="soldAt:desc">Recently Sold</option>
+                            </select>
+                        </div>
+                    </div>
+
+                <div class="inventory-list condensed-table">
+                        <table class="table inventory-table">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Artist</th>
+                                    <th>Label</th>
+                                    <th>Catalog #</th>
+                                    <th>Year</th>
+                                    <th>Genre</th>
+                                    <th>Variant / Notes</th>
+                                    <th>SKU</th>
+                                    <th>Channel</th>
+                                    <th>Condition</th>
+                                    <th>Status</th>
+                                    <th>Cost</th>
+                                    <th>List Price</th>
+                                    <th>Sale Price</th>
+                                    <th>Discogs</th>
+                                    <th>Submission</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody data-inventory-tbody>
+                                <tr>
+                                    <td colspan="17" style="text-align: center; padding: 40px;">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Analytics Tab -->
+                <div class="tab-panel" data-analytics-container>
+                    <div class="section-header">
+                        <h2>Analytics & Reports</h2>
+                    </div>
+
+                    <div data-analytics-overview></div>
+                    <div data-analytics-low-stock style="margin-top: 30px;"></div>
+                    <div data-analytics-sales style="margin-top: 30px;"></div>
+                </div>
             </div>
 
-            <div class="submissions-list" data-submissions-loading style="display: none; text-align: center; padding: 20px;">
-              Loading submissions...
-            </div>
-
-            <div class="submissions-error" data-submissions-error style="display: none; background: #fee; color: #c00; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
-              <!-- Error message will be inserted here -->
-            </div>
-
-            <div class="submissions-container" data-submissions-container>
-              <div class="submissions-list">
-                <table class="table">
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Seller Email</th>
-                      <th>Items</th>
-                      <th>Total Value</th>
-                      <th>Status</th>
-                      <th>Submitted</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody data-submissions-tbody>
-                    <!-- Submissions will be populated by JavaScript -->
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- Inventory Tab -->
-          <div class="tab-panel" id="tab-1" data-inventory-container>
-            <div class="section-header">
-              <h2>Inventory Management</h2>
-              <div class="section-actions inventory-filter-grid">
-                <input
-                  type="text"
-                  placeholder="Search by album, artist, or SKU..."
-                  class="search-input"
-                  data-inventory-search
-                  style="width: 280px"
-                />
-                <select class="filter-select" data-inventory-status-filter>
-                  <option value="all">All Statuses</option>
-                  <option value="LIVE">Live</option>
-                  <option value="RESERVED">Reserved</option>
-                  <option value="SOLD">Sold</option>
-                  <option value="DRAFT">Draft</option>
-                </select>
-                <select class="filter-select" data-inventory-condition-filter>
-                  <option value="all">All Conditions</option>
-                  <option value="MINT">M / Mint</option>
-                  <option value="NM">NM / Near Mint</option>
-                  <option value="VG_PLUS">VG+ / Very Good Plus</option>
-                  <option value="VG">VG / Very Good</option>
-                  <option value="VG_MINUS">VG- / Very Good Minus</option>
-                  <option value="G">G / Good</option>
-                </select>
-                <input type="number" placeholder="Min $" class="filter-input" data-inventory-min-price />
-                <input type="number" placeholder="Max $" class="filter-input" data-inventory-max-price />
-                <select class="filter-select" data-inventory-sort>
-                  <option value="createdAt:desc">Newest</option>
-                  <option value="createdAt:asc">Oldest</option>
-                  <option value="listPrice:desc">Highest Price</option>
-                  <option value="listPrice:asc">Lowest Price</option>
-                  <option value="soldAt:desc">Recently Sold</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="inventory-list">
-              <table class="table inventory-table">
-                <thead>
-                  <tr>
-                    <th>Title</th>
-                    <th>Artist</th>
-                    <th>Label</th>
-                    <th>Catalog #</th>
-                    <th>Year</th>
-                    <th>Genre</th>
-                    <th>Variant / Notes</th>
-                    <th>SKU</th>
-                    <th>Channel</th>
-                    <th>Condition</th>
-                    <th>Status</th>
-                    <th>Cost</th>
-                    <th>List Price</th>
-                    <th>Sale Price</th>
-                    <th>Discogs</th>
-                    <th>Submission</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody data-inventory-tbody>
-                  <tr>
-                    <td colspan="17" style="text-align: center; padding: 40px;">Loading...</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Analytics Tab -->
-          <div class="tab-panel" id="tab-2">
-            <div class="section-header">
-              <h2>Analytics & Reports</h2>
-            </div>
-
-            <div
-              style="
-                padding: 20px;
-                background: #f5f5f5;
-                border-radius: 8px;
-                margin-bottom: 20px;
-              "
-            >
-              <h3>Key Metrics</h3>
-              <ul style="line-height: 2">
-                <li>Total Revenue (Month): $18,750</li>
-                <li>Average Order Value: $120.28</li>
-                <li>Items Sold: 156</li>
-                <li>Customer Satisfaction: 4.8/5</li>
-                <li>Inventory Turnover: 2.3x</li>
-              </ul>
-            </div>
-
-            <div style="padding: 20px; background: #f5f5f5; border-radius: 8px">
-              <h3>Top Performing Items</h3>
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th>Album</th>
-                    <th>Units Sold</th>
-                    <th>Revenue</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Dark Side of the Moon</td>
-                    <td>12</td>
-                    <td>$1,079.88</td>
-                  </tr>
-                  <tr>
-                    <td>Abbey Road</td>
-                    <td>8</td>
-                    <td>$396.00</td>
-                  </tr>
-                  <tr>
-                    <td>Rumours</td>
-                    <td>6</td>
-                    <td>$539.94</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+            <!-- Quick Actions -->
+            <section class="quick-actions">
+                <h2 class="section-title">Quick Actions</h2>
+                <div class="actions-grid">
+                    <a href="#" class="action-card">
+                        <div class="action-card__icon">📋</div>
+                        <h3>Review Pending</h3>
+                        <p>Review 12 pending submissions</p>
+                    </a>
+                    <a href="inventory.html" class="action-card">
+                        <div class="action-card__icon">📦</div>
+                        <h3>Low Stock</h3>
+                        <p>Check 8 items running low</p>
+                    </a>
+                    <a href="pricing-editor.html" class="action-card">
+                        <div class="action-card__icon">💰</div>
+                        <h3>Update Prices</h3>
+                        <p>Adjust pricing policies</p>
+                    </a>
+                    <a href="#" class="action-card">
+                        <div class="action-card__icon">📊</div>
+                        <h3>Analytics</h3>
+                        <p>View sales reports</p>
+                    </a>
+                </div>
+            </section>
         </div>
-
-        <!-- Quick Actions -->
-        <section class="quick-actions">
-          <h2 class="section-title">Quick Actions</h2>
-          <div class="actions-grid">
-            <a href="#" class="action-card">
-              <div class="action-card__icon">📋</div>
-              <h3>Review Pending</h3>
-              <p>Review 12 pending submissions</p>
-            </a>
-            <a href="inventory.html" class="action-card">
-              <div class="action-card__icon">📦</div>
-              <h3>Inventory</h3>
-              <p>Manage catalog items</p>
-            </a>
-            <a href="pricing-buyer.html" class="action-card">
-              <div class="action-card__icon">💳</div>
-              <h3>Buyer Pricing</h3>
-              <p>Configure buyer offers</p>
-            </a>
-            <a href="pricing-seller.html" class="action-card">
-              <div class="action-card__icon">💰</div>
-              <h3>Seller Pricing</h3>
-              <p>Configure list prices</p>
-            </a>
-            <a href="settings.html" class="action-card">
-              <div class="action-card__icon">⚙️</div>
-              <h3>Settings</h3>
-              <p>Configure system settings</p>
-            </a>
-          </div>
-        </section>
-
-      </div>
     </main>
+
+    <!-- Inventory Edit Modal -->
+    <div data-inventory-edit-modal style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
+        <div style="background: white; margin: 50px auto; max-width: 500px; border-radius: 8px; padding: 30px;">
+            <h2>Edit Inventory Item</h2>
+            <div data-inventory-edit-modal-body></div>
+        </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div data-loading style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); color: white; padding: 20px 40px; border-radius: 8px; z-index: 2000;">
+        Loading...
+    </div>
 
     <!-- Footer -->
     <footer class="footer">
-      <div class="container">
-        <div class="footer__content">
-          <div class="footer__section">
-            <h4>Vinyl Catalog</h4>
-            <p>Admin console for catalog management</p>
-          </div>
-          <div class="footer__section">
-            <h4>Quick Links</h4>
-            <ul>
-              <li><a href="../seller/index.html">Sell Records</a></li>
-              <li><a href="../buyer/index.html">Buy Records</a></li>
-              <li><a href="../index.html">Home</a></li>
-            </ul>
-          </div>
+        <div class="container">
+            <div class="footer__content">
+                <div class="footer__section">
+                    <h4>Vinyl Catalog</h4>
+                    <p>Admin console for catalog management</p>
+                </div>
+                <div class="footer__section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="../seller/index.html">Sell Records</a></li>
+                        <li><a href="../buyer/index.html">Buy Records</a></li>
+                        <li><a href="../index.html">Home</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer__bottom">
+                <p>&copy; 2024 Vinyl Catalog. All rights reserved.</p>
+            </div>
         </div>
-        <div class="footer__bottom">
-          <p>&copy; 2024 Vinyl Catalog. All rights reserved.</p>
-        </div>
-      </div>
     </footer>
 
-    <!-- Load JavaScript dependencies -->
     <script src="../../js/api-client.js"></script>
+    <script src="../../js/auth.js"></script>
     <script src="../../js/submissions.js"></script>
-
-    <!-- Initialize admin services (before admin.js loads) -->
-    <script>
-      // Create API client and submissions manager early so admin.js can use them
-      const apiClient = new APIClient('/api/v1');
-      window.submissionsManager = new SubmissionsManager(apiClient);
-      console.log('Admin services initialized: APIClient and SubmissionsManager');
-    </script>
-
-    <!-- Load admin page handler (which expects submissionsManager to exist) -->
+    <script src="../../js/inventory.js"></script>
+    <script src="../../js/analytics.js"></script>
     <script src="../../js/admin.js"></script>
-
-    <!-- Helper function for tab switching -->
     <script>
-      // Simple Tab Switching Helper (used in onclick handlers)
-      function switchTab(index) {
-        // Hide all tabs
-        const tabs = document.querySelectorAll('.tab-panel');
-        tabs.forEach((tab) => tab.classList.remove('tab-panel--active'));
-
-        // Remove active from all buttons
-        const buttons = document.querySelectorAll('.tab-btn');
-        buttons.forEach((btn) => {
-          btn.classList.remove('tab-btn--active');
-          btn.setAttribute('aria-selected', 'false');
+        // Initialize submissions manager when page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            await submissionsManager.initialize();
         });
-
-        // Show selected tab
-        const selectedTab = document.getElementById('tab-' + index);
-        if (selectedTab) {
-          selectedTab.classList.add('tab-panel--active');
-        }
-
-        // Mark button as active
-        buttons[index].classList.add('tab-btn--active');
-        buttons[index].setAttribute('aria-selected', 'true');
-      }
     </script>
-  </body>
+</body>
 </html>

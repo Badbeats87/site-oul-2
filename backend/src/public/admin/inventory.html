@@ -1,204 +1,134 @@
-<!doctype html>
-<html lang="en" style="height: auto; overflow: auto">
-  <head>
-    <style>
-      html {
-        height: auto !important;
-        overflow: auto !important;
-      }
-      body {
-        min-height: 100vh !important;
-        overflow-y: auto !important;
-      }
-    </style>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory Management - Vinyl Catalog Admin</title>
-    <link rel="stylesheet" href="../../styles/design-system.css" />
-    <link rel="stylesheet" href="../../styles/admin.css" />
-    <link rel="stylesheet" href="../../styles/inventory.css" />
-  </head>
-  <body style="min-height: 100vh; overflow-y: auto">
+    <link rel="stylesheet" href="../../styles/design-system.css">
+    <link rel="stylesheet" href="../../styles/admin.css">
+    <link rel="stylesheet" href="../../styles/inventory.css">
+</head>
+<body>
     <!-- Navigation -->
     <nav class="navbar">
-      <div class="navbar__container">
-        <a href="index.html" class="navbar__logo">
-          <svg
-            class="navbar__icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-          >
-            <circle cx="12" cy="12" r="10"></circle>
-            <circle cx="12" cy="12" r="6"></circle>
-            <circle cx="12" cy="12" r="3"></circle>
-          </svg>
-          <span>Vinyl Catalog</span>
-        </a>
-        <!-- Hamburger Menu Toggle -->
-        <button
-          class="navbar__menu-toggle"
-          data-menu-toggle
-          aria-label="Toggle navigation menu"
-          aria-expanded="false"
-          title="Toggle menu"
-        >
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-
-        <div class="navbar__links" data-navbar-links>
-          <a href="index.html" class="nav-link">← Back to Admin</a>
+        <div class="navbar__container">
+            <a href="index.html" class="navbar__logo">
+                <svg class="navbar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <circle cx="12" cy="12" r="6"></circle>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <span>Vinyl Catalog</span>
+            </a>
+            <div class="navbar__links">
+                <a href="index.html" class="nav-link">← Back to Admin</a>
+            </div>
         </div>
-      </div>
     </nav>
 
     <!-- Header -->
     <header class="page-header">
-      <div class="container">
-        <h1>Inventory Management</h1>
-        <p>Add, edit, and manage your catalog of vinyl records</p>
-      </div>
+        <div class="container">
+            <h1>Inventory Management</h1>
+            <p>Add, edit, and manage your catalog of vinyl records</p>
+        </div>
     </header>
 
     <!-- Main Content -->
     <main class="page-content">
-      <div class="container">
-        <!-- Breadcrumb -->
-        <nav class="breadcrumb" aria-label="Breadcrumb">
-          <ol class="breadcrumb-list">
-            <li class="breadcrumb-item">
-              <a href="../index.html">Vinyl Catalog</a>
-            </li>
-            <li class="breadcrumb-item">
-              <a href="index.html">Admin Console</a>
-            </li>
-            <li class="breadcrumb-item active" aria-current="page">
-              Inventory Management
-            </li>
-          </ol>
-        </nav>
+        <div class="container">
+            <!-- Search & Filters -->
+            <div class="inventory-controls inventory-filter-grid">
+                <input type="text" placeholder="Search by album, artist, or SKU..." class="search-input" data-inventory-search>
+                <select class="filter-select" data-inventory-status-filter>
+                    <option value="all">All Statuses</option>
+                    <option value="LIVE">Live</option>
+                    <option value="RESERVED">Reserved</option>
+                    <option value="SOLD">Sold</option>
+                    <option value="DRAFT">Draft</option>
+                </select>
+                <select class="filter-select" data-inventory-condition-filter>
+                    <option value="all">All Conditions</option>
+                    <option value="MINT">M / Mint</option>
+                    <option value="NM">NM / Near Mint</option>
+                    <option value="VG_PLUS">VG+ / Very Good Plus</option>
+                    <option value="VG">VG / Very Good</option>
+                    <option value="VG_MINUS">VG- / Very Good Minus</option>
+                    <option value="G">G / Good</option>
+                </select>
+                <input type="number" class="filter-input" placeholder="Min $" data-inventory-min-price>
+                <input type="number" class="filter-input" placeholder="Max $" data-inventory-max-price>
+                <select class="filter-select" data-inventory-sort>
+                    <option value="createdAt:desc">Newest</option>
+                    <option value="createdAt:asc">Oldest</option>
+                    <option value="listPrice:desc">Highest Price</option>
+                    <option value="listPrice:asc">Lowest Price</option>
+                    <option value="soldAt:desc">Recently Sold</option>
+                </select>
+                <button class="button button--secondary" onclick="inventoryManager.loadInventory()">🔄 Refresh</button>
+                <button class="button button--primary">+ Add Item</button>
+            </div>
 
-        <!-- Search & Filters -->
-        <div class="inventory-controls">
-          <div class="search-bar">
-            <input
-              type="text"
-              placeholder="Search by album, artist, or SKU..."
-              class="search-input"
-            />
-            <button class="button button--secondary">🔍 Search</button>
-          </div>
+            <!-- Bulk Actions Bar (shown when items selected) -->
+            <div class="bulk-actions-bar" style="display: none;">
+                <span class="bulk-count">0 items selected</span>
+                <button class="button button--secondary button--sm">Edit Prices</button>
+                <button class="button button--secondary button--sm">Adjust Stock</button>
+                <button class="button button--secondary button--sm">Change Policy</button>
+                <button class="button button--danger button--sm">Delete</button>
+                <button class="button button--secondary button--sm">Cancel</button>
+            </div>
 
-          <div class="filter-bar inventory-filter-grid">
-            <input
-              type="text"
-              class="search-input"
-              placeholder="Search by album, artist, SKU..."
-              data-inventory-search
-            />
-            <select class="filter-select" data-inventory-status-filter>
-              <option value="all">All Statuses</option>
-              <option value="LIVE">Live</option>
-              <option value="RESERVED">Reserved</option>
-              <option value="SOLD">Sold</option>
-              <option value="DRAFT">Draft</option>
-            </select>
-            <select class="filter-select" data-inventory-condition-filter>
-              <option value="all">All Conditions</option>
-              <option value="MINT">M / Mint</option>
-              <option value="NM">NM / Near Mint</option>
-              <option value="VG_PLUS">VG+ / Very Good Plus</option>
-              <option value="VG">VG / Very Good</option>
-              <option value="VG_MINUS">VG- / Very Good Minus</option>
-              <option value="G">G / Good</option>
-            </select>
-            <input type="number" class="filter-input" placeholder="Min $" data-inventory-min-price />
-            <input type="number" class="filter-input" placeholder="Max $" data-inventory-max-price />
-            <select class="filter-select" data-inventory-sort>
-              <option value="createdAt:desc">Newest</option>
-              <option value="createdAt:asc">Oldest</option>
-              <option value="listPrice:desc">Highest Price</option>
-              <option value="listPrice:asc">Lowest Price</option>
-              <option value="soldAt:desc">Recently Sold</option>
-            </select>
-          </div>
+            <!-- Inventory Table -->
+            <div class="inventory-table-wrapper condensed-table" data-inventory-container>
+                <table class="table inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Artist</th>
+                            <th>Label</th>
+                            <th>Catalog #</th>
+                            <th>Year</th>
+                            <th>Genre</th>
+                            <th>Variant / Notes</th>
+                            <th>SKU</th>
+                            <th>Channel</th>
+                            <th>Condition</th>
+                            <th>Status</th>
+                            <th>Cost</th>
+                            <th>List Price</th>
+                            <th>Sale Price</th>
+                            <th>Discogs</th>
+                            <th>Submission</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody data-inventory-tbody>
+                        <tr>
+                            <td colspan="17" style="text-align: center; padding: 40px;">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-          <div class="inventory-actions">
-            <button class="button button--secondary" onclick="inventoryManager.loadInventory()">🔄 Refresh</button>
-            <button class="button button--primary">+ Add Item</button>
-          </div>
         </div>
-
-        <!-- Bulk Actions Bar (shown when items selected) -->
-        <div class="bulk-actions-bar" style="display: none">
-          <span class="bulk-count">0 items selected</span>
-          <button class="button button--secondary button--sm">
-            Edit Prices
-          </button>
-          <button class="button button--secondary button--sm">
-            Adjust Stock
-          </button>
-          <button class="button button--secondary button--sm">
-            Change Policy
-          </button>
-          <button class="button button--danger button--sm">Delete</button>
-          <button class="button button--secondary button--sm">Cancel</button>
-        </div>
-
-        <!-- Inventory Table -->
-        <div class="inventory-table-wrapper condensed-table" data-inventory-container>
-          <table class="table inventory-table">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Artist</th>
-                <th>Label</th>
-                <th>Catalog #</th>
-                <th>Year</th>
-                <th>Genre</th>
-                <th>Variant / Notes</th>
-                <th>SKU</th>
-                <th>Channel</th>
-                <th>Condition</th>
-                <th>Status</th>
-                <th>Cost</th>
-                <th>List Price</th>
-                <th>Sale Price</th>
-                <th>Discogs</th>
-                <th>Submission</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody data-inventory-tbody>
-              <tr>
-                <td colspan="17" style="text-align: center; padding: 40px;">Loading...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-      </div>
     </main>
 
     <!-- Footer -->
     <footer class="footer">
-      <div class="container">
-        <div class="footer__content">
-          <div class="footer__section">
-            <h4>Vinyl Catalog</h4>
-            <p>Admin console for catalog management</p>
-          </div>
+        <div class="container">
+            <div class="footer__content">
+                <div class="footer__section">
+                    <h4>Vinyl Catalog</h4>
+                    <p>Admin console for catalog management</p>
+                </div>
+            </div>
+            <div class="footer__bottom">
+                <p>&copy; 2024 Vinyl Catalog. All rights reserved.</p>
+            </div>
         </div>
-        <div class="footer__bottom">
-          <p>&copy; 2024 Vinyl Catalog. All rights reserved.</p>
-        </div>
-      </div>
     </footer>
 
-    <script src="../../js/mobile-nav.js"></script>
-    <script src="../../js/active-states.js"></script>
     <script src="../../js/inventory.js"></script>
-  </body>
+</body>
 </html>
