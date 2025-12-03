@@ -3,6 +3,9 @@ FROM node:18-alpine as builder
 
 WORKDIR /app
 
+# Force cache invalidation - ensures latest source is used
+RUN echo "Build timestamp: 2025-12-03T19:00:00Z" && date
+
 # Copy backend package files
 COPY backend/package*.json ./
 
