@@ -743,6 +743,13 @@ class InventoryManager {
   extractDiscogsSuggestions(release) {
     const unique = (arr) => [...new Set(arr.filter((value) => value && value !== ''))];
 
+    // Basic info
+    const titleOptions = unique([release?.title]);
+    const artistOptions = unique(
+      (release?.artists || []).map((artist) => artist?.name).filter(Boolean)
+    );
+
+    // Label and catalog
     const labelOptions = unique((release?.labels || []).map((label) => label?.name?.trim()));
     const catalogNumberOptions = unique(
       (release?.labels || []).map((label) => {
@@ -753,31 +760,55 @@ class InventoryManager {
       })
     );
 
+    // Year/Date
     const yearOptions = unique([
       release?.year ? String(release.year) : null,
       release?.released ? release.released.split('-')[0] : null,
       release?.released_formatted ? release.released_formatted.split('-')[0] : null,
     ]);
 
+    // Genre and styles
     const genreOptions = unique([
       ...(release?.genres || []),
       ...(release?.styles || []),
     ]);
 
+    // Format information
+    const formatOptions = unique(
+      (release?.formats || []).map((format) => format?.name).filter(Boolean)
+    );
+
+    const formatDescriptionOptions = unique(
+      (release?.formats || []).flatMap((format) => format?.descriptions || [])
+    );
+
+    // Description/notes
     const descriptionOptions = unique([
       release?.notes,
-      ...(release?.formats || []).flatMap((format) => [
-        format.name,
-        ...(format.descriptions || []),
-      ]),
+      ...formatDescriptionOptions,
     ]);
 
+    // Country
+    const countryOptions = unique([release?.country]);
+
+    // Status (official, bootleg, etc)
+    const statusOptions = unique([release?.status]);
+
+    // URI for reference
+    const discogsUriOptions = unique([release?.uri]);
+
     return {
+      title: titleOptions,
+      artist: artistOptions,
       label: labelOptions,
       catalogNumber: catalogNumberOptions,
       releaseYear: yearOptions,
       genre: genreOptions,
+      format: formatOptions,
       description: descriptionOptions,
+      country: countryOptions,
+      releaseStatus: statusOptions,
+      discogsUri: discogsUriOptions,
     };
   }
 
@@ -799,12 +830,34 @@ class InventoryManager {
         const fieldLabel = this.getFieldLabel(field);
         const valuesList = Array.isArray(values) ? values.filter(Boolean) : (values ? [values] : []);
 
+        // Skip fields with no values
         if (!valuesList.length) return '';
 
-        const currentInput = row.querySelector(
-          `[data-release-field="${field}"], [data-field="${field}"]`
-        );
+        // Try to find the corresponding input field in the form
+        // Handle field name variations
+        const fieldMappings = {
+          title: ['title'],
+          artist: ['artist', 'releaseArtist'],
+          label: ['label'],
+          catalogNumber: ['catalogNumber'],
+          releaseYear: ['releaseYear'],
+          genre: ['genre'],
+          format: ['format', 'variant'],
+          description: ['description', 'variant'],
+          country: ['country'],
+          releaseStatus: ['releaseStatus', 'status'],
+          discogsUri: ['discogsUri', 'discogsId'],
+        };
+
+        const possibleSelectors = (fieldMappings[field] || [field])
+          .map(f => `[data-release-field="${f}"], [data-field="${f}"]`)
+          .join(', ');
+
+        const currentInput = row.querySelector(possibleSelectors);
         const currentValue = currentInput?.value?.trim() || '';
+
+        // Check if field is editable (has an input in the form)
+        const isEditable = !!currentInput;
 
         const valuesHtml = valuesList
           .map((val, idx) => `
@@ -813,16 +866,20 @@ class InventoryManager {
                 name="discogs-${field}"
                 id="discogs-${field}-${idx}"
                 value="${this.escapeAttribute(val)}"
-                ${currentValue === val ? 'checked' : ''}>
-              <label for="discogs-${field}-${idx}">${this.escapeHtml(val)}</label>
+                ${currentValue === val ? 'checked' : ''}
+                ${!isEditable ? 'disabled' : ''}>
+              <label for="discogs-${field}-${idx}" ${!isEditable ? 'style="opacity: 0.6;"' : ''}>${this.escapeHtml(val)}</label>
             </div>
           `)
           .join('');
+
+        const disabledNote = !isEditable ? '<div class="discogs-field-note">(No editable field for this metadata)</div>' : '';
 
         return `
           <div class="discogs-modal-field">
             <div class="discogs-field-label">${fieldLabel}</div>
             <div class="discogs-field-current">Current: <strong>${currentValue || '(empty)'}</strong></div>
+            ${disabledNote}
             <div class="discogs-suggestions">
               ${valuesHtml}
             </div>
@@ -875,12 +932,27 @@ class InventoryManager {
     // Handle apply
     const applyBtn = modal.querySelector('[data-discogs-modal-apply]');
     applyBtn?.addEventListener('click', () => {
+      const fieldMappings = {
+        title: ['title'],
+        artist: ['artist', 'releaseArtist'],
+        label: ['label'],
+        catalogNumber: ['catalogNumber'],
+        releaseYear: ['releaseYear'],
+        genre: ['genre'],
+        format: ['format', 'variant'],
+        description: ['description', 'variant'],
+        country: ['country'],
+        releaseStatus: ['releaseStatus', 'status'],
+        discogsUri: ['discogsUri', 'discogsId'],
+      };
+
       Object.keys(suggestions).forEach(field => {
         const selected = modal.querySelector(`input[name="discogs-${field}"]:checked`);
-        if (selected) {
-          const target = row.querySelector(
-            `[data-release-field="${field}"], [data-field="${field}"]`
-          );
+        if (selected && selected.value) {
+          const possibleSelectors = (fieldMappings[field] || [field])
+            .map(f => `[data-release-field="${f}"], [data-field="${f}"]`)
+            .join(', ');
+          const target = row.querySelector(possibleSelectors);
           if (target) {
             let value = selected.value;
             if (field === 'releaseYear') {
@@ -896,11 +968,17 @@ class InventoryManager {
 
   getFieldLabel(field) {
     const labels = {
+      title: 'Title',
+      artist: 'Artist',
       label: 'Label',
       catalogNumber: 'Catalog Number',
       releaseYear: 'Release Year',
-      genre: 'Genre',
-      description: 'Description / Format',
+      genre: 'Genre / Style',
+      format: 'Format',
+      description: 'Description / Notes',
+      country: 'Country',
+      releaseStatus: 'Release Status',
+      discogsUri: 'Discogs Link',
     };
     return labels[field] || field;
   }
