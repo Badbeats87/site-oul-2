@@ -320,7 +320,15 @@ class DiscogsService {
               const vinylVersions = pageVersions
                 .filter(v => {
                   const formats = v.format?.split(',').map(f => f.trim().toLowerCase()) || [];
-                  return formats.some(f => f.includes('vinyl') || f.includes('lp'));
+                  const isVinyl = formats.some(f => f.includes('vinyl') || f.includes('lp'));
+                  if (!isVinyl) {
+                    logger.debug('Skipping non-vinyl version', {
+                      format: v.format,
+                      catno: v.catno,
+                      formats
+                    });
+                  }
+                  return isVinyl;
                 })
                 .map(v => ({
                   id: v.id,
@@ -332,6 +340,13 @@ class DiscogsService {
                   released: v.released,
                   resource_url: v.resource_url,
                 }));
+
+              logger.debug('Vinyl versions found', {
+                page,
+                pageVersionsCount: pageVersions.length,
+                vinylVersionsCount: vinylVersions.length,
+                catalogNumbers: vinylVersions.map(v => v.catno),
+              });
 
               versions.push(...vinylVersions);
 
@@ -392,8 +407,14 @@ class DiscogsService {
               // Also fetch all vinyl versions of this master
               try {
                 vinylVersions = await this.getMasterVinylVersions(releaseData.master_id);
+                logger.info('Fetched vinyl versions', {
+                  releaseId,
+                  masterId: releaseData.master_id,
+                  vinylVersionCount: vinylVersions.length,
+                  catalogNumbers: vinylVersions.map(v => v.catno),
+                });
               } catch (error) {
-                logger.warn('Failed to fetch vinyl versions', { masterId: releaseData.master_id });
+                logger.warn('Failed to fetch vinyl versions', { masterId: releaseData.master_id, error: error.message });
                 // Continue without vinyl versions
               }
             } catch (error) {
