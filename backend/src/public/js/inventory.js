@@ -459,28 +459,40 @@ class InventoryManager {
     this.showLoading(true);
     const rows = this.tbody.querySelectorAll('tr[data-row-id]');
     let fetchedCount = 0;
+    let searchedCount = 0;
     let skippedCount = 0;
 
     for (const row of rows) {
       const discogsInput = row.querySelector('[data-release-field="discogsId"]');
       const discogsId = discogsInput?.value?.trim();
 
-      if (!discogsId) {
-        skippedCount++;
-        continue;
-      }
-
       try {
-        await this.loadDiscogsSuggestions(row, discogsId);
-        fetchedCount++;
+        if (discogsId) {
+          // Has Discogs ID - fetch metadata directly
+          await this.loadDiscogsSuggestions(row, discogsId);
+          fetchedCount++;
+        } else {
+          // No Discogs ID - search for the record and show options
+          const options = await this.searchDiscogsOptions(row);
+          if (options.length > 0) {
+            this.renderDiscogsOptions(row, options);
+            searchedCount++;
+          } else {
+            skippedCount++;
+          }
+        }
       } catch (error) {
-        console.error(`Failed to fetch Discogs data for ID ${discogsId}:`, error);
+        console.error(`Failed to fetch Discogs data for row:`, error);
         skippedCount++;
       }
     }
 
     this.showLoading(false);
-    const message = `Fetched Discogs data for ${fetchedCount} items${skippedCount > 0 ? ` (${skippedCount} skipped - no Discogs ID)` : ''}`;
+    const parts = [];
+    if (fetchedCount > 0) parts.push(`${fetchedCount} fetched`);
+    if (searchedCount > 0) parts.push(`${searchedCount} search options shown`);
+    if (skippedCount > 0) parts.push(`${skippedCount} skipped`);
+    const message = parts.length > 0 ? `Discogs: ${parts.join(', ')}` : 'No records to fetch';
     this.showSuccess(message);
   }
 
