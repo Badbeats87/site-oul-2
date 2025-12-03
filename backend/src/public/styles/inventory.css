@@ -95,6 +95,7 @@
     color: var(--color-text);
     border-bottom: 2px solid var(--color-border);
     border-right: 1px solid var(--color-border);
+    position: relative;
 }
 
 .inventory-table td {
@@ -116,6 +117,45 @@
 
 .inventory-table tbody tr.selected {
     background: rgba(37, 99, 235, 0.1);
+}
+
+.inventory-table.is-resizing {
+    cursor: col-resize;
+}
+
+.inventory-table.is-resizing th,
+.inventory-table.is-resizing td {
+    user-select: none;
+}
+
+.inventory-table th:last-child .column-resizer {
+    display: none;
+}
+
+.column-resizer {
+    position: absolute;
+    top: 0;
+    right: -3px;
+    width: 8px;
+    height: 100%;
+    cursor: col-resize;
+    user-select: none;
+    display: inline-flex;
+    align-items: stretch;
+    justify-content: center;
+}
+
+.column-resizer::after {
+    content: '';
+    width: 2px;
+    background: var(--color-border);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.inventory-table th:hover .column-resizer::after,
+.inventory-table th.is-resizing .column-resizer::after {
+    opacity: 1;
 }
 
 /* Checkboxes */

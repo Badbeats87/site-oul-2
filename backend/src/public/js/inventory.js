@@ -16,6 +16,10 @@ class InventoryManager {
     };
     this.pagination = { page: 1, limit: 20, total: 0 };
     this.columnManager = columnManager;
+    this.columnWidths = this.loadColumnWidths();
+    this.columnResizeState = null;
+    this.boundHandleColumnResize = this.handleColumnResize.bind(this);
+    this.boundStopColumnResize = this.stopColumnResize.bind(this);
 
     if (this.columnManager) {
       this.columnManager.onColumnsChange = (visibleColumns) => {
@@ -27,6 +31,7 @@ class InventoryManager {
   async initialize() {
     this.cacheElements();
     await this.setupColumnPreferences();
+    this.setupColumnResizers();
     this.setupEventListeners();
     await this.loadInventory();
   }
@@ -63,7 +68,9 @@ class InventoryManager {
     if (!this.table || !visibilityMap) return;
 
     Object.entries(visibilityMap).forEach(([columnId, isVisible]) => {
-      const cells = this.table.querySelectorAll(`[data-column-id="${columnId}"]`);
+      const cells = this.table.querySelectorAll(
+        `th[data-column-id="${columnId}"], td[data-column-id="${columnId}"]`
+      );
       const hide = isVisible === false;
 
       cells.forEach((cell) => {
@@ -74,7 +81,121 @@ class InventoryManager {
           cell.removeAttribute('aria-hidden');
         }
       });
+
+      const colElement = this.table.querySelector(`col[data-column-id="${columnId}"]`);
+      if (colElement) {
+        if (hide) {
+          colElement.style.display = 'none';
+        } else {
+          colElement.style.display = '';
+          if (this.columnWidths[columnId]) {
+            colElement.style.width = `${this.columnWidths[columnId]}px`;
+          }
+        }
+      }
     });
+  }
+
+  setupColumnResizers() {
+    if (!this.table) return;
+    this.applyColumnWidths();
+    const resizers = this.table.querySelectorAll('[data-column-resizer]');
+    resizers.forEach((handle) => {
+      handle.addEventListener('mousedown', (event) => {
+        this.startColumnResize(event, handle.dataset.columnId, handle);
+      });
+    });
+  }
+
+  startColumnResize(event, columnId, handle) {
+    if (!columnId || !this.table) return;
+    event.preventDefault();
+
+    const headerCell = this.table.querySelector(`th[data-column-id="${columnId}"]`);
+    if (!headerCell) return;
+
+    const startWidth = headerCell.offsetWidth;
+    this.columnResizeState = {
+      columnId,
+      startX: event.pageX,
+      startWidth,
+      minWidth: 80,
+      handle,
+      headerCell
+    };
+
+    headerCell.classList.add('is-resizing');
+    this.table.classList.add('is-resizing');
+    document.addEventListener('mousemove', this.boundHandleColumnResize);
+    document.addEventListener('mouseup', this.boundStopColumnResize);
+  }
+
+  handleColumnResize(event) {
+    if (!this.columnResizeState) return;
+    const delta = event.pageX - this.columnResizeState.startX;
+    const newWidth = Math.max(this.columnResizeState.minWidth, this.columnResizeState.startWidth + delta);
+    this.setColumnWidth(this.columnResizeState.columnId, newWidth);
+    this.columnWidths[this.columnResizeState.columnId] = newWidth;
+  }
+
+  stopColumnResize() {
+    if (!this.columnResizeState) return;
+
+    const { headerCell, columnId } = this.columnResizeState;
+    headerCell?.classList.remove('is-resizing');
+    this.table?.classList.remove('is-resizing');
+    document.removeEventListener('mousemove', this.boundHandleColumnResize);
+    document.removeEventListener('mouseup', this.boundStopColumnResize);
+    this.columnResizeState = null;
+    this.saveColumnWidths();
+    this.applyColumnWidths();
+    if (this.columnManager) {
+      this.applyColumnVisibility(this.columnManager.visibleColumns);
+    }
+  }
+
+  setColumnWidth(columnId, width) {
+    if (!this.table) return;
+    const col = this.table.querySelector(`col[data-column-id="${columnId}"]`);
+    if (col) {
+      col.style.width = `${width}px`;
+      col.style.display = '';
+    }
+    const header = this.table.querySelector(`th[data-column-id="${columnId}"]`);
+    if (header) {
+      header.style.width = `${width}px`;
+    }
+    this.table.querySelectorAll(`td[data-column-id="${columnId}"]`).forEach((cell) => {
+      cell.style.width = `${width}px`;
+    });
+  }
+
+  applyColumnWidths() {
+    if (!this.table) return;
+    Object.entries(this.columnWidths).forEach(([columnId, width]) => {
+      if (width) {
+        this.setColumnWidth(columnId, width);
+      }
+    });
+  }
+
+  loadColumnWidths() {
+    if (typeof localStorage === 'undefined') return {};
+    try {
+      const raw = localStorage.getItem('inventory_column_widths');
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  saveColumnWidths() {
+    if (typeof localStorage === 'undefined') return;
+    try {
+      localStorage.setItem('inventory_column_widths', JSON.stringify(this.columnWidths));
+    } catch {
+      // Ignore storage write failures
+    }
   }
 
   setupEventListeners() {
@@ -249,6 +370,7 @@ class InventoryManager {
     if (this.columnManager) {
       this.applyColumnVisibility(this.columnManager.visibleColumns);
     }
+    this.applyColumnWidths();
   }
 
   renderRow(item) {
