@@ -43,13 +43,19 @@ const app = express();
 
 // Security
 app.use(
+  // eslint-disable-next-line quotes
   helmet({
     contentSecurityPolicy: {
       directives: {
+        // eslint-disable-next-line quotes
         defaultSrc: ["'self'"],
+        // eslint-disable-next-line quotes
         styleSrc: ["'self'", "'unsafe-inline'"],
+        // eslint-disable-next-line quotes
         scriptSrc: ["'self'", "'unsafe-inline'"], // Allow inline scripts for admin dashboard
+        // eslint-disable-next-line quotes
         imgSrc: [
+          // eslint-disable-next-line quotes
           "'self'",
           'data:',
           'https://i.discogs.com',
