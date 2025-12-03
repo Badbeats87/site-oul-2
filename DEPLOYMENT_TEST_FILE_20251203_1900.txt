@@ -1,0 +1,6 @@
+Test file to verify Railway rebuild is working
+Created: 2025-12-03 19:00:00 UTC
+Purpose: Force Railway to detect changes and rebuild
+
+If this file appears in production, the deployment system is working.
+If not, Railway's build/deployment is broken.
