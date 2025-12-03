@@ -299,46 +299,67 @@ class DiscogsService {
         cacheKey,
         async () => {
           const response = await this.client.get(`/releases/${releaseId}`);
+          const releaseData = response.data;
+
+          // Fetch master release if available for better metadata
+          let masterData = null;
+          if (releaseData.master_id) {
+            try {
+              await this.throttler.wait();
+              const masterResponse = await this.client.get(`/masters/${releaseData.master_id}`);
+              masterData = masterResponse.data;
+            } catch (error) {
+              logger.warn('Failed to fetch master release', { masterId: releaseData.master_id });
+              // Continue without master data
+            }
+          }
+
+          // Prefer master data where available, fall back to release data
+          const data = masterData || releaseData;
 
           return {
-            id: response.data.id,
-            title: response.data.title,
-            artists: response.data.artists.map((a) => ({
+            id: releaseData.id,
+            master_id: releaseData.master_id,
+            title: data.title,
+            artists: (data.artists || []).map((a) => ({
               name: a.name,
               resource_url: a.resource_url,
             })),
-            year: response.data.year,
-            genres: response.data.genres,
-            styles: response.data.styles,
-            formats: response.data.formats.map((f) => ({
+            year: data.year,
+            genres: data.genres || [],
+            styles: data.styles || [],
+            formats: (data.formats || []).map((f) => ({
               name: f.name,
               qty: f.qty,
-              descriptions: f.descriptions,
+              descriptions: f.descriptions || [],
             })),
-            labels: response.data.labels.map((l) => ({
+            labels: (data.labels || []).map((l) => ({
               name: l.name,
-              catalog_number: l.catalog_number,
+              catalog_number: l.catno || l.catalog_number,
               resource_url: l.resource_url,
             })),
-            tracklist: response.data.tracklist.map((t) => ({
+            tracklist: (data.tracklist || []).map((t) => ({
               position: t.position,
               title: t.title,
               duration: t.duration,
             })),
-            images: response.data.images.map((i) => ({
+            images: (data.images || []).map((i) => ({
               type: i.type,
               uri: i.uri,
               resource_url: i.resource_url,
               uri150: i.uri150,
             })),
             community: {
-              have: response.data.community?.have,
-              want: response.data.community?.want,
-              rating: response.data.community?.rating?.average,
-              votes: response.data.community?.rating?.count,
+              have: data.community?.have,
+              want: data.community?.want,
+              rating: data.community?.rating?.average,
+              votes: data.community?.rating?.count,
             },
-            resource_url: response.data.resource_url,
-            uri: response.data.uri,
+            notes: releaseData.notes,
+            country: releaseData.country,
+            status: releaseData.status,
+            resource_url: releaseData.resource_url,
+            uri: releaseData.uri,
           };
         },
         7200 // Cache for 2 hours

@@ -773,21 +773,21 @@ class InventoryManager {
   extractDiscogsSuggestions(release) {
     const unique = (arr) => [...new Set(arr.filter((value) => value && value !== ''))];
 
-    // Basic info
+    // Basic info - use master release data when available
     const titleOptions = unique([release?.title]);
     const artistOptions = unique(
       (release?.artists || []).map((artist) => artist?.name).filter(Boolean)
     );
 
-    // Label and catalog
-    const labelOptions = unique((release?.labels || []).map((label) => label?.name?.trim()));
+    // Label and catalog - handle both catno and catalog_number fields
+    const labelOptions = unique((release?.labels || []).map((label) => label?.name?.trim()).filter(Boolean));
     const catalogNumberOptions = unique(
       (release?.labels || []).map((label) => {
-        const value = label?.catno?.trim();
+        const value = (label?.catalog_number || label?.catno)?.trim();
         if (!value) return null;
-        if (/^none$/i.test(value) || /^not in label$/.test(value)) return null;
+        if (/^none$/i.test(value) || /^not in label$/i.test(value)) return null;
         return value;
-      })
+      }).filter(Boolean)
     );
 
     // Year/Date
@@ -797,31 +797,37 @@ class InventoryManager {
       release?.released_formatted ? release.released_formatted.split('-')[0] : null,
     ]);
 
-    // Genre and styles
+    // Genre and styles - genres from master release are most reliable
     const genreOptions = unique([
       ...(release?.genres || []),
       ...(release?.styles || []),
     ]);
 
-    // Format information
+    // Format information - includes vinyl, CD, cassette, etc.
     const formatOptions = unique(
-      (release?.formats || []).map((format) => format?.name).filter(Boolean)
+      (release?.formats || []).map((format) => {
+        const parts = [];
+        if (format?.name) parts.push(format.name);
+        if (format?.qty) parts.push(`${format.qty}x`);
+        return parts.join(' ');
+      }).filter(Boolean)
     );
 
+    // Format descriptions and release notes
     const formatDescriptionOptions = unique(
       (release?.formats || []).flatMap((format) => format?.descriptions || [])
     );
 
-    // Description/notes
+    // Description/notes - combine release notes and format descriptions
     const descriptionOptions = unique([
       release?.notes,
       ...formatDescriptionOptions,
     ]);
 
-    // Country
+    // Country - where the record was pressed/released
     const countryOptions = unique([release?.country]);
 
-    // Status (official, bootleg, etc)
+    // Status (official, bootleg, reissue, etc)
     const statusOptions = unique([release?.status]);
 
     // URI for reference
