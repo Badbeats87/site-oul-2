@@ -401,14 +401,23 @@ class DiscogsService {
           // Fetch master release if available for better metadata
           let masterData = null;
           let vinylVersions = [];
+
+          logger.info('Release data details', {
+            releaseId,
+            hasMasterId: !!releaseData.master_id,
+            masterId: releaseData.master_id,
+          });
+
           if (releaseData.master_id) {
             try {
               await this.throttler.wait();
               const masterResponse = await this.client.get(`/masters/${releaseData.master_id}`);
               masterData = masterResponse.data;
+              logger.info('Master release fetched', { masterId: releaseData.master_id });
 
               // Also fetch all vinyl versions of this master
               try {
+                logger.info('Starting vinyl versions fetch', { masterId: releaseData.master_id });
                 vinylVersions = await this.getMasterVinylVersions(releaseData.master_id);
                 logger.info('Fetched vinyl versions', {
                   releaseId,
@@ -417,13 +426,22 @@ class DiscogsService {
                   catalogNumbers: vinylVersions.map(v => v.catno),
                 });
               } catch (error) {
-                logger.warn('Failed to fetch vinyl versions', { masterId: releaseData.master_id, error: error.message });
+                logger.warn('Failed to fetch vinyl versions', {
+                  masterId: releaseData.master_id,
+                  error: error.message,
+                  stack: error.stack,
+                });
                 // Continue without vinyl versions
               }
             } catch (error) {
-              logger.warn('Failed to fetch master release', { masterId: releaseData.master_id });
+              logger.warn('Failed to fetch master release', {
+                masterId: releaseData.master_id,
+                error: error.message,
+              });
               // Continue without master data
             }
+          } else {
+            logger.info('Release has no master_id', { releaseId });
           }
 
           // Use master data for most metadata (more complete/accurate)
