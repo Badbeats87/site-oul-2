@@ -186,13 +186,16 @@
 }
 
 .inventory-table .table-input,
-.inventory-table .filter-select {
+.inventory-table .filter-select,
+.inventory-table select.filter-select {
     border: 1px solid #dfe3ed;
-    border-radius: 10px;
-    padding: 6px 8px;
+    border-radius: 8px;
+    padding: 4px 8px;
     font-size: var(--font-size-sm);
     background: #fff;
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .inventory-table .table-input:focus,
