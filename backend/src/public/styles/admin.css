@@ -208,7 +208,7 @@ main {
   min-height: auto;
   padding: var(--space-xl) 0;
   width: 100%;
-  overflow: visible;
+  overflow: auto;
 }
 
 /* Dashboard Stats */
