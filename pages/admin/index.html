@@ -23,7 +23,11 @@
             </div>
         </div>
 
-        <nav class="admin-topbar__nav" aria-label="Admin navigation">
+        <button class="button button--ghost button--sm admin-topbar__toggle" type="button" data-nav-toggle aria-expanded="true">
+            Menu
+        </button>
+
+        <nav class="admin-topbar__nav" aria-label="Admin navigation" id="admin-topbar-nav">
             <a class="admin-nav__link admin-nav__link--active" href="index.html">
                 <span class="admin-nav__icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" aria-hidden="true">
@@ -491,6 +495,7 @@
     <script src="../../js/inventory.js?v=20251205"></script>
     <script src="../../js/analytics.js?v=20251205"></script>
     <script src="../../js/admin.js?v=20251205"></script>
+    <script src="../../js/topnav.js?v=20251205"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
             await submissionsManager.initialize();

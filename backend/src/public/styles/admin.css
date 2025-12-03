@@ -109,6 +109,10 @@
     flex: 1 1 180px;
 }
 
+.admin-topbar__toggle {
+    display: none;
+}
+
 .admin-topbar__user {
     display: flex;
     align-items: center;
@@ -124,6 +128,32 @@
     height: 42px;
     font-size: var(--font-size-md);
     border-radius: 12px;
+}
+
+@media (max-width: 1024px) {
+    .admin-topbar {
+        justify-content: flex-start;
+    }
+
+    .admin-topbar__toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-xs);
+    }
+
+    .admin-topbar__nav {
+        order: 3;
+        width: 100%;
+        display: none;
+    }
+
+    .topnav-menu-open .admin-topbar__nav {
+        display: flex;
+    }
+
+    .topnav-menu-open [data-nav-toggle] {
+        background: rgba(255, 255, 255, 0.12);
+    }
 }
 
 .admin-announcement {
