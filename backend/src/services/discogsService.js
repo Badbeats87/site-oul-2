@@ -222,9 +222,51 @@ class DiscogsService {
             ),
           ];
 
+          // If we have releases without masters, try to find their masters
+          const enrichedResults = await Promise.all(
+            combinedResults.map(async (result) => {
+              // If it's a release without a master_id, try to find its master
+              if (
+                result.type === 'release' &&
+                !result.master_id &&
+                result.resource_url
+              ) {
+                try {
+                  // Extract release ID from resource URL and fetch full details
+                  const releaseIdMatch =
+                    result.resource_url.match(/\/releases\/(\d+)/);
+                  if (releaseIdMatch) {
+                    const releaseId = parseInt(releaseIdMatch[1]);
+                    await this.throttler.wait();
+                    const releaseResponse = await this.client.get(
+                      `/releases/${releaseId}`
+                    );
+                    if (releaseResponse.data.master_id) {
+                      logger.debug('Found master_id for release', {
+                        releaseId,
+                        masterId: releaseResponse.data.master_id,
+                      });
+                      return {
+                        ...result,
+                        master_id: releaseResponse.data.master_id,
+                      };
+                    }
+                  }
+                } catch (error) {
+                  logger.debug('Failed to enrich release with master_id', {
+                    releaseId: result.id,
+                    error: error.message,
+                  });
+                }
+              }
+              return result;
+            })
+          );
+
           return {
-            results: combinedResults.map((result) => ({
+            results: enrichedResults.map((result) => ({
               id: result.id,
+              master_id: result.master_id,
               title: result.title,
               type: result.type, // 'master' or 'release'
               resource_url: result.resource_url,
@@ -234,7 +276,7 @@ class DiscogsService {
             pagination: {
               page: masterResults.length > 0 ? page : 1,
               per_page: 20,
-              items: combinedResults.length,
+              items: enrichedResults.length,
               urls: {},
             },
           };
