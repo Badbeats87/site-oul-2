@@ -6,103 +6,165 @@
     <title>Submission Detail - Vinyl Catalog</title>
     <link rel="stylesheet" href="../../styles/design-system.css">
     <link rel="stylesheet" href="../../styles/admin.css">
-    <style>
-        html {
-            height: auto !important;
-            overflow: auto !important;
-        }
-        body {
-            min-height: 100vh !important;
-            overflow-y: auto !important;
-        }
-        main {
-            display: block !important;
-            width: 100% !important;
-        }
-    </style>
 </head>
-<body style="min-height: 100vh; overflow-y: auto;">
-    <nav class="navbar">
-        <div class="navbar__container">
-            <a href="index.html" class="navbar__logo">
-                <svg class="navbar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <circle cx="12" cy="12" r="6"></circle>
-                    <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-                <span>Vinyl Catalog</span>
-            </a>
-            <div class="navbar__links">
-                <a href="index.html" class="nav-link">Back to Dashboard</a>
-                <button class="nav-link button button--sm button--secondary" data-logout-btn>Logout</button>
-            </div>
-        </div>
-    </nav>
-
-    <main class="page-content">
-        <div class="container">
-            <a href="index.html" class="breadcrumb-link">&larr; Back to submissions</a>
-
-            <header class="section-header" style="margin-top: 10px;">
+<body class="admin-body">
+    <div class="admin-shell">
+        <aside class="admin-sidebar">
+            <div class="admin-sidebar__brand">
+                <span class="admin-sidebar__logo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" width="26" height="26" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <circle cx="12" cy="12" r="6"></circle>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                </span>
                 <div>
+                    <div class="admin-sidebar__title">Vinyl Catalog</div>
+                    <div class="admin-sidebar__subtitle">Operations Console</div>
+                </div>
+            </div>
+
+            <div class="admin-sidebar__user">
+                <div class="admin-avatar" aria-hidden="true">AM</div>
+                <div class="admin-sidebar__meta">
+                    <span class="eyebrow" style="color: rgba(243,244,246,0.7);">Review Lead</span>
+                    <strong>Alex Mercer</strong>
+                    <span>Shift: Morning · SLA target 45m</span>
+                </div>
+                <a class="button button--secondary button--sm" href="index.html">← Back to Dashboard</a>
+            </div>
+
+            <nav class="admin-nav" aria-label="Admin navigation">
+                <p class="admin-nav__label">Overview</p>
+                <a class="admin-nav__link" href="index.html">
+                    <span class="admin-nav__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" aria-hidden="true">
+                            <rect x="3" y="3" width="8" height="8" rx="2"></rect>
+                            <rect x="13" y="3" width="8" height="5" rx="2"></rect>
+                            <rect x="13" y="10" width="8" height="11" rx="2"></rect>
+                            <rect x="3" y="13" width="8" height="8" rx="2"></rect>
+                        </svg>
+                    </span>
+                    <div class="admin-nav__details">
+                        <strong>Command Center</strong>
+                        <span>Dashboard</span>
+                    </div>
+                </a>
+                <a class="admin-nav__link admin-nav__link--active" href="submission.html">
+                    <span class="admin-nav__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" aria-hidden="true">
+                            <path d="M6 2h11l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"></path>
+                            <line x1="13" y1="2" x2="13" y2="9"></line>
+                            <line x1="8" y1="13" x2="16" y2="13"></line>
+                            <line x1="8" y1="17" x2="16" y2="17"></line>
+                        </svg>
+                    </span>
+                    <div class="admin-nav__details">
+                        <strong>Submissions</strong>
+                        <span>Detail View</span>
+                    </div>
+                    <span class="admin-nav__badge">Live</span>
+                </a>
+                <a class="admin-nav__link" href="inventory.html">
+                    <span class="admin-nav__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" aria-hidden="true">
+                            <path d="M3 7l9-4 9 4"></path>
+                            <path d="M4 7v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7"></path>
+                            <path d="M12 22V7"></path>
+                        </svg>
+                    </span>
+                    <div class="admin-nav__details">
+                        <strong>Inventory</strong>
+                        <span>Catalog</span>
+                    </div>
+                </a>
+            </nav>
+
+            <hr class="admin-sidebar__divider">
+            <div class="admin-sidebar__footer">
+                Review window: 8am–10pm. Escalations auto-forwarded to Ops bridge.
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <header class="admin-toolbar">
+                <div class="admin-toolbar__context">
+                    <p class="eyebrow">Submission review</p>
                     <h1>Submission Detail</h1>
                     <p data-submission-id-display class="text-muted"></p>
                 </div>
-                <div class="button-group">
-                    <button class="button button--secondary" data-submission-reject-all disabled>Reject All</button>
-                    <button class="button button--primary" data-submission-accept-all disabled>Accept All</button>
+                <div class="admin-toolbar__actions">
+                    <button class="button button--secondary button--sm" data-submission-reject-all disabled>Reject All</button>
+                    <button class="button button--primary button--sm" data-submission-accept-all disabled>Accept All</button>
+                    <button class="button button--danger button--sm" type="button" data-logout-btn>Logout</button>
                 </div>
             </header>
 
-            <section class="section-panel" data-submission-summary>
+            <a href="index.html" class="breadcrumb-link" style="margin-bottom: var(--space-lg); display: inline-flex; align-items: center; gap: var(--space-sm);">
+                ← Back to submissions
+            </a>
+
+            <section class="admin-panel section-panel" data-submission-summary>
                 <p>Loading submission details...</p>
             </section>
 
-            <section class="section-panel" data-submission-items>
-                <div class="section-header">
+            <section class="admin-panel section-panel" data-submission-items>
+                <div class="section-header" style="margin-bottom: var(--space-lg);">
                     <div>
-                        <h2>Items</h2>
+                        <p class="eyebrow">Items</p>
+                        <h2>Offer Builder</h2>
                         <p class="text-muted">Review, counter and accept individual items</p>
                     </div>
                 </div>
                 <div data-items-container></div>
             </section>
 
-            <section class="section-panel" data-submission-audit>
+            <section class="admin-panel section-panel" data-submission-audit>
                 <div class="section-header">
-                    <h2>Recent Activity</h2>
+                    <div>
+                        <p class="eyebrow">Activity log</p>
+                        <h2>Recent Activity</h2>
+                    </div>
                 </div>
                 <div data-audit-container class="audit-list"></div>
             </section>
-        </div>
-    </main>
 
-    <div data-loading class="loading-overlay" style="display: none;">Loading...</div>
+            <footer class="admin-footer">
+                &copy; 2024 Vinyl Catalog — Submission workflow.
+            </footer>
+        </main>
+    </div>
 
-    <footer class="footer">
-        <div class="container">
-            <div class="footer__content">
-                <div class="footer__section">
-                    <h4>Vinyl Catalog</h4>
-                    <p>Admin console for catalog management</p>
-                </div>
-                <div class="footer__section">
-                    <h4>Quick Links</h4>
-                    <ul>
-                        <li><a href="../seller/index.html">Sell Records</a></li>
-                        <li><a href="../buyer/index.html">Buy Records</a></li>
-                        <li><a href="../index.html">Home</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer__bottom">
-                <p>&copy; 2024 Vinyl Catalog. All rights reserved.</p>
-            </div>
+    <div class="loading-overlay" data-loading>
+        <div class="loading-overlay__content">
+            <div class="loading-spinner" aria-hidden="true"></div>
+            <div>Loading…</div>
         </div>
-    </footer>
+    </div>
 
     <script src="../../js/api-client.js"></script>
     <script src="../../js/auth.js"></script>
     <script src="../../js/submission-detail.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const isAuthenticated = await auth.verifySession();
+            if (!isAuthenticated) {
+                window.location.href = '/pages/admin/login.html';
+                return;
+            }
+
+            const page = new SubmissionDetailPage(api);
+            page.init();
+
+            const logoutBtn = document.querySelector('[data-logout-btn]');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async () => {
+                    if (confirm('Sign out of the admin console?')) {
+                        await auth.logout();
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

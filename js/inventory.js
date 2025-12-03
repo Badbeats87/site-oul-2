@@ -482,7 +482,7 @@ class InventoryManager {
 
   showLoading(show) {
     if (this.loader) {
-      this.loader.style.display = show ? 'block' : 'none';
+      this.loader.style.display = show ? 'flex' : 'none';
     }
   }
 

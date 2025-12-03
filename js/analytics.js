@@ -120,7 +120,7 @@ class AnalyticsManager {
 
   showLoading(show) {
     const loader = document.querySelector('[data-loading]');
-    if (loader) loader.style.display = show ? 'block' : 'none';
+    if (loader) loader.style.display = show ? 'flex' : 'none';
   }
 
   showError(message) {

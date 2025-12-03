@@ -26,12 +26,20 @@ function initializeTabSwitching() {
             const tabIndex = Array.from(tabBtns).indexOf(this);
 
             // Remove active from all
-            tabBtns.forEach(b => b.classList.remove('tab-btn--active'));
-            tabPanels.forEach(p => p.classList.remove('tab-panel--active'));
+            tabBtns.forEach(b => {
+                b.classList.remove('tab-btn--active');
+                b.setAttribute('aria-selected', 'false');
+            });
+            tabPanels.forEach(p => {
+                p.classList.remove('tab-panel--active');
+                p.setAttribute('hidden', 'true');
+            });
 
             // Add active to clicked
             this.classList.add('tab-btn--active');
+            this.setAttribute('aria-selected', 'true');
             tabPanels[tabIndex].classList.add('tab-panel--active');
+            tabPanels[tabIndex].removeAttribute('hidden');
 
             // Lazy load inventory tab
             if (tabIndex === 1 && !inventoryInitialized && inventoryManager) {

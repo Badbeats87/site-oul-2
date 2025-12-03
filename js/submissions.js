@@ -327,7 +327,7 @@ class SubmissionsManager {
   showLoading(show) {
     const loader = document.querySelector('[data-loading]');
     if (loader) {
-      loader.style.display = show ? 'block' : 'none';
+      loader.style.display = show ? 'flex' : 'none';
     }
   }
 

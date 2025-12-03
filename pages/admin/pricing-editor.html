@@ -8,36 +8,132 @@
     <link rel="stylesheet" href="../../styles/admin.css">
     <link rel="stylesheet" href="../../styles/pricing-editor.css">
 </head>
-<body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="navbar__container">
-            <a href="index.html" class="navbar__logo">
-                <svg class="navbar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <circle cx="12" cy="12" r="6"></circle>
-                    <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-                <span>Vinyl Catalog</span>
-            </a>
-            <div class="navbar__links">
-                <a href="index.html" class="nav-link">← Back to Admin</a>
+<body class="admin-body">
+    <div class="admin-shell">
+        <aside class="admin-sidebar">
+            <div class="admin-sidebar__brand">
+                <span class="admin-sidebar__logo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" width="26" height="26" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <circle cx="12" cy="12" r="6"></circle>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                </span>
+                <div>
+                    <div class="admin-sidebar__title">Vinyl Catalog</div>
+                    <div class="admin-sidebar__subtitle">Operations Console</div>
+                </div>
             </div>
-        </div>
-    </nav>
 
-    <!-- Header -->
-    <header class="page-header">
-        <div class="container">
-            <h1>Pricing Policy Editor</h1>
-            <p>Configure pricing formulas and condition-based adjustments</p>
-        </div>
-    </header>
+            <div class="admin-sidebar__user">
+                <div class="admin-avatar" aria-hidden="true">AM</div>
+                <div class="admin-sidebar__meta">
+                    <span class="eyebrow" style="color: rgba(243,244,246,0.7);">Pricing Owner</span>
+                    <strong>Alex Mercer</strong>
+                    <span>Policy edits lock at 8pm</span>
+                </div>
+                <a class="button button--secondary button--sm" href="index.html">← Back to Dashboard</a>
+            </div>
 
-    <!-- Main Content -->
-    <main class="page-content">
-        <div class="container">
-            <!-- Policy Info Section -->
+            <nav class="admin-nav" aria-label="Admin navigation">
+                <p class="admin-nav__label">Overview</p>
+                <a class="admin-nav__link" href="index.html">
+                    <span class="admin-nav__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" aria-hidden="true">
+                            <rect x="3" y="3" width="8" height="8" rx="2"></rect>
+                            <rect x="13" y="3" width="8" height="5" rx="2"></rect>
+                            <rect x="13" y="10" width="8" height="11" rx="2"></rect>
+                            <rect x="3" y="13" width="8" height="8" rx="2"></rect>
+                        </svg>
+                    </span>
+                    <div class="admin-nav__details">
+                        <strong>Command Center</strong>
+                        <span>Dashboard</span>
+                    </div>
+                </a>
+                <a class="admin-nav__link" href="inventory.html">
+                    <span class="admin-nav__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" aria-hidden="true">
+                            <path d="M3 7l9-4 9 4"></path>
+                            <path d="M4 7v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7"></path>
+                            <path d="M12 22V7"></path>
+                        </svg>
+                    </span>
+                    <div class="admin-nav__details">
+                        <strong>Inventory</strong>
+                        <span>Catalog</span>
+                    </div>
+                </a>
+                <a class="admin-nav__link admin-nav__link--active" href="pricing-editor.html">
+                    <span class="admin-nav__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" aria-hidden="true">
+                            <path d="M20 12v6a2 2 0 0 1-2 2H6l-4-4V6a2 2 0 0 1 2-2h6"></path>
+                            <path d="M8 8h8"></path>
+                            <path d="M8 12h6"></path>
+                            <path d="M15 2l7 7"></path>
+                            <path d="M15 9h7V2"></path>
+                        </svg>
+                    </span>
+                    <div class="admin-nav__details">
+                        <strong>Pricing</strong>
+                        <span>Policies</span>
+                    </div>
+                    <span class="admin-nav__badge">Editing</span>
+                </a>
+            </nav>
+
+            <hr class="admin-sidebar__divider">
+            <div class="admin-sidebar__footer">
+                Change control note: two approvals required for buy% or sell% adjustments above 5%.
+            </div>
+        </aside>
+
+        <div class="admin-main">
+            <header class="admin-toolbar">
+                <div class="admin-toolbar__context">
+                    <p class="eyebrow">Pricing intelligence</p>
+                    <h1>Policy Editor</h1>
+                    <p>Configure formulas powering buy offers and list prices across every marketplace.</p>
+                </div>
+                <div class="admin-toolbar__actions">
+                    <button class="button button--secondary button--sm" type="button">Preview</button>
+                    <button class="button button--primary button--sm" type="button">Save Draft</button>
+                    <button class="button button--danger button--sm" type="button" data-logout-btn>Logout</button>
+                </div>
+            </header>
+
+            <section class="admin-hero">
+                <div>
+                    <p class="eyebrow">Policy health</p>
+                    <h2>Standard Global</h2>
+                    <p>Feeds 78% of intake decisions. Local overrides inherit these guardrails.</p>
+                    <div class="admin-hero__meta">
+                        <div class="admin-hero__stat">
+                            <span>Overrides</span>
+                            <strong>6 active</strong>
+                        </div>
+                        <div class="admin-hero__stat">
+                            <span>Last Updated</span>
+                            <strong>Today · 9:12AM</strong>
+                        </div>
+                        <div class="admin-hero__stat">
+                            <span>Guardrail Checks</span>
+                            <strong>All green</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="admin-hero__card">
+                    <p class="eyebrow">Change control</p>
+                    <h3>Remember dual approval</h3>
+                    <p>Any multiplier adjustment above 5% requires sign-off from Finance &amp; Ops.</p>
+                    <div class="admin-hero__badges">
+                        <span class="admin-hero__badge">Buy % · 55%</span>
+                        <span class="admin-hero__badge">Sell % · 125%</span>
+                        <span class="admin-hero__badge">Markdown active</span>
+                    </div>
+                </div>
+            </section>
+
             <section class="policy-section">
                 <h2 class="section-title">Policy Information</h2>
 
@@ -73,12 +169,10 @@
                 </div>
             </section>
 
-            <!-- Condition Curves -->
             <section class="policy-section">
                 <h2 class="section-title">Condition Grade Adjustments</h2>
                 <p class="section-subtitle">Define percentage adjustments for each condition grade. These are applied multiplicatively to base prices.</p>
 
-                <!-- Media Condition Curve -->
                 <div class="condition-table-wrapper">
                     <h3 class="subsection-title">Media Condition Curve</h3>
                     <table class="table condition-table">
@@ -124,7 +218,6 @@
                     </table>
                 </div>
 
-                <!-- Sleeve Condition Curve -->
                 <div class="condition-table-wrapper">
                     <h3 class="subsection-title">Sleeve Condition Curve</h3>
                     <table class="table condition-table">
@@ -170,7 +263,6 @@
                     </table>
                 </div>
 
-                <!-- Condition Weighting -->
                 <div class="form-row">
                     <div class="form-group">
                         <label>Media Weight</label>
@@ -191,7 +283,6 @@
                 </div>
             </section>
 
-            <!-- Buy Formula -->
             <section class="policy-section">
                 <h2 class="section-title">Buy (Offer) Formula</h2>
                 <p class="section-subtitle">Base offer = Market Stat × Buy % × Condition Adjustment</p>
@@ -200,7 +291,7 @@
                     <div class="formula-step">
                         <span class="formula-label">Market Data Source:</span>
                         <select style="max-width: 400px;">
-                            <option selected>Hybrid (Average Discogs & eBay)</option>
+                            <option selected>Hybrid (Average Discogs &amp; eBay)</option>
                             <option>Discogs (Primary) → eBay (Fallback)</option>
                             <option>eBay (Primary) → Discogs (Fallback)</option>
                             <option>Discogs Only</option>
@@ -268,7 +359,6 @@
                 </div>
             </section>
 
-            <!-- Sell Formula -->
             <section class="policy-section">
                 <h2 class="section-title">Sell (List Price) Formula</h2>
                 <p class="section-subtitle">List price = Market Stat × Sell % × Condition Adjustment</p>
@@ -277,7 +367,7 @@
                     <div class="formula-step">
                         <span class="formula-label">Market Data Source:</span>
                         <select style="max-width: 400px;">
-                            <option selected>Hybrid (Average Discogs & eBay)</option>
+                            <option selected>Hybrid (Average Discogs &amp; eBay)</option>
                             <option>Discogs (Primary) → eBay (Fallback)</option>
                             <option>eBay (Primary) → Discogs (Fallback)</option>
                         </select>
@@ -332,7 +422,6 @@
                     </div>
                 </div>
 
-                <!-- Markdown Schedule -->
                 <div class="markdown-section">
                     <h3 class="subsection-title">Markdown Schedule (Optional)</h3>
                     <p class="section-subtitle">Automatically reduce prices for slow-moving inventory</p>
@@ -356,7 +445,6 @@
                 </div>
             </section>
 
-            <!-- Channel Multipliers -->
             <section class="policy-section">
                 <h2 class="section-title">Channel-Specific Adjustments</h2>
                 <p class="section-subtitle">Apply multipliers to different acquisition channels</p>
@@ -393,7 +481,6 @@
                 </table>
             </section>
 
-            <!-- Preview -->
             <section class="policy-section">
                 <h2 class="section-title">Preview: Example Calculations</h2>
                 <p class="section-subtitle">How this policy would price a sample album under different conditions</p>
@@ -441,29 +528,37 @@
                 </table>
             </section>
 
-            <!-- Actions -->
             <div class="policy-actions">
                 <button class="button button--success button--lg">✓ Save Policy</button>
                 <button class="button button--primary button--lg">📋 Preview in Queue</button>
                 <button class="button button--secondary button--lg">Reset to Default</button>
                 <a href="index.html" class="button button--secondary button--lg">← Cancel</a>
             </div>
-        </div>
-    </main>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer__content">
-                <div class="footer__section">
-                    <h4>Vinyl Catalog</h4>
-                    <p>Admin console for catalog management</p>
-                </div>
-            </div>
-            <div class="footer__bottom">
-                <p>&copy; 2024 Vinyl Catalog. All rights reserved.</p>
-            </div>
+            <footer class="admin-footer">
+                &copy; 2024 Vinyl Catalog — Pricing system.
+            </footer>
         </div>
-    </footer>
+    </div>
+
+    <script src="../../js/api-client.js"></script>
+    <script src="../../js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const isAuthenticated = await auth.verifySession();
+            if (!isAuthenticated) {
+                window.location.href = '/pages/admin/login.html';
+            }
+
+            const logoutBtn = document.querySelector('[data-logout-btn]');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async () => {
+                    if (confirm('Sign out of the admin console?')) {
+                        await auth.logout();
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
