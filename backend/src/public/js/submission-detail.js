@@ -300,7 +300,7 @@ class SubmissionDetailPage {
       ACCEPTED: 'success',
       PARTIALLY_ACCEPTED: 'accent',
       REJECTED: 'danger',
-      EXPIRED: 'secondary',
+      EXPIRED: 'secondary'
     };
     const cls = map[status] || 'secondary';
     return `<span class="badge badge--${cls}">${status.replace(/_/g, ' ')}</span>`;

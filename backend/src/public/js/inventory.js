@@ -98,7 +98,7 @@ class InventoryManager {
       if (event.target.matches('[data-inventory-view-submission]')) {
         const submissionId = event.target.dataset.submissionId;
         if (submissionId) {
-          window.open(`/admin/submission.html?id=${submissionId}`, '_blank');
+          window.open(`submission.html?id=${submissionId}`, '_blank');
         }
       }
 
@@ -482,7 +482,7 @@ class InventoryManager {
 
   showLoading(show) {
     if (this.loader) {
-      this.loader.style.display = show ? 'block' : 'none';
+      this.loader.style.display = show ? 'flex' : 'none';
     }
   }
 
