@@ -262,6 +262,17 @@ class DiscogsService {
         async () => {
           const response = await this.client.get(`/masters/${masterId}`);
 
+          // Also fetch all vinyl versions
+          let vinylVersions = [];
+          try {
+            vinylVersions = await this.getMasterVinylVersions(masterId);
+          } catch (error) {
+            logger.warn('Failed to fetch vinyl versions for master', {
+              masterId,
+            });
+            // Continue without vinyl versions
+          }
+
           return {
             id: response.data.id,
             title: response.data.title,
@@ -282,6 +293,7 @@ class DiscogsService {
               })) || [],
             resource_url: response.data.resource_url,
             uri: response.data.uri,
+            vinyl_versions: vinylVersions,
           };
         },
         7200 // Cache for 2 hours

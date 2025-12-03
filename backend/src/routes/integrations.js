@@ -5,6 +5,7 @@ import {
 } from '../middleware/integrationRateLimiter.js';
 import {
   searchDiscogs,
+  getDiscogsMaster,
   getDiscogsRelease,
   getDiscogsPrices,
   searchDiscogsEnriched,
@@ -91,6 +92,32 @@ router.get('/discogs/search', discogsLimiter, searchDiscogs);
  *         description: Enriched search results with metadata and pricing
  */
 router.get('/discogs/search-enriched', discogsLimiter, searchDiscogsEnriched);
+
+/**
+ * @swagger
+ * /api/v1/integrations/discogs/masters/{id}:
+ *   get:
+ *     summary: Get Discogs master details
+ *     description: Fetch full metadata for a specific Discogs master release with all vinyl versions
+ *     tags:
+ *       - Integrations
+ *       - Discogs
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Discogs master ID
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Master metadata with all vinyl versions
+ *       404:
+ *         description: Master not found
+ */
+router.get('/discogs/masters/:id', discogsLimiter, getDiscogsMaster);
 
 /**
  * @swagger

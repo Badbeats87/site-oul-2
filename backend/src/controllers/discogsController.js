@@ -44,6 +44,31 @@ export async function searchDiscogs(req, res, next) {
 }
 
 /**
+ * Get detailed master release information from Discogs
+ * GET /api/v1/integrations/discogs/masters/:id
+ */
+export async function getDiscogsMaster(req, res, next) {
+  try {
+    const { id } = req.params;
+
+    const master = await discogsService.getMaster(parseInt(id));
+
+    logger.info('Discogs master fetched', {
+      requestId: req.id,
+      masterId: id,
+    });
+
+    res.json({
+      success: true,
+      data: master,
+      requestId: req.id,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
  * Get detailed release information from Discogs
  * GET /api/v1/integrations/discogs/releases/:id
  */

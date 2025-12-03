@@ -314,17 +314,23 @@ class InventoryManager {
         if (!row) return;
         const discogsId = event.target.value;
         if (!discogsId) return;
+        const discogsType =
+          event.target.selectedOptions[0]?.dataset.discogsType || 'release';
+
         const discogsInput = row.querySelector(
           '[data-release-field="discogsId"]'
         );
         if (discogsInput) {
-          discogsInput.value = discogsId;
+          // Store as special marker if it's a master: m{id} for master, r{id} for release
+          discogsInput.value =
+            discogsType === 'master' ? `m${discogsId}` : `r${discogsId}`;
         }
         const fetchButton = row.querySelector('[data-discogs-fetch]');
         if (fetchButton) {
           fetchButton.dataset.discogsId = discogsId;
+          fetchButton.dataset.discogsType = discogsType;
         }
-        await this.loadDiscogsSuggestions(row, discogsId);
+        await this.loadDiscogsSuggestions(row, discogsId, discogsType);
         const optionsContainer = row.querySelector('[data-discogs-options]');
         if (optionsContainer) {
           optionsContainer.innerHTML = '';
@@ -589,11 +595,15 @@ class InventoryManager {
   renderDiscogsOption(option) {
     const id =
       option.id || option.releaseId || option.master_id || option.masterId;
+    const type = option.type || 'release'; // 'master' or 'release'
     const year = option.year || option.released || '';
     const label = option.label || option.labels?.join(', ') || '';
     const title = option.title || '';
     const text = `${title}${year ? ` (${year})` : ''}${label ? ` – ${label}` : ''}`;
-    return `<option value="${id}">${this.escapeHtml(text)}</option>`;
+    // Store both id and type so we know how to fetch the data
+    return `<option value="${id}" data-discogs-type="${type}">${this.escapeHtml(
+      text
+    )}</option>`;
   }
 
   renderStatusSelect(value) {
@@ -808,22 +818,34 @@ class InventoryManager {
     };
   }
 
-  async loadDiscogsSuggestions(row, discogsId) {
+  async loadDiscogsSuggestions(row, discogsId, discogsType = 'release') {
     try {
       this.showLoading(true);
-      const release = await this.api.get(
-        `/integrations/discogs/releases/${discogsId}`
-      );
+      // If discogsId has prefix (m123 or r123), extract the actual ID and type
+      let actualId = discogsId;
+      let actualType = discogsType;
+      if (discogsId.startsWith('m') || discogsId.startsWith('r')) {
+        actualType = discogsId[0] === 'm' ? 'master' : 'release';
+        actualId = discogsId.substring(1);
+      }
+
+      // Fetch from appropriate endpoint based on type
+      const endpoint =
+        actualType === 'master'
+          ? `/integrations/discogs/masters/${actualId}`
+          : `/integrations/discogs/releases/${actualId}`;
+
+      const release = await this.api.get(endpoint);
       const suggestions = this.extractDiscogsSuggestions(release);
       const discogsInput = row.querySelector(
         '[data-release-field="discogsId"]'
       );
       if (discogsInput && !discogsInput.value) {
-        discogsInput.value = discogsId;
+        discogsInput.value = actualId;
       }
       const fetchButton = row.querySelector('[data-discogs-fetch]');
       if (fetchButton) {
-        fetchButton.dataset.discogsId = release?.id || discogsId;
+        fetchButton.dataset.discogsId = release?.id || actualId;
       }
       this.showDiscogsSuggestions(row, suggestions);
       const optionsContainer = row.querySelector('[data-discogs-options]');
