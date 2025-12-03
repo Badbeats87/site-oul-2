@@ -112,8 +112,15 @@ class InventoryManager {
         const row = event.target.closest('tr[data-row-id]');
         if (!row) return;
         const field = event.target.dataset.field;
-        const rawValue = event.target.dataset.value || '';
-        const value = decodeURIComponent(rawValue);
+        if (!field) return;
+
+        let value = '';
+        if (event.target.dataset.value) {
+          value = event.target.dataset.value;
+        } else {
+          const select = row.querySelector(`[data-suggestion-select="${field}"]`);
+          value = select?.value || '';
+        }
         this.applySuggestion(row, field, value);
       }
     });
@@ -558,46 +565,98 @@ class InventoryManager {
   }
 
   extractDiscogsSuggestions(release) {
-    const primaryLabel = release?.labels?.[0];
-    const year =
-      release?.year ||
-      (release?.released ? parseInt(release.released.split('-')[0], 10) : null);
-    const genreValue =
-      release?.genres?.join(', ') ||
-      release?.styles?.join(', ') ||
-      null;
+    const unique = (arr) => [...new Set(arr.filter((value) => value && value !== ''))];
+
+    const labelOptions = unique((release?.labels || []).map((label) => label?.name?.trim()));
+    const catalogNumberOptions = unique(
+      (release?.labels || []).map((label) => {
+        const value = label?.catno?.trim();
+        if (!value) return null;
+        if (/^none$/i.test(value) || /^not in label$/.test(value)) return null;
+        return value;
+      })
+    );
+
+    const yearOptions = unique([
+      release?.year ? String(release.year) : null,
+      release?.released ? release.released.split('-')[0] : null,
+      release?.released_formatted ? release.released_formatted.split('-')[0] : null,
+    ]);
+
+    const genreOptions = unique([
+      ...(release?.genres || []),
+      ...(release?.styles || []),
+    ]);
+
+    const descriptionOptions = unique([
+      release?.notes,
+      ...(release?.formats || []).flatMap((format) => [
+        format.name,
+        ...(format.descriptions || []),
+      ]),
+    ]);
 
     return {
-      label: primaryLabel?.name || null,
-      catalogNumber: primaryLabel?.catno || null,
-      releaseYear: year ? String(year) : null,
-      genre: genreValue,
-      description: release?.notes || null,
+      label: labelOptions,
+      catalogNumber: catalogNumberOptions,
+      releaseYear: yearOptions,
+      genre: genreOptions,
+      description: descriptionOptions,
     };
   }
 
   showDiscogsSuggestions(row, suggestions) {
-    Object.entries(suggestions).forEach(([field, value]) => {
+    Object.entries(suggestions).forEach(([field, values]) => {
       const hint = row.querySelector(`[data-suggestion-for="${field}"]`);
       if (!hint) return;
 
-      if (!value) {
+      const optionValues = Array.isArray(values)
+        ? [...new Set(values.filter(Boolean))]
+        : values
+          ? [values]
+          : [];
+
+      if (!optionValues.length) {
         hint.classList.remove('is-visible');
         hint.innerHTML = '';
         return;
       }
 
-      const encodedValue = encodeURIComponent(value);
-      hint.innerHTML = `
-        Discogs: <strong>${this.escapeHtml(value)}</strong>
-        <button type="button"
-          class="button button--ghost button--sm"
-          data-apply-suggestion
-          data-field="${field}"
-          data-value="${encodedValue}">
-          Apply
-        </button>
-      `;
+      if (optionValues.length === 1) {
+        const encodedValue = encodeURIComponent(optionValues[0]);
+        hint.innerHTML = `
+          Discogs: <strong>${this.escapeHtml(optionValues[0])}</strong>
+          <button type="button"
+            class="button button--ghost button--sm"
+            data-apply-suggestion
+            data-field="${field}"
+            data-value="${encodedValue}">
+            Apply
+          </button>
+        `;
+      } else {
+        const selectOptions = optionValues
+          .map(
+            (val) =>
+              `<option value="${encodeURIComponent(val)}">${this.escapeHtml(val)}</option>`
+          )
+          .join('');
+
+        hint.innerHTML = `
+          Discogs suggestions:
+          <select class="table-input" data-suggestion-select="${field}">
+            <option value="">Choose value</option>
+            ${selectOptions}
+          </select>
+          <button type="button"
+            class="button button--ghost button--sm"
+            data-apply-suggestion
+            data-field="${field}">
+            Apply
+          </button>
+        `;
+      }
+
       hint.classList.add('is-visible');
     });
   }
@@ -608,12 +667,14 @@ class InventoryManager {
       row.querySelector(`[data-release-field="${field}"]`) ||
       row.querySelector(`[data-field="${field}"]`);
     if (!target) return;
-    if (field === 'releaseYear' && value) {
-      const parsed = parseInt(value, 10);
-      target.value = Number.isNaN(parsed) ? '' : parsed;
+    let normalized = value ?? '';
+    if (field === 'releaseYear' && normalized) {
+      const parsed = parseInt(normalized, 10);
+      normalized = Number.isNaN(parsed) ? '' : parsed;
     } else {
-      target.value = value ?? '';
+      normalized = decodeURIComponent(normalized);
     }
+    target.value = normalized;
   }
 
   escapeHtml(str) {
