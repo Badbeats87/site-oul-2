@@ -206,21 +206,13 @@
 }
 
 .inventory-table td[data-column-id="status"] .filter-select {
-    width: auto;
-    max-width: 140px;
-    min-width: 120px;
-    display: inline-block;
-}
-
-.inventory-table td[data-column-id="variant"] .table-input,
-.inventory-table td[data-column-id="sku"] .table-input {
-    width: 130px;
+    width: 100%;
+    display: block;
 }
 
 .inventory-table td[data-column-id="listPrice"] .table-input,
 .inventory-table td[data-column-id="salePrice"] .table-input,
 .inventory-table td[data-column-id="discogs"] .table-input {
-    width: 130px;
     text-align: right;
 }
 
@@ -292,12 +284,19 @@
     display: flex;
     align-items: center;
     gap: var(--space-xs);
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.table-discogs .table-input {
+    flex: 1;
+    min-width: 80px;
 }
 
 .table-discogs .button {
     white-space: nowrap;
     min-height: 26px;
+    flex-shrink: 0;
 }
 
 .suggestion-label {
