@@ -1,5 +1,6 @@
 import prisma from '../generated/prisma/index.js';
 import { ApiError } from '../middleware/errorHandler.js';
+import logger from '../../config/logger.js';
 
 class AdminPreferencesService {
   /**
@@ -22,6 +23,13 @@ class AdminPreferencesService {
         hasCustomization: !!preference
       };
     } catch (error) {
+      logger.error('Failed to retrieve table preferences', {
+        userId,
+        tableName,
+        code: error?.code,
+        meta: error?.meta,
+        message: error?.message
+      });
       throw new ApiError('Failed to retrieve table preferences', 500);
     }
   }
@@ -67,6 +75,13 @@ class AdminPreferencesService {
 
       return preference;
     } catch (error) {
+      logger.error('Failed to save table preferences', {
+        userId,
+        tableName,
+        code: error?.code,
+        meta: error?.meta,
+        message: error?.message
+      });
       if (error.code === 'P2002') {
         // Unique constraint error - shouldn't happen with upsert, but handle it
         throw new ApiError('Preference already exists for this user and table', 409);
@@ -97,6 +112,13 @@ class AdminPreferencesService {
 
       return deleted;
     } catch (error) {
+      logger.error('Failed to reset table preferences', {
+        userId,
+        tableName,
+        code: error?.code,
+        meta: error?.meta,
+        message: error?.message
+      });
       if (error instanceof ApiError) throw error;
       throw new ApiError('Failed to reset table preferences', 500);
     }
@@ -115,6 +137,12 @@ class AdminPreferencesService {
 
       return preferences;
     } catch (error) {
+      logger.error('Failed to retrieve user preferences', {
+        userId,
+        code: error?.code,
+        meta: error?.meta,
+        message: error?.message
+      });
       throw new ApiError('Failed to retrieve user preferences', 500);
     }
   }
@@ -132,6 +160,12 @@ class AdminPreferencesService {
 
       return result;
     } catch (error) {
+      logger.error('Failed to delete user preferences', {
+        userId,
+        code: error?.code,
+        meta: error?.meta,
+        message: error?.message
+      });
       throw new ApiError('Failed to delete user preferences', 500);
     }
   }
