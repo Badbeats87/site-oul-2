@@ -41,8 +41,8 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Build file path
-  let filePath = path.join(__dirname, pathname);
+  // Build file path (remove leading slash before joining to ensure correct path)
+  let filePath = path.join(__dirname, pathname.startsWith('/') ? pathname.slice(1) : pathname);
 
   // If path is a directory, try index.html
   if (pathname.endsWith('/') || !path.extname(filePath)) {
