@@ -4,12 +4,12 @@
  */
 class TableColumnManager {
   constructor(config) {
-    this.tableName = config.tableName;           // 'inventory', 'submissions', etc.
-    this.columns = config.columns;               // Array of column definitions
-    this.api = config.api;                       // API client
+    this.tableName = config.tableName; // 'inventory', 'submissions', etc.
+    this.columns = config.columns; // Array of column definitions
+    this.api = config.api; // API client
     this.onColumnsChange = config.onColumnsChange; // Callback for re-rendering
 
-    this.visibleColumns = {};                    // Column ID -> boolean map
+    this.visibleColumns = {}; // Column ID -> boolean map
     this.initialized = false;
     this.saveTimeout = null;
   }
@@ -19,13 +19,15 @@ class TableColumnManager {
    */
   async initialize() {
     try {
-      const response = await this.api.get(`/admin/preferences/tables/${this.tableName}`);
+      const response = await this.api.get(
+        `/admin/preferences/tables/${this.tableName}`
+      );
 
       if (response.visibleColumns) {
         // Load saved preferences from server
         this.visibleColumns = response.visibleColumns;
         // Merge with any new columns that might not be in saved preferences
-        this.columns.forEach(col => {
+        this.columns.forEach((col) => {
           if (!(col.id in this.visibleColumns)) {
             this.visibleColumns[col.id] = col.defaultVisible !== false;
           }
@@ -50,7 +52,7 @@ class TableColumnManager {
    */
   getDefaultVisibility() {
     const defaults = {};
-    this.columns.forEach(col => {
+    this.columns.forEach((col) => {
       defaults[col.id] = col.defaultVisible !== false; // Default true unless specified
     });
     return defaults;
@@ -78,7 +80,7 @@ class TableColumnManager {
    * Get visible column definitions
    */
   getVisibleColumns() {
-    return this.columns.filter(col => this.isColumnVisible(col.id));
+    return this.columns.filter((col) => this.isColumnVisible(col.id));
   }
 
   /**
@@ -89,7 +91,7 @@ class TableColumnManager {
     this.saveTimeout = setTimeout(async () => {
       try {
         await this.api.put(`/admin/preferences/tables/${this.tableName}`, {
-          visibleColumns: this.visibleColumns
+          visibleColumns: this.visibleColumns,
         });
       } catch (error) {
         console.error('Failed to save column preferences:', error);
@@ -135,7 +137,9 @@ class TableColumnManager {
           <button class="button button--ghost button--sm" data-reset-btn="${uniqueId}">Reset</button>
         </div>
         <div class="column-toggle-menu__list">
-          ${this.columns.map(col => `
+          ${this.columns
+            .map(
+              (col) => `
             <label class="column-toggle-item">
               <input type="checkbox"
                 class="column-toggle-checkbox"
@@ -144,7 +148,9 @@ class TableColumnManager {
                 ${this.isColumnVisible(col.id) ? 'checked' : ''}>
               <span>${col.label}</span>
             </label>
-          `).join('')}
+          `
+            )
+            .join('')}
         </div>
       </div>
     `;
@@ -190,7 +196,7 @@ class TableColumnManager {
       await this.resetToDefaults();
 
       // Update checkboxes
-      menu.querySelectorAll('.column-toggle-checkbox').forEach(checkbox => {
+      menu.querySelectorAll('.column-toggle-checkbox').forEach((checkbox) => {
         checkbox.checked = this.isColumnVisible(checkbox.dataset.columnId);
       });
     });

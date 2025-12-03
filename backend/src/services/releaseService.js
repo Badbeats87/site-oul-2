@@ -54,8 +54,19 @@ class ReleaseService {
     let baseEstimate = 20; // Modern vinyl baseline €20
 
     // Adjust by genre
-    const genre = (release?.genres?.[0] || result?.genres?.[0] || '').toLowerCase();
-    const highValueGenres = ['jazz', 'electronic', 'hip-hop', 'hip hop', 'soul', 'funk'];
+    const genre = (
+      release?.genres?.[0] ||
+      result?.genres?.[0] ||
+      ''
+    ).toLowerCase();
+    const highValueGenres = [
+      'jazz',
+      'electronic',
+      'hip-hop',
+      'hip hop',
+      'soul',
+      'funk',
+    ];
     const standardGenres = ['rock', 'pop', 'indie', 'metal'];
 
     if (highValueGenres.some((g) => genre.includes(g))) {
@@ -108,9 +119,13 @@ class ReleaseService {
       let baseStat = null;
 
       if (priceStatistic === 'LOW') {
-        baseStat = marketSnapshot.statLow ? parseFloat(marketSnapshot.statLow) : null;
+        baseStat = marketSnapshot.statLow
+          ? parseFloat(marketSnapshot.statLow)
+          : null;
       } else if (priceStatistic === 'HIGH') {
-        baseStat = marketSnapshot.statHigh ? parseFloat(marketSnapshot.statHigh) : null;
+        baseStat = marketSnapshot.statHigh
+          ? parseFloat(marketSnapshot.statHigh)
+          : null;
       } else {
         // Default to MEDIAN, but fallback to LOW if MEDIAN not available
         // (Discogs marketplace stats only provides lowest_price)
@@ -128,7 +143,8 @@ class ReleaseService {
       // Apply buyer formula: base stat * buy percentage
       // Since we don't have condition data in search results, assume NM/NM (1.0 multiplier)
       // Handle both { percentage: x } and { buyPercentage: x } formats
-      const buyPercentage = buyerFormula.buyPercentage ?? buyerFormula.percentage ?? 0.55;
+      const buyPercentage =
+        buyerFormula.buyPercentage ?? buyerFormula.percentage ?? 0.55;
       const basePrice = baseStat * buyPercentage;
 
       logger.debug('calculateOurPrice details', {
@@ -140,7 +156,10 @@ class ReleaseService {
 
       // Apply standard rounding (defaults to 0.25 if not specified)
       const roundIncrement = buyerFormula.roundIncrement ?? 0.25;
-      const ourPrice = pricingService.roundToIncrement(basePrice, roundIncrement);
+      const ourPrice = pricingService.roundToIncrement(
+        basePrice,
+        roundIncrement
+      );
 
       logger.debug('calculateOurPrice result', {
         basePrice,
@@ -706,21 +725,25 @@ class ReleaseService {
 
       // Return Discogs search results quickly without enrichment
       // Enrich only when user selects a result (not during search)
-      const finalResults = discogsResults.results.slice(0, limit).map((result) => ({
-        id: result.id,
-        title: result.title,
-        type: result.type,
-        artist: result.basic_information?.artists?.[0]?.name || 'Unknown Artist',
-        year: result.basic_information?.year || result.year || null,
-        coverArtUrl: result.basic_information?.cover_image || result.cover_image || null,
-        uri: result.uri,
-        resource_url: result.resource_url,
-        basic_information: result.basic_information,
-        source: 'DISCOGS',
-        marketSnapshots: [],
-        ourPrice: null,
-        _needsEnrichment: true, // Mark for enrichment on selection
-      }));
+      const finalResults = discogsResults.results
+        .slice(0, limit)
+        .map((result) => ({
+          id: result.id,
+          title: result.title,
+          type: result.type,
+          artist:
+            result.basic_information?.artists?.[0]?.name || 'Unknown Artist',
+          year: result.basic_information?.year || result.year || null,
+          coverArtUrl:
+            result.basic_information?.cover_image || result.cover_image || null,
+          uri: result.uri,
+          resource_url: result.resource_url,
+          basic_information: result.basic_information,
+          source: 'DISCOGS',
+          marketSnapshots: [],
+          ourPrice: null,
+          _needsEnrichment: true, // Mark for enrichment on selection
+        }));
 
       logger.info('Discogs search completed', {
         query,
@@ -736,14 +759,22 @@ class ReleaseService {
         status: discogsError.response?.status,
         statusText: discogsError.response?.statusText,
         code: discogsError.code,
-        isTimeout: discogsError.code === 'ECONNABORTED' || discogsError.code === 'ETIMEDOUT',
+        isTimeout:
+          discogsError.code === 'ECONNABORTED' ||
+          discogsError.code === 'ETIMEDOUT',
         isRateLimit: discogsError.response?.status === 429,
       };
 
       if (errorInfo.isTimeout) {
-        logger.warn('Discogs search timeout - API may be slow or rate limited', errorInfo);
+        logger.warn(
+          'Discogs search timeout - API may be slow or rate limited',
+          errorInfo
+        );
       } else if (errorInfo.isRateLimit) {
-        logger.warn('Discogs rate limited - reducing request volume', errorInfo);
+        logger.warn(
+          'Discogs rate limited - reducing request volume',
+          errorInfo
+        );
       } else {
         logger.error('Discogs search failed', errorInfo);
       }
@@ -783,8 +814,10 @@ class ReleaseService {
         // Try to get marketplace stats with smart fallback
         // First: Try current marketplace listings (most accurate when available)
         try {
-          priceStats = await discogsService
-            .getMarketplaceStats(releaseIdForStats, 'EUR');
+          priceStats = await discogsService.getMarketplaceStats(
+            releaseIdForStats,
+            'EUR'
+          );
           logger.debug('Marketplace stats fetch result', {
             releaseId: releaseIdForStats,
             hasStats: !!priceStats,
@@ -798,7 +831,10 @@ class ReleaseService {
                 masterId: releaseIdForStats,
               });
               // Get vinyl variant with best marketplace price
-              const vinylStats = await discogsService.getVinylMarketplaceStats(releaseIdForStats, 'EUR');
+              const vinylStats = await discogsService.getVinylMarketplaceStats(
+                releaseIdForStats,
+                'EUR'
+              );
               if (vinylStats) {
                 logger.debug('Found vinyl variant pricing', {
                   masterId: releaseIdForStats,
@@ -808,11 +844,14 @@ class ReleaseService {
 
                 // Prefer vinyl variant pricing over master - vinyl pressings are actual saleable items
                 // Masters can have fake/spam listings, so we trust the lowest vinyl variant price
-                logger.debug('Using vinyl variant pricing (preferred over master aggregate)', {
-                  masterId: releaseIdForStats,
-                  masterPrice: priceStats?.lowest,
-                  variantPrice: vinylStats.lowest,
-                });
+                logger.debug(
+                  'Using vinyl variant pricing (preferred over master aggregate)',
+                  {
+                    masterId: releaseIdForStats,
+                    masterPrice: priceStats?.lowest,
+                    variantPrice: vinylStats.lowest,
+                  }
+                );
                 priceStats = vinylStats;
               }
             } catch (variantErr) {
@@ -834,11 +873,14 @@ class ReleaseService {
         // Second: If marketplace stats unavailable/filtered out, try price suggestions
         if (!priceStats) {
           try {
-            logger.debug('Marketplace stats unavailable, trying price suggestions', {
-              releaseId: releaseIdForStats,
-            });
-            const priceSuggestions = await discogsService
-              .getPriceSuggestions(releaseIdForStats);
+            logger.debug(
+              'Marketplace stats unavailable, trying price suggestions',
+              {
+                releaseId: releaseIdForStats,
+              }
+            );
+            const priceSuggestions =
+              await discogsService.getPriceSuggestions(releaseIdForStats);
             if (priceSuggestions) {
               logger.debug('Got price suggestions as fallback', {
                 releaseId: releaseIdForStats,
@@ -860,9 +902,12 @@ class ReleaseService {
             logger.debug('Trying historical price statistics', {
               releaseId: releaseIdForStats,
             });
-            const priceStats2 = await discogsService
-              .getPriceStatistics(releaseIdForStats);
-            if (priceStats2 && (priceStats2.lowest || priceStats2.median || priceStats2.average)) {
+            const priceStats2 =
+              await discogsService.getPriceStatistics(releaseIdForStats);
+            if (
+              priceStats2 &&
+              (priceStats2.lowest || priceStats2.median || priceStats2.average)
+            ) {
               logger.debug('Got price statistics as second fallback', {
                 releaseId: releaseIdForStats,
                 stats: priceStats2,
@@ -879,7 +924,13 @@ class ReleaseService {
       }
 
       let marketSnapshots = [];
-      if (priceStats && (priceStats.lowest || priceStats.median || priceStats.average || priceStats.highest)) {
+      if (
+        priceStats &&
+        (priceStats.lowest ||
+          priceStats.median ||
+          priceStats.average ||
+          priceStats.highest)
+      ) {
         // Ensure we have at least one price value
         const snapshot = {
           releaseId: `discogs_${result.id}`,
@@ -930,7 +981,9 @@ class ReleaseService {
               ourPrice,
             });
           } else {
-            logger.warn('No buyer formula available for pricing', { resultId: result.id });
+            logger.warn('No buyer formula available for pricing', {
+              resultId: result.id,
+            });
           }
         }
       }
@@ -987,7 +1040,11 @@ class ReleaseService {
     }
   }
 
-  async getQuoteForDiscogsId(discogsId, type = 'release', allowFallback = true) {
+  async getQuoteForDiscogsId(
+    discogsId,
+    type = 'release',
+    allowFallback = true
+  ) {
     try {
       logger.debug('Getting quote for Discogs ID', { discogsId, type });
 

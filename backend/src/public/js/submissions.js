@@ -10,12 +10,12 @@ class SubmissionsManager {
     this.selectedSubmission = null;
     this.filters = {
       status: 'all',
-      sellerSearch: ''
+      sellerSearch: '',
     };
     this.pagination = {
       page: 1,
       limit: 10,
-      total: 0
+      total: 0,
     };
   }
 
@@ -42,7 +42,9 @@ class SubmissionsManager {
     }
 
     // Status filter
-    const statusFilter = document.querySelector('[data-submissions-status-filter]');
+    const statusFilter = document.querySelector(
+      '[data-submissions-status-filter]'
+    );
     if (statusFilter) {
       statusFilter.addEventListener('change', (e) => {
         this.filters.status = e.target.value;
@@ -71,7 +73,7 @@ class SubmissionsManager {
 
       const params = {
         page: this.pagination.page,
-        limit: this.pagination.limit
+        limit: this.pagination.limit,
       };
 
       if (this.filters.status !== 'all') {
@@ -114,7 +116,9 @@ class SubmissionsManager {
       return;
     }
 
-    tbody.innerHTML = this.submissions.map(submission => `
+    tbody.innerHTML = this.submissions
+      .map(
+        (submission) => `
       <tr>
         <td><strong>${submission.id.substring(0, 8)}</strong></td>
         <td>
@@ -138,7 +142,9 @@ class SubmissionsManager {
           </button>
         </td>
       </tr>
-    `).join('');
+    `
+      )
+      .join('');
   }
 
   /**
@@ -147,9 +153,15 @@ class SubmissionsManager {
   getItemStats(submission) {
     if (!submission.items || submission.items.length === 0) return 'No items';
 
-    const accepted = submission.items.filter(i => i.status === 'ACCEPTED').length;
-    const pending = submission.items.filter(i => i.status === 'PENDING').length;
-    const rejected = submission.items.filter(i => i.status === 'REJECTED').length;
+    const accepted = submission.items.filter(
+      (i) => i.status === 'ACCEPTED'
+    ).length;
+    const pending = submission.items.filter(
+      (i) => i.status === 'PENDING'
+    ).length;
+    const rejected = submission.items.filter(
+      (i) => i.status === 'REJECTED'
+    ).length;
 
     const parts = [];
     if (pending > 0) parts.push(`${pending} pending`);
@@ -164,10 +176,10 @@ class SubmissionsManager {
    */
   getStatusBadge(status) {
     const statusMap = {
-      'PENDING_REVIEW': 'warning',
-      'ACCEPTED': 'success',
-      'REJECTED': 'danger',
-      'PARTIALLY_ACCEPTED': 'info'
+      PENDING_REVIEW: 'warning',
+      ACCEPTED: 'success',
+      REJECTED: 'danger',
+      PARTIALLY_ACCEPTED: 'info',
     };
 
     const badgeClass = statusMap[status] || 'secondary';
@@ -213,7 +225,8 @@ class SubmissionsManager {
       await this.api.post(`/admin/submissions/${submissionId}/accept`, {});
       this.showSuccess('Submission accepted');
       await this.loadSubmissions();
-      document.querySelector('[data-submission-details-modal]').style.display = 'none';
+      document.querySelector('[data-submission-details-modal]').style.display =
+        'none';
       this.showLoading(false);
     } catch (error) {
       console.error('Failed to accept submission:', error);
@@ -233,7 +246,8 @@ class SubmissionsManager {
       await this.api.post(`/admin/submissions/${submissionId}/reject`, {});
       this.showSuccess('Submission rejected');
       await this.loadSubmissions();
-      document.querySelector('[data-submission-details-modal]').style.display = 'none';
+      document.querySelector('[data-submission-details-modal]').style.display =
+        'none';
       this.showLoading(false);
     } catch (error) {
       console.error('Failed to reject submission:', error);
@@ -248,9 +262,14 @@ class SubmissionsManager {
   async acceptItem(submissionId, itemId) {
     try {
       this.showLoading(true);
-      await this.api.post(`/admin/submissions/${submissionId}/items/${itemId}/accept`, {});
+      await this.api.post(
+        `/admin/submissions/${submissionId}/items/${itemId}/accept`,
+        {}
+      );
       this.showSuccess('Item accepted');
-      const submission = await this.api.get(`/admin/submissions/${submissionId}`);
+      const submission = await this.api.get(
+        `/admin/submissions/${submissionId}`
+      );
       this.selectedSubmission = submission;
       this.renderDetailsModal(submission);
       this.showLoading(false);
@@ -267,9 +286,14 @@ class SubmissionsManager {
   async rejectItem(submissionId, itemId) {
     try {
       this.showLoading(true);
-      await this.api.post(`/admin/submissions/${submissionId}/items/${itemId}/reject`, {});
+      await this.api.post(
+        `/admin/submissions/${submissionId}/items/${itemId}/reject`,
+        {}
+      );
       this.showSuccess('Item rejected');
-      const submission = await this.api.get(`/admin/submissions/${submissionId}`);
+      const submission = await this.api.get(
+        `/admin/submissions/${submissionId}`
+      );
       this.selectedSubmission = submission;
       this.renderDetailsModal(submission);
       this.showLoading(false);
@@ -287,7 +311,7 @@ class SubmissionsManager {
     const submission = this.selectedSubmission;
     if (!submission) return;
 
-    const item = submission.items.find(i => i.id === itemId);
+    const item = submission.items.find((i) => i.id === itemId);
     if (!item) return;
 
     const price = prompt(
@@ -306,11 +330,16 @@ class SubmissionsManager {
   async updateItemQuote(submissionId, itemId, price) {
     try {
       this.showLoading(true);
-      await this.api.put(`/admin/submissions/${submissionId}/items/${itemId}/quote`, {
-        counterOfferPrice: price
-      });
+      await this.api.put(
+        `/admin/submissions/${submissionId}/items/${itemId}/quote`,
+        {
+          counterOfferPrice: price,
+        }
+      );
       this.showSuccess('Quote updated');
-      const submission = await this.api.get(`/admin/submissions/${submissionId}`);
+      const submission = await this.api.get(
+        `/admin/submissions/${submissionId}`
+      );
       this.selectedSubmission = submission;
       this.renderDetailsModal(submission);
       this.showLoading(false);
@@ -338,7 +367,8 @@ class SubmissionsManager {
     const alertDiv = document.createElement('div');
     alertDiv.className = 'alert alert-danger';
     alertDiv.textContent = message;
-    alertDiv.style.cssText = 'margin-bottom: 20px; padding: 12px; background: #fee; color: #c33; border-radius: 4px;';
+    alertDiv.style.cssText =
+      'margin-bottom: 20px; padding: 12px; background: #fee; color: #c33; border-radius: 4px;';
 
     const container = document.querySelector('[data-submissions-container]');
     if (container) {
@@ -354,7 +384,8 @@ class SubmissionsManager {
     const alertDiv = document.createElement('div');
     alertDiv.className = 'alert alert-success';
     alertDiv.textContent = message;
-    alertDiv.style.cssText = 'margin-bottom: 20px; padding: 12px; background: #efe; color: #3c3; border-radius: 4px;';
+    alertDiv.style.cssText =
+      'margin-bottom: 20px; padding: 12px; background: #efe; color: #3c3; border-radius: 4px;';
 
     const container = document.querySelector('[data-submissions-container]');
     if (container) {

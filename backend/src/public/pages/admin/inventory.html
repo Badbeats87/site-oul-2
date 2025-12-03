@@ -1,258 +1,495 @@
-<!DOCTYPE html>
+<!doctype html>
 <!-- Build: 1f2d4d0 -->
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Inventory Management - Vinyl Catalog Admin</title>
-    <link rel="stylesheet" href="../../styles/design-system.css?t=1764783655">
-    <link rel="stylesheet" href="../../styles/admin.css?t=1764783655">
-    <link rel="stylesheet" href="../../styles/inventory.css?t=1764783655">
-</head>
-<body class="admin-body admin-body--topnav admin-body--inventory">
+    <link rel="stylesheet" href="../../styles/design-system.css?t=1764783655" />
+    <link rel="stylesheet" href="../../styles/admin.css?t=1764783655" />
+    <link rel="stylesheet" href="../../styles/inventory.css?t=1764783655" />
+  </head>
+  <body class="admin-body admin-body--topnav admin-body--inventory">
     <header class="admin-topbar">
-        <div class="admin-topbar__brand">
-            <span class="admin-sidebar__logo">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" width="26" height="26" aria-hidden="true">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <circle cx="12" cy="12" r="6"></circle>
-                    <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-            </span>
-            <div>
-                <div class="admin-sidebar__title">Vinyl Catalog</div>
-                <div class="admin-sidebar__subtitle">Operations Console</div>
-            </div>
+      <div class="admin-topbar__brand">
+        <span class="admin-sidebar__logo">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#fff"
+            stroke-width="1.5"
+            width="26"
+            height="26"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <circle cx="12" cy="12" r="6"></circle>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </span>
+        <div>
+          <div class="admin-sidebar__title">Vinyl Catalog</div>
+          <div class="admin-sidebar__subtitle">Operations Console</div>
         </div>
+      </div>
 
-        <form class="admin-topbar__search" role="search">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <circle cx="11" cy="11" r="7"></circle>
-                <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
-            </svg>
-            <input type="search" placeholder="Search catalog, SKUs, submissions…" aria-label="Search admin data">
-            <button type="submit" aria-label="Submit search">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-            </button>
-        </form>
-
-        <div class="admin-topbar__actions">
-            <button class="admin-icon-button" type="button" aria-label="View notifications">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7">
-                    <path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                    <path d="M13.73 21a2 2 0 01-3.46 0"></path>
-                </svg>
-            </button>
-            <div class="admin-topbar__user">
-                <div class="admin-avatar" aria-hidden="true">AM</div>
-                <div class="admin-header__user-meta">
-                    <span class="eyebrow" style="color: rgba(243,244,246,0.7);">Inventory Lead</span>
-                    <strong>Alex Mercer</strong>
-                    <span>Shift: Morning · 2 alerts flagged</span>
-                </div>
-            </div>
-        </div>
-
-        <button class="button button--ghost button--sm admin-topbar__toggle" type="button" data-nav-toggle aria-expanded="false">
-            Menu
+      <form class="admin-topbar__search" role="search">
+        <svg
+          viewBox="0 0 24 24"
+          width="16"
+          height="16"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <circle cx="11" cy="11" r="7"></circle>
+          <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+        </svg>
+        <input
+          type="search"
+          placeholder="Search catalog, SKUs, submissions…"
+          aria-label="Search admin data"
+        />
+        <button type="submit" aria-label="Submit search">
+          <svg
+            viewBox="0 0 24 24"
+            width="14"
+            height="14"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
         </button>
+      </form>
+
+      <div class="admin-topbar__actions">
+        <button
+          class="admin-icon-button"
+          type="button"
+          aria-label="View notifications"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+          >
+            <path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 01-3.46 0"></path>
+          </svg>
+        </button>
+        <div class="admin-topbar__user">
+          <div class="admin-avatar" aria-hidden="true">AM</div>
+          <div class="admin-header__user-meta">
+            <span class="eyebrow" style="color: rgba(243, 244, 246, 0.7)"
+              >Inventory Lead</span
+            >
+            <strong>Alex Mercer</strong>
+            <span>Shift: Morning · 2 alerts flagged</span>
+          </div>
+        </div>
+      </div>
+
+      <button
+        class="button button--ghost button--sm admin-topbar__toggle"
+        type="button"
+        data-nav-toggle
+        aria-expanded="false"
+      >
+        Menu
+      </button>
     </header>
 
     <nav class="admin-subnav" aria-label="Admin navigation">
-        <div class="admin-topbar__nav admin-subnav__links" id="admin-topbar-nav">
-            <a class="admin-nav__link" href="index.html">Dashboard</a>
-            <a class="admin-nav__link" href="submission.html">Submissions</a>
-            <a class="admin-nav__link admin-nav__link--active" href="inventory.html">Inventory</a>
-            <a class="admin-nav__link" href="pricing-editor.html">Pricing</a>
-        </div>
+      <div class="admin-topbar__nav admin-subnav__links" id="admin-topbar-nav">
+        <a class="admin-nav__link" href="index.html">Dashboard</a>
+        <a class="admin-nav__link" href="submission.html">Submissions</a>
+        <a class="admin-nav__link admin-nav__link--active" href="inventory.html"
+          >Inventory</a
+        >
+        <a class="admin-nav__link" href="pricing-editor.html">Pricing</a>
+      </div>
     </nav>
 
     <div class="admin-announcement">
-        Warehouse sync in 12m · Discogs webhook healthy · Physical audit queue ready.
+      Warehouse sync in 12m · Discogs webhook healthy · Physical audit queue
+      ready.
     </div>
 
     <main class="admin-main admin-main--wide">
-            <header class="admin-toolbar">
-                <div class="admin-toolbar__context">
-                    <p class="eyebrow">Catalog operations</p>
-                    <h1>Inventory Control</h1>
-                    <p>Search, reconcile, and edit every SKU from a single, focused workspace.</p>
-                </div>
-                <div class="admin-toolbar__actions">
-                    <label class="toolbar-search" aria-label="Search inventory">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                            <circle cx="11" cy="11" r="7"></circle>
-                            <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
-                        </svg>
-                        <input type="search" placeholder="Search SKUs quickly…" aria-label="Search inventory">
-                    </label>
-                    <button class="button button--secondary button--sm" type="button" onclick="inventoryManager.loadInventory()">Sync Feed</button>
-                    <button class="button button--primary button--sm" type="button" data-fetch-discogs>Fetch Discogs</button>
-                    <button class="button button--primary button--sm" type="button">+ Add Item</button>
-                    <button class="button button--danger button--sm" type="button" data-logout-btn>Logout</button>
-                </div>
-            </header>
+      <header class="admin-toolbar">
+        <div class="admin-toolbar__context">
+          <p class="eyebrow">Catalog operations</p>
+          <h1>Inventory Control</h1>
+          <p>
+            Search, reconcile, and edit every SKU from a single, focused
+            workspace.
+          </p>
+        </div>
+        <div class="admin-toolbar__actions">
+          <label class="toolbar-search" aria-label="Search inventory">
+            <svg
+              viewBox="0 0 24 24"
+              width="18"
+              height="18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+            </svg>
+            <input
+              type="search"
+              placeholder="Search SKUs quickly…"
+              aria-label="Search inventory"
+            />
+          </label>
+          <button
+            class="button button--secondary button--sm"
+            type="button"
+            onclick="inventoryManager.loadInventory()"
+          >
+            Sync Feed
+          </button>
+          <button
+            class="button button--primary button--sm"
+            type="button"
+            data-fetch-discogs
+          >
+            Fetch Discogs
+          </button>
+          <button class="button button--primary button--sm" type="button">
+            + Add Item
+          </button>
+          <button
+            class="button button--danger button--sm"
+            type="button"
+            data-logout-btn
+          >
+            Logout
+          </button>
+        </div>
+      </header>
 
-            <section class="dashboard-stats">
-                <article class="stat-card">
-                    <div class="stat-card__label">Live Listings</div>
-                    <div class="stat-card__value">1,096</div>
-                    <div class="stat-card__meta">
-                        <span class="stat-card__trend stat-card__trend--up">+38</span>
-                        past 24h
-                    </div>
-                </article>
-                <article class="stat-card">
-                    <div class="stat-card__label">Pending QA</div>
-                    <div class="stat-card__value stat-card__value--warning">72</div>
-                    <div class="stat-card__meta">
-                        <span class="stat-card__trend stat-card__trend--down">-8</span>
-                        vs. yesterday
-                    </div>
-                </article>
-                <article class="stat-card">
-                    <div class="stat-card__label">Avg Margin</div>
-                    <div class="stat-card__value">37%</div>
-                    <div class="stat-card__meta">
-                        <span class="stat-card__trend stat-card__trend--up">+2.4%</span>
-                        rolling 7d
-                    </div>
-                </article>
-                <article class="stat-card">
-                    <div class="stat-card__label">Low Stock Alerts</div>
-                    <div class="stat-card__value">8</div>
-                    <div class="stat-card__meta">
-                        <span class="stat-card__trend stat-card__trend--down">Cleared 3</span>
-                        this morning
-                    </div>
-                </article>
-            </section>
+      <section class="dashboard-stats">
+        <article class="stat-card">
+          <div class="stat-card__label">Live Listings</div>
+          <div class="stat-card__value">1,096</div>
+          <div class="stat-card__meta">
+            <span class="stat-card__trend stat-card__trend--up">+38</span>
+            past 24h
+          </div>
+        </article>
+        <article class="stat-card">
+          <div class="stat-card__label">Pending QA</div>
+          <div class="stat-card__value stat-card__value--warning">72</div>
+          <div class="stat-card__meta">
+            <span class="stat-card__trend stat-card__trend--down">-8</span>
+            vs. yesterday
+          </div>
+        </article>
+        <article class="stat-card">
+          <div class="stat-card__label">Avg Margin</div>
+          <div class="stat-card__value">37%</div>
+          <div class="stat-card__meta">
+            <span class="stat-card__trend stat-card__trend--up">+2.4%</span>
+            rolling 7d
+          </div>
+        </article>
+        <article class="stat-card">
+          <div class="stat-card__label">Low Stock Alerts</div>
+          <div class="stat-card__value">8</div>
+          <div class="stat-card__meta">
+            <span class="stat-card__trend stat-card__trend--down"
+              >Cleared 3</span
+            >
+            this morning
+          </div>
+        </article>
+      </section>
 
-            <section class="admin-panel">
-                <div class="section-header">
-                    <div>
-                        <h2>Filters &amp; Controls</h2>
-                        <p class="text-muted">Combine filters to zero-in on specific pressings.</p>
-                    </div>
-                    <div class="section-actions">
-                        <button class="button button--secondary button--sm" type="button">Save View</button>
-                        <button class="button button--primary button--sm" type="button">Export CSV</button>
-                    </div>
-                </div>
-                <div class="inventory-controls inventory-filter-grid">
-                    <input type="text" placeholder="Album, artist, or SKU…" class="search-input" data-inventory-search>
-                    <select class="filter-select" data-inventory-status-filter>
-                        <option value="all">All Statuses</option>
-                        <option value="LIVE">Live</option>
-                        <option value="RESERVED">Reserved</option>
-                        <option value="SOLD">Sold</option>
-                        <option value="DRAFT">Draft</option>
-                    </select>
-                    <select class="filter-select" data-inventory-condition-filter>
-                        <option value="all">All Conditions</option>
-                        <option value="MINT">M / Mint</option>
-                        <option value="NM">NM / Near Mint</option>
-                        <option value="VG_PLUS">VG+ / Very Good Plus</option>
-                        <option value="VG">VG / Very Good</option>
-                        <option value="VG_MINUS">VG- / Very Good Minus</option>
-                        <option value="G">G / Good</option>
-                    </select>
-                    <input type="number" class="filter-input" placeholder="Min $" data-inventory-min-price>
-                    <input type="number" class="filter-input" placeholder="Max $" data-inventory-max-price>
-                    <select class="filter-select" data-inventory-sort>
-                        <option value="createdAt:desc">Newest</option>
-                        <option value="createdAt:asc">Oldest</option>
-                        <option value="listPrice:desc">Highest Price</option>
-                        <option value="listPrice:asc">Lowest Price</option>
-                        <option value="soldAt:desc">Recently Sold</option>
-                    </select>
-                    <button class="button button--secondary button--sm" type="button" onclick="inventoryManager.loadInventory()">Refresh</button>
-                    <button class="button button--primary button--sm" type="button">Bulk Actions</button>
-                </div>
-            </section>
+      <section class="admin-panel">
+        <div class="section-header">
+          <div>
+            <h2>Filters &amp; Controls</h2>
+            <p class="text-muted">
+              Combine filters to zero-in on specific pressings.
+            </p>
+          </div>
+          <div class="section-actions">
+            <button class="button button--secondary button--sm" type="button">
+              Save View
+            </button>
+            <button class="button button--primary button--sm" type="button">
+              Export CSV
+            </button>
+          </div>
+        </div>
+        <div class="inventory-controls inventory-filter-grid">
+          <input
+            type="text"
+            placeholder="Album, artist, or SKU…"
+            class="search-input"
+            data-inventory-search
+          />
+          <select class="filter-select" data-inventory-status-filter>
+            <option value="all">All Statuses</option>
+            <option value="LIVE">Live</option>
+            <option value="RESERVED">Reserved</option>
+            <option value="SOLD">Sold</option>
+            <option value="DRAFT">Draft</option>
+          </select>
+          <select class="filter-select" data-inventory-condition-filter>
+            <option value="all">All Conditions</option>
+            <option value="MINT">M / Mint</option>
+            <option value="NM">NM / Near Mint</option>
+            <option value="VG_PLUS">VG+ / Very Good Plus</option>
+            <option value="VG">VG / Very Good</option>
+            <option value="VG_MINUS">VG- / Very Good Minus</option>
+            <option value="G">G / Good</option>
+          </select>
+          <input
+            type="number"
+            class="filter-input"
+            placeholder="Min $"
+            data-inventory-min-price
+          />
+          <input
+            type="number"
+            class="filter-input"
+            placeholder="Max $"
+            data-inventory-max-price
+          />
+          <select class="filter-select" data-inventory-sort>
+            <option value="createdAt:desc">Newest</option>
+            <option value="createdAt:asc">Oldest</option>
+            <option value="listPrice:desc">Highest Price</option>
+            <option value="listPrice:asc">Lowest Price</option>
+            <option value="soldAt:desc">Recently Sold</option>
+          </select>
+          <button
+            class="button button--secondary button--sm"
+            type="button"
+            onclick="inventoryManager.loadInventory()"
+          >
+            Refresh
+          </button>
+          <button class="button button--primary button--sm" type="button">
+            Bulk Actions
+          </button>
+        </div>
+      </section>
 
-            <section class="admin-panel admin-panel--xl inventory-panel--full">
-                <div class="panel-header">
-                    <div>
-                        <p class="eyebrow">Catalog table</p>
-                        <h2 class="panel-title">Inventory</h2>
-                        <p class="panel-subtitle">Inline edits auto-save with full audit history.</p>
-                    </div>
-                    <div class="panel-header__actions">
-                        <div data-column-toggle></div>
-                        <button class="button button--secondary button--sm" type="button" data-density-toggle>Toggle Density</button>
-                    </div>
-                </div>
-                <div class="inventory-table-bleed">
-                    <div class="inventory-table-wrapper condensed-table" data-inventory-container>
-                        <table class="table inventory-table" data-inventory-table>
-                        <colgroup>
-                            <col data-column-id="title">
-                            <col data-column-id="artist">
-                            <col data-column-id="label">
-                            <col data-column-id="catalogNumber">
-                            <col data-column-id="year">
-                            <col data-column-id="genre">
-                            <col data-column-id="variant">
-                            <col data-column-id="sku">
-                            <col data-column-id="channel">
-                            <col data-column-id="condition">
-                            <col data-column-id="status">
-                            <col data-column-id="cost">
-                            <col data-column-id="listPrice">
-                            <col data-column-id="salePrice">
-                            <col data-column-id="discogs">
-                            <col data-column-id="submission">
-                            <col data-column-id="actions">
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <th data-column-id="title">Title<span class="column-resizer" data-column-resizer data-column-id="title" aria-hidden="true"></span></th>
-                                <th data-column-id="artist">Artist<span class="column-resizer" data-column-resizer data-column-id="artist" aria-hidden="true"></span></th>
-                                <th data-column-id="label">Label<span class="column-resizer" data-column-resizer data-column-id="label" aria-hidden="true"></span></th>
-                                <th data-column-id="catalogNumber">Catalog #<span class="column-resizer" data-column-resizer data-column-id="catalogNumber" aria-hidden="true"></span></th>
-                                <th data-column-id="year">Year<span class="column-resizer" data-column-resizer data-column-id="year" aria-hidden="true"></span></th>
-                                <th data-column-id="genre">Genre<span class="column-resizer" data-column-resizer data-column-id="genre" aria-hidden="true"></span></th>
-                                <th data-column-id="variant">Variant / Notes<span class="column-resizer" data-column-resizer data-column-id="variant" aria-hidden="true"></span></th>
-                                <th data-column-id="sku">SKU<span class="column-resizer" data-column-resizer data-column-id="sku" aria-hidden="true"></span></th>
-                                <th data-column-id="channel">Channel<span class="column-resizer" data-column-resizer data-column-id="channel" aria-hidden="true"></span></th>
-                                <th data-column-id="condition">Condition<span class="column-resizer" data-column-resizer data-column-id="condition" aria-hidden="true"></span></th>
-                                <th data-column-id="status">Status<span class="column-resizer" data-column-resizer data-column-id="status" aria-hidden="true"></span></th>
-                                <th data-column-id="cost">Cost<span class="column-resizer" data-column-resizer data-column-id="cost" aria-hidden="true"></span></th>
-                                <th data-column-id="listPrice">List Price<span class="column-resizer" data-column-resizer data-column-id="listPrice" aria-hidden="true"></span></th>
-                                <th data-column-id="salePrice">Sale Price<span class="column-resizer" data-column-resizer data-column-id="salePrice" aria-hidden="true"></span></th>
-                                <th data-column-id="discogs">Discogs<span class="column-resizer" data-column-resizer data-column-id="discogs" aria-hidden="true"></span></th>
-                                <th data-column-id="submission">Submission<span class="column-resizer" data-column-resizer data-column-id="submission" aria-hidden="true"></span></th>
-                                <th data-column-id="actions">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody data-inventory-tbody>
-                            <tr>
-                                <td colspan="17" class="empty-state">
-                                    <div class="empty-state-icon">📦</div>
-                                    <div class="empty-state-title">Loading inventory…</div>
-                                    <p>Fetching the latest catalog entries.</p>
-                                </td>
-                            </tr>
-                        </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
+      <section class="admin-panel admin-panel--xl inventory-panel--full">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Catalog table</p>
+            <h2 class="panel-title">Inventory</h2>
+            <p class="panel-subtitle">
+              Inline edits auto-save with full audit history.
+            </p>
+          </div>
+          <div class="panel-header__actions">
+            <div data-column-toggle></div>
+            <button
+              class="button button--secondary button--sm"
+              type="button"
+              data-density-toggle
+            >
+              Toggle Density
+            </button>
+          </div>
+        </div>
+        <div class="inventory-table-bleed">
+          <div
+            class="inventory-table-wrapper condensed-table"
+            data-inventory-container
+          >
+            <table class="table inventory-table" data-inventory-table>
+              <colgroup>
+                <col data-column-id="title" />
+                <col data-column-id="artist" />
+                <col data-column-id="label" />
+                <col data-column-id="catalogNumber" />
+                <col data-column-id="year" />
+                <col data-column-id="genre" />
+                <col data-column-id="variant" />
+                <col data-column-id="sku" />
+                <col data-column-id="channel" />
+                <col data-column-id="condition" />
+                <col data-column-id="status" />
+                <col data-column-id="cost" />
+                <col data-column-id="listPrice" />
+                <col data-column-id="salePrice" />
+                <col data-column-id="discogs" />
+                <col data-column-id="submission" />
+                <col data-column-id="actions" />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th data-column-id="title">
+                    Title<span
+                      class="column-resizer"
+                      data-column-resizer
+                      data-column-id="title"
+                      aria-hidden="true"
+                    ></span>
+                  </th>
+                  <th data-column-id="artist">
+                    Artist<span
+                      class="column-resizer"
+                      data-column-resizer
+                      data-column-id="artist"
+                      aria-hidden="true"
+                    ></span>
+                  </th>
+                  <th data-column-id="label">
+                    Label<span
+                      class="column-resizer"
+                      data-column-resizer
+                      data-column-id="label"
+                      aria-hidden="true"
+                    ></span>
+                  </th>
+                  <th data-column-id="catalogNumber">
+                    Catalog #<span
+                      class="column-resizer"
+                      data-column-resizer
+                      data-column-id="catalogNumber"
+                      aria-hidden="true"
+                    ></span>
+                  </th>
+                  <th data-column-id="year">
+                    Year<span
+                      class="column-resizer"
+                      data-column-resizer
+                      data-column-id="year"
+                      aria-hidden="true"
+                    ></span>
+                  </th>
+                  <th data-column-id="genre">
+                    Genre<span
+                      class="column-resizer"
+                      data-column-resizer
+                      data-column-id="genre"
+                      aria-hidden="true"
+                    ></span>
+                  </th>
+                  <th data-column-id="variant">
+                    Variant / Notes<span
+                      class="column-resizer"
+                      data-column-resizer
+                      data-column-id="variant"
+                      aria-hidden="true"
+                    ></span>
+                  </th>
+                  <th data-column-id="sku">
+                    SKU<span
+                      class="column-resizer"
+                      data-column-resizer
+                      data-column-id="sku"
+                      aria-hidden="true"
+                    ></span>
+                  </th>
+                  <th data-column-id="channel">
+                    Channel<span
+                      class="column-resizer"
+                      data-column-resizer
+                      data-column-id="channel"
+                      aria-hidden="true"
+                    ></span>
+                  </th>
+                  <th data-column-id="condition">
+                    Condition<span
+                      class="column-resizer"
+                      data-column-resizer
+                      data-column-id="condition"
+                      aria-hidden="true"
+                    ></span>
+                  </th>
+                  <th data-column-id="status">
+                    Status<span
+                      class="column-resizer"
+                      data-column-resizer
+                      data-column-id="status"
+                      aria-hidden="true"
+                    ></span>
+                  </th>
+                  <th data-column-id="cost">
+                    Cost<span
+                      class="column-resizer"
+                      data-column-resizer
+                      data-column-id="cost"
+                      aria-hidden="true"
+                    ></span>
+                  </th>
+                  <th data-column-id="listPrice">
+                    List Price<span
+                      class="column-resizer"
+                      data-column-resizer
+                      data-column-id="listPrice"
+                      aria-hidden="true"
+                    ></span>
+                  </th>
+                  <th data-column-id="salePrice">
+                    Sale Price<span
+                      class="column-resizer"
+                      data-column-resizer
+                      data-column-id="salePrice"
+                      aria-hidden="true"
+                    ></span>
+                  </th>
+                  <th data-column-id="discogs">
+                    Discogs<span
+                      class="column-resizer"
+                      data-column-resizer
+                      data-column-id="discogs"
+                      aria-hidden="true"
+                    ></span>
+                  </th>
+                  <th data-column-id="submission">
+                    Submission<span
+                      class="column-resizer"
+                      data-column-resizer
+                      data-column-id="submission"
+                      aria-hidden="true"
+                    ></span>
+                  </th>
+                  <th data-column-id="actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody data-inventory-tbody>
+                <tr>
+                  <td colspan="17" class="empty-state">
+                    <div class="empty-state-icon">📦</div>
+                    <div class="empty-state-title">Loading inventory…</div>
+                    <p>Fetching the latest catalog entries.</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
 
-            <footer class="admin-footer">
-                &copy; 2024 Vinyl Catalog — Inventory management surface.
-            </footer>
-        </main>
+      <footer class="admin-footer">
+        &copy; 2024 Vinyl Catalog — Inventory management surface.
+      </footer>
+    </main>
 
     <div class="loading-overlay" data-loading>
-        <div class="loading-overlay__content">
-            <div class="loading-spinner" aria-hidden="true"></div>
-            <div>Syncing data…</div>
-        </div>
+      <div class="loading-overlay__content">
+        <div class="loading-spinner" aria-hidden="true"></div>
+        <div>Syncing data…</div>
+      </div>
     </div>
 
     <script src="../../js/api-client.js?t=1764783655"></script>
@@ -261,22 +498,22 @@
     <script src="../../js/topnav.js?t=1764783655"></script>
     <script src="../../js/inventory.js?t=1764783655"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', async function() {
-            const isAuthenticated = await auth.verifySession();
-            if (!isAuthenticated) {
-                window.location.href = '/pages/admin/login.html';
-            }
+      document.addEventListener('DOMContentLoaded', async function () {
+        const isAuthenticated = await auth.verifySession();
+        if (!isAuthenticated) {
+          window.location.href = '/pages/admin/login.html';
+        }
 
-            const logoutBtn = document.querySelector('[data-logout-btn]');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    if (confirm('Sign out of the admin console?')) {
-                        await auth.logout();
-                    }
-                });
+        const logoutBtn = document.querySelector('[data-logout-btn]');
+        if (logoutBtn) {
+          logoutBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (confirm('Sign out of the admin console?')) {
+              await auth.logout();
             }
-        });
+          });
+        }
+      });
     </script>
-</body>
+  </body>
 </html>

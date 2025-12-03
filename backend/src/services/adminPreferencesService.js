@@ -13,14 +13,14 @@ class AdminPreferencesService {
     try {
       const preference = await prisma.adminTablePreference.findUnique({
         where: {
-          userId_tableName: { userId, tableName }
-        }
+          userId_tableName: { userId, tableName },
+        },
       });
 
       return {
         tableName,
         visibleColumns: preference?.visibleColumns || null,
-        hasCustomization: !!preference
+        hasCustomization: !!preference,
       };
     } catch (error) {
       logger.error('Failed to retrieve table preferences', {
@@ -28,7 +28,7 @@ class AdminPreferencesService {
         tableName,
         code: error?.code,
         meta: error?.meta,
-        message: error?.message
+        message: error?.message,
       });
       throw new ApiError('Failed to retrieve table preferences', 500);
     }
@@ -44,13 +44,24 @@ class AdminPreferencesService {
   async updateTablePreferences(userId, tableName, visibleColumns) {
     // Validate inputs
     if (!userId || !tableName || !visibleColumns) {
-      throw new ApiError('Missing required fields: userId, tableName, visibleColumns', 400);
+      throw new ApiError(
+        'Missing required fields: userId, tableName, visibleColumns',
+        400
+      );
     }
 
     // Validate tableName against whitelist
-    const validTables = ['inventory', 'submissions', 'submission_detail', 'analytics'];
+    const validTables = [
+      'inventory',
+      'submissions',
+      'submission_detail',
+      'analytics',
+    ];
     if (!validTables.includes(tableName)) {
-      throw new ApiError(`Invalid table name. Must be one of: ${validTables.join(', ')}`, 400);
+      throw new ApiError(
+        `Invalid table name. Must be one of: ${validTables.join(', ')}`,
+        400
+      );
     }
 
     // Validate visibleColumns is an object
@@ -61,16 +72,16 @@ class AdminPreferencesService {
     try {
       const preference = await prisma.adminTablePreference.upsert({
         where: {
-          userId_tableName: { userId, tableName }
+          userId_tableName: { userId, tableName },
         },
         create: {
           userId,
           tableName,
-          visibleColumns
+          visibleColumns,
         },
         update: {
-          visibleColumns
-        }
+          visibleColumns,
+        },
       });
 
       return preference;
@@ -80,11 +91,14 @@ class AdminPreferencesService {
         tableName,
         code: error?.code,
         meta: error?.meta,
-        message: error?.message
+        message: error?.message,
       });
       if (error.code === 'P2002') {
         // Unique constraint error - shouldn't happen with upsert, but handle it
-        throw new ApiError('Preference already exists for this user and table', 409);
+        throw new ApiError(
+          'Preference already exists for this user and table',
+          409
+        );
       }
       throw new ApiError('Failed to save table preferences', 500);
     }
@@ -99,16 +113,26 @@ class AdminPreferencesService {
   async resetTablePreferences(userId, tableName) {
     try {
       // Validate inputs
-      const validTables = ['inventory', 'submissions', 'submission_detail', 'analytics'];
+      const validTables = [
+        'inventory',
+        'submissions',
+        'submission_detail',
+        'analytics',
+      ];
       if (!validTables.includes(tableName)) {
-        throw new ApiError(`Invalid table name. Must be one of: ${validTables.join(', ')}`, 400);
+        throw new ApiError(
+          `Invalid table name. Must be one of: ${validTables.join(', ')}`,
+          400
+        );
       }
 
-      const deleted = await prisma.adminTablePreference.delete({
-        where: {
-          userId_tableName: { userId, tableName }
-        }
-      }).catch(() => null); // Ignore if doesn't exist
+      const deleted = await prisma.adminTablePreference
+        .delete({
+          where: {
+            userId_tableName: { userId, tableName },
+          },
+        })
+        .catch(() => null); // Ignore if doesn't exist
 
       return deleted;
     } catch (error) {
@@ -117,7 +141,7 @@ class AdminPreferencesService {
         tableName,
         code: error?.code,
         meta: error?.meta,
-        message: error?.message
+        message: error?.message,
       });
       if (error instanceof ApiError) throw error;
       throw new ApiError('Failed to reset table preferences', 500);
@@ -132,7 +156,7 @@ class AdminPreferencesService {
   async getUserPreferences(userId) {
     try {
       const preferences = await prisma.adminTablePreference.findMany({
-        where: { userId }
+        where: { userId },
       });
 
       return preferences;
@@ -141,7 +165,7 @@ class AdminPreferencesService {
         userId,
         code: error?.code,
         meta: error?.meta,
-        message: error?.message
+        message: error?.message,
       });
       throw new ApiError('Failed to retrieve user preferences', 500);
     }
@@ -155,7 +179,7 @@ class AdminPreferencesService {
   async deleteAllUserPreferences(userId) {
     try {
       const result = await prisma.adminTablePreference.deleteMany({
-        where: { userId }
+        where: { userId },
       });
 
       return result;
@@ -164,7 +188,7 @@ class AdminPreferencesService {
         userId,
         code: error?.code,
         meta: error?.meta,
-        message: error?.message
+        message: error?.message,
       });
       throw new ApiError('Failed to delete user preferences', 500);
     }

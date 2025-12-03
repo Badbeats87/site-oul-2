@@ -102,8 +102,10 @@ export const authenticate = async (req, res, next) => {
   }
 
   // Allow public catalog search endpoints (for seller/buyer browsing)
-  if (req.path.startsWith('/api/v1/catalog/search') ||
-      req.path.startsWith('/api/v1/catalog/discogs/quote')) {
+  if (
+    req.path.startsWith('/api/v1/catalog/search') ||
+    req.path.startsWith('/api/v1/catalog/discogs/quote')
+  ) {
     return next();
   }
 

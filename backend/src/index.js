@@ -46,11 +46,11 @@ app.use(
   helmet({
     contentSecurityPolicy: {
       directives: {
-        defaultSrc: ['\'self\''],
-        styleSrc: ['\'self\'', '\'unsafe-inline\''],
-        scriptSrc: ['\'self\'', '\'unsafe-inline\''], // Allow inline scripts for admin dashboard
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"], // Allow inline scripts for admin dashboard
         imgSrc: [
-          '\'self\'',
+          "'self'",
           'data:',
           'https://i.discogs.com',
           'https://*.discogs.com',

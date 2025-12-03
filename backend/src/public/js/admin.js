@@ -1,72 +1,72 @@
 // Admin Console Interactions
-document.addEventListener('DOMContentLoaded', async function() {
-    // Verify authentication on page load
-    const isAuthenticated = await auth.verifySession();
-    if (!isAuthenticated) {
-        window.location.href = '/pages/admin/login.html';
-        return;
-    }
+document.addEventListener('DOMContentLoaded', async function () {
+  // Verify authentication on page load
+  const isAuthenticated = await auth.verifySession();
+  if (!isAuthenticated) {
+    window.location.href = '/pages/admin/login.html';
+    return;
+  }
 
-    // Initialize UI
-    initializeTabSwitching();
-    initializeLogout();
+  // Initialize UI
+  initializeTabSwitching();
+  initializeLogout();
 });
 
 /**
  * Initialize tab switching functionality
  */
 function initializeTabSwitching() {
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    const tabPanels = document.querySelectorAll('.tab-panel');
-    let inventoryInitialized = false;
-    let analyticsInitialized = false;
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabPanels = document.querySelectorAll('.tab-panel');
+  let inventoryInitialized = false;
+  let analyticsInitialized = false;
 
-    tabBtns.forEach((btn, index) => {
-        btn.addEventListener('click', async function() {
-            const tabIndex = Array.from(tabBtns).indexOf(this);
+  tabBtns.forEach((btn, index) => {
+    btn.addEventListener('click', async function () {
+      const tabIndex = Array.from(tabBtns).indexOf(this);
 
-            // Remove active from all
-            tabBtns.forEach(b => {
-                b.classList.remove('tab-btn--active');
-                b.setAttribute('aria-selected', 'false');
-            });
-            tabPanels.forEach(p => {
-                p.classList.remove('tab-panel--active');
-                p.setAttribute('hidden', 'true');
-            });
+      // Remove active from all
+      tabBtns.forEach((b) => {
+        b.classList.remove('tab-btn--active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      tabPanels.forEach((p) => {
+        p.classList.remove('tab-panel--active');
+        p.setAttribute('hidden', 'true');
+      });
 
-            // Add active to clicked
-            this.classList.add('tab-btn--active');
-            this.setAttribute('aria-selected', 'true');
-            tabPanels[tabIndex].classList.add('tab-panel--active');
-            tabPanels[tabIndex].removeAttribute('hidden');
+      // Add active to clicked
+      this.classList.add('tab-btn--active');
+      this.setAttribute('aria-selected', 'true');
+      tabPanels[tabIndex].classList.add('tab-panel--active');
+      tabPanels[tabIndex].removeAttribute('hidden');
 
-            // Lazy load inventory tab
-            if (tabIndex === 1 && !inventoryInitialized && inventoryManager) {
-                await inventoryManager.initialize();
-                inventoryInitialized = true;
-            }
+      // Lazy load inventory tab
+      if (tabIndex === 1 && !inventoryInitialized && inventoryManager) {
+        await inventoryManager.initialize();
+        inventoryInitialized = true;
+      }
 
-            // Lazy load analytics tab (if it exists)
-            if (tabIndex === 2 && !analyticsInitialized && analyticsManager) {
-                await analyticsManager.initialize();
-                analyticsInitialized = true;
-            }
-        });
+      // Lazy load analytics tab (if it exists)
+      if (tabIndex === 2 && !analyticsInitialized && analyticsManager) {
+        await analyticsManager.initialize();
+        analyticsInitialized = true;
+      }
     });
+  });
 }
 
 /**
  * Initialize logout button
  */
 function initializeLogout() {
-    const logoutBtn = document.querySelector('[data-logout-btn]');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            if (confirm('Are you sure you want to logout?')) {
-                await auth.logout();
-            }
-        });
-    }
+  const logoutBtn = document.querySelector('[data-logout-btn]');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      if (confirm('Are you sure you want to logout?')) {
+        await auth.logout();
+      }
+    });
+  }
 }

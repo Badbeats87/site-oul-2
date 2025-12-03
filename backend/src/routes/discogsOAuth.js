@@ -110,7 +110,8 @@ router.get('/initiate', async (req, res, next) => {
  */
 router.get('/callback', async (req, res, next) => {
   try {
-    const { oauth_token: oauthToken, oauth_verifier: oauthVerifier } = req.query;
+    const { oauth_token: oauthToken, oauth_verifier: oauthVerifier } =
+      req.query;
 
     if (!oauthToken || !oauthVerifier) {
       throw new ApiError('Missing OAuth token or verifier', 400);
@@ -121,7 +122,10 @@ router.get('/callback', async (req, res, next) => {
     });
 
     // Exchange tokens
-    const result = await discogsOAuthService.getAccessToken(oauthToken, oauthVerifier);
+    const result = await discogsOAuthService.getAccessToken(
+      oauthToken,
+      oauthVerifier
+    );
 
     logger.info('Discogs OAuth tokens successfully exchanged', {
       username: result.discogsUsername,

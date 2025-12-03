@@ -110,7 +110,10 @@ class PricingService {
     if (policy && policy.buyFormula) {
       // Normalize field names from database to internal format
       // Handle both 'percentage' (old) and 'buyPercentage' (new) naming conventions
-      const buyPercentage = policy.buyFormula.buyPercentage ?? policy.buyFormula.percentage ?? this.defaults.buyPercentage;
+      const buyPercentage =
+        policy.buyFormula.buyPercentage ??
+        policy.buyFormula.percentage ??
+        this.defaults.buyPercentage;
 
       // Handle weights: could be 'weights' object or separate 'mediaWeight'/'sleeveWeight' fields
       const weights = policy.buyFormula.weights || {
@@ -153,7 +156,10 @@ class PricingService {
     if (policy && policy.sellFormula) {
       // Normalize field names from database to internal format
       // Handle both 'percentage' (old) and 'sellPercentage' (new) naming conventions
-      const sellPercentage = policy.sellFormula.sellPercentage ?? policy.sellFormula.percentage ?? this.defaults.sellPercentage;
+      const sellPercentage =
+        policy.sellFormula.sellPercentage ??
+        policy.sellFormula.percentage ??
+        this.defaults.sellPercentage;
 
       // Handle weights: could be 'weights' object or separate 'mediaWeight'/'sleeveWeight' fields
       const weights = policy.sellFormula.weights || {
@@ -613,12 +619,15 @@ class PricingService {
       let result = null;
 
       if (stat === 'low') {
-        result = snapshot.statLow || snapshot.statMedian || snapshot.statHigh || null;
+        result =
+          snapshot.statLow || snapshot.statMedian || snapshot.statHigh || null;
       } else if (stat === 'high') {
-        result = snapshot.statHigh || snapshot.statMedian || snapshot.statLow || null;
+        result =
+          snapshot.statHigh || snapshot.statMedian || snapshot.statLow || null;
       } else {
         // Median path with fallback to low/high
-        result = snapshot.statMedian || snapshot.statLow || snapshot.statHigh || null;
+        result =
+          snapshot.statMedian || snapshot.statLow || snapshot.statHigh || null;
       }
       logger.debug('Returning market stat from database', {
         releaseId,

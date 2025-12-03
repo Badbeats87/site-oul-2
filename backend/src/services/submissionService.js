@@ -197,7 +197,10 @@ class SubmissionService {
           }
 
           // Ensure market snapshot exists for this release (create if needed)
-          if (discogsResult.marketSnapshots && discogsResult.marketSnapshots.length > 0) {
+          if (
+            discogsResult.marketSnapshots &&
+            discogsResult.marketSnapshots.length > 0
+          ) {
             const snapshot = discogsResult.marketSnapshots[0];
             // Only process snapshot if we have at least one price value
             if (snapshot.statLow || snapshot.statMedian || snapshot.statHigh) {
@@ -215,7 +218,9 @@ class SubmissionService {
                     statLow: parseFloat(snapshot.statLow) || null,
                     statMedian: parseFloat(snapshot.statMedian) || null,
                     statHigh: parseFloat(snapshot.statHigh) || null,
-                    fetchedAt: snapshot.fetchedAt ? new Date(snapshot.fetchedAt) : new Date(),
+                    fetchedAt: snapshot.fetchedAt
+                      ? new Date(snapshot.fetchedAt)
+                      : new Date(),
                   },
                 });
                 logger.debug('Created market snapshot for release', {

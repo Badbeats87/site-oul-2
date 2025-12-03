@@ -341,8 +341,12 @@ class InventoryService {
       }
 
       // Use final offer price as cost basis (what we paid per buyer policy)
-      const costBasis =
-        Number(item.finalOfferPrice || item.counterOfferPrice || item.autoOfferPrice || 0);
+      const costBasis = Number(
+        item.finalOfferPrice ||
+          item.counterOfferPrice ||
+          item.autoOfferPrice ||
+          0
+      );
 
       const sellPriceResult = await this.calculateSellPrice({
         releaseId: item.releaseId,
@@ -480,13 +484,24 @@ class InventoryService {
    * @param {string} conditionSleeve - Sleeve condition
    * @returns {Promise<number>} Calculated sell price
    */
-  async calculateSellPrice({ releaseId, conditionMedia, conditionSleeve, costBasis }) {
+  async calculateSellPrice({
+    releaseId,
+    conditionMedia,
+    conditionSleeve,
+    costBasis,
+  }) {
     try {
       if (!releaseId) {
-        throw new ApiError('Release ID is required for sell price calculation', 400);
+        throw new ApiError(
+          'Release ID is required for sell price calculation',
+          400
+        );
       }
       if (costBasis === undefined || costBasis === null) {
-        throw new ApiError('Cost basis is required to calculate sell price', 400);
+        throw new ApiError(
+          'Cost basis is required to calculate sell price',
+          400
+        );
       }
 
       // Get active release-specific policy if available
@@ -671,11 +686,11 @@ class InventoryService {
           soldAt: lot.soldAt,
           submission: lot.submissionItem
             ? {
-              submissionId: lot.submissionItem.submission.id,
-              sellerName:
-                lot.submissionItem.submission.sellerName ||
-                lot.submissionItem.submission.sellerContact,
-            }
+                submissionId: lot.submissionItem.submission.id,
+                sellerName:
+                  lot.submissionItem.submission.sellerName ||
+                  lot.submissionItem.submission.sellerContact,
+              }
             : null,
         })),
         pagination: {
@@ -718,9 +733,9 @@ class InventoryService {
         release: lot.release,
         submissionOrigin: lot.submissionItem
           ? {
-            submissionId: lot.submissionItem.submission.id,
-            sellerContact: lot.submissionItem.submission.sellerContact,
-          }
+              submissionId: lot.submissionItem.submission.id,
+              sellerContact: lot.submissionItem.submission.sellerContact,
+            }
           : null,
         sku: lot.sku,
         condition: {
@@ -847,7 +862,10 @@ class InventoryService {
               releaseUpdates[field] === '' ? null : releaseUpdates[field];
           }
         }
-        if (releaseData.releaseYear !== undefined && releaseData.releaseYear !== null) {
+        if (
+          releaseData.releaseYear !== undefined &&
+          releaseData.releaseYear !== null
+        ) {
           const year = Number(releaseData.releaseYear);
           if (Number.isNaN(year)) {
             throw new ApiError('releaseYear must be a number', 400);
@@ -1303,11 +1321,11 @@ class InventoryService {
             averagePriceChange:
               successfulUpdates.length > 0
                 ? (
-                  successfulUpdates.reduce(
-                    (sum, u) => sum + u.priceDifference,
-                    0
-                  ) / successfulUpdates.length
-                ).toFixed(2)
+                    successfulUpdates.reduce(
+                      (sum, u) => sum + u.priceDifference,
+                      0
+                    ) / successfulUpdates.length
+                  ).toFixed(2)
                 : 0,
           },
         };
@@ -1365,11 +1383,11 @@ class InventoryService {
           averagePriceChange:
             appliedUpdates.length > 0
               ? (
-                appliedUpdates.reduce(
-                  (sum, u) => sum + u.priceDifference,
-                  0
-                ) / appliedUpdates.length
-              ).toFixed(2)
+                  appliedUpdates.reduce(
+                    (sum, u) => sum + u.priceDifference,
+                    0
+                  ) / appliedUpdates.length
+                ).toFixed(2)
               : 0,
         },
       };

@@ -16,12 +16,7 @@ class APIClient {
    * @returns {Promise<any>} Response data
    */
   async request(endpoint, options = {}) {
-    const {
-      method = 'GET',
-      body = null,
-      headers = {},
-      params = {}
-    } = options;
+    const { method = 'GET', body = null, headers = {}, params = {} } = options;
 
     // Build query string
     const queryString = new URLSearchParams(params).toString();
@@ -33,15 +28,15 @@ class APIClient {
     // Build request headers
     const requestHeaders = {
       'Content-Type': 'application/json',
-      ...(this.token && { 'Authorization': `Bearer ${this.token}` }),
-      ...headers
+      ...(this.token && { Authorization: `Bearer ${this.token}` }),
+      ...headers,
     };
 
     try {
       const response = await fetch(url.toString(), {
         method,
         headers: requestHeaders,
-        body: body ? JSON.stringify(body) : undefined
+        body: body ? JSON.stringify(body) : undefined,
       });
 
       // Handle unauthorized
@@ -52,14 +47,18 @@ class APIClient {
 
       // Handle forbidden
       if (response.status === 403) {
-        throw new Error('Forbidden - you do not have permission to perform this action');
+        throw new Error(
+          'Forbidden - you do not have permission to perform this action'
+        );
       }
 
       const data = await response.json();
 
       // Handle API error responses
       if (!response.ok) {
-        throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(
+          data.error || `HTTP ${response.status}: ${response.statusText}`
+        );
       }
 
       // Return data from response

@@ -10,12 +10,15 @@ export const getTablePreferences = async (req, res, next) => {
     const { tableName } = req.params;
     const userId = req.user.id;
 
-    const preferences = await adminPreferencesService.getTablePreferences(userId, tableName);
+    const preferences = await adminPreferencesService.getTablePreferences(
+      userId,
+      tableName
+    );
 
     res.json({
       success: true,
       data: preferences,
-      requestId: req.id
+      requestId: req.id,
     });
   } catch (error) {
     next(error);
@@ -36,7 +39,7 @@ export const updateTablePreferences = async (req, res, next) => {
       return res.status(400).json({
         success: false,
         error: 'visibleColumns is required',
-        requestId: req.id
+        requestId: req.id,
       });
     }
 
@@ -49,13 +52,13 @@ export const updateTablePreferences = async (req, res, next) => {
     logger.info('Table preferences updated', {
       userId,
       tableName,
-      columnsCount: Object.keys(visibleColumns).length
+      columnsCount: Object.keys(visibleColumns).length,
     });
 
     res.json({
       success: true,
       data: preferences,
-      requestId: req.id
+      requestId: req.id,
     });
   } catch (error) {
     next(error);
@@ -75,13 +78,13 @@ export const resetTablePreferences = async (req, res, next) => {
 
     logger.info('Table preferences reset', {
       userId,
-      tableName
+      tableName,
     });
 
     res.json({
       success: true,
       message: 'Preferences reset to defaults',
-      requestId: req.id
+      requestId: req.id,
     });
   } catch (error) {
     next(error);
@@ -96,15 +99,16 @@ export const getUserPreferences = async (req, res, next) => {
   try {
     const userId = req.user.id;
 
-    const preferences = await adminPreferencesService.getUserPreferences(userId);
+    const preferences =
+      await adminPreferencesService.getUserPreferences(userId);
 
     res.json({
       success: true,
       data: {
         userId,
-        preferences
+        preferences,
       },
-      requestId: req.id
+      requestId: req.id,
     });
   } catch (error) {
     next(error);

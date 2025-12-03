@@ -17,20 +17,36 @@
     <link rel="stylesheet" href="../../styles/design-system.css" />
     <link rel="stylesheet" href="../../styles/admin.css" />
     <link rel="stylesheet" href="../../styles/pricing-editor.css" />
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <style>
-        html { overflow-y: auto !important; height: auto !important; }
-        body { overflow-y: auto !important; min-height: auto !important; }
-        main.page-content { overflow-y: auto !important; display: block !important; }
-        .container { overflow: visible !important; }
+      html {
+        overflow-y: auto !important;
+        height: auto !important;
+      }
+      body {
+        overflow-y: auto !important;
+        min-height: auto !important;
+      }
+      main.page-content {
+        overflow-y: auto !important;
+        display: block !important;
+      }
+      .container {
+        overflow: visible !important;
+      }
     </style>
   </head>
   <body>
     <script>
       // Check authentication and redirect to login if needed
-      const authToken = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+      const authToken =
+        localStorage.getItem('auth_token') ||
+        sessionStorage.getItem('auth_token');
       if (!authToken) {
         window.location.href = 'login.html';
       }
@@ -75,7 +91,11 @@
     <header class="page-header">
       <div class="container">
         <h1>Buyer Pricing Policy</h1>
-        <p>💰 Configure instant purchase offers to sellers. This policy determines how much we'll buy records for from sellers. These offers appear in search results and seller dashboards.</p>
+        <p>
+          💰 Configure instant purchase offers to sellers. This policy
+          determines how much we'll buy records for from sellers. These offers
+          appear in search results and seller dashboards.
+        </p>
       </div>
     </header>
 
@@ -566,7 +586,9 @@
           }
 
           // Reset to Default button
-          const resetButton = document.querySelector('.button--secondary:nth-of-type(3)');
+          const resetButton = document.querySelector(
+            '.button--secondary:nth-of-type(3)'
+          );
           console.log('Reset button found:', resetButton);
           if (resetButton) {
             resetButton.addEventListener('click', () => this.resetToDefault());
@@ -607,9 +629,10 @@
           // Helper: Find input by label text
           const getInputByLabel = (labelText) => {
             const label = Array.from(document.querySelectorAll('label')).find(
-              l => l.textContent.includes(labelText)
+              (l) => l.textContent.includes(labelText)
             );
-            const container = label?.closest('.form-group') || label?.closest('.form-row');
+            const container =
+              label?.closest('.form-group') || label?.closest('.form-row');
             return container?.querySelector('input[type="number"]');
           };
 
@@ -659,14 +682,17 @@
 
           const sleeveWeightInput = getInputByLabel('Sleeve Weight');
           if (sleeveWeightInput) {
-            sleeveWeightInput.value = policy.buyFormula?.sleeveWeight * 100 || 30;
+            sleeveWeightInput.value =
+              policy.buyFormula?.sleeveWeight * 100 || 30;
           }
 
           // Price statistic - find the select within form-row that has "Price Statistic" label
-          const priceStatisticLabel = Array.from(document.querySelectorAll('label')).find(
-            label => label.textContent?.includes('Price Statistic')
-          );
-          const priceStatisticSelect = priceStatisticLabel?.closest('.form-group')?.querySelector('select');
+          const priceStatisticLabel = Array.from(
+            document.querySelectorAll('label')
+          ).find((label) => label.textContent?.includes('Price Statistic'));
+          const priceStatisticSelect = priceStatisticLabel
+            ?.closest('.form-group')
+            ?.querySelector('select');
           if (priceStatisticSelect && policy.buyFormula?.priceStatistic) {
             const statMap = { LOW: 0, MEDIAN: 1, HIGH: 2 };
             const optionIndex = statMap[policy.buyFormula.priceStatistic] ?? 1;
@@ -678,7 +704,8 @@
           // Buy percentage
           const buyPercentageInput = getInputByLabel('Buy Percentage');
           if (buyPercentageInput) {
-            buyPercentageInput.value = policy.buyFormula?.buyPercentage * 100 || 55;
+            buyPercentageInput.value =
+              policy.buyFormula?.buyPercentage * 100 || 55;
           }
 
           // Min/Max offers
@@ -724,9 +751,10 @@
             // Helper: Find input by label text
             const getInputByLabel = (labelText) => {
               const label = Array.from(document.querySelectorAll('label')).find(
-                l => l.textContent.includes(labelText)
+                (l) => l.textContent.includes(labelText)
               );
-              const container = label?.closest('.form-group') || label?.closest('.form-row');
+              const container =
+                label?.closest('.form-group') || label?.closest('.form-row');
               return container?.querySelector('input[type="number"]');
             };
 
@@ -771,23 +799,33 @@
 
             // Buy formula - use label-based selectors
             const buyPercentageInput = getInputByLabel('Buy Percentage');
-            const buyPercentage = parseFloat(buyPercentageInput?.value || 55) / 100;
+            const buyPercentage =
+              parseFloat(buyPercentageInput?.value || 55) / 100;
 
             const mediaWeightInput = getInputByLabel('Media Weight');
             const mediaWeight = parseFloat(mediaWeightInput?.value || 70) / 100;
 
             const sleeveWeightInput = getInputByLabel('Sleeve Weight');
-            const sleeveWeight = parseFloat(sleeveWeightInput?.value || 30) / 100;
+            const sleeveWeight =
+              parseFloat(sleeveWeightInput?.value || 30) / 100;
 
             // Get price statistic from the correct select element (by label)
-            const priceStatisticLabel = Array.from(document.querySelectorAll('label')).find(
-              label => label.textContent?.includes('Price Statistic')
-            );
-            const priceStatisticSelect = priceStatisticLabel?.closest('.form-group')?.querySelector('select');
+            const priceStatisticLabel = Array.from(
+              document.querySelectorAll('label')
+            ).find((label) => label.textContent?.includes('Price Statistic'));
+            const priceStatisticSelect = priceStatisticLabel
+              ?.closest('.form-group')
+              ?.querySelector('select');
             const priceStatisticMap = ['LOW', 'MEDIAN', 'HIGH'];
-            const selectedStatistic = priceStatisticSelect ?
-              priceStatisticMap[priceStatisticSelect.selectedIndex] || 'MEDIAN' : 'MEDIAN';
-            console.log('Price Statistic Save:', { selectedIndex: priceStatisticSelect?.selectedIndex, selectedStatistic, value: priceStatisticSelect?.value });
+            const selectedStatistic = priceStatisticSelect
+              ? priceStatisticMap[priceStatisticSelect.selectedIndex] ||
+                'MEDIAN'
+              : 'MEDIAN';
+            console.log('Price Statistic Save:', {
+              selectedIndex: priceStatisticSelect?.selectedIndex,
+              selectedStatistic,
+              value: priceStatisticSelect?.value,
+            });
 
             const channelInputs = document.querySelectorAll(
               '.table:last-of-type .input-small'
@@ -844,11 +882,18 @@
               }
             );
 
-            console.log('Save response status:', response.status, response.statusText);
+            console.log(
+              'Save response status:',
+              response.status,
+              response.statusText
+            );
             if (!response.ok) {
               const error = await response.json();
               console.error('API error response:', error);
-              throw new Error(error.error?.message || `Failed to save policy (${response.status})`);
+              throw new Error(
+                error.error?.message ||
+                  `Failed to save policy (${response.status})`
+              );
             }
 
             const result = await response.json();

@@ -88,7 +88,9 @@ const sellerApp = {
     });
 
     // Submit selling list button
-    const submitButton = document.querySelector('.submission-section .button--primary');
+    const submitButton = document.querySelector(
+      '.submission-section .button--primary'
+    );
     if (submitButton) {
       submitButton.addEventListener('click', (e) => {
         e.preventDefault();
@@ -135,7 +137,9 @@ const sellerApp = {
       const genreLower = album.genre.toLowerCase();
       if (highValueGenres.some((g) => genreLower.includes(g.toLowerCase()))) {
         baseEstimate += 10; // Hip-Hop, Electronic, Jazz: +€10
-      } else if (standardGenres.some((g) => genreLower.includes(g.toLowerCase()))) {
+      } else if (
+        standardGenres.some((g) => genreLower.includes(g.toLowerCase()))
+      ) {
         baseEstimate += 5; // Standard genres: +€5
       }
     }
@@ -252,10 +256,10 @@ const sellerApp = {
       <div class="search-result-item" data-index="${idx}" style="cursor: pointer;">
         <div class="search-result-item__cover">
           ${
-  coverUrl
-    ? `<img src="${coverUrl}" alt="${album.title}" />`
-    : '<div class="search-result-item__cover-placeholder">♫</div>'
-}
+            coverUrl
+              ? `<img src="${coverUrl}" alt="${album.title}" />`
+              : '<div class="search-result-item__cover-placeholder">♫</div>'
+          }
         </div>
         <div class="search-result-item__content">
           <h4 class="search-result-item__title">${album.title || 'Unknown'}</h4>
@@ -372,7 +376,11 @@ const sellerApp = {
       }
       const sellerPercentage = 0.55;
       baseOffer = basePrice * sellerPercentage;
-      console.log('Calculated baseOffer from market:', { basePrice, sellerPercentage, baseOffer });
+      console.log('Calculated baseOffer from market:', {
+        basePrice,
+        sellerPercentage,
+        baseOffer,
+      });
     }
 
     // Get selected condition
@@ -462,7 +470,8 @@ const sellerApp = {
 
     // Get current price from quote display
     const quoteItems = document.querySelectorAll('.quote-item');
-    const priceDisplay = quoteItems[2]?.querySelector('.quote-value--large')?.textContent || '';
+    const priceDisplay =
+      quoteItems[2]?.querySelector('.quote-value--large')?.textContent || '';
     const finalPrice = parseFloat(priceDisplay.replace('€', '')) || 0;
 
     // Create item object
@@ -515,7 +524,8 @@ const sellerApp = {
     // Update table
     if (tableBody) {
       tableBody.innerHTML = this.state.sellingList
-        .map((item, idx) => `
+        .map(
+          (item, idx) => `
           <tr>
             <td>
               <strong>${item.album.title || 'Unknown Album'}</strong><br />
@@ -534,13 +544,20 @@ const sellerApp = {
               </button>
             </td>
           </tr>
-        `)
+        `
+        )
         .join('');
     }
 
     // Update totals
-    const totalPrice = this.state.sellingList.reduce((sum, item) => sum + item.totalPrice, 0);
-    const totalItems = this.state.sellingList.reduce((sum, item) => sum + item.quantity, 0);
+    const totalPrice = this.state.sellingList.reduce(
+      (sum, item) => sum + item.totalPrice,
+      0
+    );
+    const totalItems = this.state.sellingList.reduce(
+      (sum, item) => sum + item.quantity,
+      0
+    );
 
     const totalsSection = document.querySelector('.list-totals');
     if (totalsSection) {
@@ -593,10 +610,16 @@ const sellerApp = {
       btn.classList.remove('condition-btn--selected');
     });
     // Re-select defaults
-    const defaultMediaBtn = document.querySelector('.condition-grid:nth-of-type(1) .condition-btn[data-condition="mint"]');
-    const defaultSleeveBtn = document.querySelector('.condition-grid:nth-of-type(2) .condition-btn[data-condition="nm"]');
-    if (defaultMediaBtn) defaultMediaBtn.classList.add('condition-btn--selected');
-    if (defaultSleeveBtn) defaultSleeveBtn.classList.add('condition-btn--selected');
+    const defaultMediaBtn = document.querySelector(
+      '.condition-grid:nth-of-type(1) .condition-btn[data-condition="mint"]'
+    );
+    const defaultSleeveBtn = document.querySelector(
+      '.condition-grid:nth-of-type(2) .condition-btn[data-condition="nm"]'
+    );
+    if (defaultMediaBtn)
+      defaultMediaBtn.classList.add('condition-btn--selected');
+    if (defaultSleeveBtn)
+      defaultSleeveBtn.classList.add('condition-btn--selected');
 
     // Reset card display
     if (this.albumCardInfo) {
@@ -613,7 +636,9 @@ const sellerApp = {
   async submitSellingList() {
     // Validate
     if (!this.state.sellingList || this.state.sellingList.length === 0) {
-      alert('Please add at least one record to your selling list before submitting');
+      alert(
+        'Please add at least one record to your selling list before submitting'
+      );
       return;
     }
 
@@ -661,7 +686,9 @@ const sellerApp = {
       });
 
       if (!sellerResponse.ok) {
-        throw new Error(`Failed to register seller: ${sellerResponse.statusText}`);
+        throw new Error(
+          `Failed to register seller: ${sellerResponse.statusText}`
+        );
       }
 
       const sellerData = await sellerResponse.json();
@@ -685,22 +712,26 @@ const sellerApp = {
             throw new Error('Selected record is missing a valid identifier');
           }
           payload.discogsId = discogsId;
-          const type =
-            item.album.discogsType || item.album.type || 'release';
+          const type = item.album.discogsType || item.album.type || 'release';
           payload.discogsType = type;
         }
 
         return payload;
       });
 
-      const submissionResponse = await fetch(`/api/v1/submissions/${sellerId}`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ items }),
-      });
+      const submissionResponse = await fetch(
+        `/api/v1/submissions/${sellerId}`,
+        {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ items }),
+        }
+      );
 
       if (!submissionResponse.ok) {
-        throw new Error(`Failed to submit items: ${submissionResponse.statusText}`);
+        throw new Error(
+          `Failed to submit items: ${submissionResponse.statusText}`
+        );
       }
 
       const submissionData = await submissionResponse.json();

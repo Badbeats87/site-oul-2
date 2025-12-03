@@ -153,7 +153,9 @@ async function initializeDatabase() {
           });
         }
       } catch (error) {
-        logger.warn('⚠️  Failed to seed initial data', { error: error.message });
+        logger.warn('⚠️  Failed to seed initial data', {
+          error: error.message,
+        });
       }
     })();
   }

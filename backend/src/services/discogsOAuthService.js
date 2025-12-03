@@ -17,7 +17,9 @@ class DiscogsOAuthService {
   constructor() {
     this.consumerKey = process.env.DISCOGS_CONSUMER_KEY;
     this.consumerSecret = process.env.DISCOGS_CONSUMER_SECRET;
-    this.callbackUrl = process.env.DISCOGS_OAUTH_CALLBACK || 'http://localhost:3001/api/v1/auth/discogs/callback';
+    this.callbackUrl =
+      process.env.DISCOGS_OAUTH_CALLBACK ||
+      'http://localhost:3001/api/v1/auth/discogs/callback';
   }
 
   /**
@@ -48,7 +50,7 @@ class DiscogsOAuthService {
 
       const response = await axios.get(baseUrl, {
         headers: {
-          'Authorization': authHeader,
+          Authorization: authHeader,
           'User-Agent': 'VinylCatalogAPI/1.0',
         },
       });
@@ -120,7 +122,7 @@ class DiscogsOAuthService {
 
       const response = await axios.post(baseUrl, null, {
         headers: {
-          'Authorization': authHeader,
+          Authorization: authHeader,
           'User-Agent': 'VinylCatalogAPI/1.0',
         },
       });
@@ -133,7 +135,9 @@ class DiscogsOAuthService {
           accessToken: accessTokens.oauth_token,
           accessTokenSecret: accessTokens.oauth_token_secret,
           discogsUsername: accessTokens.oauth_username || null,
-          discogsUserId: accessTokens.oauth_user_id ? parseInt(accessTokens.oauth_user_id) : null,
+          discogsUserId: accessTokens.oauth_user_id
+            ? parseInt(accessTokens.oauth_user_id)
+            : null,
           isActive: true,
         },
       });

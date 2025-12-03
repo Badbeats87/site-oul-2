@@ -32,14 +32,22 @@ class SubmissionDetailPage {
   bindEvents() {
     if (this.acceptAllBtn) {
       this.acceptAllBtn.addEventListener('click', () => {
-        if (!this.submissionId || !confirm('Accept all items in this submission?')) return;
+        if (
+          !this.submissionId ||
+          !confirm('Accept all items in this submission?')
+        )
+          return;
         this.acceptSubmission();
       });
     }
 
     if (this.rejectAllBtn) {
       this.rejectAllBtn.addEventListener('click', () => {
-        if (!this.submissionId || !confirm('Reject all items in this submission?')) return;
+        if (
+          !this.submissionId ||
+          !confirm('Reject all items in this submission?')
+        )
+          return;
         this.rejectSubmission();
       });
     }
@@ -61,7 +69,9 @@ class SubmissionDetailPage {
   async loadSubmission() {
     try {
       this.toggleLoading(true);
-      this.submission = await this.api.get(`/admin/submissions/${this.submissionId}`);
+      this.submission = await this.api.get(
+        `/admin/submissions/${this.submissionId}`
+      );
       this.renderSubmission();
       this.toggleLoading(false);
     } catch (error) {
@@ -106,10 +116,12 @@ class SubmissionDetailPage {
     }
 
     if (this.acceptAllBtn) {
-      this.acceptAllBtn.disabled = !this.submission.items || this.submission.items.length === 0;
+      this.acceptAllBtn.disabled =
+        !this.submission.items || this.submission.items.length === 0;
     }
     if (this.rejectAllBtn) {
-      this.rejectAllBtn.disabled = !this.submission.items || this.submission.items.length === 0;
+      this.rejectAllBtn.disabled =
+        !this.submission.items || this.submission.items.length === 0;
     }
 
     this.renderItems();
@@ -178,7 +190,8 @@ class SubmissionDetailPage {
     if (!this.auditContainer) return;
     const audits = this.submission.audits || [];
     if (audits.length === 0) {
-      this.auditContainer.innerHTML = '<p class="text-muted">No activity yet.</p>';
+      this.auditContainer.innerHTML =
+        '<p class="text-muted">No activity yet.</p>';
       return;
     }
 
@@ -225,7 +238,10 @@ class SubmissionDetailPage {
     if (!itemId) return;
     try {
       this.toggleLoading(true);
-      await this.api.post(`/admin/submissions/${this.submissionId}/items/${itemId}/accept`, {});
+      await this.api.post(
+        `/admin/submissions/${this.submissionId}/items/${itemId}/accept`,
+        {}
+      );
       await this.loadSubmission();
       this.toggleLoading(false);
     } catch (error) {
@@ -238,7 +254,10 @@ class SubmissionDetailPage {
     if (!itemId) return;
     try {
       this.toggleLoading(true);
-      await this.api.post(`/admin/submissions/${this.submissionId}/items/${itemId}/reject`, {});
+      await this.api.post(
+        `/admin/submissions/${this.submissionId}/items/${itemId}/reject`,
+        {}
+      );
       await this.loadSubmission();
       this.toggleLoading(false);
     } catch (error) {
@@ -300,7 +319,7 @@ class SubmissionDetailPage {
       ACCEPTED: 'success',
       PARTIALLY_ACCEPTED: 'accent',
       REJECTED: 'danger',
-      EXPIRED: 'secondary'
+      EXPIRED: 'secondary',
     };
     const cls = map[status] || 'secondary';
     return `<span class="badge badge--${cls}">${status.replace(/_/g, ' ')}</span>`;

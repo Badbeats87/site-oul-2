@@ -3,7 +3,7 @@ import {
   getTablePreferences,
   updateTablePreferences,
   resetTablePreferences,
-  getUserPreferences
+  getUserPreferences,
 } from '../controllers/adminPreferencesController.js';
 
 const router = express.Router();

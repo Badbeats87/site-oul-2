@@ -38,8 +38,12 @@ class InventoryManager {
 
   cacheElements() {
     this.searchInput = document.querySelector('[data-inventory-search]');
-    this.statusFilter = document.querySelector('[data-inventory-status-filter]');
-    this.conditionFilter = document.querySelector('[data-inventory-condition-filter]');
+    this.statusFilter = document.querySelector(
+      '[data-inventory-status-filter]'
+    );
+    this.conditionFilter = document.querySelector(
+      '[data-inventory-condition-filter]'
+    );
     this.minPriceInput = document.querySelector('[data-inventory-min-price]');
     this.maxPriceInput = document.querySelector('[data-inventory-max-price]');
     this.sortSelect = document.querySelector('[data-inventory-sort]');
@@ -82,7 +86,9 @@ class InventoryManager {
         }
       });
 
-      const colElement = this.table.querySelector(`col[data-column-id="${columnId}"]`);
+      const colElement = this.table.querySelector(
+        `col[data-column-id="${columnId}"]`
+      );
       if (colElement) {
         if (hide) {
           colElement.style.display = 'none';
@@ -111,7 +117,9 @@ class InventoryManager {
     if (!columnId || !this.table) return;
     event.preventDefault();
 
-    const headerCell = this.table.querySelector(`th[data-column-id="${columnId}"]`);
+    const headerCell = this.table.querySelector(
+      `th[data-column-id="${columnId}"]`
+    );
     if (!headerCell) return;
 
     const startWidth = headerCell.offsetWidth;
@@ -121,7 +129,7 @@ class InventoryManager {
       startWidth,
       minWidth: 80,
       handle,
-      headerCell
+      headerCell,
     };
 
     headerCell.classList.add('is-resizing');
@@ -133,7 +141,10 @@ class InventoryManager {
   handleColumnResize(event) {
     if (!this.columnResizeState) return;
     const delta = event.pageX - this.columnResizeState.startX;
-    const newWidth = Math.max(this.columnResizeState.minWidth, this.columnResizeState.startWidth + delta);
+    const newWidth = Math.max(
+      this.columnResizeState.minWidth,
+      this.columnResizeState.startWidth + delta
+    );
     this.setColumnWidth(this.columnResizeState.columnId, newWidth);
     this.columnWidths[this.columnResizeState.columnId] = newWidth;
   }
@@ -165,9 +176,11 @@ class InventoryManager {
     if (header) {
       header.style.width = `${width}px`;
     }
-    this.table.querySelectorAll(`td[data-column-id="${columnId}"]`).forEach((cell) => {
-      cell.style.width = `${width}px`;
-    });
+    this.table
+      .querySelectorAll(`td[data-column-id="${columnId}"]`)
+      .forEach((cell) => {
+        cell.style.width = `${width}px`;
+      });
   }
 
   applyColumnWidths() {
@@ -192,7 +205,10 @@ class InventoryManager {
   saveColumnWidths() {
     if (typeof localStorage === 'undefined') return;
     try {
-      localStorage.setItem('inventory_column_widths', JSON.stringify(this.columnWidths));
+      localStorage.setItem(
+        'inventory_column_widths',
+        JSON.stringify(this.columnWidths)
+      );
     } catch {
       // Ignore storage write failures
     }
@@ -283,7 +299,9 @@ class InventoryManager {
         if (event.target.dataset.value) {
           value = event.target.dataset.value;
         } else {
-          const select = row.querySelector(`[data-suggestion-select="${field}"]`);
+          const select = row.querySelector(
+            `[data-suggestion-select="${field}"]`
+          );
           value = select?.value || '';
         }
         this.applySuggestion(row, field, value);
@@ -296,7 +314,9 @@ class InventoryManager {
         if (!row) return;
         const discogsId = event.target.value;
         if (!discogsId) return;
-        const discogsInput = row.querySelector('[data-release-field="discogsId"]');
+        const discogsInput = row.querySelector(
+          '[data-release-field="discogsId"]'
+        );
         if (discogsInput) {
           discogsInput.value = discogsId;
         }
@@ -332,7 +352,8 @@ class InventoryManager {
       };
       if (this.filters.search) params.search = this.filters.search;
       if (this.filters.status !== 'all') params.status = this.filters.status;
-      if (this.filters.condition !== 'all') params.conditions = this.filters.condition;
+      if (this.filters.condition !== 'all')
+        params.conditions = this.filters.condition;
       if (this.filters.minPrice) params.minPrice = this.filters.minPrice;
       if (this.filters.maxPrice) params.maxPrice = this.filters.maxPrice;
       params.sortBy = this.filters.sortBy;
@@ -368,7 +389,9 @@ class InventoryManager {
       return;
     }
 
-    this.tbody.innerHTML = this.inventory.map((item) => this.renderRow(item)).join('');
+    this.tbody.innerHTML = this.inventory
+      .map((item) => this.renderRow(item))
+      .join('');
     if (this.columnManager) {
       this.applyColumnVisibility(this.columnManager.visibleColumns);
     }
@@ -463,7 +486,9 @@ class InventoryManager {
     let skippedCount = 0;
 
     for (const row of rows) {
-      const discogsInput = row.querySelector('[data-release-field="discogsId"]');
+      const discogsInput = row.querySelector(
+        '[data-release-field="discogsId"]'
+      );
       const discogsId = discogsInput?.value?.trim();
 
       try {
@@ -492,7 +517,8 @@ class InventoryManager {
     if (fetchedCount > 0) parts.push(`${fetchedCount} fetched`);
     if (searchedCount > 0) parts.push(`${searchedCount} search options shown`);
     if (skippedCount > 0) parts.push(`${skippedCount} skipped`);
-    const message = parts.length > 0 ? `Discogs: ${parts.join(', ')}` : 'No records to fetch';
+    const message =
+      parts.length > 0 ? `Discogs: ${parts.join(', ')}` : 'No records to fetch';
     this.showSuccess(message);
   }
 
@@ -523,10 +549,13 @@ class InventoryManager {
     if (!query) return [];
 
     try {
-      const response = await this.api.get('/integrations/discogs/search-enriched', {
-        q: query,
-        limit: 5,
-      });
+      const response = await this.api.get(
+        '/integrations/discogs/search-enriched',
+        {
+          q: query,
+          limit: 5,
+        }
+      );
       return response?.results || [];
     } catch (error) {
       console.error('Discogs search failed', error);
@@ -558,7 +587,8 @@ class InventoryManager {
   }
 
   renderDiscogsOption(option) {
-    const id = option.id || option.releaseId || option.master_id || option.masterId;
+    const id =
+      option.id || option.releaseId || option.master_id || option.masterId;
     const year = option.year || option.released || '';
     const label = option.label || option.labels?.join(', ') || '';
     const title = option.title || '';
@@ -567,14 +597,22 @@ class InventoryManager {
   }
 
   renderStatusSelect(value) {
-    const options = ['DRAFT', 'LIVE', 'RESERVED', 'SOLD', 'REMOVED', 'RETURNED'];
+    const options = [
+      'DRAFT',
+      'LIVE',
+      'RESERVED',
+      'SOLD',
+      'REMOVED',
+      'RETURNED',
+    ];
     return `
       <select class="filter-select" data-field="status">
         ${options
-    .map(
-      (opt) => `<option value="${opt}" ${opt === value ? 'selected' : ''}>${opt}</option>`
-    )
-    .join('')}
+          .map(
+            (opt) =>
+              `<option value="${opt}" ${opt === value ? 'selected' : ''}>${opt}</option>`
+          )
+          .join('')}
       </select>
     `;
   }
@@ -587,7 +625,10 @@ class InventoryManager {
 
     const totalPages = Math.ceil(this.pagination.total / this.pagination.limit);
     const start = (this.pagination.page - 1) * this.pagination.limit + 1;
-    const end = Math.min(this.pagination.page * this.pagination.limit, this.pagination.total);
+    const end = Math.min(
+      this.pagination.page * this.pagination.limit,
+      this.pagination.total
+    );
 
     const pagination = document.createElement('div');
     pagination.className = 'pagination';
@@ -610,20 +651,26 @@ class InventoryManager {
 
     this.container.appendChild(pagination);
 
-    pagination.querySelector('[data-pagination-prev]')?.addEventListener('click', () => {
-      if (this.pagination.page > 1) {
-        this.pagination.page -= 1;
-        this.loadInventory();
-      }
-    });
+    pagination
+      .querySelector('[data-pagination-prev]')
+      ?.addEventListener('click', () => {
+        if (this.pagination.page > 1) {
+          this.pagination.page -= 1;
+          this.loadInventory();
+        }
+      });
 
-    pagination.querySelector('[data-pagination-next]')?.addEventListener('click', () => {
-      const maxPages = Math.ceil(this.pagination.total / this.pagination.limit);
-      if (this.pagination.page < maxPages) {
-        this.pagination.page += 1;
-        this.loadInventory();
-      }
-    });
+    pagination
+      .querySelector('[data-pagination-next]')
+      ?.addEventListener('click', () => {
+        const maxPages = Math.ceil(
+          this.pagination.total / this.pagination.limit
+        );
+        if (this.pagination.page < maxPages) {
+          this.pagination.page += 1;
+          this.loadInventory();
+        }
+      });
   }
 
   async saveRow(inventoryId) {
@@ -651,13 +698,17 @@ class InventoryManager {
         releasePayload[field] = input.value?.trim() || null;
       }
     });
-    const releaseYearInput = row.querySelector('[data-release-field="releaseYear"]');
+    const releaseYearInput = row.querySelector(
+      '[data-release-field="releaseYear"]'
+    );
     if (releaseYearInput) {
       if (releaseYearInput.value === '') {
         releasePayload.releaseYear = null;
       } else {
         const parsedYear = parseInt(releaseYearInput.value, 10);
-        releasePayload.releaseYear = Number.isNaN(parsedYear) ? null : parsedYear;
+        releasePayload.releaseYear = Number.isNaN(parsedYear)
+          ? null
+          : parsedYear;
       }
     }
     const discogsInput = row.querySelector('[data-release-field="discogsId"]');
@@ -666,7 +717,9 @@ class InventoryManager {
         releasePayload.discogsId = null;
       } else {
         const parsedDiscogs = parseInt(discogsInput.value, 10);
-        releasePayload.discogsId = Number.isNaN(parsedDiscogs) ? null : parsedDiscogs;
+        releasePayload.discogsId = Number.isNaN(parsedDiscogs)
+          ? null
+          : parsedDiscogs;
       }
     }
     const sanitizedRelease = Object.fromEntries(
@@ -700,7 +753,8 @@ class InventoryManager {
     const alertDiv = document.createElement('div');
     alertDiv.className = 'alert alert-danger';
     alertDiv.textContent = message;
-    alertDiv.style.cssText = 'margin-bottom: 20px; padding: 12px; background: #fee; color: #c33; border-radius: 4px;';
+    alertDiv.style.cssText =
+      'margin-bottom: 20px; padding: 12px; background: #fee; color: #c33; border-radius: 4px;';
     this.container.prepend(alertDiv);
     setTimeout(() => alertDiv.remove(), 5000);
   }
@@ -757,9 +811,13 @@ class InventoryManager {
   async loadDiscogsSuggestions(row, discogsId) {
     try {
       this.showLoading(true);
-      const release = await this.api.get(`/integrations/discogs/releases/${discogsId}`);
+      const release = await this.api.get(
+        `/integrations/discogs/releases/${discogsId}`
+      );
       const suggestions = this.extractDiscogsSuggestions(release);
-      const discogsInput = row.querySelector('[data-release-field="discogsId"]');
+      const discogsInput = row.querySelector(
+        '[data-release-field="discogsId"]'
+      );
       if (discogsInput && !discogsInput.value) {
         discogsInput.value = discogsId;
       }
@@ -783,7 +841,9 @@ class InventoryManager {
   }
 
   extractDiscogsSuggestions(release) {
-    const unique = (arr) => [...new Set(arr.filter((value) => value && value !== ''))];
+    const unique = (arr) => [
+      ...new Set(arr.filter((value) => value && value !== '')),
+    ];
 
     // Basic info - use master release data when available
     const titleOptions = unique([release?.title]);
@@ -792,7 +852,11 @@ class InventoryManager {
     );
 
     // Label and catalog - handle both catno and catalog_number fields
-    const labelOptions = unique((release?.labels || []).map((label) => label?.name?.trim()).filter(Boolean));
+    const labelOptions = unique(
+      (release?.labels || [])
+        .map((label) => label?.name?.trim())
+        .filter(Boolean)
+    );
 
     // Catalog numbers: combine current release labels + all vinyl versions' catalog numbers
     const currentCatalogNumbers = (release?.labels || []).map((label) => {
@@ -802,20 +866,27 @@ class InventoryManager {
       return value;
     });
 
-    const vinylVersionCatalogNumbers = (release?.vinyl_versions || []).map((version) => {
-      const value = version?.catno?.trim();
-      if (!value) return null;
-      if (/^none$/i.test(value) || /^not in label$/i.test(value)) return null;
-      return value;
-    });
+    const vinylVersionCatalogNumbers = (release?.vinyl_versions || []).map(
+      (version) => {
+        const value = version?.catno?.trim();
+        if (!value) return null;
+        if (/^none$/i.test(value) || /^not in label$/i.test(value)) return null;
+        return value;
+      }
+    );
 
-    const catalogNumberOptions = unique([...currentCatalogNumbers, ...vinylVersionCatalogNumbers]);
+    const catalogNumberOptions = unique([
+      ...currentCatalogNumbers,
+      ...vinylVersionCatalogNumbers,
+    ]);
 
     // Year/Date
     const yearOptions = unique([
       release?.year ? String(release.year) : null,
       release?.released ? release.released.split('-')[0] : null,
-      release?.released_formatted ? release.released_formatted.split('-')[0] : null,
+      release?.released_formatted
+        ? release.released_formatted.split('-')[0]
+        : null,
     ]);
 
     // Genre and styles - genres from master release are most reliable
@@ -826,12 +897,14 @@ class InventoryManager {
 
     // Format information - includes vinyl, CD, cassette, etc.
     const formatOptions = unique(
-      (release?.formats || []).map((format) => {
-        const parts = [];
-        if (format?.name) parts.push(format.name);
-        if (format?.qty) parts.push(`${format.qty}x`);
-        return parts.join(' ');
-      }).filter(Boolean)
+      (release?.formats || [])
+        .map((format) => {
+          const parts = [];
+          if (format?.name) parts.push(format.name);
+          if (format?.qty) parts.push(`${format.qty}x`);
+          return parts.join(' ');
+        })
+        .filter(Boolean)
     );
 
     // Format descriptions and release notes
@@ -886,12 +959,16 @@ class InventoryManager {
     };
 
     Object.entries(suggestions).forEach(([field, values]) => {
-      const valuesList = Array.isArray(values) ? values.filter(Boolean) : (values ? [values] : []);
+      const valuesList = Array.isArray(values)
+        ? values.filter(Boolean)
+        : values
+          ? [values]
+          : [];
       if (!valuesList.length) return;
 
       // Find the input field for this suggestion
       const possibleSelectors = (fieldMappings[field] || [field])
-        .map(f => `[data-release-field="${f}"], [data-field="${f}"]`)
+        .map((f) => `[data-release-field="${f}"], [data-field="${f}"]`)
         .join(', ');
 
       const input = row.querySelector(possibleSelectors);
@@ -908,7 +985,7 @@ class InventoryManager {
       const datalist = document.createElement('datalist');
       datalist.id = listId;
 
-      valuesList.forEach(value => {
+      valuesList.forEach((value) => {
         const option = document.createElement('option');
         option.value = value;
         datalist.appendChild(option);
@@ -980,20 +1057,28 @@ function createFallbackApi() {
     const url = new URL(`${base}${endpoint}`, window.location.origin);
     if (params) {
       Object.entries(params)
-        .filter(([, value]) => value !== undefined && value !== null && value !== '')
+        .filter(
+          ([, value]) => value !== undefined && value !== null && value !== ''
+        )
         .forEach(([key, value]) => url.searchParams.append(key, value));
     }
 
     const response = await fetch(url.toString(), {
       method,
-      headers: Object.assign({ 'Content-Type': 'application/json' }, storedToken ? { Authorization: `Bearer ${storedToken}` } : {}),
+      headers: Object.assign(
+        { 'Content-Type': 'application/json' },
+        storedToken ? { Authorization: `Bearer ${storedToken}` } : {}
+      ),
       body: body ? JSON.stringify(body) : undefined,
     });
 
     const data = await response.json();
     if (!response.ok) {
       throw new Error(
-        data?.error?.message || data?.error || response.statusText || 'Request failed'
+        data?.error?.message ||
+          data?.error ||
+          response.statusText ||
+          'Request failed'
       );
     }
     return data.data || data;
@@ -1026,20 +1111,26 @@ const INVENTORY_COLUMN_CONFIG = [
   { id: 'salePrice', label: 'Sale Price' },
   { id: 'discogs', label: 'Discogs', defaultVisible: false },
   { id: 'submission', label: 'Submission' },
-  { id: 'actions', label: 'Actions' }
+  { id: 'actions', label: 'Actions' },
 ];
 
-const storedToken = typeof localStorage !== 'undefined' ? localStorage.getItem('auth_token') : null;
+const storedToken =
+  typeof localStorage !== 'undefined'
+    ? localStorage.getItem('auth_token')
+    : null;
 const inventoryApi = typeof api !== 'undefined' ? api : createFallbackApi();
 const inventoryColumnManager =
   typeof TableColumnManager !== 'undefined'
     ? new TableColumnManager({
         tableName: 'inventory',
         columns: INVENTORY_COLUMN_CONFIG,
-        api: inventoryApi
+        api: inventoryApi,
       })
     : null;
-const inventoryManager = new InventoryManager(inventoryApi, inventoryColumnManager);
+const inventoryManager = new InventoryManager(
+  inventoryApi,
+  inventoryColumnManager
+);
 document.addEventListener('DOMContentLoaded', () => {
   inventoryManager.initialize();
 });

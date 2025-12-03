@@ -97,10 +97,13 @@ class DiscogsService {
 
         // Calculate exponential backoff: baseDelay * 2^attempt
         const delay = baseDelay * Math.pow(2, attempt);
-        logger.warn(`Rate limited, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`, {
-          endpoint: error.config?.url,
-          delay,
-        });
+        logger.warn(
+          `Rate limited, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`,
+          {
+            endpoint: error.config?.url,
+            delay,
+          }
+        );
 
         // Wait before retrying
         await new Promise((resolve) => setTimeout(resolve, delay));
@@ -153,9 +156,10 @@ class DiscogsService {
           await this.throttler.wait();
 
           let response = await this.retryWithBackoff(
-            () => this.client.get('/database/search', {
-              params: masterSearchParams,
-            }),
+            () =>
+              this.client.get('/database/search', {
+                params: masterSearchParams,
+              }),
             3,
             1500
           );
@@ -164,9 +168,10 @@ class DiscogsService {
           if (!response.data.results || response.data.results.length === 0) {
             masterSearchParams.type = 'release';
             response = await this.retryWithBackoff(
-              () => this.client.get('/database/search', {
-                params: masterSearchParams,
-              }),
+              () =>
+                this.client.get('/database/search', {
+                  params: masterSearchParams,
+                }),
               3,
               1500
             );
@@ -205,14 +210,21 @@ class DiscogsService {
    */
   async getFirstReleaseFromMaster(masterId) {
     try {
-      const cacheKey = generateCacheKey('discogs', `master_first_release_${masterId}`, {});
+      const cacheKey = generateCacheKey(
+        'discogs',
+        `master_first_release_${masterId}`,
+        {}
+      );
 
       return await getOrSet(
         cacheKey,
         async () => {
-          const response = await this.client.get(`/masters/${masterId}/versions`, {
-            params: { per_page: 1 },
-          });
+          const response = await this.client.get(
+            `/masters/${masterId}/versions`,
+            {
+              params: { per_page: 1 },
+            }
+          );
 
           if (response.data.versions && response.data.versions.length > 0) {
             return response.data.versions[0].id;
@@ -253,19 +265,21 @@ class DiscogsService {
           return {
             id: response.data.id,
             title: response.data.title,
-            artists: response.data.artists?.map((a) => ({
-              name: a.name,
-              resource_url: a.resource_url,
-            })) || [],
+            artists:
+              response.data.artists?.map((a) => ({
+                name: a.name,
+                resource_url: a.resource_url,
+              })) || [],
             year: response.data.year,
             genres: response.data.genres,
             styles: response.data.styles,
-            images: response.data.images?.map((i) => ({
-              type: i.type,
-              uri: i.uri,
-              resource_url: i.resource_url,
-              uri150: i.uri150,
-            })) || [],
+            images:
+              response.data.images?.map((i) => ({
+                type: i.type,
+                uri: i.uri,
+                resource_url: i.resource_url,
+                uri150: i.uri150,
+              })) || [],
             resource_url: response.data.resource_url,
             uri: response.data.uri,
           };
@@ -294,7 +308,11 @@ class DiscogsService {
         throw new ApiError('Invalid master ID', 400);
       }
 
-      const cacheKey = generateCacheKey('discogs', `master_versions_${masterId}`, {});
+      const cacheKey = generateCacheKey(
+        'discogs',
+        `master_versions_${masterId}`,
+        {}
+      );
 
       return await getOrSet(
         cacheKey,
@@ -304,24 +322,31 @@ class DiscogsService {
           let hasMore = true;
 
           // Paginate through all versions
-          while (hasMore && page <= 5) { // Limit to 5 pages to avoid excessive requests
+          while (hasMore && page <= 5) {
+            // Limit to 5 pages to avoid excessive requests
             try {
               await this.throttler.wait();
-              const response = await this.client.get(`/masters/${masterId}/versions`, {
-                params: {
-                  page,
-                  per_page: 100,
-                },
-              });
+              const response = await this.client.get(
+                `/masters/${masterId}/versions`,
+                {
+                  params: {
+                    page,
+                    per_page: 100,
+                  },
+                }
+              );
 
               const pageVersions = response.data.versions || [];
 
               // Filter for vinyl formats only (exclude digital/CD/etc)
               const vinylVersions = pageVersions
-                .filter(v => {
+                .filter((v) => {
                   const format = v.format?.toLowerCase() || '';
                   // Exclude obvious non-vinyl formats
-                  const isNonVinyl = /cd|digital|download|mp3|flac|stream|cassette|vhs|dvd|blu-?ray|box set/i.test(format);
+                  const isNonVinyl =
+                    /cd|digital|download|mp3|flac|stream|cassette|vhs|dvd|blu-?ray|box set/i.test(
+                      format
+                    );
 
                   if (isNonVinyl) {
                     logger.debug('Skipping non-vinyl version', {
@@ -332,7 +357,7 @@ class DiscogsService {
                   // Include if it's not explicitly non-vinyl
                   return !isNonVinyl;
                 })
-                .map(v => ({
+                .map((v) => ({
                   id: v.id,
                   country: v.country,
                   title: v.title,
@@ -347,8 +372,11 @@ class DiscogsService {
                 page,
                 pageVersionsCount: pageVersions.length,
                 vinylVersionsCount: vinylVersions.length,
-                allFormats: pageVersions.map(v => ({ catno: v.catno, format: v.format })),
-                vinylCatalogNumbers: vinylVersions.map(v => v.catno),
+                allFormats: pageVersions.map((v) => ({
+                  catno: v.catno,
+                  format: v.format,
+                })),
+                vinylCatalogNumbers: vinylVersions.map((v) => v.catno),
               });
 
               versions.push(...vinylVersions);
@@ -411,19 +439,27 @@ class DiscogsService {
           if (releaseData.master_id) {
             try {
               await this.throttler.wait();
-              const masterResponse = await this.client.get(`/masters/${releaseData.master_id}`);
+              const masterResponse = await this.client.get(
+                `/masters/${releaseData.master_id}`
+              );
               masterData = masterResponse.data;
-              logger.info('Master release fetched', { masterId: releaseData.master_id });
+              logger.info('Master release fetched', {
+                masterId: releaseData.master_id,
+              });
 
               // Also fetch all vinyl versions of this master
               try {
-                logger.info('Starting vinyl versions fetch', { masterId: releaseData.master_id });
-                vinylVersions = await this.getMasterVinylVersions(releaseData.master_id);
+                logger.info('Starting vinyl versions fetch', {
+                  masterId: releaseData.master_id,
+                });
+                vinylVersions = await this.getMasterVinylVersions(
+                  releaseData.master_id
+                );
                 logger.info('Fetched vinyl versions', {
                   releaseId,
                   masterId: releaseData.master_id,
                   vinylVersionCount: vinylVersions.length,
-                  catalogNumbers: vinylVersions.map(v => v.catno),
+                  catalogNumbers: vinylVersions.map((v) => v.catno),
                 });
               } catch (error) {
                 logger.warn('Failed to fetch vinyl versions', {
@@ -490,8 +526,12 @@ class DiscogsService {
             community: {
               have: masterData?.community?.have || releaseData.community?.have,
               want: masterData?.community?.want || releaseData.community?.want,
-              rating: masterData?.community?.rating?.average || releaseData.community?.rating?.average,
-              votes: masterData?.community?.rating?.count || releaseData.community?.rating?.count,
+              rating:
+                masterData?.community?.rating?.average ||
+                releaseData.community?.rating?.average,
+              votes:
+                masterData?.community?.rating?.count ||
+                releaseData.community?.rating?.count,
             },
             // Release-specific notes and details
             notes: releaseData.notes,
@@ -557,7 +597,11 @@ class DiscogsService {
         throw new ApiError('Invalid release ID', 400);
       }
 
-      const cacheKey = generateCacheKey('discogs', `marketplace_stats_${releaseId}_${currencyCode}`, {});
+      const cacheKey = generateCacheKey(
+        'discogs',
+        `marketplace_stats_${releaseId}_${currencyCode}`,
+        {}
+      );
 
       // Cache for 5 minutes in development, 30 minutes in production
       // Marketplace prices change frequently and short cache helps with testing
@@ -567,7 +611,10 @@ class DiscogsService {
         cacheKey,
         async () => {
           try {
-            logger.debug('Fetching marketplace stats', { releaseId, currencyCode });
+            logger.debug('Fetching marketplace stats', {
+              releaseId,
+              currencyCode,
+            });
 
             // Get OAuth token if available for authenticated requests
             const oauthToken = await discogsOAuthService.getLatestAccessToken();
@@ -670,7 +717,11 @@ class DiscogsService {
         throw new ApiError('Invalid master ID', 400);
       }
 
-      const cacheKey = generateCacheKey('discogs', `vinyl_marketplace_stats_${masterId}_${currencyCode}`, {});
+      const cacheKey = generateCacheKey(
+        'discogs',
+        `vinyl_marketplace_stats_${masterId}_${currencyCode}`,
+        {}
+      );
 
       return await getOrSet(
         cacheKey,
@@ -680,14 +731,18 @@ class DiscogsService {
 
             // Get all vinyl variants of this master
             const response = await this.retryWithBackoff(
-              () => this.client.get(`/masters/${masterId}/versions`, {
-                params: { per_page: 500 },
-              }),
+              () =>
+                this.client.get(`/masters/${masterId}/versions`, {
+                  params: { per_page: 500 },
+                }),
               3,
               1500
             );
 
-            if (!response.data.versions || response.data.versions.length === 0) {
+            if (
+              !response.data.versions ||
+              response.data.versions.length === 0
+            ) {
               return null;
             }
 
@@ -704,7 +759,7 @@ class DiscogsService {
                 formatLower.includes('10"') ||
                 formatLower.includes('33') || // 33 RPM
                 formatLower.includes('45') || // 45 RPM
-                formatLower.includes('78')    // 78 RPM
+                formatLower.includes('78') // 78 RPM
               );
             });
 
@@ -723,7 +778,10 @@ class DiscogsService {
 
             for (const variant of vinylVariants) {
               try {
-                const stats = await this.getMarketplaceStats(variant.id, currencyCode);
+                const stats = await this.getMarketplaceStats(
+                  variant.id,
+                  currencyCode
+                );
 
                 if (stats && stats.lowest) {
                   if (!lowestStats || stats.lowest < lowestStats.lowest) {
@@ -790,7 +848,11 @@ class DiscogsService {
         throw new ApiError('Invalid release ID', 400);
       }
 
-      const cacheKey = generateCacheKey('discogs', `price_suggestions_${releaseId}`, {});
+      const cacheKey = generateCacheKey(
+        'discogs',
+        `price_suggestions_${releaseId}`,
+        {}
+      );
 
       return await getOrSet(
         cacheKey,
@@ -806,7 +868,10 @@ class DiscogsService {
             });
 
             if (oauthToken && oauthToken.accessToken) {
-              logger.debug('Using OAuth token for marketplace price suggestions', { releaseId });
+              logger.debug(
+                'Using OAuth token for marketplace price suggestions',
+                { releaseId }
+              );
 
               const url = `${DISCOGS_API_BASE}/marketplace/price_suggestions/${releaseId}`;
               const authHeader = this._buildOAuthHeader(
@@ -819,7 +884,7 @@ class DiscogsService {
 
               const response = await axios.get(url, {
                 headers: {
-                  'Authorization': authHeader,
+                  Authorization: authHeader,
                   'User-Agent': 'VinylCatalogAPI/1.0',
                 },
               });
@@ -831,7 +896,9 @@ class DiscogsService {
               }
 
               // Return aggregated price data from all conditions
-              const prices = Object.values(response.data).map((p) => p.value).filter((v) => v);
+              const prices = Object.values(response.data)
+                .map((p) => p.value)
+                .filter((v) => v);
               if (prices.length === 0) return null;
 
               return {
@@ -839,13 +906,21 @@ class DiscogsService {
                 currency: Object.values(response.data)[0]?.currency || 'USD',
                 lowest: Math.min(...prices),
                 highest: Math.max(...prices),
-                average: Math.round(prices.reduce((a, b) => a + b, 0) / prices.length * 100) / 100,
-                median: prices.sort((a, b) => a - b)[Math.floor(prices.length / 2)],
+                average:
+                  Math.round(
+                    (prices.reduce((a, b) => a + b, 0) / prices.length) * 100
+                  ) / 100,
+                median: prices.sort((a, b) => a - b)[
+                  Math.floor(prices.length / 2)
+                ],
               };
             } else {
-              logger.debug('No OAuth token available for marketplace pricing, falling back to stats', {
-                releaseId,
-              });
+              logger.debug(
+                'No OAuth token available for marketplace pricing, falling back to stats',
+                {
+                  releaseId,
+                }
+              );
               return null;
             }
           } catch (suggestionError) {
