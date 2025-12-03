@@ -23,8 +23,8 @@ class AuthManager {
       });
 
       // Store token
-      if (response.token) {
-        this.api.setToken(response.token);
+      if (response.accessToken) {
+        this.api.setToken(response.accessToken);
         this.currentUser = response.user;
         return response;
       } else {
