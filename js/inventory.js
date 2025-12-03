@@ -111,7 +111,10 @@ class InventoryManager {
           discogsId = event.target.dataset.discogsId?.trim() || '';
         }
         if (!discogsId) {
-          this.showError('No Discogs ID available for this release yet');
+          discogsId = await this.resolveDiscogsId(row);
+        }
+        if (!discogsId) {
+          this.showError('Could not find a Discogs match for this release yet');
           return;
         }
         this.loadDiscogsSuggestions(row, discogsId);
@@ -193,7 +196,9 @@ class InventoryManager {
       : '<span class="text-muted">—</span>';
 
     return `
-      <tr data-row-id="${item.id}">
+      <tr data-row-id="${item.id}"
+        data-release-title="${this.escapeAttribute(release.title || '')}"
+        data-release-artist="${this.escapeAttribute(release.artist || '')}">
         <td>
           <div class="table-title">${release.title || 'Unknown Record'}</div>
           <div class="table-meta text-muted">${release.releaseYear || 'Year N/A'}</div>
@@ -442,6 +447,35 @@ class InventoryManager {
     };
   }
 
+  async resolveDiscogsId(row) {
+    const artist = row.dataset.releaseArtist || '';
+    const title = row.dataset.releaseTitle || '';
+    const query = [artist, title].filter(Boolean).join(' - ');
+    if (!query) return null;
+
+    try {
+      const response = await this.api.get('/integrations/discogs/search-enriched', {
+        q: query,
+        limit: 1,
+      });
+      const match = response?.results?.[0];
+      const discogsId = match?.id || match?.releaseId || match?.master_id || match?.masterId;
+      if (!discogsId) return null;
+      const input = row.querySelector('[data-release-field="discogsId"]');
+      if (input) {
+        input.value = discogsId;
+      }
+      const button = row.querySelector('[data-discogs-fetch]');
+      if (button) {
+        button.dataset.discogsId = discogsId;
+      }
+      return discogsId;
+    } catch (error) {
+      console.error('Failed to auto-resolve Discogs ID', error);
+      return null;
+    }
+  }
+
   async loadDiscogsSuggestions(row, discogsId) {
     try {
       this.showLoading(true);
@@ -530,6 +564,14 @@ class InventoryManager {
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  escapeAttribute(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
   }
