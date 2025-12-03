@@ -105,19 +105,7 @@ class InventoryManager {
       if (event.target.matches('[data-discogs-fetch]')) {
         const row = event.target.closest('tr[data-row-id]');
         if (!row) return;
-        const discogsInput = row.querySelector('[data-release-field="discogsId"]');
-        let discogsId = discogsInput?.value?.trim();
-        if (!discogsId) {
-          discogsId = event.target.dataset.discogsId?.trim() || '';
-        }
-        if (!discogsId) {
-          discogsId = await this.resolveDiscogsId(row);
-        }
-        if (!discogsId) {
-          this.showError('Could not find a Discogs match for this release yet');
-          return;
-        }
-        this.loadDiscogsSuggestions(row, discogsId);
+        await this.handleDiscogsFetch(row, event.target);
       }
 
       if (event.target.matches('[data-apply-suggestion]')) {
@@ -127,6 +115,29 @@ class InventoryManager {
         const rawValue = event.target.dataset.value || '';
         const value = decodeURIComponent(rawValue);
         this.applySuggestion(row, field, value);
+      }
+    });
+
+    document.addEventListener('change', async (event) => {
+      if (event.target.matches('[data-discogs-option]')) {
+        const row = event.target.closest('tr[data-row-id]');
+        if (!row) return;
+        const discogsId = event.target.value;
+        if (!discogsId) return;
+        const discogsInput = row.querySelector('[data-release-field="discogsId"]');
+        if (discogsInput) {
+          discogsInput.value = discogsId;
+        }
+        const fetchButton = row.querySelector('[data-discogs-fetch]');
+        if (fetchButton) {
+          fetchButton.dataset.discogsId = discogsId;
+        }
+        await this.loadDiscogsSuggestions(row, discogsId);
+        const optionsContainer = row.querySelector('[data-discogs-options]');
+        if (optionsContainer) {
+          optionsContainer.innerHTML = '';
+          optionsContainer.classList.remove('is-visible');
+        }
       }
     });
   }
@@ -248,6 +259,7 @@ class InventoryManager {
                 : '<span class="text-muted">No link</span>'
             }
           </div>
+          <div class="discogs-options" data-discogs-options></div>
         </td>
         <td>${submissionDetail}</td>
         <td>
@@ -257,6 +269,76 @@ class InventoryManager {
         </td>
       </tr>
     `;
+  }
+
+  async handleDiscogsFetch(row, button) {
+    const discogsInput = row.querySelector('[data-release-field="discogsId"]');
+    let discogsId = discogsInput?.value?.trim();
+    if (!discogsId) {
+      discogsId = button?.dataset.discogsId?.trim() || '';
+    }
+
+    if (discogsId) {
+      await this.loadDiscogsSuggestions(row, discogsId);
+      return;
+    }
+
+    const options = await this.searchDiscogsOptions(row);
+    if (!options.length) {
+      this.showError('No Discogs matches found for this release');
+      return;
+    }
+    this.renderDiscogsOptions(row, options);
+  }
+
+  async searchDiscogsOptions(row) {
+    const artist = row.dataset.releaseArtist || '';
+    const title = row.dataset.releaseTitle || '';
+    const query = [artist, title].filter(Boolean).join(' - ');
+    if (!query) return [];
+
+    try {
+      const response = await this.api.get('/integrations/discogs/search-enriched', {
+        q: query,
+        limit: 5,
+      });
+      return response?.results || [];
+    } catch (error) {
+      console.error('Discogs search failed', error);
+      return [];
+    }
+  }
+
+  renderDiscogsOptions(row, options) {
+    const container = row.querySelector('[data-discogs-options]');
+    if (!container) return;
+
+    if (!options.length) {
+      container.innerHTML = '';
+      container.classList.remove('is-visible');
+      return;
+    }
+
+    const select = document.createElement('select');
+    select.className = 'table-input';
+    select.setAttribute('data-discogs-option', 'true');
+    select.innerHTML = `
+      <option value="">Select matching release</option>
+      ${options.map((opt) => this.renderDiscogsOption(opt)).join('')}
+    `;
+
+    container.innerHTML = '';
+    container.appendChild(select);
+    container.classList.add('is-visible');
+  }
+
+  renderDiscogsOption(option) {
+    const id = option.id || option.releaseId || option.master_id || option.masterId;
+    const year = option.year || option.released || '';
+    const label = option.label || option.labels?.join(', ') || '';
+    const title = option.title || '';
+    const text = `${title}${year ? ` (${year})` : ''}${label ? ` – ${label}` : ''}`;
+    return `<option value="${id}">${this.escapeHtml(text)}</option>`;
   }
 
   renderStatusSelect(value) {
@@ -447,35 +529,6 @@ class InventoryManager {
     };
   }
 
-  async resolveDiscogsId(row) {
-    const artist = row.dataset.releaseArtist || '';
-    const title = row.dataset.releaseTitle || '';
-    const query = [artist, title].filter(Boolean).join(' - ');
-    if (!query) return null;
-
-    try {
-      const response = await this.api.get('/integrations/discogs/search-enriched', {
-        q: query,
-        limit: 1,
-      });
-      const match = response?.results?.[0];
-      const discogsId = match?.id || match?.releaseId || match?.master_id || match?.masterId;
-      if (!discogsId) return null;
-      const input = row.querySelector('[data-release-field="discogsId"]');
-      if (input) {
-        input.value = discogsId;
-      }
-      const button = row.querySelector('[data-discogs-fetch]');
-      if (button) {
-        button.dataset.discogsId = discogsId;
-      }
-      return discogsId;
-    } catch (error) {
-      console.error('Failed to auto-resolve Discogs ID', error);
-      return null;
-    }
-  }
-
   async loadDiscogsSuggestions(row, discogsId) {
     try {
       this.showLoading(true);
@@ -490,6 +543,11 @@ class InventoryManager {
         fetchButton.dataset.discogsId = release?.id || discogsId;
       }
       this.showDiscogsSuggestions(row, suggestions);
+      const optionsContainer = row.querySelector('[data-discogs-options]');
+      if (optionsContainer) {
+        optionsContainer.innerHTML = '';
+        optionsContainer.classList.remove('is-visible');
+      }
       this.showSuccess('Discogs suggestions loaded');
     } catch (error) {
       console.error('Discogs fetch failed', error);

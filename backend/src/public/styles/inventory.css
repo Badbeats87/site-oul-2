@@ -263,6 +263,19 @@
   font-size: var(--font-size-xs);
 }
 
+.discogs-options {
+  display: none;
+  margin-top: var(--space-xs);
+}
+
+.discogs-options.is-visible {
+  display: block;
+}
+
+.discogs-options select {
+  margin-top: var(--space-xs);
+}
+
 /* Pagination */
 .pagination {
   display: flex;
