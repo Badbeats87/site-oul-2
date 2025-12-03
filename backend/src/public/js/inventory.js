@@ -104,10 +104,14 @@ class InventoryManager {
 
       if (event.target.matches('[data-discogs-fetch]')) {
         const row = event.target.closest('tr[data-row-id]');
-        const discogsInput = row?.querySelector('[data-release-field="discogsId"]');
-        const discogsId = discogsInput?.value?.trim();
-        if (!row || !discogsId) {
-          this.showError('Enter a Discogs release ID first');
+        if (!row) return;
+        const discogsInput = row.querySelector('[data-release-field="discogsId"]');
+        let discogsId = discogsInput?.value?.trim();
+        if (!discogsId) {
+          discogsId = event.target.dataset.discogsId?.trim() || '';
+        }
+        if (!discogsId) {
+          this.showError('No Discogs ID available for this release yet');
           return;
         }
         this.loadDiscogsSuggestions(row, discogsId);
@@ -230,7 +234,7 @@ class InventoryManager {
         <td>
           <div class="table-discogs">
             <input type="number" class="table-input" data-release-field="discogsId" value="${release.discogsId ?? ''}" placeholder="Discogs ID">
-            <button type="button" class="button button--ghost button--sm" data-discogs-fetch>Fetch</button>
+            <button type="button" class="button button--ghost button--sm" data-discogs-fetch data-discogs-id="${release.discogsId ?? ''}">Fetch</button>
           </div>
           <div class="table-meta">
             ${
@@ -446,6 +450,10 @@ class InventoryManager {
       const discogsInput = row.querySelector('[data-release-field="discogsId"]');
       if (discogsInput && !discogsInput.value) {
         discogsInput.value = discogsId;
+      }
+      const fetchButton = row.querySelector('[data-discogs-fetch]');
+      if (fetchButton) {
+        fetchButton.dataset.discogsId = release?.id || discogsId;
       }
       this.showDiscogsSuggestions(row, suggestions);
       this.showSuccess('Discogs suggestions loaded');
