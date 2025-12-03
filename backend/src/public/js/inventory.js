@@ -781,14 +781,23 @@ class InventoryManager {
 
     // Label and catalog - handle both catno and catalog_number fields
     const labelOptions = unique((release?.labels || []).map((label) => label?.name?.trim()).filter(Boolean));
-    const catalogNumberOptions = unique(
-      (release?.labels || []).map((label) => {
-        const value = (label?.catalog_number || label?.catno)?.trim();
-        if (!value) return null;
-        if (/^none$/i.test(value) || /^not in label$/i.test(value)) return null;
-        return value;
-      }).filter(Boolean)
-    );
+
+    // Catalog numbers: combine current release labels + all vinyl versions' catalog numbers
+    const currentCatalogNumbers = (release?.labels || []).map((label) => {
+      const value = (label?.catalog_number || label?.catno)?.trim();
+      if (!value) return null;
+      if (/^none$/i.test(value) || /^not in label$/i.test(value)) return null;
+      return value;
+    });
+
+    const vinylVersionCatalogNumbers = (release?.vinyl_versions || []).map((version) => {
+      const value = version?.catno?.trim();
+      if (!value) return null;
+      if (/^none$/i.test(value) || /^not in label$/i.test(value)) return null;
+      return value;
+    });
+
+    const catalogNumberOptions = unique([...currentCatalogNumbers, ...vinylVersionCatalogNumbers]);
 
     // Year/Date
     const yearOptions = unique([

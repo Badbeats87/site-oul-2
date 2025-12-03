@@ -283,6 +283,85 @@ class DiscogsService {
   }
 
   /**
+   * Get all vinyl versions of a master release
+   * Useful for getting catalog numbers of all pressings in vinyl format
+   * @param {number} masterId - Discogs master ID
+   * @returns {Promise<Array>} - Array of vinyl versions with catalog numbers
+   */
+  async getMasterVinylVersions(masterId) {
+    try {
+      if (!masterId || typeof masterId !== 'number') {
+        throw new ApiError('Invalid master ID', 400);
+      }
+
+      const cacheKey = generateCacheKey('discogs', `master_versions_${masterId}`, {});
+
+      return await getOrSet(
+        cacheKey,
+        async () => {
+          const versions = [];
+          let page = 1;
+          let hasMore = true;
+
+          // Paginate through all versions
+          while (hasMore && page <= 5) { // Limit to 5 pages to avoid excessive requests
+            try {
+              await this.throttler.wait();
+              const response = await this.client.get(`/masters/${masterId}/versions`, {
+                params: {
+                  page,
+                  per_page: 100,
+                },
+              });
+
+              const pageVersions = response.data.versions || [];
+
+              // Filter for vinyl formats only
+              const vinylVersions = pageVersions
+                .filter(v => {
+                  const formats = v.format?.split(',').map(f => f.trim().toLowerCase()) || [];
+                  return formats.some(f => f.includes('vinyl') || f.includes('lp'));
+                })
+                .map(v => ({
+                  id: v.id,
+                  country: v.country,
+                  title: v.title,
+                  format: v.format,
+                  label: v.label,
+                  catno: v.catno,
+                  released: v.released,
+                  resource_url: v.resource_url,
+                }));
+
+              versions.push(...vinylVersions);
+
+              // Check if there are more pages
+              hasMore = response.data.pagination?.pages > page;
+              page++;
+            } catch (error) {
+              if (error.response?.status === 404) {
+                hasMore = false; // No more versions
+              } else {
+                throw error;
+              }
+            }
+          }
+
+          return versions;
+        },
+        7200 // Cache for 2 hours
+      );
+    } catch (error) {
+      if (error.isApiError) throw error;
+      logger.error('Failed to fetch master versions', {
+        masterId,
+        error: error.message,
+      });
+      throw new ApiError('Failed to fetch master versions', 500);
+    }
+  }
+
+  /**
    * Get detailed metadata for a specific release
    * @param {number} releaseId - Discogs release ID
    * @returns {Promise<Object>} - Release metadata
@@ -303,11 +382,20 @@ class DiscogsService {
 
           // Fetch master release if available for better metadata
           let masterData = null;
+          let vinylVersions = [];
           if (releaseData.master_id) {
             try {
               await this.throttler.wait();
               const masterResponse = await this.client.get(`/masters/${releaseData.master_id}`);
               masterData = masterResponse.data;
+
+              // Also fetch all vinyl versions of this master
+              try {
+                vinylVersions = await this.getMasterVinylVersions(releaseData.master_id);
+              } catch (error) {
+                logger.warn('Failed to fetch vinyl versions', { masterId: releaseData.master_id });
+                // Continue without vinyl versions
+              }
             } catch (error) {
               logger.warn('Failed to fetch master release', { masterId: releaseData.master_id });
               // Continue without master data
@@ -369,6 +457,8 @@ class DiscogsService {
             status: releaseData.status,
             resource_url: releaseData.resource_url,
             uri: releaseData.uri,
+            // All vinyl versions of this master - for catalog number suggestions
+            vinyl_versions: vinylVersions,
           };
         },
         7200 // Cache for 2 hours
