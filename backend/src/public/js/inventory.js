@@ -466,11 +466,7 @@ class InventoryManager {
             <input type="number" class="table-input" data-release-field="discogsId" value="${release.discogsId ?? ''}" placeholder="Discogs ID">
           </div>
           <div class="table-meta">
-            ${
-              discogsLink
-                ? `<a href="${discogsLink}" target="_blank" rel="noopener">Open</a>`
-                : '<span class="text-muted">No link</span>'
-            }
+            ${discogsLink ? `<a href="${discogsLink}" target="_blank" rel="noopener">Open</a>` : '<span class="text-muted">No link</span>'}
           </div>
           <div class="discogs-options" data-discogs-options></div>
         </td>
@@ -513,7 +509,7 @@ class InventoryManager {
           }
         }
       } catch (error) {
-        console.error(`Failed to fetch Discogs data for row:`, error);
+        console.error('Failed to fetch Discogs data for row:', error);
         skippedCount++;
       }
     }
