@@ -25,8 +25,11 @@ const MIME_TYPES = {
 };
 
 const server = http.createServer((req, res) => {
+  // Strip query parameters from URL
+  let pathname = req.url.split('?')[0];
+
   // Remove trailing slash except for root
-  let pathname = req.url === '/' ? '/index.html' : req.url.replace(/\/$/, '');
+  pathname = pathname === '/' ? '/index.html' : pathname.replace(/\/$/, '');
 
   // Decode URL to handle special characters
   pathname = decodeURIComponent(pathname);
