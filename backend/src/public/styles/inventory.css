@@ -65,20 +65,22 @@
 /* Inventory Table */
 
 .inventory-table-wrapper {
-    background: var(--color-bg);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
+    background: #fff;
+    border: 1px solid #dfe4f1;
+    border-radius: var(--radius-xl);
     margin-bottom: var(--space-xl);
     overflow-x: auto;
     max-height: calc(100vh - 260px);
     overflow-y: auto;
-    padding: var(--space-sm);
+    padding: var(--space-md);
+    box-shadow: var(--shadow-lg);
 }
 
 .admin-body--inventory .inventory-table-wrapper {
     margin-left: calc(-1 * var(--space-xl));
     margin-right: calc(-1 * var(--space-xl));
     width: calc(100% + var(--space-xl) * 2);
+    border-radius: var(--radius-xxl);
 }
 
 .inventory-table {
@@ -90,24 +92,24 @@
 }
 
 .inventory-table thead {
-    background: var(--color-secondary);
+    background: #f4f5fb;
 }
 
 .inventory-table th {
-    padding: 6px 8px;
+    padding: 12px 14px;
     text-align: left;
     font-weight: var(--font-weight-semibold);
-    font-size: calc(var(--font-size-xs) + 1px);
-    color: var(--color-text);
-    border-bottom: 2px solid var(--color-border);
-    border-right: 1px solid var(--color-border);
+    font-size: var(--font-size-sm);
+    color: #0f172a;
+    border-bottom: 1px solid #e5e7f0;
+    border-right: 1px solid #eceff7;
     position: relative;
 }
 
 .inventory-table td {
-    padding: 6px 8px;
-    border-bottom: 1px solid var(--color-border);
-    border-right: 1px solid var(--color-border);
+    padding: 10px 14px;
+    border-bottom: 1px solid #ecf0f8;
+    border-right: 1px solid #f4f5fb;
     color: var(--color-text);
     vertical-align: top;
     word-break: break-word;
@@ -117,12 +119,20 @@
     border-right: none;
 }
 
+.inventory-table tbody tr {
+    transition: background-color var(--transition-fast);
+}
+
+.inventory-table tbody tr:nth-child(even) {
+    background: #fafbff;
+}
+
 .inventory-table tbody tr:hover {
-    background: rgba(37, 99, 235, 0.03);
+    background: #eef2ff;
 }
 
 .inventory-table tbody tr.selected {
-    background: rgba(37, 99, 235, 0.1);
+    background: rgba(37, 99, 235, 0.12);
 }
 
 .inventory-table.is-resizing {
@@ -154,7 +164,7 @@
 .column-resizer::after {
     content: '';
     width: 2px;
-    background: var(--color-border);
+    background: rgba(15, 23, 42, 0.2);
     opacity: 0;
     transition: opacity var(--transition-fast);
 }
@@ -162,6 +172,34 @@
 .inventory-table th:hover .column-resizer::after,
 .inventory-table th.is-resizing .column-resizer::after {
     opacity: 1;
+}
+
+.inventory-table .table-input,
+.inventory-table .filter-select {
+    border: 1px solid #dfe3ed;
+    border-radius: 10px;
+    padding: 6px 8px;
+    font-size: var(--font-size-sm);
+    background: #fff;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+}
+
+.inventory-table .table-input:focus,
+.inventory-table .filter-select:focus {
+    border-color: #8ba3ff;
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
+}
+
+.inventory-table .button--primary {
+    background: #111827;
+    border-color: #111827;
+    border-radius: 20px;
+    padding: 4px 16px;
+}
+
+.inventory-table .button--primary:hover {
+    background: #0b1222;
+    border-color: #0b1222;
 }
 
 /* Checkboxes */
