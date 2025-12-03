@@ -558,7 +558,19 @@ class InventoryManager {
           limit: 5,
         }
       );
-      return response?.results || [];
+      // Store enriched results with metadata for later use
+      const results = response?.results || [];
+      // Cache the enriched metadata so we don't have to re-fetch
+      if (window.discogsMetadataCache === undefined) {
+        window.discogsMetadataCache = {};
+      }
+      results.forEach((result) => {
+        if (result.metadata) {
+          const cacheKey = `${result.type}_${result.id}`;
+          window.discogsMetadataCache[cacheKey] = result.metadata;
+        }
+      });
+      return results;
     } catch (error) {
       console.error('Discogs search failed', error);
       return [];
@@ -829,13 +841,30 @@ class InventoryManager {
         actualId = discogsId.substring(1);
       }
 
-      // Fetch from appropriate endpoint based on type
-      const endpoint =
-        actualType === 'master'
-          ? `/integrations/discogs/masters/${actualId}`
-          : `/integrations/discogs/releases/${actualId}`;
+      // Check if we have cached metadata from search enrichment
+      const cacheKey = `${actualType}_${actualId}`;
+      let release;
 
-      const release = await this.api.get(endpoint);
+      if (
+        window.discogsMetadataCache &&
+        window.discogsMetadataCache[cacheKey]
+      ) {
+        console.log(
+          'Using cached Discogs metadata for',
+          cacheKey,
+          window.discogsMetadataCache[cacheKey]
+        );
+        release = window.discogsMetadataCache[cacheKey];
+      } else {
+        // Fetch from appropriate endpoint based on type
+        const endpoint =
+          actualType === 'master'
+            ? `/integrations/discogs/masters/${actualId}`
+            : `/integrations/discogs/releases/${actualId}`;
+
+        release = await this.api.get(endpoint);
+      }
+
       const suggestions = this.extractDiscogsSuggestions(release);
       const discogsInput = row.querySelector(
         '[data-release-field="discogsId"]'
