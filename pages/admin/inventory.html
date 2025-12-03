@@ -9,9 +9,8 @@
     <link rel="stylesheet" href="../../styles/inventory.css?v=20251203">
 </head>
 <body class="admin-body">
-    <div class="admin-shell">
-        <!-- Sidebar -->
-        <aside class="admin-sidebar">
+    <div class="admin-shell admin-shell--topnav">
+        <header class="admin-header">
             <div class="admin-sidebar__brand">
                 <span class="admin-sidebar__logo">
                     <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" width="26" height="26" aria-hidden="true">
@@ -26,18 +25,7 @@
                 </div>
             </div>
 
-            <div class="admin-sidebar__user">
-                <div class="admin-avatar" aria-hidden="true">AM</div>
-                <div class="admin-sidebar__meta">
-                    <span class="eyebrow" style="color: rgba(243,244,246,0.7);">Inventory Lead</span>
-                    <strong>Alex Mercer</strong>
-                    <span>Shift: Morning · 2 alerts flagged</span>
-                </div>
-                <a class="button button--secondary button--sm" href="index.html">← Back to Dashboard</a>
-            </div>
-
-            <nav class="admin-nav" aria-label="Admin navigation">
-                <p class="admin-nav__label">Overview</p>
+            <nav class="admin-nav admin-nav--horizontal" aria-label="Admin navigation">
                 <a class="admin-nav__link" href="index.html">
                     <span class="admin-nav__icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" aria-hidden="true">
@@ -97,11 +85,20 @@
                 </a>
             </nav>
 
-            <hr class="admin-sidebar__divider">
-            <div class="admin-sidebar__footer">
-                Warehouse sync in 12m · Discogs webhook healthy · Physical audit queue ready.
+            <div class="admin-header__user">
+                <div class="admin-avatar" aria-hidden="true">AM</div>
+                <div class="admin-header__user-meta">
+                    <span class="eyebrow" style="color: rgba(243,244,246,0.7);">Inventory Lead</span>
+                    <strong>Alex Mercer</strong>
+                    <span>Shift: Morning · 2 alerts flagged</span>
+                </div>
+                <a class="button button--secondary button--sm" href="index.html">← Back to Dashboard</a>
             </div>
-        </aside>
+        </header>
+
+        <div class="admin-announcement">
+            Warehouse sync in 12m · Discogs webhook healthy · Physical audit queue ready.
+        </div>
 
         <!-- Main Content -->
         <div class="admin-main">
