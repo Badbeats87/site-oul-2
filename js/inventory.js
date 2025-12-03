@@ -2,7 +2,7 @@
  * Inventory Management Module
  */
 class InventoryManager {
-  constructor(apiClient) {
+  constructor(apiClient, columnManager = null) {
     this.api = apiClient;
     this.inventory = [];
     this.filters = {
@@ -15,10 +15,18 @@ class InventoryManager {
       sortOrder: 'desc',
     };
     this.pagination = { page: 1, limit: 20, total: 0 };
+    this.columnManager = columnManager;
+
+    if (this.columnManager) {
+      this.columnManager.onColumnsChange = (visibleColumns) => {
+        this.applyColumnVisibility(visibleColumns);
+      };
+    }
   }
 
   async initialize() {
     this.cacheElements();
+    await this.setupColumnPreferences();
     this.setupEventListeners();
     await this.loadInventory();
   }
@@ -33,6 +41,40 @@ class InventoryManager {
     this.tbody = document.querySelector('[data-inventory-tbody]');
     this.container = document.querySelector('[data-inventory-container]');
     this.loader = document.querySelector('[data-loading]');
+    this.columnToggleContainer = document.querySelector('[data-column-toggle]');
+    this.table = document.querySelector('[data-inventory-table]');
+  }
+
+  async setupColumnPreferences() {
+    if (!this.columnManager) return;
+    try {
+      await this.columnManager.initialize();
+      if (this.columnToggleContainer) {
+        this.columnToggleContainer.innerHTML = '';
+        this.columnManager.renderColumnToggleUI(this.columnToggleContainer);
+      }
+      this.applyColumnVisibility(this.columnManager.visibleColumns);
+    } catch (error) {
+      console.error('Failed to initialize column preferences:', error);
+    }
+  }
+
+  applyColumnVisibility(visibilityMap) {
+    if (!this.table || !visibilityMap) return;
+
+    Object.entries(visibilityMap).forEach(([columnId, isVisible]) => {
+      const cells = this.table.querySelectorAll(`[data-column-id="${columnId}"]`);
+      const hide = isVisible === false;
+
+      cells.forEach((cell) => {
+        cell.classList.toggle('table-column-hidden', hide);
+        if (hide) {
+          cell.setAttribute('aria-hidden', 'true');
+        } else {
+          cell.removeAttribute('aria-hidden');
+        }
+      });
+    });
   }
 
   setupEventListeners() {
@@ -204,6 +246,9 @@ class InventoryManager {
     }
 
     this.tbody.innerHTML = this.inventory.map((item) => this.renderRow(item)).join('');
+    if (this.columnManager) {
+      this.applyColumnVisibility(this.columnManager.visibleColumns);
+    }
   }
 
   renderRow(item) {
@@ -226,44 +271,44 @@ class InventoryManager {
       <tr data-row-id="${item.id}"
         data-release-title="${this.escapeAttribute(release.title || '')}"
         data-release-artist="${this.escapeAttribute(release.artist || '')}">
-        <td>
+        <td data-column-id="title">
           <div class="table-title">${release.title || 'Unknown Record'}</div>
           <div class="table-meta text-muted">${release.releaseYear || 'Year N/A'}</div>
         </td>
-        <td>${release.artist || '—'}</td>
-        <td>
+        <td data-column-id="artist">${release.artist || '—'}</td>
+        <td data-column-id="label">
           <input type="text" class="table-input" data-release-field="label" value="${release.label || ''}">
           <div class="table-meta suggestion-hint" data-suggestion-for="label"></div>
         </td>
-        <td>
+        <td data-column-id="catalogNumber">
           <input type="text" class="table-input" data-release-field="catalogNumber" value="${release.catalogNumber || ''}">
           <div class="table-meta suggestion-hint" data-suggestion-for="catalogNumber"></div>
         </td>
-        <td>
+        <td data-column-id="year">
           <input type="number" class="table-input" data-release-field="releaseYear" value="${release.releaseYear ?? ''}">
           <div class="table-meta suggestion-hint" data-suggestion-for="releaseYear"></div>
         </td>
-        <td>
+        <td data-column-id="genre">
           <input type="text" class="table-input" data-release-field="genre" value="${release.genre || ''}">
           <div class="table-meta suggestion-hint" data-suggestion-for="genre"></div>
         </td>
-        <td>
+        <td data-column-id="variant">
           <input type="text" class="table-input" data-release-field="description" value="${release.description || ''}" placeholder="Variant / version">
           <div class="table-meta suggestion-hint" data-suggestion-for="description"></div>
         </td>
-        <td><input type="text" class="table-input" data-field="sku" value="${item.sku || ''}"></td>
-        <td>${item.channel || '—'}</td>
-        <td>${item.conditionMedia || 'N/A'} / ${item.conditionSleeve || 'N/A'}</td>
-        <td>${this.renderStatusSelect(item.status)}</td>
-        <td class="numeric">${this.formatCurrency(item.costBasis)}</td>
-        <td>
+        <td data-column-id="sku"><input type="text" class="table-input" data-field="sku" value="${item.sku || ''}"></td>
+        <td data-column-id="channel">${item.channel || '—'}</td>
+        <td data-column-id="condition">${item.conditionMedia || 'N/A'} / ${item.conditionSleeve || 'N/A'}</td>
+        <td data-column-id="status">${this.renderStatusSelect(item.status)}</td>
+        <td class="numeric" data-column-id="cost">${this.formatCurrency(item.costBasis)}</td>
+        <td data-column-id="listPrice">
           <input type="number" min="0" step="0.01" class="table-input" data-field="listPrice" value="${item.listPrice ?? ''}">
           <div class="table-meta text-muted">Margin ${margin}%</div>
         </td>
-        <td>
+        <td data-column-id="salePrice">
           <input type="number" min="0" step="0.01" class="table-input" data-field="salePrice" value="${item.salePrice ?? ''}">
         </td>
-        <td>
+        <td data-column-id="discogs">
           <div class="table-discogs">
             <input type="number" class="table-input" data-release-field="discogsId" value="${release.discogsId ?? ''}" placeholder="Discogs ID">
             <button type="button" class="button button--ghost button--sm" data-discogs-fetch data-discogs-id="${release.discogsId ?? ''}">Fetch</button>
@@ -277,8 +322,8 @@ class InventoryManager {
           </div>
           <div class="discogs-options" data-discogs-options></div>
         </td>
-        <td>${submissionDetail}</td>
-        <td>
+        <td data-column-id="submission">${submissionDetail}</td>
+        <td data-column-id="actions">
           <button class="button button--sm button--primary" data-inventory-save data-inventory-id="${item.id}">
             Save
           </button>
@@ -730,9 +775,37 @@ function createFallbackApi() {
   };
 }
 
+const INVENTORY_COLUMN_CONFIG = [
+  { id: 'title', label: 'Title' },
+  { id: 'artist', label: 'Artist' },
+  { id: 'label', label: 'Label' },
+  { id: 'catalogNumber', label: 'Catalog #' },
+  { id: 'year', label: 'Year' },
+  { id: 'genre', label: 'Genre' },
+  { id: 'variant', label: 'Variant / Notes' },
+  { id: 'sku', label: 'SKU' },
+  { id: 'channel', label: 'Channel', defaultVisible: false },
+  { id: 'condition', label: 'Condition' },
+  { id: 'status', label: 'Status' },
+  { id: 'cost', label: 'Cost' },
+  { id: 'listPrice', label: 'List Price' },
+  { id: 'salePrice', label: 'Sale Price' },
+  { id: 'discogs', label: 'Discogs', defaultVisible: false },
+  { id: 'submission', label: 'Submission' },
+  { id: 'actions', label: 'Actions' }
+];
+
 const storedToken = typeof localStorage !== 'undefined' ? localStorage.getItem('auth_token') : null;
 const inventoryApi = typeof api !== 'undefined' ? api : createFallbackApi();
-const inventoryManager = new InventoryManager(inventoryApi);
+const inventoryColumnManager =
+  typeof TableColumnManager !== 'undefined'
+    ? new TableColumnManager({
+        tableName: 'inventory',
+        columns: INVENTORY_COLUMN_CONFIG,
+        api: inventoryApi
+      })
+    : null;
+const inventoryManager = new InventoryManager(inventoryApi, inventoryColumnManager);
 document.addEventListener('DOMContentLoaded', () => {
   inventoryManager.initialize();
 });

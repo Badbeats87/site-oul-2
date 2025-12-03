@@ -211,31 +211,31 @@
                         <p class="panel-subtitle">Inline edits auto-save with full audit history.</p>
                     </div>
                     <div class="panel-header__actions">
-                        <button class="button button--secondary button--sm" type="button">Show Columns</button>
-                        <button class="button button--secondary button--sm" type="button">Toggle Density</button>
+                        <div data-column-toggle></div>
+                        <button class="button button--secondary button--sm" type="button" data-density-toggle>Toggle Density</button>
                     </div>
                 </div>
                 <div class="inventory-table-wrapper condensed-table" data-inventory-container>
-                    <table class="table inventory-table">
+                    <table class="table inventory-table" data-inventory-table>
                         <thead>
                             <tr>
-                                <th>Title</th>
-                                <th>Artist</th>
-                                <th>Label</th>
-                                <th>Catalog #</th>
-                                <th>Year</th>
-                                <th>Genre</th>
-                                <th>Variant / Notes</th>
-                                <th>SKU</th>
-                                <th>Channel</th>
-                                <th>Condition</th>
-                                <th>Status</th>
-                                <th>Cost</th>
-                                <th>List Price</th>
-                                <th>Sale Price</th>
-                                <th>Discogs</th>
-                                <th>Submission</th>
-                                <th>Actions</th>
+                                <th data-column-id="title">Title</th>
+                                <th data-column-id="artist">Artist</th>
+                                <th data-column-id="label">Label</th>
+                                <th data-column-id="catalogNumber">Catalog #</th>
+                                <th data-column-id="year">Year</th>
+                                <th data-column-id="genre">Genre</th>
+                                <th data-column-id="variant">Variant / Notes</th>
+                                <th data-column-id="sku">SKU</th>
+                                <th data-column-id="channel">Channel</th>
+                                <th data-column-id="condition">Condition</th>
+                                <th data-column-id="status">Status</th>
+                                <th data-column-id="cost">Cost</th>
+                                <th data-column-id="listPrice">List Price</th>
+                                <th data-column-id="salePrice">Sale Price</th>
+                                <th data-column-id="discogs">Discogs</th>
+                                <th data-column-id="submission">Submission</th>
+                                <th data-column-id="actions">Actions</th>
                             </tr>
                         </thead>
                         <tbody data-inventory-tbody>
@@ -266,6 +266,7 @@
 
     <script src="../../js/api-client.js?v=20251203"></script>
     <script src="../../js/auth.js?v=20251203"></script>
+    <script src="../../js/table-column-manager.js?v=20251203"></script>
     <script src="../../js/inventory.js?v=20251203"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
