@@ -560,6 +560,16 @@ class InventoryManager {
       );
       // Store enriched results with metadata for later use
       const results = response?.results || [];
+      console.log('searchDiscogsOptions results', {
+        count: results.length,
+        results: results.map((r) => ({
+          id: r.id,
+          type: r.type,
+          masterId: r.master_id,
+          hasMetadata: !!r.metadata,
+          metadataVinylVersions: r.metadata?.vinyl_versions?.length,
+        })),
+      });
       // Cache the enriched metadata so we don't have to re-fetch
       if (window.discogsMetadataCache === undefined) {
         window.discogsMetadataCache = {};
@@ -568,6 +578,10 @@ class InventoryManager {
         if (result.metadata) {
           const cacheKey = `${result.type}_${result.id}`;
           window.discogsMetadataCache[cacheKey] = result.metadata;
+          console.log('Cached Discogs metadata', {
+            cacheKey,
+            vinylVersions: result.metadata.vinyl_versions?.length,
+          });
         }
       });
       return results;
@@ -613,6 +627,13 @@ class InventoryManager {
     // Store both id and type so we know how to fetch the data
     const idToStore =
       type === 'master' && option.master_id ? option.master_id : id;
+    console.log('renderDiscogsOption', {
+      optionId: option.id,
+      masterId: option.master_id,
+      type,
+      idToStore,
+      hasMetadata: !!option.metadata,
+    });
     return `<option value="${idToStore}" data-discogs-type="${type}">${this.escapeHtml(
       text
     )}</option>`;
