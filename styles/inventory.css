@@ -211,6 +211,35 @@
     display: inline-block;
 }
 
+
+.inventory-table td[data-column-id="variant"] .table-input,
+.inventory-table td[data-column-id="sku"] .table-input {
+    width: 140px;
+}
+
+.inventory-table td[data-column-id="status"] .filter-select {
+    width: 130px;
+}
+
+.inventory-table td[data-column-id="listPrice"] .table-input,
+.inventory-table td[data-column-id="salePrice"] .table-input {
+    width: 130px;
+    text-align: right;
+}
+
+.inventory-table td[data-column-id="discogs"] .table-input {
+    width: 120px;
+}
+
+.inventory-table td.numeric {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.inventory-table td[data-column-id="discogs"] .button {
+    margin-left: var(--space-xs);
+}
+
 .inventory-table .button--primary {
     background: #111827;
     border-color: #111827;
@@ -273,10 +302,6 @@
     font-size: var(--font-size-xs);
     color: var(--color-text-light);
     margin-top: 2px;
-}
-
-.numeric {
-    white-space: nowrap;
 }
 
 .table-discogs {
