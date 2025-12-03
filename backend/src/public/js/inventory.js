@@ -315,13 +315,6 @@ class InventoryManager {
         if (!row) return;
         const field = event.target.dataset.suggestionSelect;
         const value = event.target.value;
-
-        // Handle "Edit Manually" option
-        if (value === '__edit__') {
-          this.switchToManualEdit(event.target, field, row);
-          return;
-        }
-
         if (!field || !value) return;
         this.applySuggestion(row, field, value);
       }
@@ -789,60 +782,127 @@ class InventoryManager {
   }
 
   showDiscogsSuggestions(row, suggestions) {
-    Object.entries(suggestions).forEach(([field, values]) => {
-      const hint = row.querySelector(`[data-suggestion-for="${field}"]`);
-      if (!hint) return;
+    // Store suggestions on the row for the modal
+    row.dataset.discogsSuggestions = JSON.stringify(suggestions);
 
-      const optionValues = Array.isArray(values)
-        ? [...new Set(values.filter(Boolean))]
-        : values
-          ? [values]
-          : [];
+    // Show modal with Discogs data instead of inline dropdowns
+    this.showDiscogsModal(row, suggestions);
+  }
 
-      const currentInput = row.querySelector(
-        `[data-release-field="${field}"], [data-field="${field}"]`
-      );
-      const currentValue = currentInput?.value?.trim();
+  showDiscogsModal(row, suggestions) {
+    const rowId = row.dataset.rowId;
+    const releaseTitle = row.dataset.releaseTitle || '';
+    const releaseArtist = row.dataset.releaseArtist || '';
 
-      const allValues = [...new Set([currentValue, ...optionValues].filter(Boolean))];
+    const suggestionRows = Object.entries(suggestions)
+      .map(([field, values]) => {
+        const fieldLabel = this.getFieldLabel(field);
+        const valuesList = Array.isArray(values) ? values.filter(Boolean) : (values ? [values] : []);
 
-      if (!allValues.length) {
-        hint.classList.remove('is-visible');
-        hint.innerHTML = '';
-        return;
-      }
+        if (!valuesList.length) return '';
 
-      // Convert input to select dropdown with suggestions
-      const selectOptions = allValues
-        .map(
-          (val) => `
-            <option value="${encodeURIComponent(val)}" ${
-              currentValue === val ? 'selected' : ''
-            }>
-              ${this.escapeHtml(val)}
-            </option>`
-        )
-        .join('');
+        const currentInput = row.querySelector(
+          `[data-release-field="${field}"], [data-field="${field}"]`
+        );
+        const currentValue = currentInput?.value?.trim() || '';
 
-      // Replace the input field with a select dropdown
-      const selectHtml = `
-        <select class="table-input suggestion-select" data-suggestion-select="${field}" data-field="${field}">
-          <option value="">— Select or edit manually —</option>
-          ${selectOptions}
-          <option value="" disabled style="border-top: 1px solid #ddd; padding-top: 4px;"></option>
-          <option value="__edit__" style="font-weight: 600; color: #4f46e5;">✎ Edit Manually</option>
-        </select>
-      `;
+        const valuesHtml = valuesList
+          .map((val, idx) => `
+            <div class="discogs-suggestion-item">
+              <input type="radio"
+                name="discogs-${field}"
+                id="discogs-${field}-${idx}"
+                value="${this.escapeAttribute(val)}"
+                ${currentValue === val ? 'checked' : ''}>
+              <label for="discogs-${field}-${idx}">${this.escapeHtml(val)}</label>
+            </div>
+          `)
+          .join('');
 
-      // Replace the input with the select
-      if (currentInput) {
-        currentInput.outerHTML = selectHtml;
-      }
+        return `
+          <div class="discogs-modal-field">
+            <div class="discogs-field-label">${fieldLabel}</div>
+            <div class="discogs-field-current">Current: <strong>${currentValue || '(empty)'}</strong></div>
+            <div class="discogs-suggestions">
+              ${valuesHtml}
+            </div>
+          </div>
+        `;
+      })
+      .filter(Boolean)
+      .join('');
 
-      // Hide the suggestion hint (no longer needed)
-      hint.classList.remove('is-visible');
-      hint.innerHTML = '';
+    const modalHtml = `
+      <div class="discogs-modal" data-discogs-modal>
+        <div class="discogs-modal__overlay"></div>
+        <div class="discogs-modal__content">
+          <div class="discogs-modal__header">
+            <div>
+              <h3>Discogs Metadata</h3>
+              <p class="discogs-modal__subtitle">${this.escapeHtml(releaseArtist)} – ${this.escapeHtml(releaseTitle)}</p>
+            </div>
+            <button type="button" class="discogs-modal__close" aria-label="Close">✕</button>
+          </div>
+          <div class="discogs-modal__body">
+            ${suggestionRows}
+          </div>
+          <div class="discogs-modal__footer">
+            <button type="button" class="button button--secondary" data-discogs-modal-cancel>Cancel</button>
+            <button type="button" class="button button--primary" data-discogs-modal-apply>Apply Selected</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Remove any existing modal
+    const existingModal = document.querySelector('[data-discogs-modal]');
+    if (existingModal) existingModal.remove();
+
+    // Add modal to page
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    const modal = document.querySelector('[data-discogs-modal]');
+
+    // Handle close
+    const closeBtn = modal.querySelector('.discogs-modal__close');
+    const cancelBtn = modal.querySelector('[data-discogs-modal-cancel]');
+    const overlay = modal.querySelector('.discogs-modal__overlay');
+
+    const closeModal = () => modal.remove();
+    closeBtn?.addEventListener('click', closeModal);
+    cancelBtn?.addEventListener('click', closeModal);
+    overlay?.addEventListener('click', closeModal);
+
+    // Handle apply
+    const applyBtn = modal.querySelector('[data-discogs-modal-apply]');
+    applyBtn?.addEventListener('click', () => {
+      Object.keys(suggestions).forEach(field => {
+        const selected = modal.querySelector(`input[name="discogs-${field}"]:checked`);
+        if (selected) {
+          const target = row.querySelector(
+            `[data-release-field="${field}"], [data-field="${field}"]`
+          );
+          if (target) {
+            let value = selected.value;
+            if (field === 'releaseYear') {
+              value = parseInt(value, 10);
+            }
+            target.value = value;
+          }
+        }
+      });
+      closeModal();
     });
+  }
+
+  getFieldLabel(field) {
+    const labels = {
+      label: 'Label',
+      catalogNumber: 'Catalog Number',
+      releaseYear: 'Release Year',
+      genre: 'Genre',
+      description: 'Description / Format',
+    };
+    return labels[field] || field;
   }
 
   applySuggestion(row, field, value) {
@@ -857,45 +917,6 @@ class InventoryManager {
       normalized = Number.isNaN(parsed) ? '' : parsed;
     }
     target.value = normalized;
-  }
-
-  switchToManualEdit(selectElement, field, row) {
-    const currentValue = selectElement.value ? decodeURIComponent(selectElement.value) : '';
-
-    // Determine the correct data attribute name
-    const dataAttr = field === 'sku' ? 'data-field' : 'data-release-field';
-    const inputType = field === 'releaseYear' ? 'number' : 'text';
-    const placeholder = this.getFieldPlaceholder(field);
-
-    // Create input HTML
-    const inputHtml = `
-      <input type="${inputType}"
-        class="table-input"
-        ${dataAttr}="${field}"
-        value="${this.escapeAttribute(currentValue)}"
-        placeholder="${placeholder}">
-    `;
-
-    // Replace select with input
-    selectElement.outerHTML = inputHtml;
-
-    // Focus the new input so user can start typing
-    const newInput = row.querySelector(`[${dataAttr}="${field}"]`);
-    if (newInput) {
-      newInput.focus();
-      newInput.select();
-    }
-  }
-
-  getFieldPlaceholder(field) {
-    const placeholders = {
-      label: 'Record label',
-      catalogNumber: 'Catalog number',
-      releaseYear: 'Year',
-      genre: 'Genre',
-      description: 'Variant / version',
-    };
-    return placeholders[field] || field;
   }
 
   escapeHtml(str) {
