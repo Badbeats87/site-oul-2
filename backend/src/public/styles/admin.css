@@ -182,7 +182,7 @@
 /* Main Area --------------------------------------------------------------- */
 
 .admin-main {
-    padding: var(--space-3xl);
+    padding: var(--space-2xl);
     display: flex;
     flex-direction: column;
     gap: var(--space-2xl);
@@ -678,7 +678,7 @@
     background: var(--color-bg);
     border-radius: var(--radius-lg);
     border: 1px solid var(--color-border);
-    padding: var(--space-xl);
+    padding: var(--space-lg);
     box-shadow: var(--shadow-sm);
     margin-bottom: var(--space-2xl);
 }
