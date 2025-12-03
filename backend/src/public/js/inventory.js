@@ -146,6 +146,15 @@ class InventoryManager {
           optionsContainer.classList.remove('is-visible');
         }
       }
+
+      if (event.target.matches('[data-suggestion-select]')) {
+        const row = event.target.closest('tr[data-row-id]');
+        if (!row) return;
+        const field = event.target.dataset.suggestionSelect;
+        const value = event.target.value;
+        if (!field || !value) return;
+        this.applySuggestion(row, field, value);
+      }
     });
   }
 
@@ -616,34 +625,33 @@ class InventoryManager {
           ? [values]
           : [];
 
-      if (!optionValues.length) {
+      const currentInput = row.querySelector(
+        `[data-release-field="${field}"], [data-field="${field}"]`
+      );
+      const currentValue = currentInput?.value?.trim();
+
+      const allValues = [...new Set([currentValue, ...optionValues].filter(Boolean))];
+
+      if (!allValues.length) {
         hint.classList.remove('is-visible');
         hint.innerHTML = '';
         return;
       }
 
-      if (optionValues.length === 1) {
-        const encodedValue = encodeURIComponent(optionValues[0]);
-        hint.innerHTML = `
-          Discogs: <strong>${this.escapeHtml(optionValues[0])}</strong>
-          <button type="button"
-            class="button button--ghost button--sm"
-            data-apply-suggestion
-            data-field="${field}"
-            data-value="${encodedValue}">
-            Apply
-          </button>
-        `;
-      } else {
-        const selectOptions = optionValues
-          .map(
-            (val) =>
-              `<option value="${encodeURIComponent(val)}">${this.escapeHtml(val)}</option>`
-          )
-          .join('');
+      const selectOptions = allValues
+        .map(
+          (val) => `
+            <option value="${encodeURIComponent(val)}" ${
+              currentValue === val ? 'selected' : ''
+            }>
+              ${this.escapeHtml(val)}
+            </option>`
+        )
+        .join('');
 
-        hint.innerHTML = `
-          Discogs suggestions:
+      hint.innerHTML = `
+        <label class="suggestion-label">Discogs suggestions</label>
+        <div class="suggestion-controls">
           <select class="table-input" data-suggestion-select="${field}">
             <option value="">Choose value</option>
             ${selectOptions}
@@ -654,8 +662,8 @@ class InventoryManager {
             data-field="${field}">
             Apply
           </button>
-        `;
-      }
+        </div>
+      `;
 
       hint.classList.add('is-visible');
     });
@@ -667,12 +675,10 @@ class InventoryManager {
       row.querySelector(`[data-release-field="${field}"]`) ||
       row.querySelector(`[data-field="${field}"]`);
     if (!target) return;
-    let normalized = value ?? '';
+    let normalized = value ? decodeURIComponent(value) : '';
     if (field === 'releaseYear' && normalized) {
       const parsed = parseInt(normalized, 10);
       normalized = Number.isNaN(parsed) ? '' : parsed;
-    } else {
-      normalized = decodeURIComponent(normalized);
     }
     target.value = normalized;
   }
