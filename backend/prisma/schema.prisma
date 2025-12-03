@@ -690,20 +690,21 @@ enum UserRole {
 // ============================================================================
 
 model AdminUser {
-  id              String   @id @default(uuid()) @db.Uuid
-  email           String   @unique @db.VarChar(255)
-  name            String   @db.VarChar(255)
-  role            UserRole @default(BUYER)
-  passwordHash    String   @map("password_hash") @db.VarChar(255)
-  isActive        Boolean  @default(true) @map("is_active")
+  id                    String   @id @default(uuid()) @db.Uuid
+  email                 String   @unique @db.VarChar(255)
+  name                  String   @db.VarChar(255)
+  role                  UserRole @default(BUYER)
+  passwordHash          String   @map("password_hash") @db.VarChar(255)
+  isActive              Boolean  @default(true) @map("is_active")
 
   // Timestamps
-  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
-  lastLoginAt     DateTime? @map("last_login_at") @db.Timestamptz
+  createdAt             DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  lastLoginAt           DateTime? @map("last_login_at") @db.Timestamptz
 
   // Relations
-  refreshTokens   RefreshToken[]
+  refreshTokens         RefreshToken[]
+  tablePreferences      AdminTablePreference[]
 
   @@index([email])
   @@index([role, isActive])
@@ -730,6 +731,32 @@ model RefreshToken {
   @@index([token])
   @@index([expiresAt])
   @@map("refresh_tokens")
+}
+
+// ============================================================================
+// ADMIN TABLE PREFERENCES (Column Visibility)
+// ============================================================================
+
+model AdminTablePreference {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  tableName       String   @map("table_name") @db.VarChar(100)
+
+  // Column visibility stored as JSON object
+  // Example: {"title": true, "artist": true, "sku": false}
+  visibleColumns  Json     @map("visible_columns")
+
+  // Timestamps
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  user            AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Constraints: One preference record per user per table
+  @@unique([userId, tableName])
+  @@index([userId])
+  @@map("admin_table_preferences")
 }
 
 // ============================================================================

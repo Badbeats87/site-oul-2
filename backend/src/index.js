@@ -18,6 +18,7 @@ import integrationsRoutes from './routes/integrations.js';
 import sellersRoutes from './routes/sellers.js';
 import submissionsRoutes from './routes/submissions.js';
 import adminRoutes from './routes/admin.js';
+import adminPreferencesRoutes from './routes/adminPreferences.js';
 import inventoryRoutes from './routes/inventory.js';
 import buyerRoutes from './routes/buyer.js';
 import checkoutRoutes from './routes/checkout.js';
@@ -156,6 +157,9 @@ app.use('/api/v1/submissions', submissionsRoutes);
 
 // Admin routes
 app.use('/api/v1/admin/submissions', adminRoutes);
+
+// Admin preferences routes (table column visibility)
+app.use('/api/v1/admin/preferences', adminPreferencesRoutes);
 
 // Inventory routes
 app.use('/api/v1/inventory', inventoryRoutes);
