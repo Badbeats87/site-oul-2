@@ -314,47 +314,56 @@ class DiscogsService {
             }
           }
 
-          // Prefer master data where available, fall back to release data
+          // Use master data for most metadata (more complete/accurate)
+          // But use RELEASE data for pressing-specific info (labels, catalog numbers, formats, notes)
           const data = masterData || releaseData;
 
           return {
             id: releaseData.id,
             master_id: releaseData.master_id,
+            // Use master title/artists/year when available (more accurate)
             title: data.title,
             artists: (data.artists || []).map((a) => ({
               name: a.name,
               resource_url: a.resource_url,
             })),
             year: data.year,
+            // Master genres/styles are most accurate
             genres: data.genres || [],
             styles: data.styles || [],
-            formats: (data.formats || []).map((f) => ({
+            // RELEASE formats, labels, and notes are pressing-specific and should not come from master
+            formats: (releaseData.formats || []).map((f) => ({
               name: f.name,
               qty: f.qty,
               descriptions: f.descriptions || [],
             })),
-            labels: (data.labels || []).map((l) => ({
+            // ALWAYS use RELEASE labels for catalog numbers (pressing-specific)
+            labels: (releaseData.labels || []).map((l) => ({
               name: l.name,
               catalog_number: l.catno || l.catalog_number,
               resource_url: l.resource_url,
             })),
-            tracklist: (data.tracklist || []).map((t) => ({
+            // Use release tracklist (release-specific)
+            tracklist: (releaseData.tracklist || []).map((t) => ({
               position: t.position,
               title: t.title,
               duration: t.duration,
             })),
-            images: (data.images || []).map((i) => ({
+            // Use release images
+            images: (releaseData.images || []).map((i) => ({
               type: i.type,
               uri: i.uri,
               resource_url: i.resource_url,
               uri150: i.uri150,
             })),
+            // Community stats from master (aggregated across all pressings)
             community: {
-              have: data.community?.have,
-              want: data.community?.want,
-              rating: data.community?.rating?.average,
-              votes: data.community?.rating?.count,
+              have: masterData?.community?.have || releaseData.community?.have,
+              want: masterData?.community?.want || releaseData.community?.want,
+              rating: masterData?.community?.rating?.average || releaseData.community?.rating?.average,
+              votes: masterData?.community?.rating?.count || releaseData.community?.rating?.count,
             },
+            // Release-specific notes and details
             notes: releaseData.notes,
             country: releaseData.country,
             status: releaseData.status,
