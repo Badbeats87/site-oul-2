@@ -205,10 +205,11 @@ main {
 }
 
 .page-content {
-  min-height: auto;
   padding: var(--space-xl) 0;
   width: 100%;
-  overflow: auto;
+  display: block;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Dashboard Stats */
