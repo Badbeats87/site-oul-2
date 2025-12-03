@@ -66,5 +66,6 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
+# Build timestamp: 2025-12-03T17:50:00Z
 # Start server (seeding happens in initDb.js during startup)
 CMD ["npm", "start"]
