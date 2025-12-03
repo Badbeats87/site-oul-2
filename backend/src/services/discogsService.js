@@ -316,19 +316,21 @@ class DiscogsService {
 
               const pageVersions = response.data.versions || [];
 
-              // Filter for vinyl formats only
+              // Filter for vinyl formats only (exclude digital/CD/etc)
               const vinylVersions = pageVersions
                 .filter(v => {
-                  const formats = v.format?.split(',').map(f => f.trim().toLowerCase()) || [];
-                  const isVinyl = formats.some(f => f.includes('vinyl') || f.includes('lp'));
-                  if (!isVinyl) {
+                  const format = v.format?.toLowerCase() || '';
+                  // Exclude obvious non-vinyl formats
+                  const isNonVinyl = /cd|digital|download|mp3|flac|stream|cassette|vhs|dvd|blu-?ray|box set/i.test(format);
+
+                  if (isNonVinyl) {
                     logger.debug('Skipping non-vinyl version', {
                       format: v.format,
                       catno: v.catno,
-                      formats
                     });
                   }
-                  return isVinyl;
+                  // Include if it's not explicitly non-vinyl
+                  return !isNonVinyl;
                 })
                 .map(v => ({
                   id: v.id,
@@ -345,7 +347,8 @@ class DiscogsService {
                 page,
                 pageVersionsCount: pageVersions.length,
                 vinylVersionsCount: vinylVersions.length,
-                catalogNumbers: vinylVersions.map(v => v.catno),
+                allFormats: pageVersions.map(v => ({ catno: v.catno, format: v.format })),
+                vinylCatalogNumbers: vinylVersions.map(v => v.catno),
               });
 
               versions.push(...vinylVersions);
