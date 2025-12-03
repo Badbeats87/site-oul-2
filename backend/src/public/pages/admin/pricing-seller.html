@@ -1,0 +1,920 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <style>
+      html {
+        height: auto !important;
+        overflow: auto !important;
+      }
+      body {
+        min-height: 100vh !important;
+        overflow-y: auto !important;
+      }
+    </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Seller Pricing Policy - Vinyl Catalog Admin</title>
+    <link rel="stylesheet" href="../../styles/design-system.css" />
+    <link rel="stylesheet" href="../../styles/admin.css" />
+    <link rel="stylesheet" href="../../styles/pricing-editor.css" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <style>
+        html { overflow-y: auto !important; height: auto !important; }
+        body { overflow-y: auto !important; min-height: auto !important; }
+        main.page-content { overflow-y: auto !important; display: block !important; }
+        .container { overflow: visible !important; }
+    </style>
+  </head>
+  <body>
+    <script>
+      // Check authentication and redirect to login if needed
+      const authToken = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+      if (!authToken) {
+        window.location.href = 'login.html';
+      }
+    </script>
+    <!-- Navigation -->
+    <nav class="navbar">
+      <div class="navbar__container">
+        <a href="index.html" class="navbar__logo">
+          <svg
+            class="navbar__icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <circle cx="12" cy="12" r="6"></circle>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          <span>Vinyl Catalog</span>
+        </a>
+        <!-- Hamburger Menu Toggle -->
+        <button
+          class="navbar__menu-toggle"
+          data-menu-toggle
+          aria-label="Toggle navigation menu"
+          aria-expanded="false"
+          title="Toggle menu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <div class="navbar__links" data-navbar-links>
+          <a href="index.html" class="nav-link">← Back to Admin</a>
+          <a href="pricing-buyer.html" class="nav-link">Buyer Pricing</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Header -->
+    <header class="page-header">
+      <div class="container">
+        <h1>Seller Pricing Policy</h1>
+        <p>💵 Configure default retail prices for inventory. This policy sets the baseline price for records in your catalog. Prices can be overridden per item in inventory management.</p>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="page-content">
+      <div class="container">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <ol class="breadcrumb-list">
+            <li class="breadcrumb-item">
+              <a href="../index.html">Vinyl Catalog</a>
+            </li>
+            <li class="breadcrumb-item">
+              <a href="index.html">Admin Console</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+              Seller Pricing
+            </li>
+          </ol>
+        </nav>
+
+        <!-- Policy Info Section -->
+        <section class="policy-section">
+          <h2 class="section-title">Policy Information</h2>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Policy Name</label>
+              <input
+                type="text"
+                value="Standard Global"
+                placeholder="e.g., Classic Rock Premium"
+              />
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <input
+                type="text"
+                placeholder="Optional notes about this policy"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Scope</label>
+              <select>
+                <option selected>All Releases (Global)</option>
+                <option>By Genre</option>
+                <option>By Label</option>
+                <option>By Acquisition Channel</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Status</label>
+              <select>
+                <option selected>Active</option>
+                <option>Draft</option>
+                <option>Archived</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <!-- Condition Curves -->
+        <section class="policy-section">
+          <h2 class="section-title">Condition Grade Adjustments</h2>
+          <p class="section-subtitle">
+            Define percentage adjustments for each condition grade. These are
+            applied multiplicatively to base prices.
+          </p>
+
+          <!-- Media Condition Curve -->
+          <div class="condition-table-wrapper">
+            <h3 class="subsection-title">Media Condition Curve</h3>
+            <table class="table condition-table">
+              <thead>
+                <tr>
+                  <th>Grade</th>
+                  <th>Description</th>
+                  <th style="width: 120px">Adjustment %</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Mint (M)</strong></td>
+                  <td>Perfect, unplayed condition</td>
+                  <td>
+                    <input type="number" value="125" class="input-percentage" />
+                    %
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Near Mint (NM)</strong></td>
+                  <td>Minimal signs of wear</td>
+                  <td>
+                    <input type="number" value="100" class="input-percentage" />
+                    %
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Very Good Plus (VG+)</strong></td>
+                  <td>Light wear, plays perfectly</td>
+                  <td>
+                    <input type="number" value="70" class="input-percentage" />
+                    %
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Very Good (VG)</strong></td>
+                  <td>Moderate wear visible</td>
+                  <td>
+                    <input type="number" value="55" class="input-percentage" />
+                    %
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Very Good Minus (VG-)</strong></td>
+                  <td>Significant wear but playable</td>
+                  <td>
+                    <input type="number" value="40" class="input-percentage" />
+                    %
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Good (G)</strong></td>
+                  <td>Heavy wear, may affect playback</td>
+                  <td>
+                    <input type="number" value="20" class="input-percentage" />
+                    %
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Sleeve Condition Curve -->
+          <div class="condition-table-wrapper">
+            <h3 class="subsection-title">Sleeve Condition Curve</h3>
+            <table class="table condition-table">
+              <thead>
+                <tr>
+                  <th>Grade</th>
+                  <th>Description</th>
+                  <th style="width: 120px">Adjustment %</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Mint (M)</strong></td>
+                  <td>Perfect, no creases or wear</td>
+                  <td>
+                    <input type="number" value="115" class="input-percentage" />
+                    %
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Near Mint (NM)</strong></td>
+                  <td>Minimal storage wear only</td>
+                  <td>
+                    <input type="number" value="100" class="input-percentage" />
+                    %
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Very Good Plus (VG+)</strong></td>
+                  <td>Minor creases or edge wear</td>
+                  <td>
+                    <input type="number" value="72" class="input-percentage" />
+                    %
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Very Good (VG)</strong></td>
+                  <td>Obvious creases, fading</td>
+                  <td>
+                    <input type="number" value="45" class="input-percentage" />
+                    %
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Very Good Minus (VG-)</strong></td>
+                  <td>Heavy creasing, stains</td>
+                  <td>
+                    <input type="number" value="30" class="input-percentage" />
+                    %
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Good (G)</strong></td>
+                  <td>Severe damage, writing, water</td>
+                  <td>
+                    <input type="number" value="10" class="input-percentage" />
+                    %
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Condition Weighting -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>Media Weight</label>
+              <p class="input-help">
+                How much media condition affects seller list prices
+              </p>
+              <div class="input-with-unit">
+                <input type="number" value="50" min="0" max="100" />
+                <span class="unit">%</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Sleeve Weight</label>
+              <p class="input-help">
+                How much sleeve condition affects seller list prices
+              </p>
+              <div class="input-with-unit">
+                <input type="number" value="50" min="0" max="100" />
+                <span class="unit">%</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Sell Formula -->
+        <section class="policy-section">
+          <h2 class="section-title">List Price Formula</h2>
+          <p class="section-subtitle">
+            List price = Market Stat × Sell % × Condition Adjustment
+          </p>
+
+          <div class="formula-box">
+            <div class="formula-step">
+              <span class="formula-label">Market Data Source:</span>
+              <select style="max-width: 400px">
+                <option selected>Hybrid (Average Discogs & eBay)</option>
+                <option>Discogs (Primary) → eBay (Fallback)</option>
+                <option>eBay (Primary) → Discogs (Fallback)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Price Statistic</label>
+              <select>
+                <option>Low</option>
+                <option selected>Median</option>
+                <option>High</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Sell Percentage</label>
+              <div class="input-with-unit">
+                <input type="number" value="125" min="100" />
+                <span class="unit">%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Minimum Profit Margin</label>
+              <div class="input-with-unit">
+                <input type="number" value="30" min="0" max="100" />
+                <span class="unit">%</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Round to Nearest</label>
+              <select>
+                <option>$0.01</option>
+                <option selected>$0.25</option>
+                <option>$0.50</option>
+                <option>$1.00</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Minimum Price (Floor)</label>
+              <input type="number" value="10.00" step="0.25" placeholder="$" />
+            </div>
+            <div class="form-group">
+              <label>Maximum Price (Cap)</label>
+              <input type="number" value="999.99" step="0.25" placeholder="$" />
+            </div>
+          </div>
+
+          <!-- Markdown Schedule -->
+          <div class="markdown-section">
+            <h3 class="subsection-title">Markdown Schedule (Optional)</h3>
+            <p class="section-subtitle">
+              Automatically reduce prices for slow-moving inventory
+            </p>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>After 30 days unsold, reduce by</label>
+                <div class="input-with-unit">
+                  <input type="number" value="10" min="0" max="100" />
+                  <span class="unit">%</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>After 60 days unsold, reduce by</label>
+                <div class="input-with-unit">
+                  <input type="number" value="20" min="0" max="100" />
+                  <span class="unit">%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Channel Multipliers -->
+        <section class="policy-section">
+          <h2 class="section-title">Channel-Specific Adjustments</h2>
+          <p class="section-subtitle">
+            Apply multipliers to different sales channels
+          </p>
+
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Channel</th>
+                <th style="width: 120px">Sell Multiplier</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Web Storefront</strong></td>
+                <td>
+                  <input
+                    type="number"
+                    value="1.0"
+                    step="0.05"
+                    class="input-small"
+                  />
+                </td>
+                <td>Standard rates</td>
+              </tr>
+              <tr>
+                <td><strong>In-Store Display</strong></td>
+                <td>
+                  <input
+                    type="number"
+                    value="1.1"
+                    step="0.05"
+                    class="input-small"
+                  />
+                </td>
+                <td>Premium for foot traffic</td>
+              </tr>
+              <tr>
+                <td><strong>Marketplace</strong></td>
+                <td>
+                  <input
+                    type="number"
+                    value="0.95"
+                    step="0.05"
+                    class="input-small"
+                  />
+                </td>
+                <td>Slightly lower for exposure</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Preview -->
+        <section class="policy-section">
+          <h2 class="section-title">
+            Preview: Example List Price Calculations
+          </h2>
+          <p class="section-subtitle">
+            How this policy would price a sample album under different
+            conditions
+          </p>
+
+          <div class="preview-album">
+            <strong>Sample: Dark Side of the Moon by Pink Floyd</strong><br />
+            <span class="text-muted"
+              >Market Data: Discogs Median $85 | eBay Median $92 | Hybrid
+              Average $88.50</span
+            >
+          </div>
+
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Media / Sleeve</th>
+                <th>List Price</th>
+                <th>Profit Margin</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="background: rgba(16, 185, 129, 0.05)">
+                <td>
+                  <strong>Mint / Mint</strong><br /><span class="text-muted"
+                    >120% × 110%</span
+                  >
+                </td>
+                <td><strong>$146.91</strong></td>
+                <td>152%</td>
+              </tr>
+              <tr>
+                <td>
+                  <strong>Near Mint / Near Mint</strong><br /><span
+                    class="text-muted"
+                    >100% × 100%</span
+                  >
+                </td>
+                <td><strong>$110.63</strong></td>
+                <td>127%</td>
+              </tr>
+              <tr>
+                <td>
+                  <strong>Very Good / Very Good+</strong><br /><span
+                    class="text-muted"
+                    >60% × 75%</span
+                  >
+                </td>
+                <td><strong>$49.78</strong></td>
+                <td>127%</td>
+              </tr>
+              <tr>
+                <td>
+                  <strong>Good / Good</strong><br /><span class="text-muted"
+                    >25% × 15%</span
+                  >
+                </td>
+                <td><strong>$13.28</strong></td>
+                <td>127%</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Actions -->
+        <div class="policy-actions">
+          <button class="button button--success button--lg">
+            ✓ Save Policy
+          </button>
+          <button class="button button--primary button--lg">
+            📋 Preview in Queue
+          </button>
+          <button class="button button--secondary button--lg">
+            Reset to Default
+          </button>
+          <a href="index.html" class="button button--secondary button--lg"
+            >← Cancel</a
+          >
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer__content">
+          <div class="footer__section">
+            <h4>Vinyl Catalog</h4>
+            <p>Admin console for catalog management</p>
+          </div>
+        </div>
+        <div class="footer__bottom">
+          <p>&copy; 2024 Vinyl Catalog. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="../../js/mobile-nav.js"></script>
+    <script src="../../js/active-states.js"></script>
+
+    <script>
+      /**
+       * Seller Pricing Policy Manager
+       * Handles loading and saving pricing policies
+       */
+      const sellerPricingManager = {
+        policyType: 'SELLER',
+        authToken: null,
+
+        init() {
+          this.cacheAuthToken();
+          this.bindEvents();
+          this.loadPolicy();
+        },
+
+        cacheAuthToken() {
+          this.authToken =
+            localStorage.getItem('auth_token') ||
+            sessionStorage.getItem('auth_token');
+        },
+
+        bindEvents() {
+          // Save Policy button
+          const saveButton = document.querySelector('.button--success');
+          console.log('Save button found:', saveButton);
+          if (saveButton) {
+            saveButton.addEventListener('click', (e) => {
+              console.log('Save button clicked!', e);
+              this.savePolicy();
+            });
+          }
+
+          // Reset to Default button
+          const resetButton = document.querySelector('.button--secondary:nth-of-type(3)');
+          console.log('Reset button found:', resetButton);
+          if (resetButton) {
+            resetButton.addEventListener('click', () => this.resetToDefault());
+          }
+        },
+
+        async loadPolicy() {
+          try {
+            if (!this.authToken) {
+              console.log('Not authenticated, showing default values');
+              return;
+            }
+
+            const response = await fetch(
+              `/api/v1/admin/pricing/${this.policyType}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${this.authToken}`,
+                },
+              }
+            );
+
+            if (!response.ok) {
+              console.warn('Failed to load policy:', response.status);
+              return;
+            }
+
+            const data = await response.json();
+            if (data.data) {
+              this.populateForm(data.data);
+            }
+          } catch (error) {
+            console.error('Error loading policy:', error);
+          }
+        },
+
+        populateForm(policy) {
+          // Helper: Find input by label text
+          const getInputByLabel = (labelText) => {
+            const label = Array.from(document.querySelectorAll('label')).find(
+              l => l.textContent.includes(labelText)
+            );
+            const container = label?.closest('.form-group') || label?.closest('.form-row');
+            return container?.querySelector('input[type="number"]');
+          };
+
+          // Policy name
+          const nameInput = document.querySelector(
+            'input[placeholder="e.g., Classic Rock Premium"]'
+          ) || document.querySelector(
+            'input[placeholder="e.g., Premium Rock Collection"]'
+          );
+          if (nameInput) {
+            nameInput.value = policy.name || 'Standard Global';
+          }
+
+          // Media condition curve
+          const mediaInputs = document.querySelectorAll(
+            '.condition-table:nth-of-type(1) .input-percentage'
+          );
+          const mediaConditions = [
+            'MINT',
+            'NM',
+            'VG_PLUS',
+            'VG',
+            'VG_MINUS',
+            'G',
+          ];
+          mediaInputs.forEach((input, idx) => {
+            const condition = mediaConditions[idx];
+            if (policy.conditionCurve?.[condition]) {
+              input.value = policy.conditionCurve[condition] * 100;
+            }
+          });
+
+          // Sleeve condition curve
+          const sleeveInputs = document.querySelectorAll(
+            '.condition-table:nth-of-type(2) .input-percentage'
+          );
+          sleeveInputs.forEach((input, idx) => {
+            const condition = mediaConditions[idx];
+            if (policy.conditionCurve?.[`SLEEVE_${condition}`]) {
+              input.value = policy.conditionCurve[`SLEEVE_${condition}`] * 100;
+            }
+          });
+
+          // Weights - use specific selectors
+          const mediaWeightInput = getInputByLabel('Media Weight');
+          if (mediaWeightInput) {
+            mediaWeightInput.value = policy.sellFormula?.mediaWeight * 100 || 50;
+          }
+
+          const sleeveWeightInput = getInputByLabel('Sleeve Weight');
+          if (sleeveWeightInput) {
+            sleeveWeightInput.value = policy.sellFormula?.sleeveWeight * 100 || 50;
+          }
+
+          // Price statistic - find the select within form-row that has "Price Statistic" label
+          const priceStatisticLabel = Array.from(document.querySelectorAll('label')).find(
+            label => label.textContent?.includes('Price Statistic')
+          );
+          const priceStatisticSelect = priceStatisticLabel?.closest('.form-group')?.querySelector('select');
+          if (priceStatisticSelect && policy.sellFormula?.priceStatistic) {
+            const statMap = { LOW: 0, MEDIAN: 1, HIGH: 2 };
+            const optionIndex = statMap[policy.sellFormula.priceStatistic] ?? 1;
+            if (priceStatisticSelect.options[optionIndex]) {
+              priceStatisticSelect.selectedIndex = optionIndex;
+            }
+          }
+
+          // Sell percentage
+          const sellPercentageInput = getInputByLabel('Sell Percentage');
+          if (sellPercentageInput) {
+            sellPercentageInput.value = policy.sellFormula?.sellPercentage * 100 || 125;
+          }
+
+          // Min/Max prices
+          const minPriceInput = getInputByLabel('Minimum Price');
+          if (minPriceInput) {
+            minPriceInput.value = policy.minOffer || 10.0;
+          }
+
+          const maxPriceInput = getInputByLabel('Maximum Price');
+          if (maxPriceInput) {
+            maxPriceInput.value = policy.maxOffer || 999.99;
+          }
+
+          // Channel multipliers
+          const channelInputs = document.querySelectorAll(
+            '.table:last-of-type .input-small'
+          );
+          const multipliers = policy.sellFormula?.channelMultipliers || {
+            WEB: 1.0,
+            IN_STORE: 1.1,
+            MARKETPLACE: 0.95,
+          };
+          if (channelInputs.length >= 3) {
+            channelInputs[0].value = multipliers.WEB || 1.0;
+            channelInputs[1].value = multipliers.IN_STORE || 1.1;
+            channelInputs[2].value = multipliers.MARKETPLACE || 0.95;
+          }
+        },
+
+        async savePolicy() {
+          try {
+            if (!this.authToken) {
+              alert('Not authenticated. Please log in first.');
+              return;
+            }
+
+            // Helper: Find input by label text
+            const getInputByLabel = (labelText) => {
+              const label = Array.from(document.querySelectorAll('label')).find(
+                l => l.textContent.includes(labelText)
+              );
+              const container = label?.closest('.form-group') || label?.closest('.form-row');
+              return container?.querySelector('input[type="number"]');
+            };
+
+            // Collect form data
+            const policyNameInput = document.querySelector(
+              'input[placeholder="e.g., Classic Rock Premium"]'
+            ) || document.querySelector(
+              'input[placeholder="e.g., Premium Rock Collection"]'
+            );
+            const policyName = policyNameInput?.value || 'Standard Global';
+
+            // Media condition curve
+            const mediaConditions = [
+              'MINT',
+              'NM',
+              'VG_PLUS',
+              'VG',
+              'VG_MINUS',
+              'G',
+            ];
+            const mediaInputs = document.querySelectorAll(
+              '.condition-table:nth-of-type(1) .input-percentage'
+            );
+            const mediaConditionCurve = {};
+            mediaInputs.forEach((input, idx) => {
+              mediaConditionCurve[mediaConditions[idx]] =
+                parseFloat(input.value) / 100;
+            });
+
+            // Sleeve condition curve
+            const sleeveInputs = document.querySelectorAll(
+              '.condition-table:nth-of-type(2) .input-percentage'
+            );
+            const sleeveConditionCurve = {};
+            sleeveInputs.forEach((input, idx) => {
+              sleeveConditionCurve[`SLEEVE_${mediaConditions[idx]}`] =
+                parseFloat(input.value) / 100;
+            });
+
+            const conditionCurve = {
+              ...mediaConditionCurve,
+              ...sleeveConditionCurve,
+            };
+
+            // Sell formula - use label-based selectors
+            const sellPercentageInput = getInputByLabel('Sell Percentage');
+            const sellPercentage = parseFloat(sellPercentageInput?.value || 125) / 100;
+
+            const mediaWeightInput = getInputByLabel('Media Weight');
+            const mediaWeight = parseFloat(mediaWeightInput?.value || 50) / 100;
+
+            const sleeveWeightInput = getInputByLabel('Sleeve Weight');
+            const sleeveWeight = parseFloat(sleeveWeightInput?.value || 50) / 100;
+
+            // Get price statistic from the correct select element (by label)
+            const priceStatisticLabel = Array.from(document.querySelectorAll('label')).find(
+              label => label.textContent?.includes('Price Statistic')
+            );
+            const priceStatisticSelect = priceStatisticLabel?.closest('.form-group')?.querySelector('select');
+            const priceStatisticMap = ['LOW', 'MEDIAN', 'HIGH'];
+            const selectedStatistic = priceStatisticSelect ?
+              priceStatisticMap[priceStatisticSelect.selectedIndex] || 'MEDIAN' : 'MEDIAN';
+            console.log('Price Statistic Save (Seller):', { selectedIndex: priceStatisticSelect?.selectedIndex, selectedStatistic, value: priceStatisticSelect?.value });
+
+            const channelInputs = document.querySelectorAll(
+              '.table:last-of-type .input-small'
+            );
+            const sellFormula = {
+              sellPercentage,
+              mediaWeight,
+              sleeveWeight,
+              priceStatistic: selectedStatistic,
+              channelMultipliers: {
+                WEB: parseFloat(channelInputs[0]?.value || 1.0),
+                IN_STORE: parseFloat(channelInputs[1]?.value || 1.1),
+                MARKETPLACE: parseFloat(channelInputs[2]?.value || 0.95),
+              },
+            };
+
+            // Buy formula (same structure for consistency)
+            const buyFormula = {
+              buyPercentage: 0.55, // Not used in seller policy
+              mediaWeight,
+              sleeveWeight,
+            };
+
+            const minPriceInput = getInputByLabel('Minimum Price');
+            const minPrice = parseFloat(minPriceInput?.value || 10.0);
+
+            const maxPriceInput = getInputByLabel('Maximum Price');
+            const maxPrice = parseFloat(maxPriceInput?.value || 999.99);
+
+            const payload = {
+              name: policyName,
+              buyFormula,
+              sellFormula,
+              conditionCurve,
+              minOffer: minPrice,
+              maxOffer: maxPrice,
+              offerExpiryDays: 30,
+            };
+
+            // Send to API
+            console.log('Sending payload:', JSON.stringify(payload, null, 2));
+            const response = await fetch(
+              `/api/v1/admin/pricing/${this.policyType}`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${this.authToken}`,
+                },
+                body: JSON.stringify(payload),
+              }
+            );
+
+            console.log('Save response status:', response.status, response.statusText);
+            if (!response.ok) {
+              const error = await response.json();
+              console.error('API error response:', error);
+              throw new Error(error.error?.message || `Failed to save policy (${response.status})`);
+            }
+
+            const result = await response.json();
+            console.log('Save successful:', result.data);
+            alert(
+              `✓ Policy saved successfully!\nVersion: ${result.data.version}`
+            );
+          } catch (error) {
+            console.error('Error saving policy:', error);
+            alert(`Error: ${error.message}`);
+          }
+        },
+
+        resetToDefault() {
+          if (confirm('Reset all values to defaults?')) {
+            this.populateForm({
+              name: 'Standard Global',
+              sellFormula: {
+                sellPercentage: 1.25,
+                mediaWeight: 0.5,
+                sleeveWeight: 0.5,
+                channelMultipliers: {
+                  WEB: 1.0,
+                  IN_STORE: 1.1,
+                  MARKETPLACE: 0.95,
+                },
+              },
+              conditionCurve: {
+                MINT: 1.25,
+                NM: 1.0,
+                VG_PLUS: 0.7,
+                VG: 0.55,
+                VG_MINUS: 0.4,
+                G: 0.2,
+              },
+              minOffer: 10.0,
+              maxOffer: 999.99,
+            });
+          }
+        },
+      };
+
+      // Initialize when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () =>
+          sellerPricingManager.init()
+        );
+      } else {
+        sellerPricingManager.init();
+      }
+    </script>
+  </body>
+</html>
