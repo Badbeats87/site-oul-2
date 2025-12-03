@@ -90,7 +90,7 @@ class InventoryManager {
       });
     }
 
-    document.addEventListener('click', (event) => {
+    document.addEventListener('click', async (event) => {
       if (event.target.matches('[data-inventory-save]')) {
         this.saveRow(event.target.dataset.inventoryId);
       }
