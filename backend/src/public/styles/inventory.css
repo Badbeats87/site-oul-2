@@ -188,21 +188,22 @@
 .inventory-table .table-input,
 .inventory-table .filter-select,
 .inventory-table select.filter-select {
-    border: 1px solid #dfe3ed;
-    border-radius: 8px;
-    padding: 4px 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 6px 8px;
     font-size: var(--font-size-sm);
-    background: #fff;
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+    background: #fafbff;
     width: 100%;
     box-sizing: border-box;
-    min-height: 28px;
+    min-height: 30px;
 }
 
 .inventory-table .table-input:focus,
 .inventory-table .filter-select:focus {
-    border-color: #8ba3ff;
-    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    background: #fff;
 }
 
 .inventory-table td[data-column-id="status"] .filter-select {
@@ -277,7 +278,8 @@
 .table-meta {
     font-size: var(--font-size-xs);
     color: var(--color-text-light);
-    margin-top: 2px;
+    margin-top: 4px;
+    line-height: 1.3;
 }
 
 .table-discogs {
