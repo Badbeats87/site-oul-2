@@ -638,31 +638,23 @@ class InventoryManager {
         return;
       }
 
-      const selectOptions = allValues
-        .map(
-          (val) => `
+    const selectOptions = allValues
+      .map(
+        (val) => `
             <option value="${encodeURIComponent(val)}" ${
               currentValue === val ? 'selected' : ''
             }>
               ${this.escapeHtml(val)}
             </option>`
-        )
-        .join('');
+      )
+      .join('');
 
-      hint.innerHTML = `
-        <label class="suggestion-label">Discogs suggestions</label>
-        <div class="suggestion-controls">
-          <select class="table-input" data-suggestion-select="${field}">
-            <option value="">Choose value</option>
-            ${selectOptions}
-          </select>
-          <button type="button"
-            class="button button--ghost button--sm"
-            data-apply-suggestion
-            data-field="${field}">
-            Apply
-          </button>
-        </div>
+    hint.classList.add('is-inline');
+    hint.innerHTML = `
+        <select class="table-input" data-suggestion-select="${field}">
+          <option value="">Discogs suggestions</option>
+          ${selectOptions}
+        </select>
       `;
 
       hint.classList.add('is-visible');

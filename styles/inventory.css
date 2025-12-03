@@ -201,6 +201,10 @@
     font-size: var(--font-size-xs);
 }
 
+.suggestion-hint.is-inline select {
+    width: 100%;
+}
+
 .discogs-options {
     display: none;
     margin-top: var(--space-xs);

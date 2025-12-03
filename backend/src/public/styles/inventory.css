@@ -587,3 +587,6 @@
     font-size: 10px;
   }
 }
+.suggestion-hint.is-inline select {
+  width: 100%;
+}
