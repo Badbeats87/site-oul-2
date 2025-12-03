@@ -2,6 +2,7 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { request } from 'http';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,7 +25,43 @@ const MIME_TYPES = {
   '.eot': 'application/vnd.ms-fontobject',
 };
 
+/**
+ * Proxy API requests to backend server on port 3001
+ */
+function proxyToBackend(req, res) {
+  const options = {
+    hostname: 'localhost',
+    port: 3001,
+    path: req.url,
+    method: req.method,
+    headers: req.headers,
+  };
+
+  const proxyReq = request(options, (proxyRes) => {
+    res.writeHead(proxyRes.statusCode, proxyRes.headers);
+    proxyRes.pipe(res);
+  });
+
+  proxyReq.on('error', (err) => {
+    console.error('Backend proxy error:', err);
+    res.writeHead(502, { 'Content-Type': 'text/plain' });
+    res.end('Bad Gateway - Backend service unavailable');
+  });
+
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    req.pipe(proxyReq);
+  } else {
+    proxyReq.end();
+  }
+}
+
 const server = http.createServer((req, res) => {
+  // Proxy API requests to backend
+  if (req.url.startsWith('/api/')) {
+    proxyToBackend(req, res);
+    return;
+  }
+
   // Strip query parameters from URL
   let pathname = req.url.split('?')[0];
 
