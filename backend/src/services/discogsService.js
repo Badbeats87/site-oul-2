@@ -1152,11 +1152,22 @@ class DiscogsService {
       const enrichedResults = await Promise.all(
         searchResults.results.slice(0, 5).map(async (result) => {
           try {
-            // Use getMaster for master results, getRelease for releases
-            const isMaster = result.type === 'master';
+            // Use getMaster if it's a master type OR if it's a release with a master_id
+            const isMaster = result.type === 'master' || !!result.master_id;
+            const metadataId = isMaster
+              ? result.master_id || result.id
+              : result.id;
             const metadataPromise = isMaster
-              ? this.getMaster(result.id)
-              : this.getRelease(result.id);
+              ? this.getMaster(metadataId)
+              : this.getRelease(metadataId);
+
+            logger.debug('Enriching search result', {
+              resultId: result.id,
+              resultType: result.type,
+              masterId: result.master_id,
+              fetchingMaster: isMaster,
+              metadataId,
+            });
 
             const [metadata, prices] = await Promise.all([
               metadataPromise,
@@ -1172,6 +1183,7 @@ class DiscogsService {
             logger.warn('Failed to enrich search result', {
               resultId: result.id,
               resultType: result.type,
+              masterId: result.master_id,
               error: error.message,
             });
             return result;

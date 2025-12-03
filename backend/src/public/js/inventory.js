@@ -591,13 +591,17 @@ class InventoryManager {
   renderDiscogsOption(option) {
     const id =
       option.id || option.releaseId || option.master_id || option.masterId;
-    const type = option.type || 'release'; // 'master' or 'release'
+    // If it's a release with a master_id, prefer fetching the master for comprehensive data
+    const type =
+      option.type === 'master' || option.master_id ? 'master' : 'release';
     const year = option.year || option.released || '';
     const label = option.label || option.labels?.join(', ') || '';
     const title = option.title || '';
     const text = `${title}${year ? ` (${year})` : ''}${label ? ` – ${label}` : ''}`;
     // Store both id and type so we know how to fetch the data
-    return `<option value="${id}" data-discogs-type="${type}">${this.escapeHtml(
+    const idToStore =
+      type === 'master' && option.master_id ? option.master_id : id;
+    return `<option value="${idToStore}" data-discogs-type="${type}">${this.escapeHtml(
       text
     )}</option>`;
   }
