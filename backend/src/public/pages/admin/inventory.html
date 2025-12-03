@@ -1,12 +1,13 @@
 <!DOCTYPE html>
+<!-- Build: 1f2d4d0 -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory Management - Vinyl Catalog Admin</title>
-    <link rel="stylesheet" href="../../styles/design-system.css?v=20251205">
-    <link rel="stylesheet" href="../../styles/admin.css?v=20251205">
-    <link rel="stylesheet" href="../../styles/inventory.css?v=20251205">
+    <link rel="stylesheet" href="../../styles/design-system.css?t=1764783655">
+    <link rel="stylesheet" href="../../styles/admin.css?t=1764783655">
+    <link rel="stylesheet" href="../../styles/inventory.css?t=1764783655">
 </head>
 <body class="admin-body admin-body--topnav admin-body--inventory">
     <header class="admin-topbar">
@@ -89,6 +90,7 @@
                         <input type="search" placeholder="Search SKUs quickly…" aria-label="Search inventory">
                     </label>
                     <button class="button button--secondary button--sm" type="button" onclick="inventoryManager.loadInventory()">Sync Feed</button>
+                    <button class="button button--primary button--sm" type="button" data-fetch-discogs>Fetch Discogs</button>
                     <button class="button button--primary button--sm" type="button">+ Add Item</button>
                     <button class="button button--danger button--sm" type="button" data-logout-btn>Logout</button>
                 </div>
@@ -253,11 +255,11 @@
         </div>
     </div>
 
-    <script src="../../js/api-client.js?v=20251205"></script>
-    <script src="../../js/auth.js?v=20251205"></script>
-    <script src="../../js/table-column-manager.js?v=20251205"></script>
-    <script src="../../js/topnav.js?v=20251205"></script>
-    <script src="../../js/inventory.js?v=20251205"></script>
+    <script src="../../js/api-client.js?t=1764783655"></script>
+    <script src="../../js/auth.js?t=1764783655"></script>
+    <script src="../../js/table-column-manager.js?t=1764783655"></script>
+    <script src="../../js/topnav.js?t=1764783655"></script>
+    <script src="../../js/inventory.js?t=1764783655"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
             const isAuthenticated = await auth.verifySession();
