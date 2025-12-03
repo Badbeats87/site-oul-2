@@ -253,6 +253,14 @@ class InventoryManager {
       });
     }
 
+    // Global Fetch Discogs button
+    const fetchDiscogsBtn = document.querySelector('[data-fetch-discogs]');
+    if (fetchDiscogsBtn) {
+      fetchDiscogsBtn.addEventListener('click', async () => {
+        await this.fetchDiscogsForAllVisible();
+      });
+    }
+
     document.addEventListener('click', async (event) => {
       if (event.target.matches('[data-inventory-save]')) {
         this.saveRow(event.target.dataset.inventoryId);
@@ -263,12 +271,6 @@ class InventoryManager {
         if (submissionId) {
           window.open(`submission.html?id=${submissionId}`, '_blank');
         }
-      }
-
-      if (event.target.matches('[data-discogs-fetch]')) {
-        const row = event.target.closest('tr[data-row-id]');
-        if (!row) return;
-        await this.handleDiscogsFetch(row, event.target);
       }
 
       if (event.target.matches('[data-apply-suggestion]')) {
@@ -433,7 +435,6 @@ class InventoryManager {
         <td data-column-id="discogs">
           <div class="table-discogs">
             <input type="number" class="table-input" data-release-field="discogsId" value="${release.discogsId ?? ''}" placeholder="Discogs ID">
-            <button type="button" class="button button--ghost button--sm" data-discogs-fetch data-discogs-id="${release.discogsId ?? ''}">Fetch</button>
           </div>
           <div class="table-meta">
             ${
@@ -452,6 +453,35 @@ class InventoryManager {
         </td>
       </tr>
     `;
+  }
+
+  async fetchDiscogsForAllVisible() {
+    this.showLoading(true);
+    const rows = this.tbody.querySelectorAll('tr[data-row-id]');
+    let fetchedCount = 0;
+    let skippedCount = 0;
+
+    for (const row of rows) {
+      const discogsInput = row.querySelector('[data-release-field="discogsId"]');
+      const discogsId = discogsInput?.value?.trim();
+
+      if (!discogsId) {
+        skippedCount++;
+        continue;
+      }
+
+      try {
+        await this.loadDiscogsSuggestions(row, discogsId);
+        fetchedCount++;
+      } catch (error) {
+        console.error(`Failed to fetch Discogs data for ID ${discogsId}:`, error);
+        skippedCount++;
+      }
+    }
+
+    this.showLoading(false);
+    const message = `Fetched Discogs data for ${fetchedCount} items${skippedCount > 0 ? ` (${skippedCount} skipped - no Discogs ID)` : ''}`;
+    this.showSuccess(message);
   }
 
   async handleDiscogsFetch(row, button) {
@@ -813,156 +843,56 @@ class InventoryManager {
   }
 
   showDiscogsSuggestions(row, suggestions) {
-    // Store suggestions on the row for the modal
-    row.dataset.discogsSuggestions = JSON.stringify(suggestions);
+    // Apply Discogs suggestions as datalist options for combobox inputs
+    const fieldMappings = {
+      title: ['title'],
+      artist: ['artist', 'releaseArtist'],
+      label: ['label'],
+      catalogNumber: ['catalogNumber'],
+      releaseYear: ['releaseYear'],
+      genre: ['genre'],
+      format: ['format', 'variant'],
+      description: ['description', 'variant'],
+      country: ['country'],
+      releaseStatus: ['releaseStatus', 'status'],
+      discogsUri: ['discogsUri', 'discogsId'],
+    };
 
-    // Show modal with Discogs data instead of inline dropdowns
-    this.showDiscogsModal(row, suggestions);
-  }
+    Object.entries(suggestions).forEach(([field, values]) => {
+      const valuesList = Array.isArray(values) ? values.filter(Boolean) : (values ? [values] : []);
+      if (!valuesList.length) return;
 
-  showDiscogsModal(row, suggestions) {
-    const rowId = row.dataset.rowId;
-    const releaseTitle = row.dataset.releaseTitle || '';
-    const releaseArtist = row.dataset.releaseArtist || '';
+      // Find the input field for this suggestion
+      const possibleSelectors = (fieldMappings[field] || [field])
+        .map(f => `[data-release-field="${f}"], [data-field="${f}"]`)
+        .join(', ');
 
-    const suggestionRows = Object.entries(suggestions)
-      .map(([field, values]) => {
-        const fieldLabel = this.getFieldLabel(field);
-        const valuesList = Array.isArray(values) ? values.filter(Boolean) : (values ? [values] : []);
+      const input = row.querySelector(possibleSelectors);
+      if (!input) return;
 
-        // Skip fields with no values
-        if (!valuesList.length) return '';
+      // Create or update datalist for this input
+      const listId = `discogs-list-${field}-${row.dataset.rowId}`;
 
-        // Try to find the corresponding input field in the form
-        // Handle field name variations
-        const fieldMappings = {
-          title: ['title'],
-          artist: ['artist', 'releaseArtist'],
-          label: ['label'],
-          catalogNumber: ['catalogNumber'],
-          releaseYear: ['releaseYear'],
-          genre: ['genre'],
-          format: ['format', 'variant'],
-          description: ['description', 'variant'],
-          country: ['country'],
-          releaseStatus: ['releaseStatus', 'status'],
-          discogsUri: ['discogsUri', 'discogsId'],
-        };
+      // Remove old datalist if it exists
+      const oldList = document.getElementById(listId);
+      if (oldList) oldList.remove();
 
-        const possibleSelectors = (fieldMappings[field] || [field])
-          .map(f => `[data-release-field="${f}"], [data-field="${f}"]`)
-          .join(', ');
+      // Create new datalist
+      const datalist = document.createElement('datalist');
+      datalist.id = listId;
 
-        const currentInput = row.querySelector(possibleSelectors);
-        const currentValue = currentInput?.value?.trim() || '';
-
-        // Check if field is editable (has an input in the form)
-        const isEditable = !!currentInput;
-
-        const valuesHtml = valuesList
-          .map((val, idx) => `
-            <div class="discogs-suggestion-item">
-              <input type="radio"
-                name="discogs-${field}"
-                id="discogs-${field}-${idx}"
-                value="${this.escapeAttribute(val)}"
-                ${currentValue === val ? 'checked' : ''}
-                ${!isEditable ? 'disabled' : ''}>
-              <label for="discogs-${field}-${idx}" ${!isEditable ? 'style="opacity: 0.6;"' : ''}>${this.escapeHtml(val)}</label>
-            </div>
-          `)
-          .join('');
-
-        const disabledNote = !isEditable ? '<div class="discogs-field-note">(No editable field for this metadata)</div>' : '';
-
-        return `
-          <div class="discogs-modal-field">
-            <div class="discogs-field-label">${fieldLabel}</div>
-            <div class="discogs-field-current">Current: <strong>${currentValue || '(empty)'}</strong></div>
-            ${disabledNote}
-            <div class="discogs-suggestions">
-              ${valuesHtml}
-            </div>
-          </div>
-        `;
-      })
-      .filter(Boolean)
-      .join('');
-
-    const modalHtml = `
-      <div class="discogs-modal" data-discogs-modal>
-        <div class="discogs-modal__overlay"></div>
-        <div class="discogs-modal__content">
-          <div class="discogs-modal__header">
-            <div>
-              <h3>Discogs Metadata</h3>
-              <p class="discogs-modal__subtitle">${this.escapeHtml(releaseArtist)} – ${this.escapeHtml(releaseTitle)}</p>
-            </div>
-            <button type="button" class="discogs-modal__close" aria-label="Close">✕</button>
-          </div>
-          <div class="discogs-modal__body">
-            ${suggestionRows}
-          </div>
-          <div class="discogs-modal__footer">
-            <button type="button" class="button button--secondary" data-discogs-modal-cancel>Cancel</button>
-            <button type="button" class="button button--primary" data-discogs-modal-apply>Apply Selected</button>
-          </div>
-        </div>
-      </div>
-    `;
-
-    // Remove any existing modal
-    const existingModal = document.querySelector('[data-discogs-modal]');
-    if (existingModal) existingModal.remove();
-
-    // Add modal to page
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-    const modal = document.querySelector('[data-discogs-modal]');
-
-    // Handle close
-    const closeBtn = modal.querySelector('.discogs-modal__close');
-    const cancelBtn = modal.querySelector('[data-discogs-modal-cancel]');
-    const overlay = modal.querySelector('.discogs-modal__overlay');
-
-    const closeModal = () => modal.remove();
-    closeBtn?.addEventListener('click', closeModal);
-    cancelBtn?.addEventListener('click', closeModal);
-    overlay?.addEventListener('click', closeModal);
-
-    // Handle apply
-    const applyBtn = modal.querySelector('[data-discogs-modal-apply]');
-    applyBtn?.addEventListener('click', () => {
-      const fieldMappings = {
-        title: ['title'],
-        artist: ['artist', 'releaseArtist'],
-        label: ['label'],
-        catalogNumber: ['catalogNumber'],
-        releaseYear: ['releaseYear'],
-        genre: ['genre'],
-        format: ['format', 'variant'],
-        description: ['description', 'variant'],
-        country: ['country'],
-        releaseStatus: ['releaseStatus', 'status'],
-        discogsUri: ['discogsUri', 'discogsId'],
-      };
-
-      Object.keys(suggestions).forEach(field => {
-        const selected = modal.querySelector(`input[name="discogs-${field}"]:checked`);
-        if (selected && selected.value) {
-          const possibleSelectors = (fieldMappings[field] || [field])
-            .map(f => `[data-release-field="${f}"], [data-field="${f}"]`)
-            .join(', ');
-          const target = row.querySelector(possibleSelectors);
-          if (target) {
-            let value = selected.value;
-            if (field === 'releaseYear') {
-              value = parseInt(value, 10);
-            }
-            target.value = value;
-          }
-        }
+      valuesList.forEach(value => {
+        const option = document.createElement('option');
+        option.value = value;
+        datalist.appendChild(option);
       });
-      closeModal();
+
+      // Add datalist to body
+      document.body.appendChild(datalist);
+
+      // Link input to datalist
+      input.setAttribute('list', listId);
+      input.classList.add('discogs-combobox');
     });
   }
 
