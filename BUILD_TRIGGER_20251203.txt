@@ -1,0 +1,7 @@
+Railway Build Trigger
+Timestamp: 2025-12-03T18:57:00Z
+Commit: 4663de4
+Reason: Force rebuild to include Fetch Discogs button implementation
+
+This file was created to force Railway to detect changes and rebuild.
+If this file appears in the deployed container, the rebuild was successful.
