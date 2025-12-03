@@ -158,7 +158,8 @@
 
             const logoutBtn = document.querySelector('[data-logout-btn]');
             if (logoutBtn) {
-                logoutBtn.addEventListener('click', async () => {
+                logoutBtn.addEventListener('click', async (e) => {
+                    e.preventDefault();
                     if (confirm('Sign out of the admin console?')) {
                         await auth.logout();
                     }
