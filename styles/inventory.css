@@ -76,11 +76,22 @@
     box-shadow: var(--shadow-lg);
 }
 
+.inventory-table-bleed {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    padding: 0 var(--space-3xl);
+}
+
+@media (min-width: 1600px) {
+    .inventory-table-bleed {
+        padding: 0 var(--space-4xl);
+    }
+}
+
 .admin-body--inventory .inventory-table-wrapper {
-    margin-left: calc(-1 * var(--space-xl));
-    margin-right: calc(-1 * var(--space-xl));
-    width: calc(100% + var(--space-xl) * 2);
     border-radius: var(--radius-xxl);
+    border-width: 1px;
 }
 
 .inventory-table {
