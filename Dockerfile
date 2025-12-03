@@ -33,6 +33,7 @@ RUN apk add --no-cache dumb-init
 COPY --from=builder /app/node_modules ./node_modules
 
 # Copy backend source code from builder (includes frontend assets in src/public)
+# Force rebuild: 2025-12-03T18:00:00Z
 COPY --from=builder /app/src ./src
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/config ./config
