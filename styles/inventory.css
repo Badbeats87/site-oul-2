@@ -12,7 +12,7 @@
 
 .inventory-filter-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: var(--space-md);
     align-items: stretch;
 }
@@ -74,6 +74,8 @@
 
 .inventory-table {
     width: 100%;
+    table-layout: fixed;
+    font-size: var(--font-size-xs);
 }
 
 .inventory-table thead {
@@ -81,19 +83,20 @@
 }
 
 .inventory-table th {
-    padding: var(--space-md);
+    padding: var(--space-sm);
     text-align: left;
     font-weight: var(--font-weight-semibold);
-    font-size: var(--font-size-sm);
+    font-size: calc(var(--font-size-xs) + 1px);
     color: var(--color-text);
     border-bottom: 2px solid var(--color-border);
 }
 
 .inventory-table td {
-    padding: var(--space-md);
+    padding: var(--space-sm);
     border-bottom: 1px solid var(--color-border);
     color: var(--color-text);
     vertical-align: top;
+    word-break: break-word;
 }
 
 .inventory-table tbody tr:hover {
@@ -139,10 +142,10 @@
 
 .table-input {
     width: 100%;
-    padding: 6px 8px;
+    padding: 4px 6px;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
 }
 
 .table-title {
@@ -167,6 +170,18 @@
 
 .table-discogs .button {
     white-space: nowrap;
+}
+
+.suggestion-label {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-light);
+}
+
+.suggestion-controls {
+    display: flex;
+    gap: var(--space-xs);
+    align-items: center;
 }
 
 .suggestion-hint {
