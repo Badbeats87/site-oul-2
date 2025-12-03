@@ -155,30 +155,75 @@ class DiscogsService {
           // Throttle requests to respect Discogs rate limits
           await this.throttler.wait();
 
-          let response = await this.retryWithBackoff(
-            () =>
-              this.client.get('/database/search', {
-                params: masterSearchParams,
-              }),
-            3,
-            1500
-          );
+          // Search for both masters and releases, combining results
+          const masterSearchParams2 = { ...masterSearchParams };
+          const releaseSearchParams = { ...masterSearchParams };
+          releaseSearchParams.type = 'release';
 
-          // If no master results, fallback to release search
-          if (!response.data.results || response.data.results.length === 0) {
-            masterSearchParams.type = 'release';
-            response = await this.retryWithBackoff(
+          let masterResults = [];
+          let releaseResults = [];
+
+          // Search for masters
+          try {
+            const masterResponse = await this.retryWithBackoff(
               () =>
                 this.client.get('/database/search', {
-                  params: masterSearchParams,
+                  params: masterSearchParams2,
                 }),
               3,
               1500
             );
+            masterResults = masterResponse.data.results || [];
+            logger.debug('Master search results', {
+              query,
+              masterCount: masterResults.length,
+            });
+          } catch (error) {
+            logger.warn('Master search failed, continuing with releases', {
+              error: error.message,
+            });
           }
 
+          // If limited master results, also search for releases
+          if (!masterResults || masterResults.length < 5) {
+            try {
+              await this.throttler.wait();
+              const releaseResponse = await this.retryWithBackoff(
+                () =>
+                  this.client.get('/database/search', {
+                    params: releaseSearchParams,
+                  }),
+                3,
+                1500
+              );
+              releaseResults = releaseResponse.data.results || [];
+              logger.debug('Release search results', {
+                query,
+                releaseCount: releaseResults.length,
+              });
+            } catch (error) {
+              logger.warn('Release search failed', {
+                error: error.message,
+              });
+            }
+          }
+
+          // Combine results: masters first, then releases
+          // Avoid duplicates by filtering releases that don't have corresponding masters
+          const combinedResults = [
+            ...masterResults,
+            ...releaseResults.filter(
+              (rel) =>
+                !masterResults.some(
+                  (mas) =>
+                    mas.id === rel.master_id ||
+                    mas.basic_information?.master_id === rel.id
+                )
+            ),
+          ];
+
           return {
-            results: response.data.results.map((result) => ({
+            results: combinedResults.map((result) => ({
               id: result.id,
               title: result.title,
               type: result.type, // 'master' or 'release'
@@ -187,10 +232,10 @@ class DiscogsService {
               basic_information: result.basic_information,
             })),
             pagination: {
-              page: response.data.pagination.page,
-              per_page: response.data.pagination.per_page,
-              items: response.data.pagination.items,
-              urls: response.data.pagination.urls,
+              page: masterResults.length > 0 ? page : 1,
+              per_page: 20,
+              items: combinedResults.length,
+              urls: {},
             },
           };
         },
@@ -1065,8 +1110,14 @@ class DiscogsService {
       const enrichedResults = await Promise.all(
         searchResults.results.slice(0, 5).map(async (result) => {
           try {
+            // Use getMaster for master results, getRelease for releases
+            const isMaster = result.type === 'master';
+            const metadataPromise = isMaster
+              ? this.getMaster(result.id)
+              : this.getRelease(result.id);
+
             const [metadata, prices] = await Promise.all([
-              this.getRelease(result.id),
+              metadataPromise,
               this.getPriceStatistics(result.id),
             ]);
 
@@ -1078,6 +1129,7 @@ class DiscogsService {
           } catch (error) {
             logger.warn('Failed to enrich search result', {
               resultId: result.id,
+              resultType: result.type,
               error: error.message,
             });
             return result;
