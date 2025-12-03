@@ -124,6 +124,7 @@
     color: var(--color-text);
     vertical-align: top;
     word-break: break-word;
+    overflow: hidden;
 }
 .inventory-table th:last-child,
 .inventory-table td:last-child {
@@ -196,6 +197,9 @@
     width: 100%;
     box-sizing: border-box;
     min-height: 30px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .inventory-table .table-input:focus,
