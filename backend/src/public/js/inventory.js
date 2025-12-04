@@ -360,7 +360,13 @@ class InventoryManager {
         limit: this.pagination.limit,
       };
       if (this.filters.search) params.search = this.filters.search;
-      if (this.filters.status !== 'all') params.status = this.filters.status;
+      // Always exclude REMOVED items unless explicitly viewing them
+      if (this.filters.status !== 'all') {
+        params.status = this.filters.status;
+      } else {
+        // When status is 'all', exclude REMOVED items
+        params.excludeStatus = 'REMOVED';
+      }
       if (this.filters.condition !== 'all')
         params.conditions = this.filters.condition;
       if (this.filters.minPrice) params.minPrice = this.filters.minPrice;

@@ -6,10 +6,11 @@ import logger from '../../config/logger.js';
  */
 export const listInventory = async (req, res, next) => {
   try {
-    const { status, limit, page, sortBy, sortOrder } = req.query;
+    const { status, excludeStatus, limit, page, sortBy, sortOrder } = req.query;
 
     const result = await inventoryService.listInventory({
       status,
+      excludeStatus,
       limit: limit ? parseInt(limit) : 50,
       page: page ? parseInt(page) : 1,
       sortBy: sortBy || 'createdAt',

@@ -566,6 +566,7 @@ class InventoryService {
     try {
       const {
         status,
+        excludeStatus,
         conditions,
         genre,
         minPrice,
@@ -590,6 +591,9 @@ class InventoryService {
       const where = {};
       if (status) {
         where.status = status;
+      }
+      if (excludeStatus) {
+        where.status = { not: excludeStatus };
       }
 
       // Condition filtering
