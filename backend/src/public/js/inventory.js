@@ -478,7 +478,7 @@ class InventoryManager {
         </td>
         <td data-column-id="discogs">
           <div class="table-discogs">
-            <input type="number" class="table-input" data-release-field="discogsId" value="${release.discogsId ?? ''}" placeholder="Discogs ID">
+            <input type="text" class="table-input" data-release-field="discogsId" value="${release.discogsId ?? ''}" placeholder="Discogs ID (e.g., m123456 or 123456)">
           </div>
           <div class="table-meta">
             ${discogsLink ? `<a href="${discogsLink}" target="_blank" rel="noopener">Open</a>` : '<span class="text-muted">No link</span>'}
