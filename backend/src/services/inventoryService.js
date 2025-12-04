@@ -340,6 +340,23 @@ class InventoryService {
         );
       }
 
+      // Check if inventory already exists for this submission item
+      const existingInventory = await prisma.inventoryLot.findFirst({
+        where: {
+          submissionItemId: item.id,
+          status: { not: 'REMOVED' }, // Don't count removed items
+        },
+      });
+
+      if (existingInventory) {
+        logger.warn('Inventory already exists for submission item', {
+          submissionItemId: item.id,
+          existingLotId: existingInventory.id,
+        });
+        // Return existing inventory instead of creating duplicate
+        return await this.getInventoryDetail(existingInventory.id);
+      }
+
       // Use final offer price as cost basis (what we paid per buyer policy)
       const costBasis = Number(
         item.finalOfferPrice ||
