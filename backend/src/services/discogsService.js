@@ -577,6 +577,66 @@ class DiscogsService {
             }
           } else {
             logger.info('Release has no master_id', { releaseId });
+            // If release has no master_id, try to find its master by searching
+            try {
+              logger.info('Searching for master by title and artist', {
+                releaseId,
+                title: releaseData.title,
+                artists: releaseData.artists?.map((a) => a.name).join(', '),
+              });
+              const searchQuery = [
+                releaseData.title,
+                releaseData.artists?.[0]?.name,
+              ]
+                .filter(Boolean)
+                .join(' ');
+
+              const searchResponse = await this.search({
+                query: searchQuery,
+              });
+
+              // Find a master result
+              const masterResult = searchResponse.results?.find(
+                (r) => r.type === 'master'
+              );
+
+              if (masterResult && masterResult.master_id) {
+                logger.info('Found master for release', {
+                  releaseId,
+                  masterId: masterResult.master_id,
+                });
+                await this.throttler.wait();
+                const masterResponse = await this.client.get(
+                  `/masters/${masterResult.master_id}`
+                );
+                masterData = masterResponse.data;
+
+                // Fetch vinyl versions
+                try {
+                  vinylVersions = await this.getMasterVinylVersions(
+                    masterResult.master_id
+                  );
+                  logger.info('Fetched vinyl versions from found master', {
+                    releaseId,
+                    masterId: masterResult.master_id,
+                    vinylVersionCount: vinylVersions.length,
+                  });
+                } catch (error) {
+                  logger.warn(
+                    'Failed to fetch vinyl versions from found master',
+                    {
+                      masterId: masterResult.master_id,
+                      error: error.message,
+                    }
+                  );
+                }
+              }
+            } catch (error) {
+              logger.warn('Failed to search for master', {
+                releaseId,
+                error: error.message,
+              });
+            }
           }
 
           // Use master data for most metadata (more complete/accurate)
