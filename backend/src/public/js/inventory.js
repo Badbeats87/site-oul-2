@@ -844,65 +844,156 @@ class InventoryManager {
   async loadDiscogsSuggestions(row, discogsId, discogsType = 'release') {
     try {
       this.showLoading(true);
-      // If discogsId has prefix (m123 or r123), extract the actual ID and type
-      let actualId = discogsId;
-      let actualType = discogsType;
-      if (discogsId.startsWith('m') || discogsId.startsWith('r')) {
-        actualType = discogsId[0] === 'm' ? 'master' : 'release';
-        actualId = discogsId.substring(1);
+      let allReleases = [];
+
+      // First, try to fetch by ID if provided
+      if (discogsId && discogsId.trim()) {
+        // If discogsId has prefix (m123 or r123), extract the actual ID and type
+        let actualId = discogsId;
+        let actualType = discogsType;
+        if (discogsId.startsWith('m') || discogsId.startsWith('r')) {
+          actualType = discogsId[0] === 'm' ? 'master' : 'release';
+          actualId = discogsId.substring(1);
+        }
+
+        // Check if we have cached metadata from search enrichment
+        const cacheKey = `${actualType}_${actualId}`;
+        let release;
+
+        console.log('loadDiscogsSuggestions looking for cache', {
+          cacheKey,
+          actualType,
+          actualId,
+          cacheKeys: window.discogsMetadataCache
+            ? Object.keys(window.discogsMetadataCache)
+            : 'no cache',
+        });
+
+        if (
+          window.discogsMetadataCache &&
+          window.discogsMetadataCache[cacheKey]
+        ) {
+          release = window.discogsMetadataCache[cacheKey];
+        } else {
+          // Fetch from appropriate endpoint based on type
+          const endpoint =
+            actualType === 'master'
+              ? `/integrations/discogs/masters/${actualId}`
+              : `/integrations/discogs/releases/${actualId}`;
+          release = await this.api.get(endpoint);
+        }
+
+        if (release) {
+          allReleases.push(release);
+        }
       }
 
-      // Check if we have cached metadata from search enrichment
-      const cacheKey = `${actualType}_${actualId}`;
-      let release;
+      // Also search by title/artist to get all matching masters and their vinyl versions
+      const artist = row.dataset.releaseArtist || '';
+      const title = row.dataset.releaseTitle || '';
+      if (artist || title) {
+        try {
+          const query = [artist, title].filter(Boolean).join(' - ');
+          console.log('Searching Discogs by title/artist', {
+            query,
+            artist,
+            title,
+          });
 
-      console.log('loadDiscogsSuggestions looking for cache', {
-        cacheKey,
-        actualType,
-        actualId,
-        cacheKeys: window.discogsMetadataCache
-          ? Object.keys(window.discogsMetadataCache)
-          : 'no cache',
-      });
+          const searchResponse = await this.api.get(
+            '/integrations/discogs/search-enriched',
+            {
+              q: query,
+              limit: 10,
+            }
+          );
 
-      if (
-        window.discogsMetadataCache &&
-        window.discogsMetadataCache[cacheKey]
-      ) {
-        release = window.discogsMetadataCache[cacheKey];
-      } else {
-        // Fetch from appropriate endpoint based on type
-        const endpoint =
-          actualType === 'master'
-            ? `/integrations/discogs/masters/${actualId}`
-            : `/integrations/discogs/releases/${actualId}`;
-        release = await this.api.get(endpoint);
+          const searchResults = searchResponse?.results || [];
+          console.log('Title/artist search results', {
+            count: searchResults.length,
+            hasMetadata: searchResults.map((r) => !!r.metadata),
+          });
+
+          // Cache the enriched metadata
+          if (window.discogsMetadataCache === undefined) {
+            window.discogsMetadataCache = {};
+          }
+
+          searchResults.forEach((result) => {
+            if (result.metadata) {
+              const cacheKey = `${result.type}_${result.id}`;
+              window.discogsMetadataCache[cacheKey] = result.metadata;
+              allReleases.push(result.metadata);
+            }
+          });
+        } catch (searchError) {
+          console.warn('Title/artist search failed', searchError.message);
+          // Continue with ID-based results if search fails
+        }
       }
 
-      const suggestions = this.extractDiscogsSuggestions(release);
+      // Merge suggestions from all found releases/masters
+      const mergedSuggestions = this.mergeDiscogsSuggestions(allReleases);
+
       const discogsInput = row.querySelector(
         '[data-release-field="discogsId"]'
       );
-      if (discogsInput && !discogsInput.value) {
-        discogsInput.value = actualId;
+      if (discogsInput && !discogsInput.value && allReleases.length > 0) {
+        discogsInput.value = allReleases[0]?.id || discogsId;
       }
       const fetchButton = row.querySelector('[data-discogs-fetch]');
-      if (fetchButton) {
-        fetchButton.dataset.discogsId = release?.id || actualId;
+      if (fetchButton && allReleases.length > 0) {
+        fetchButton.dataset.discogsId = allReleases[0]?.id || discogsId;
       }
-      this.showDiscogsSuggestions(row, suggestions);
+
+      this.showDiscogsSuggestions(row, mergedSuggestions);
       const optionsContainer = row.querySelector('[data-discogs-options]');
       if (optionsContainer) {
         optionsContainer.innerHTML = '';
         optionsContainer.classList.remove('is-visible');
       }
-      this.showSuccess('Discogs suggestions loaded');
+
+      const sourceCount = allReleases.length;
+      this.showSuccess(
+        `Discogs suggestions loaded from ${sourceCount} ${sourceCount === 1 ? 'source' : 'sources'}`
+      );
     } catch (error) {
       console.error('Discogs fetch failed', error);
       this.showError('Failed to load Discogs data: ' + error.message);
     } finally {
       this.showLoading(false);
     }
+  }
+
+  mergeDiscogsSuggestions(releases) {
+    // Merge suggestions from multiple releases into a single comprehensive suggestions object
+    const merged = {};
+
+    releases.forEach((release) => {
+      const suggestions = this.extractDiscogsSuggestions(release);
+      Object.entries(suggestions).forEach(([field, values]) => {
+        if (!merged[field]) {
+          merged[field] = [];
+        }
+        const valuesArray = Array.isArray(values) ? values : [values];
+        merged[field].push(...valuesArray);
+      });
+    });
+
+    // Deduplicate each field
+    Object.keys(merged).forEach((field) => {
+      const unique = [...new Set(merged[field].filter(Boolean))];
+      merged[field] = unique;
+    });
+
+    console.log('Merged suggestions from all releases', {
+      releaseCount: releases.length,
+      fields: Object.keys(merged),
+      catalogNumberCount: merged.catalogNumber?.length || 0,
+      catalogNumbers: merged.catalogNumber || [],
+    });
+
+    return merged;
   }
 
   extractDiscogsSuggestions(release) {
@@ -940,6 +1031,7 @@ class InventoryManager {
     );
 
     console.log('Catalog numbers extracted', {
+      releaseId: release?.id,
       currentCatalogNumbers: currentCatalogNumbers.filter(Boolean),
       vinylVersionCatalogNumbers,
     });
