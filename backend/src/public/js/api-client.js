@@ -60,7 +60,10 @@ class APIClient {
         if (data?.error?.message) {
           errorMessage = data.error.message;
         } else if (data?.error) {
-          errorMessage = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
+          errorMessage =
+            typeof data.error === 'string'
+              ? data.error
+              : JSON.stringify(data.error);
         } else if (data?.message) {
           errorMessage = data.message;
         }

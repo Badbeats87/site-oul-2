@@ -600,7 +600,8 @@ class DiscogsService {
           let vinylVersions = [];
 
           // Check if the fetched data is actually a master (by resource_url)
-          const isFetchedDataMaster = releaseData.resource_url?.includes('/masters/');
+          const isFetchedDataMaster =
+            releaseData.resource_url?.includes('/masters/');
 
           // If what we fetched is actually a master, fetch vinyl versions directly
           if (isFetchedDataMaster) {
@@ -714,7 +715,9 @@ class DiscogsService {
 
           return {
             id: releaseData.id,
-            master_id: isFetchedDataMaster ? releaseData.id : releaseData.master_id,
+            master_id: isFetchedDataMaster
+              ? releaseData.id
+              : releaseData.master_id,
             // Use master title/artists/year when available (more accurate)
             title: data.title,
             artists: (data.artists || []).map((a) => ({

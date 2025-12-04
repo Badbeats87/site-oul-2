@@ -753,7 +753,16 @@ class InventoryManager {
     };
 
     const releasePayload = {};
-    const releaseFields = ['label', 'catalogNumber', 'genre', 'description', 'format', 'country', 'releaseStatus', 'styles'];
+    const releaseFields = [
+      'label',
+      'catalogNumber',
+      'genre',
+      'description',
+      'format',
+      'country',
+      'releaseStatus',
+      'styles',
+    ];
     releaseFields.forEach((field) => {
       const input = row.querySelector(`[data-release-field="${field}"]`);
       if (input) {
@@ -810,10 +819,16 @@ class InventoryManager {
     if (!row) return;
 
     // Get record title for confirmation
-    const title = row.querySelector('[data-column-id="title"]')?.textContent || 'this record';
+    const title =
+      row.querySelector('[data-column-id="title"]')?.textContent ||
+      'this record';
 
     // Confirm deletion
-    if (!confirm(`Are you sure you want to delete "${title}"? This action cannot be undone.`)) {
+    if (
+      !confirm(
+        `Are you sure you want to delete "${title}"? This action cannot be undone.`
+      )
+    ) {
       return;
     }
 
@@ -933,9 +948,10 @@ class InventoryManager {
             // Prefer results where title closely matches (at least contains major words)
             const resultTitle = (result.title || '').toLowerCase();
             const queryTitle = (title || '').toLowerCase();
-            const titleMatch = resultTitle.includes(queryTitle) ||
-                               queryTitle.includes(resultTitle) ||
-                               this.calculateTitleSimilarity(resultTitle, queryTitle) > 0.7;
+            const titleMatch =
+              resultTitle.includes(queryTitle) ||
+              queryTitle.includes(resultTitle) ||
+              this.calculateTitleSimilarity(resultTitle, queryTitle) > 0.7;
 
             // Check artist match if provided
             let artistMatch = true;
