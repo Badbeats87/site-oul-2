@@ -1202,7 +1202,7 @@ class InventoryManager {
   }
 
   showDiscogsSuggestions(row, suggestions) {
-    // Apply Discogs suggestions as datalist options for combobox inputs
+    // Apply Discogs suggestions as dropdown select options
     const fieldMappings = {
       title: ['title'],
       artist: ['artist', 'releaseArtist'],
@@ -1234,29 +1234,47 @@ class InventoryManager {
       const input = row.querySelector(possibleSelectors);
       if (!input) return;
 
-      // Create or update datalist for this input
-      const listId = `discogs-list-${field}-${row.dataset.rowId}`;
+      // Find the suggestion hint container
+      const suggestionHint = row.querySelector(
+        `[data-suggestion-for="${field}"]`
+      );
+      if (!suggestionHint) return;
 
-      // Remove old datalist if it exists
-      const oldList = document.getElementById(listId);
-      if (oldList) oldList.remove();
+      // Create dropdown select with suggestions
+      const selectId = `suggestion-select-${field}-${row.dataset.rowId}`;
+      const select = document.createElement('select');
+      select.id = selectId;
+      select.className = 'table-input suggestion-dropdown';
+      select.setAttribute('data-suggestion-select', field);
 
-      // Create new datalist
-      const datalist = document.createElement('datalist');
-      datalist.id = listId;
+      // Add default option
+      const defaultOption = document.createElement('option');
+      defaultOption.value = '';
+      defaultOption.textContent = `Select ${field}...`;
+      select.appendChild(defaultOption);
 
+      // Add suggestion options
       valuesList.forEach((value) => {
         const option = document.createElement('option');
         option.value = value;
-        datalist.appendChild(option);
+        option.textContent = value;
+        select.appendChild(option);
       });
 
-      // Add datalist to body
-      document.body.appendChild(datalist);
+      // Add change listener to apply suggestion
+      select.addEventListener('change', (e) => {
+        if (e.target.value) {
+          this.applySuggestion(row, field, e.target.value);
+          // Reset select after applying
+          setTimeout(() => {
+            e.target.value = '';
+          }, 100);
+        }
+      });
 
-      // Link input to datalist
-      input.setAttribute('list', listId);
-      input.classList.add('discogs-combobox');
+      // Replace suggestion hint content with the select
+      suggestionHint.innerHTML = '';
+      suggestionHint.appendChild(select);
     });
   }
 
