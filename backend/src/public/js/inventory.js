@@ -860,14 +860,6 @@ class InventoryManager {
         const cacheKey = `${actualType}_${actualId}`;
         let release;
 
-        console.log('loadDiscogsSuggestions looking for cache', {
-          cacheKey,
-          actualType,
-          actualId,
-          cacheKeys: window.discogsMetadataCache
-            ? Object.keys(window.discogsMetadataCache)
-            : 'no cache',
-        });
 
         if (
           window.discogsMetadataCache &&
@@ -894,12 +886,6 @@ class InventoryManager {
       if (artist || title) {
         try {
           const query = [artist, title].filter(Boolean).join(' - ');
-          console.log('Searching Discogs by title/artist', {
-            query,
-            artist,
-            title,
-          });
-
           const searchResponse = await this.api.get(
             '/integrations/discogs/search-enriched',
             {
@@ -909,10 +895,6 @@ class InventoryManager {
           );
 
           const searchResults = searchResponse?.results || [];
-          console.log('Title/artist search results', {
-            count: searchResults.length,
-            hasMetadata: searchResults.map((r) => !!r.metadata),
-          });
 
           // Cache the enriched metadata
           if (window.discogsMetadataCache === undefined) {
@@ -986,13 +968,6 @@ class InventoryManager {
       merged[field] = unique;
     });
 
-    console.log('Merged suggestions from all releases', {
-      releaseCount: releases.length,
-      fields: Object.keys(merged),
-      catalogNumberCount: merged.catalogNumber?.length || 0,
-      catalogNumbers: merged.catalogNumber || [],
-    });
-
     return merged;
   }
 
@@ -1030,11 +1005,6 @@ class InventoryManager {
       }
     );
 
-    console.log('Catalog numbers extracted', {
-      releaseId: release?.id,
-      currentCatalogNumbers: currentCatalogNumbers.filter(Boolean),
-      vinylVersionCatalogNumbers,
-    });
 
     const catalogNumberOptions = unique([
       ...currentCatalogNumbers,

@@ -602,25 +602,10 @@ class DiscogsService {
           // Check if the fetched data is actually a master (by resource_url)
           const isFetchedDataMaster = releaseData.resource_url?.includes('/masters/');
 
-          logger.info('Release data details', {
-            releaseId,
-            hasMasterId: !!releaseData.master_id,
-            masterId: releaseData.master_id,
-            isFetchedDataMaster,
-            resource_url: releaseData.resource_url,
-          });
-
           // If what we fetched is actually a master, fetch vinyl versions directly
           if (isFetchedDataMaster) {
             try {
-              logger.info('Fetched data is actually a master, getting vinyl versions', {
-                masterId: releaseId,
-              });
               vinylVersions = await this.getMasterVinylVersions(releaseId);
-              logger.info('Fetched vinyl versions for master', {
-                masterId: releaseId,
-                vinylVersionCount: vinylVersions.length,
-              });
             } catch (e) {
               logger.warn('Failed to fetch vinyl versions for master', {
                 masterId: releaseId,
@@ -634,24 +619,12 @@ class DiscogsService {
                 `/masters/${releaseData.master_id}`
               );
               masterData = masterResponse.data;
-              logger.info('Master release fetched', {
-                masterId: releaseData.master_id,
-              });
 
               // Also fetch all vinyl versions of this master
               try {
-                logger.info('Starting vinyl versions fetch', {
-                  masterId: releaseData.master_id,
-                });
                 vinylVersions = await this.getMasterVinylVersions(
                   releaseData.master_id
                 );
-                logger.info('Fetched vinyl versions', {
-                  releaseId,
-                  masterId: releaseData.master_id,
-                  vinylVersionCount: vinylVersions.length,
-                  catalogNumbers: vinylVersions.map((v) => v.catno),
-                });
               } catch (error) {
                 logger.warn('Failed to fetch vinyl versions', {
                   masterId: releaseData.master_id,
