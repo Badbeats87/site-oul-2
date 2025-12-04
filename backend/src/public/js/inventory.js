@@ -846,41 +846,8 @@ class InventoryManager {
       this.showLoading(true);
       let allReleases = [];
 
-      // First, try to fetch by ID if provided
-      if (discogsId && discogsId.trim()) {
-        // If discogsId has prefix (m123 or r123), extract the actual ID and type
-        let actualId = discogsId;
-        let actualType = discogsType;
-        if (discogsId.startsWith('m') || discogsId.startsWith('r')) {
-          actualType = discogsId[0] === 'm' ? 'master' : 'release';
-          actualId = discogsId.substring(1);
-        }
-
-        // Check if we have cached metadata from search enrichment
-        const cacheKey = `${actualType}_${actualId}`;
-        let release;
-
-
-        if (
-          window.discogsMetadataCache &&
-          window.discogsMetadataCache[cacheKey]
-        ) {
-          release = window.discogsMetadataCache[cacheKey];
-        } else {
-          // Fetch from appropriate endpoint based on type
-          const endpoint =
-            actualType === 'master'
-              ? `/integrations/discogs/masters/${actualId}`
-              : `/integrations/discogs/releases/${actualId}`;
-          release = await this.api.get(endpoint);
-        }
-
-        if (release) {
-          allReleases.push(release);
-        }
-      }
-
-      // Also search by title/artist to get matching masters and their vinyl versions
+      // Search by title/artist to get all matching masters and their vinyl versions
+      // This is more reliable than ID-based fetching since inventory IDs are often wrong/missing
       const artist = row.dataset.releaseArtist || '';
       const title = row.dataset.releaseTitle || '';
       const releaseYear = row.dataset.releaseYear || '';
@@ -939,7 +906,6 @@ class InventoryManager {
           });
         } catch (searchError) {
           console.warn('Title/artist search failed', searchError.message);
-          // Continue with ID-based results if search fails
         }
       }
 
