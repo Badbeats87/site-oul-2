@@ -314,8 +314,15 @@ class InventoryManager {
         if (!row) return;
         const discogsId = event.target.value;
         if (!discogsId) return;
-        const discogsType =
-          event.target.selectedOptions[0]?.dataset.discogsType || 'release';
+        const selectedOption = event.target.selectedOptions[0];
+        const discogsType = selectedOption?.dataset.discogsType || 'release';
+
+        console.log('Discogs option selected', {
+          discogsId,
+          discogsType,
+          selectedOptionDataset: selectedOption?.dataset,
+          selectedOptionHTML: selectedOption?.outerHTML,
+        });
 
         const discogsInput = row.querySelector(
           '[data-release-field="discogsId"]'
