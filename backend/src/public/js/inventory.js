@@ -799,21 +799,31 @@ class InventoryManager {
   }
 
   async deleteRow(inventoryId) {
-    if (!inventoryId) return;
+    if (!inventoryId) {
+      console.log('No inventoryId provided');
+      return;
+    }
     const row = this.tbody?.querySelector(`[data-row-id="${inventoryId}"]`);
-    if (!row) return;
+    if (!row) {
+      console.log('Row not found for inventoryId:', inventoryId);
+      return;
+    }
 
     // Get record title for confirmation
     const title = row.querySelector('[data-column-id="title"]')?.textContent || 'this record';
+    console.log('Attempting to delete:', title, 'ID:', inventoryId);
 
     // Confirm deletion
     if (!confirm(`Are you sure you want to delete "${title}"? This action cannot be undone.`)) {
+      console.log('Deletion cancelled by user');
       return;
     }
 
     try {
       this.showLoading(true);
+      console.log('Sending DELETE request for:', inventoryId);
       await this.api.delete(`/inventory/${inventoryId}`);
+      console.log('Delete successful');
       this.showSuccess('Inventory item deleted');
       await this.loadInventory();
       this.showLoading(false);
