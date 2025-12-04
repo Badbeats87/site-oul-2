@@ -616,9 +616,21 @@ class InventoryManager {
       ${options.map((opt) => this.renderDiscogsOption(opt)).join('')}
     `;
 
+    select.addEventListener('change', (event) => {
+      console.log('SELECT CHANGE EVENT FIRED', {
+        value: event.target.value,
+        selectedIndex: event.target.selectedIndex,
+      });
+    });
+
     container.innerHTML = '';
     container.appendChild(select);
     container.classList.add('is-visible');
+    console.log('Discogs options dropdown created', {
+      optionsCount: options.length,
+      containerElement: container,
+      selectElement: select,
+    });
   }
 
   renderDiscogsOption(option) {
