@@ -529,6 +529,13 @@ class DiscogsService {
           try {
             response = await this.client.get(`/releases/${releaseId}`);
             releaseData = response.data;
+            logger.info('Fetched as release successfully', {
+              releaseId,
+              resource_url: releaseData.resource_url,
+              dataType: releaseData.resource_url?.includes('/releases/')
+                ? 'release'
+                : 'other',
+            });
           } catch (error) {
             // If release fetch fails, try as master
             logger.info('Release not found, trying as master', {
