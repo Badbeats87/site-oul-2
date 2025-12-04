@@ -282,6 +282,10 @@ class InventoryManager {
         this.saveRow(event.target.dataset.inventoryId);
       }
 
+      if (event.target.matches('[data-inventory-delete]')) {
+        this.deleteRow(event.target.dataset.inventoryId);
+      }
+
       if (event.target.matches('[data-inventory-view-submission]')) {
         const submissionId = event.target.dataset.submissionId;
         if (submissionId) {
@@ -489,6 +493,9 @@ class InventoryManager {
         <td data-column-id="actions">
           <button class="button button--sm button--primary" data-inventory-save data-inventory-id="${item.id}">
             Save
+          </button>
+          <button class="button button--sm button--danger" data-inventory-delete data-inventory-id="${item.id}">
+            Delete
           </button>
         </td>
       </tr>
@@ -787,6 +794,32 @@ class InventoryManager {
     } catch (error) {
       console.error('Failed to update inventory item:', error);
       this.showError('Failed to update item: ' + error.message);
+      this.showLoading(false);
+    }
+  }
+
+  async deleteRow(inventoryId) {
+    if (!inventoryId) return;
+    const row = this.tbody?.querySelector(`[data-row-id="${inventoryId}"]`);
+    if (!row) return;
+
+    // Get record title for confirmation
+    const title = row.querySelector('[data-column-id="title"]')?.textContent || 'this record';
+
+    // Confirm deletion
+    if (!confirm(`Are you sure you want to delete "${title}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      this.showLoading(true);
+      await this.api.delete(`/inventory/${inventoryId}`);
+      this.showSuccess('Inventory item deleted');
+      await this.loadInventory();
+      this.showLoading(false);
+    } catch (error) {
+      console.error('Failed to delete inventory item:', error);
+      this.showError('Failed to delete item: ' + error.message);
       this.showLoading(false);
     }
   }
