@@ -436,6 +436,22 @@ class InventoryManager {
           <input type="text" class="table-input" data-release-field="catalogNumber" value="${release.catalogNumber || ''}">
           <div class="table-meta suggestion-hint" data-suggestion-for="catalogNumber"></div>
         </td>
+        <td data-column-id="format">
+          <input type="text" class="table-input" data-release-field="format" value="${release.format || ''}">
+          <div class="table-meta suggestion-hint" data-suggestion-for="format"></div>
+        </td>
+        <td data-column-id="country">
+          <input type="text" class="table-input" data-release-field="country" value="${release.country || ''}">
+          <div class="table-meta suggestion-hint" data-suggestion-for="country"></div>
+        </td>
+        <td data-column-id="releaseStatus">
+          <input type="text" class="table-input" data-release-field="releaseStatus" value="${release.releaseStatus || ''}">
+          <div class="table-meta suggestion-hint" data-suggestion-for="releaseStatus"></div>
+        </td>
+        <td data-column-id="styles">
+          <input type="text" class="table-input" data-release-field="styles" value="${release.styles || ''}">
+          <div class="table-meta suggestion-hint" data-suggestion-for="styles"></div>
+        </td>
         <td data-column-id="year">
           <input type="number" class="table-input" data-release-field="releaseYear" value="${release.releaseYear ?? ''}">
           <div class="table-meta suggestion-hint" data-suggestion-for="releaseYear"></div>
@@ -1079,6 +1095,9 @@ class InventoryManager {
       ...(release?.styles || []),
     ]);
 
+    // Styles only - separate from genres
+    const stylesOptions = unique(release?.styles || []);
+
     // Format information - includes vinyl, CD, cassette, etc.
     const formatOptions = unique(
       (release?.formats || [])
@@ -1118,6 +1137,7 @@ class InventoryManager {
       catalogNumber: catalogNumberOptions,
       releaseYear: yearOptions,
       genre: genreOptions,
+      styles: stylesOptions,
       format: formatOptions,
       description: descriptionOptions,
       country: countryOptions,
@@ -1133,12 +1153,13 @@ class InventoryManager {
       artist: ['artist', 'releaseArtist'],
       label: ['label'],
       catalogNumber: ['catalogNumber'],
+      format: ['format'],
+      country: ['country'],
+      releaseStatus: ['releaseStatus'],
+      styles: ['styles'],
       releaseYear: ['releaseYear'],
       genre: ['genre'],
-      format: ['format', 'variant'],
       description: ['description', 'variant'],
-      country: ['country'],
-      releaseStatus: ['releaseStatus', 'status'],
       discogsUri: ['discogsUri', 'discogsId'],
     };
 
@@ -1283,6 +1304,10 @@ const INVENTORY_COLUMN_CONFIG = [
   { id: 'artist', label: 'Artist' },
   { id: 'label', label: 'Label' },
   { id: 'catalogNumber', label: 'Catalog #' },
+  { id: 'format', label: 'Format', defaultVisible: false },
+  { id: 'country', label: 'Country', defaultVisible: false },
+  { id: 'releaseStatus', label: 'Status (Discogs)', defaultVisible: false },
+  { id: 'styles', label: 'Styles', defaultVisible: false },
   { id: 'year', label: 'Year' },
   { id: 'genre', label: 'Genre' },
   { id: 'variant', label: 'Variant / Notes' },
