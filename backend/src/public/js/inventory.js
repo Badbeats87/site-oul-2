@@ -917,6 +917,15 @@ class InventoryManager {
       ...new Set(arr.filter((value) => value && value !== '')),
     ];
 
+    console.log('extractDiscogsSuggestions called with', {
+      releaseId: release?.id,
+      masterId: release?.master_id,
+      hasVinylVersions: !!release?.vinyl_versions,
+      vinylVersionCount: release?.vinyl_versions?.length,
+      labelsCount: release?.labels?.length,
+      labels: release?.labels,
+    });
+
     // Basic info - use master release data when available
     const titleOptions = unique([release?.title]);
     const artistOptions = unique(
@@ -946,6 +955,11 @@ class InventoryManager {
         return value;
       }
     );
+
+    console.log('Catalog numbers extracted', {
+      currentCatalogNumbers: currentCatalogNumbers.filter(Boolean),
+      vinylVersionCatalogNumbers,
+    });
 
     const catalogNumberOptions = unique([
       ...currentCatalogNumbers,
