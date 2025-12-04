@@ -880,17 +880,19 @@ class InventoryManager {
         }
       }
 
-      // Also search by title/artist to get all matching masters and their vinyl versions
+      // Also search by title/artist to get matching masters and their vinyl versions
       const artist = row.dataset.releaseArtist || '';
       const title = row.dataset.releaseTitle || '';
+      const releaseYear = row.dataset.releaseYear || '';
       if (artist || title) {
         try {
-          const query = [artist, title].filter(Boolean).join(' - ');
+          // Build search query - prioritize exact title matches
+          const query = title || [artist, title].filter(Boolean).join(' ');
           const searchResponse = await this.api.get(
             '/integrations/discogs/search-enriched',
             {
               q: query,
-              limit: 10,
+              limit: 5, // Limit to top 5 most relevant results
             }
           );
 
@@ -901,7 +903,34 @@ class InventoryManager {
             window.discogsMetadataCache = {};
           }
 
-          searchResults.forEach((result) => {
+          // Filter results: prefer exact/near title matches and matching artist
+          const filteredResults = searchResults.filter((result) => {
+            // Must have metadata
+            if (!result.metadata) return false;
+
+            // Prefer results where title closely matches (at least contains major words)
+            const resultTitle = (result.title || '').toLowerCase();
+            const queryTitle = (title || '').toLowerCase();
+            const titleMatch = resultTitle.includes(queryTitle) ||
+                               queryTitle.includes(resultTitle) ||
+                               this.calculateTitleSimilarity(resultTitle, queryTitle) > 0.7;
+
+            // Check artist match if provided
+            let artistMatch = true;
+            if (artist) {
+              const resultArtists = (result.metadata.artists || [])
+                .map((a) => a.name?.toLowerCase() || '')
+                .join(' ');
+              artistMatch = resultArtists.includes(artist.toLowerCase());
+            }
+
+            return titleMatch && artistMatch;
+          });
+
+          // Use only the best matches (limit to top 3 to avoid duplicates from multiple masters)
+          const topResults = filteredResults.slice(0, 3);
+
+          topResults.forEach((result) => {
             if (result.metadata) {
               const cacheKey = `${result.type}_${result.id}`;
               window.discogsMetadataCache[cacheKey] = result.metadata;
@@ -947,6 +976,26 @@ class InventoryManager {
     }
   }
 
+  calculateTitleSimilarity(str1, str2) {
+    // Simple similarity check - count matching words
+    const words1 = new Set(str1.split(/\s+/));
+    const words2 = new Set(str2.split(/\s+/));
+    const matches = [...words1].filter((w) => words2.has(w)).length;
+    const total = Math.max(words1.size, words2.size);
+    return total > 0 ? matches / total : 0;
+  }
+
+  normalizeCatalogNumber(catno) {
+    // Normalize catalog number for deduplication
+    // Remove extra spaces, convert to uppercase, normalize separators
+    if (!catno) return '';
+    return catno
+      .trim()
+      .toUpperCase()
+      .replace(/\s+/g, '') // Remove all spaces
+      .replace(/[-_]/g, '-'); // Normalize separators to hyphen
+  }
+
   mergeDiscogsSuggestions(releases) {
     // Merge suggestions from multiple releases into a single comprehensive suggestions object
     const merged = {};
@@ -962,10 +1011,27 @@ class InventoryManager {
       });
     });
 
-    // Deduplicate each field
+    // Deduplicate each field with smart handling for catalog numbers
     Object.keys(merged).forEach((field) => {
-      const unique = [...new Set(merged[field].filter(Boolean))];
-      merged[field] = unique;
+      if (field === 'catalogNumber') {
+        // Smart deduplication for catalog numbers
+        const seen = new Set();
+        const unique = [];
+        merged[field].filter(Boolean).forEach((catno) => {
+          const normalized = this.normalizeCatalogNumber(catno);
+          // Skip empty or "none" values
+          if (!normalized || /^none$/i.test(normalized)) return;
+          if (!seen.has(normalized)) {
+            seen.add(normalized);
+            unique.push(catno); // Keep original value for display
+          }
+        });
+        merged[field] = unique;
+      } else {
+        // Standard deduplication for other fields
+        const unique = [...new Set(merged[field].filter(Boolean))];
+        merged[field] = unique;
+      }
     });
 
     return merged;
