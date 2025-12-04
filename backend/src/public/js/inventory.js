@@ -989,11 +989,14 @@ class InventoryManager {
     // Normalize catalog number for deduplication
     // Remove extra spaces, convert to uppercase, normalize separators
     if (!catno) return '';
-    return catno
+    // First, remove variant suffixes like [1], [2], etc.
+    const withoutVariant = catno.replace(/\s*\[\d+\]\s*/g, '');
+    return withoutVariant
       .trim()
       .toUpperCase()
       .replace(/\s+/g, '') // Remove all spaces
-      .replace(/[-_]/g, '-'); // Normalize separators to hyphen
+      .replace(/[-_]/g, '-') // Normalize separators to hyphen
+      .replace(/,.*$/, ''); // Remove anything after comma (like ", none")
   }
 
   mergeDiscogsSuggestions(releases) {
