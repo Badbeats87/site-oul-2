@@ -702,6 +702,10 @@ class InventoryService {
           costBasis: lot.costBasis ? parseFloat(lot.costBasis) : null,
           listPrice: lot.listPrice ? parseFloat(lot.listPrice) : null,
           salePrice: lot.salePrice ? parseFloat(lot.salePrice) : null,
+          format: lot.format,
+          country: lot.country,
+          releaseStatus: lot.releaseStatus,
+          styles: lot.styles,
           createdAt: lot.createdAt,
           listedAt: lot.listedAt,
           soldAt: lot.soldAt,
@@ -773,6 +777,12 @@ class InventoryService {
         internalNotes: lot.internalNotes,
         publicDescription: lot.publicDescription,
         photoUrls: lot.photoUrls,
+        metadata: {
+          format: lot.format,
+          country: lot.country,
+          releaseStatus: lot.releaseStatus,
+          styles: lot.styles,
+        },
         timestamps: {
           createdAt: lot.createdAt,
           updatedAt: lot.updatedAt,
