@@ -856,8 +856,8 @@ class InventoryService {
       if (internalNotes !== undefined) updateData.internalNotes = internalNotes;
       if (publicDescription !== undefined)
         updateData.publicDescription = publicDescription;
-      if (sku !== undefined) {
-        // Check SKU uniqueness if provided
+      if (sku !== undefined && sku !== null && sku !== '') {
+        // Check SKU uniqueness if provided (not empty)
         const existingSku = await prisma.inventoryLot.findUnique({
           where: { sku },
         });
@@ -865,6 +865,9 @@ class InventoryService {
           throw new ApiError('SKU must be unique', 400);
         }
         updateData.sku = sku;
+      } else if (sku === '') {
+        // Allow clearing SKU
+        updateData.sku = null;
       }
 
       // Handle status transition to LIVE
