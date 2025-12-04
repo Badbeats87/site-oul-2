@@ -1058,27 +1058,45 @@ class InventoryManager {
     );
 
     // Catalog numbers: combine current release labels + all vinyl versions' catalog numbers
-    const currentCatalogNumbers = (release?.labels || []).map((label) => {
-      const value = (label?.catalog_number || label?.catno)?.trim();
+    // with smart filtering and normalization
+    const filterCatalogNumber = (value) => {
       if (!value) return null;
-      if (/^none$/i.test(value) || /^not in label$/i.test(value)) return null;
-      return value;
+      const trimmed = value.trim();
+      // Filter out invalid entries
+      if (/^none$/i.test(trimmed)) return null;
+      if (/^not in label$/i.test(trimmed)) return null;
+      if (/,\s*none$/i.test(trimmed)) return null; // Handle "DM-SP-40, none"
+      // Remove comma-separated suffixes (like ", none")
+      const cleaned = trimmed.replace(/,.*$/, '').trim();
+      // Remove variant brackets like [1], [2]
+      const noVariants = cleaned.replace(/\s*\[\d+\]\s*/g, '').trim();
+      return noVariants || null;
+    };
+
+    const currentCatalogNumbers = (release?.labels || []).map((label) => {
+      const value = label?.catalog_number || label?.catno;
+      return filterCatalogNumber(value);
     });
 
     const vinylVersionCatalogNumbers = (release?.vinyl_versions || []).map(
       (version) => {
-        const value = version?.catno?.trim();
-        if (!value) return null;
-        if (/^none$/i.test(value) || /^not in label$/i.test(value)) return null;
-        return value;
+        return filterCatalogNumber(version?.catno);
       }
     );
 
+    // Deduplicate using normalized comparison
+    const catalogNumberMap = new Map();
+    [...currentCatalogNumbers, ...vinylVersionCatalogNumbers]
+      .filter(Boolean)
+      .forEach((catno) => {
+        // Normalize for deduplication but keep original for display
+        const normalized = this.normalizeCatalogNumber(catno);
+        if (normalized && !catalogNumberMap.has(normalized)) {
+          catalogNumberMap.set(normalized, catno);
+        }
+      });
 
-    const catalogNumberOptions = unique([
-      ...currentCatalogNumbers,
-      ...vinylVersionCatalogNumbers,
-    ]);
+    const catalogNumberOptions = Array.from(catalogNumberMap.values());
 
     // Year/Date
     const yearOptions = unique([
