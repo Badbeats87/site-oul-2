@@ -447,19 +447,19 @@ class InventoryManager {
           <div class="table-meta suggestion-hint" data-suggestion-for="catalogNumber"></div>
         </td>
         <td data-column-id="format">
-          <input type="text" class="table-input" data-release-field="format" value="${release.format || ''}">
+          <input type="text" class="table-input" data-release-field="format" value="${item.format || ''}">
           <div class="table-meta suggestion-hint" data-suggestion-for="format"></div>
         </td>
         <td data-column-id="country">
-          <input type="text" class="table-input" data-release-field="country" value="${release.country || ''}">
+          <input type="text" class="table-input" data-release-field="country" value="${item.country || ''}">
           <div class="table-meta suggestion-hint" data-suggestion-for="country"></div>
         </td>
         <td data-column-id="releaseStatus">
-          <input type="text" class="table-input" data-release-field="releaseStatus" value="${release.releaseStatus || ''}">
+          <input type="text" class="table-input" data-release-field="releaseStatus" value="${item.releaseStatus || ''}">
           <div class="table-meta suggestion-hint" data-suggestion-for="releaseStatus"></div>
         </td>
         <td data-column-id="styles">
-          <input type="text" class="table-input" data-release-field="styles" value="${release.styles || ''}">
+          <input type="text" class="table-input" data-release-field="styles" value="${item.styles || ''}">
           <div class="table-meta suggestion-hint" data-suggestion-for="styles"></div>
         </td>
         <td data-column-id="year">
