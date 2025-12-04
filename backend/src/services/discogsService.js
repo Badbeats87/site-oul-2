@@ -599,13 +599,35 @@ class DiscogsService {
           let masterData = null;
           let vinylVersions = [];
 
+          // Check if the fetched data is actually a master (by resource_url)
+          const isFetchedDataMaster = releaseData.resource_url?.includes('/masters/');
+
           logger.info('Release data details', {
             releaseId,
             hasMasterId: !!releaseData.master_id,
             masterId: releaseData.master_id,
+            isFetchedDataMaster,
+            resource_url: releaseData.resource_url,
           });
 
-          if (releaseData.master_id) {
+          // If what we fetched is actually a master, fetch vinyl versions directly
+          if (isFetchedDataMaster) {
+            try {
+              logger.info('Fetched data is actually a master, getting vinyl versions', {
+                masterId: releaseId,
+              });
+              vinylVersions = await this.getMasterVinylVersions(releaseId);
+              logger.info('Fetched vinyl versions for master', {
+                masterId: releaseId,
+                vinylVersionCount: vinylVersions.length,
+              });
+            } catch (e) {
+              logger.warn('Failed to fetch vinyl versions for master', {
+                masterId: releaseId,
+                error: e.message,
+              });
+            }
+          } else if (releaseData.master_id) {
             try {
               await this.throttler.wait();
               const masterResponse = await this.client.get(
@@ -712,10 +734,14 @@ class DiscogsService {
           // Use master data for most metadata (more complete/accurate)
           // But use RELEASE data for pressing-specific info (labels, catalog numbers, formats, notes)
           const data = masterData || releaseData;
+          const labelSource = releaseData.labels ? releaseData : data;
+          const formatSource = releaseData.formats ? releaseData : data;
+          const imageSource = releaseData.images ? releaseData : data;
+          const tracelistSource = releaseData.tracklist ? releaseData : data;
 
           return {
             id: releaseData.id,
-            master_id: releaseData.master_id,
+            master_id: isFetchedDataMaster ? releaseData.id : releaseData.master_id,
             // Use master title/artists/year when available (more accurate)
             title: data.title,
             artists: (data.artists || []).map((a) => ({
@@ -727,25 +753,25 @@ class DiscogsService {
             genres: data.genres || [],
             styles: data.styles || [],
             // RELEASE formats, labels, and notes are pressing-specific and should not come from master
-            formats: (releaseData.formats || []).map((f) => ({
+            formats: (formatSource.formats || []).map((f) => ({
               name: f.name,
               qty: f.qty,
               descriptions: f.descriptions || [],
             })),
             // ALWAYS use RELEASE labels for catalog numbers (pressing-specific)
-            labels: (releaseData.labels || []).map((l) => ({
+            labels: (labelSource.labels || []).map((l) => ({
               name: l.name,
               catalog_number: l.catno || l.catalog_number,
               resource_url: l.resource_url,
             })),
             // Use release tracklist (release-specific)
-            tracklist: (releaseData.tracklist || []).map((t) => ({
+            tracklist: (tracelistSource.tracklist || []).map((t) => ({
               position: t.position,
               title: t.title,
               duration: t.duration,
             })),
             // Use release images
-            images: (releaseData.images || []).map((i) => ({
+            images: (imageSource.images || []).map((i) => ({
               type: i.type,
               uri: i.uri,
               resource_url: i.resource_url,
@@ -763,11 +789,11 @@ class DiscogsService {
                 releaseData.community?.rating?.count,
             },
             // Release-specific notes and details
-            notes: releaseData.notes,
-            country: releaseData.country,
-            status: releaseData.status,
-            resource_url: releaseData.resource_url,
-            uri: releaseData.uri,
+            notes: releaseData.notes || data.notes,
+            country: releaseData.country || data.country,
+            status: releaseData.status || data.status,
+            resource_url: releaseData.resource_url || data.resource_url,
+            uri: releaseData.uri || data.uri,
             // All vinyl versions of this master - for catalog number suggestions
             vinyl_versions: vinylVersions,
           };
