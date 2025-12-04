@@ -847,6 +847,10 @@ class InventoryManager {
       let allReleases = [];
 
       // First, try to fetch by ID if provided
+      // But validate that the ID actually matches the title/artist
+      const inventoryTitle = row.dataset.releaseTitle || '';
+      const inventoryArtist = row.dataset.releaseArtist || '';
+
       if (discogsId && discogsId.trim()) {
         // If discogsId has prefix (m123 or r123), extract the actual ID and type
         let actualId = discogsId;
@@ -859,7 +863,6 @@ class InventoryManager {
         // Check if we have cached metadata from search enrichment
         const cacheKey = `${actualType}_${actualId}`;
         let release;
-
 
         if (
           window.discogsMetadataCache &&
@@ -875,7 +878,26 @@ class InventoryManager {
           release = await this.api.get(endpoint);
         }
 
-        if (release) {
+        // Validate that the fetched record matches the inventory entry
+        if (release && inventoryTitle) {
+          const discogsTitleLower = (release.title || '').toLowerCase();
+          const inventoryTitleLower = inventoryTitle.toLowerCase();
+
+          // Check if titles are similar enough (title should contain or be contained in other)
+          const titleMatches = discogsTitleLower.includes(inventoryTitleLower) ||
+                               inventoryTitleLower.includes(discogsTitleLower);
+
+          // If title doesn't match, skip this ID and rely on search results instead
+          if (titleMatches) {
+            allReleases.push(release);
+          } else {
+            console.warn('Discogs ID title mismatch - skipping', {
+              discogsId,
+              discogsTitle: release.title,
+              inventoryTitle,
+            });
+          }
+        } else if (release) {
           allReleases.push(release);
         }
       }
