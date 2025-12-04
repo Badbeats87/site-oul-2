@@ -316,14 +316,6 @@ class InventoryManager {
         if (!discogsId) return;
         const selectedOption = event.target.selectedOptions[0];
         const discogsType = selectedOption?.dataset.discogsType || 'release';
-
-        console.log('Discogs option selected', {
-          discogsId,
-          discogsType,
-          selectedOptionDataset: selectedOption?.dataset,
-          selectedOptionHTML: selectedOption?.outerHTML,
-        });
-
         const discogsInput = row.querySelector(
           '[data-release-field="discogsId"]'
         );
@@ -585,10 +577,6 @@ class InventoryManager {
         if (result.metadata) {
           const cacheKey = `${result.type}_${result.id}`;
           window.discogsMetadataCache[cacheKey] = result.metadata;
-          console.log('Cached Discogs metadata', {
-            cacheKey,
-            vinylVersions: result.metadata.vinyl_versions?.length,
-          });
         }
       });
       return results;
@@ -616,21 +604,11 @@ class InventoryManager {
       ${options.map((opt) => this.renderDiscogsOption(opt)).join('')}
     `;
 
-    select.addEventListener('change', (event) => {
-      console.log('SELECT CHANGE EVENT FIRED', {
-        value: event.target.value,
-        selectedIndex: event.target.selectedIndex,
-      });
-    });
+    select.addEventListener('change', (event) => {});
 
     container.innerHTML = '';
     container.appendChild(select);
     container.classList.add('is-visible');
-    console.log('Discogs options dropdown created', {
-      optionsCount: options.length,
-      containerElement: container,
-      selectElement: select,
-    });
   }
 
   renderDiscogsOption(option) {
@@ -646,13 +624,6 @@ class InventoryManager {
     // Store both id and type so we know how to fetch the data
     const idToStore =
       type === 'master' && option.master_id ? option.master_id : id;
-    console.log('renderDiscogsOption', {
-      optionId: option.id,
-      masterId: option.master_id,
-      type,
-      idToStore,
-      hasMetadata: !!option.metadata,
-    });
     return `<option value="${idToStore}" data-discogs-type="${type}">${this.escapeHtml(
       text
     )}</option>`;
@@ -898,31 +869,14 @@ class InventoryManager {
         window.discogsMetadataCache &&
         window.discogsMetadataCache[cacheKey]
       ) {
-        console.log(
-          'Using cached Discogs metadata for',
-          cacheKey,
-          window.discogsMetadataCache[cacheKey]
-        );
         release = window.discogsMetadataCache[cacheKey];
       } else {
-        console.log('Cache miss, fetching from API', {
-          cacheKey,
-          actualType,
-          actualId,
-        });
         // Fetch from appropriate endpoint based on type
         const endpoint =
           actualType === 'master'
             ? `/integrations/discogs/masters/${actualId}`
             : `/integrations/discogs/releases/${actualId}`;
-
-        console.log('Fetching from endpoint', { endpoint });
         release = await this.api.get(endpoint);
-        console.log('API returned', {
-          releaseId: release?.id,
-          masterId: release?.master_id,
-          hasVinylVersions: !!release?.vinyl_versions,
-        });
       }
 
       const suggestions = this.extractDiscogsSuggestions(release);
@@ -955,16 +909,6 @@ class InventoryManager {
     const unique = (arr) => [
       ...new Set(arr.filter((value) => value && value !== '')),
     ];
-
-    console.log('extractDiscogsSuggestions called with', {
-      releaseId: release?.id,
-      masterId: release?.master_id,
-      hasVinylVersions: !!release?.vinyl_versions,
-      vinylVersionCount: release?.vinyl_versions?.length,
-      labelsCount: release?.labels?.length,
-      labels: release?.labels,
-    });
-
     // Basic info - use master release data when available
     const titleOptions = unique([release?.title]);
     const artistOptions = unique(
