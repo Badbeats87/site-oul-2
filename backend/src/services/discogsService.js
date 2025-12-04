@@ -522,8 +522,71 @@ class DiscogsService {
       return await getOrSet(
         cacheKey,
         async () => {
-          const response = await this.client.get(`/releases/${releaseId}`);
-          const releaseData = response.data;
+          let response;
+          let releaseData;
+
+          // Try to fetch as release first
+          try {
+            response = await this.client.get(`/releases/${releaseId}`);
+            releaseData = response.data;
+          } catch (error) {
+            // If release fetch fails, try as master
+            logger.info('Release not found, trying as master', {
+              releaseId,
+              error: error.message,
+            });
+            try {
+              response = await this.client.get(`/masters/${releaseId}`);
+              releaseData = response.data;
+              // Fetch vinyl versions for this master
+              let vinylVersions = [];
+              try {
+                vinylVersions = await this.getMasterVinylVersions(releaseId);
+              } catch (e) {
+                logger.warn('Failed to fetch vinyl versions for master', {
+                  masterId: releaseId,
+                  error: e.message,
+                });
+              }
+              return {
+                id: releaseData.id,
+                master_id: releaseData.id, // Master's ID is its own ID
+                title: releaseData.title,
+                artists: (releaseData.artists || []).map((a) => ({
+                  name: a.name,
+                  resource_url: a.resource_url,
+                })),
+                year: releaseData.year,
+                genres: releaseData.genres || [],
+                styles: releaseData.styles || [],
+                formats: [],
+                labels: [],
+                tracklist: [],
+                images: (releaseData.images || []).map((i) => ({
+                  type: i.type,
+                  uri: i.uri,
+                  resource_url: i.resource_url,
+                  uri150: i.uri150,
+                })),
+                community: {
+                  have: releaseData.community?.have,
+                  want: releaseData.community?.want,
+                  rating: releaseData.community?.rating?.average,
+                  votes: releaseData.community?.rating?.count,
+                },
+                resource_url: releaseData.resource_url,
+                uri: releaseData.uri,
+                vinyl_versions: vinylVersions,
+              };
+            } catch (masterError) {
+              logger.error('Failed to fetch as both release and master', {
+                releaseId,
+                releaseError: error.message,
+                masterError: masterError.message,
+              });
+              throw error;
+            }
+          }
 
           // Fetch master release if available for better metadata
           let masterData = null;
