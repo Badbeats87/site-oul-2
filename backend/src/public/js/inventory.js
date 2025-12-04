@@ -866,6 +866,15 @@ class InventoryManager {
       const cacheKey = `${actualType}_${actualId}`;
       let release;
 
+      console.log('loadDiscogsSuggestions looking for cache', {
+        cacheKey,
+        actualType,
+        actualId,
+        cacheKeys: window.discogsMetadataCache
+          ? Object.keys(window.discogsMetadataCache)
+          : 'no cache',
+      });
+
       if (
         window.discogsMetadataCache &&
         window.discogsMetadataCache[cacheKey]
@@ -877,13 +886,24 @@ class InventoryManager {
         );
         release = window.discogsMetadataCache[cacheKey];
       } else {
+        console.log('Cache miss, fetching from API', {
+          cacheKey,
+          actualType,
+          actualId,
+        });
         // Fetch from appropriate endpoint based on type
         const endpoint =
           actualType === 'master'
             ? `/integrations/discogs/masters/${actualId}`
             : `/integrations/discogs/releases/${actualId}`;
 
+        console.log('Fetching from endpoint', { endpoint });
         release = await this.api.get(endpoint);
+        console.log('API returned', {
+          releaseId: release?.id,
+          masterId: release?.master_id,
+          hasVinylVersions: !!release?.vinyl_versions,
+        });
       }
 
       const suggestions = this.extractDiscogsSuggestions(release);
