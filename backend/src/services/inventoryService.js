@@ -956,8 +956,10 @@ class InventoryService {
       logger.error('Error updating inventory', {
         inventoryLotId,
         error: error.message,
+        stack: error.stack,
+        name: error.name,
       });
-      throw new ApiError('Failed to update inventory', 500);
+      throw new ApiError(`Failed to update inventory: ${error.message}`, 500);
     }
   }
 
