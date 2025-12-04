@@ -315,6 +315,12 @@ model InventoryLot {
   publicDescription String?  @map("public_description") @db.Text
   photoUrls         Json?    @map("photo_urls")
 
+  // Release metadata (specific to this pressing/variant)
+  format            String?  @db.VarChar(100)
+  country           String?  @db.VarChar(100)
+  releaseStatus     String?  @map("release_status") @db.VarChar(50)
+  styles            String?  @db.VarChar(255)
+
   // Sales tracking
   reservedAt        DateTime? @map("reserved_at") @db.Timestamptz
   soldAt            DateTime? @map("sold_at") @db.Timestamptz

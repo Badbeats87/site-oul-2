@@ -868,18 +868,23 @@ class InventoryService {
       }
 
       if (releaseUpdates) {
+        // Fields that go on the Release model (shared across all pressings)
         const allowedReleaseFields = [
           'label',
           'catalogNumber',
           'releaseYear',
           'genre',
           'description',
+          'discogsId',
+        ];
+        // Fields that go on InventoryLot (specific to this pressing/variant)
+        const allowedLotMetadataFields = [
           'format',
           'country',
           'releaseStatus',
           'styles',
-          'discogsId',
         ];
+
         const releaseData = {};
         for (const field of allowedReleaseFields) {
           if (releaseUpdates[field] !== undefined) {
@@ -913,6 +918,14 @@ class InventoryService {
             where: { id: lot.releaseId },
             data: releaseData,
           });
+        }
+
+        // Add lot metadata fields to the inventory lot update
+        for (const field of allowedLotMetadataFields) {
+          if (releaseUpdates[field] !== undefined) {
+            updateData[field] =
+              releaseUpdates[field] === '' ? null : releaseUpdates[field];
+          }
         }
       }
 
