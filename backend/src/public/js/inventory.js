@@ -753,7 +753,7 @@ class InventoryManager {
     };
 
     const releasePayload = {};
-    const releaseFields = ['label', 'catalogNumber', 'genre', 'description'];
+    const releaseFields = ['label', 'catalogNumber', 'genre', 'description', 'format', 'country', 'releaseStatus', 'styles'];
     releaseFields.forEach((field) => {
       const input = row.querySelector(`[data-release-field="${field}"]`);
       if (input) {

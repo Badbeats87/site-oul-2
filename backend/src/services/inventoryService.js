@@ -874,6 +874,10 @@ class InventoryService {
           'releaseYear',
           'genre',
           'description',
+          'format',
+          'country',
+          'releaseStatus',
+          'styles',
           'discogsId',
         ];
         const releaseData = {};
