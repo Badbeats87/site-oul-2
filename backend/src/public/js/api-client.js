@@ -56,9 +56,15 @@ class APIClient {
 
       // Handle API error responses
       if (!response.ok) {
-        throw new Error(
-          data.error || `HTTP ${response.status}: ${response.statusText}`
-        );
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        if (data?.error?.message) {
+          errorMessage = data.error.message;
+        } else if (data?.error) {
+          errorMessage = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
+        } else if (data?.message) {
+          errorMessage = data.message;
+        }
+        throw new Error(errorMessage);
       }
 
       // Return data from response
