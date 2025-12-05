@@ -976,9 +976,7 @@ class InventoryManager {
                 type: result.type,
                 id: result.id,
                 metadataKeys: Object.keys(result.metadata),
-                country: result.metadata?.country,
-                status: result.metadata?.status,
-                formats: result.metadata?.formats,
+                fullMetadata: result.metadata,
               });
               allReleases.push(result.metadata);
             }
