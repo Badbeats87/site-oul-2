@@ -1295,41 +1295,29 @@ class InventoryManager {
       console.log(`Suggestion hint for ${field}:`, suggestionHint ? 'found' : 'NOT FOUND');
       if (!suggestionHint) return;
 
-      // Create dropdown select with suggestions
-      const selectId = `suggestion-select-${field}-${row.dataset.rowId}`;
-      const select = document.createElement('select');
-      select.id = selectId;
-      select.className = 'table-input suggestion-dropdown';
-      select.setAttribute('data-suggestion-select', field);
+      // Create dropdown buttons instead of select for better visibility
+      const container = document.createElement('div');
+      container.className = 'suggestion-buttons';
+      container.setAttribute('data-suggestions-for', field);
 
-      // Add default option
-      const defaultOption = document.createElement('option');
-      defaultOption.value = '';
-      defaultOption.textContent = `Select ${field}...`;
-      select.appendChild(defaultOption);
-
-      // Add suggestion options
+      // Add buttons for each suggestion
       valuesList.forEach((value) => {
-        const option = document.createElement('option');
-        option.value = value;
-        option.textContent = value;
-        select.appendChild(option);
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'button button--sm button--suggestion-option';
+        button.textContent = value;
+        button.title = `Set ${field} to: ${value}`;
+        button.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this.applySuggestion(row, field, value);
+        });
+        container.appendChild(button);
       });
 
-      // Add change listener to apply suggestion
-      select.addEventListener('change', (e) => {
-        if (e.target.value) {
-          this.applySuggestion(row, field, e.target.value);
-          // Reset select after applying
-          setTimeout(() => {
-            e.target.value = '';
-          }, 100);
-        }
-      });
-
-      // Replace suggestion hint content with the select
+      // Replace suggestion hint content with buttons
       suggestionHint.innerHTML = '';
-      suggestionHint.appendChild(select);
+      suggestionHint.appendChild(container);
       // Make the suggestion hint visible
       suggestionHint.classList.add('is-visible');
       console.log(`Created dropdown for ${field} with ${valuesList.length} options`);
