@@ -972,6 +972,14 @@ class InventoryManager {
             if (result.metadata) {
               const cacheKey = `${result.type}_${result.id}`;
               window.discogsMetadataCache[cacheKey] = result.metadata;
+              console.log('Adding metadata from result:', {
+                type: result.type,
+                id: result.id,
+                metadataKeys: Object.keys(result.metadata),
+                country: result.metadata?.country,
+                status: result.metadata?.status,
+                formats: result.metadata?.formats,
+              });
               allReleases.push(result.metadata);
             }
           });
