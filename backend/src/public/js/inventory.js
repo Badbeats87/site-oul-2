@@ -1218,13 +1218,28 @@ class InventoryManager {
       discogsUri: ['discogsUri', 'discogsId'],
     };
 
+    console.log('showDiscogsSuggestions called with:', {
+      suggestionsCount: Object.keys(suggestions).length,
+      fields: Object.keys(suggestions),
+      rowId: row?.dataset?.rowId,
+    });
+
     Object.entries(suggestions).forEach(([field, values]) => {
       const valuesList = Array.isArray(values)
         ? values.filter(Boolean)
         : values
           ? [values]
           : [];
-      if (!valuesList.length) return;
+
+      console.log(`Field ${field}:`, {
+        valuesCount: valuesList.length,
+        values: valuesList.slice(0, 3),
+      });
+
+      if (!valuesList.length) {
+        console.log(`Skipping ${field} - no values`);
+        return;
+      }
 
       // Find the input field for this suggestion
       const possibleSelectors = (fieldMappings[field] || [field])
@@ -1232,12 +1247,14 @@ class InventoryManager {
         .join(', ');
 
       const input = row.querySelector(possibleSelectors);
+      console.log(`Input for ${field}:`, input ? 'found' : 'NOT FOUND');
       if (!input) return;
 
       // Find the suggestion hint container
       const suggestionHint = row.querySelector(
         `[data-suggestion-for="${field}"]`
       );
+      console.log(`Suggestion hint for ${field}:`, suggestionHint ? 'found' : 'NOT FOUND');
       if (!suggestionHint) return;
 
       // Create dropdown select with suggestions
@@ -1275,6 +1292,7 @@ class InventoryManager {
       // Replace suggestion hint content with the select
       suggestionHint.innerHTML = '';
       suggestionHint.appendChild(select);
+      console.log(`Created dropdown for ${field} with ${valuesList.length} options`);
     });
   }
 
