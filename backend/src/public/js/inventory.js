@@ -1084,7 +1084,12 @@ class InventoryManager {
       formats: release?.formats,
       styles: release?.styles,
       vinylVersionsCount: release?.vinyl_versions?.length,
-      firstVinylVersion: release?.vinyl_versions?.[0],
+      allVinylVersions: release?.vinyl_versions?.map(v => ({
+        format: v.format,
+        country: v.country,
+        label: v.label,
+        catno: v.catno,
+      })),
     });
 
     const unique = (arr) => [
@@ -1220,7 +1225,7 @@ class InventoryManager {
     // URI for reference
     const discogsUriOptions = unique([release?.uri]);
 
-    return {
+    const result = {
       title: titleOptions,
       artist: artistOptions,
       label: labelOptions,
@@ -1234,6 +1239,15 @@ class InventoryManager {
       releaseStatus: statusOptions,
       discogsUri: discogsUriOptions,
     };
+
+    console.log('Extracted suggestions summary:', {
+      label: labelOptions,
+      format: formatOptions,
+      country: countryOptions,
+      catalogNumber: catalogNumberOptions,
+    });
+
+    return result;
   }
 
   showDiscogsSuggestions(row, suggestions) {
