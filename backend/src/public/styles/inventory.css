@@ -340,22 +340,28 @@
 }
 
 .suggestion-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 4px;
-  padding: 4px;
-  background-color: var(--color-bg-secondary, #f5f5f5);
-  border-radius: 4px;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 4px !important;
+  margin-top: 4px !important;
+  padding: 4px !important;
+  background-color: #f0f0f0 !important;
+  border-radius: 4px !important;
 }
 
 .button--suggestion-option {
-  font-size: var(--font-size-xs);
-  padding: 4px 8px;
-  white-space: nowrap;
-  background-color: var(--color-primary);
-  color: white;
-  border: none;
+  font-size: var(--font-size-xs) !important;
+  padding: 6px 10px !important;
+  white-space: nowrap !important;
+  background-color: #007bff !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 3px !important;
+  cursor: pointer !important;
+}
+
+.button--suggestion-option:hover {
+  background-color: #0056b3 !important;
 }
 
 .suggestion-hint button {
