@@ -1078,6 +1078,14 @@ class InventoryManager {
   }
 
   extractDiscogsSuggestions(release) {
+    console.log('extractDiscogsSuggestions - release data:', {
+      title: release?.title,
+      country: release?.country,
+      status: release?.status,
+      formats: release?.formats,
+      styles: release?.styles,
+    });
+
     const unique = (arr) => [
       ...new Set(arr.filter((value) => value && value !== '')),
     ];
