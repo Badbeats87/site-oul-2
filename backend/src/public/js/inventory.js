@@ -916,7 +916,6 @@ class InventoryManager {
         try {
           // Build search query - prioritize exact title matches
           const query = title || [artist, title].filter(Boolean).join(' ');
-          console.log('Searching Discogs for:', {query, artist, title});
           const searchResponse = await this.api.get(
             '/integrations/discogs/search-enriched',
             {
@@ -926,14 +925,6 @@ class InventoryManager {
           );
 
           const searchResults = searchResponse?.results || [];
-          console.log('Search results:', {
-            count: searchResults.length,
-            results: searchResults.map(r => ({
-              title: r.title,
-              type: r.type,
-              hasMetadata: !!r.metadata,
-            })),
-          });
 
           // Cache the enriched metadata
           if (window.discogsMetadataCache === undefined) {
@@ -989,10 +980,6 @@ class InventoryManager {
       }
 
       // Merge suggestions from all found releases/masters
-      console.log('About to merge suggestions from releases:', {
-        count: allReleases.length,
-        releases: allReleases.map(r => ({title: r.title, hasVinylVersions: !!r.vinyl_versions?.length})),
-      });
       const mergedSuggestions = this.mergeDiscogsSuggestions(allReleases);
 
       const discogsInput = row.querySelector(
@@ -1090,20 +1077,6 @@ class InventoryManager {
   }
 
   extractDiscogsSuggestions(release) {
-    console.log('extractDiscogsSuggestions - release data:', {
-      title: release?.title,
-      country: release?.country,
-      status: release?.status,
-      formats: release?.formats,
-      styles: release?.styles,
-      vinylVersionsCount: release?.vinyl_versions?.length,
-      allVinylVersions: release?.vinyl_versions?.map(v => ({
-        format: v.format,
-        country: v.country,
-        label: v.label,
-        catno: v.catno,
-      })),
-    });
 
     const unique = (arr) => [
       ...new Set(arr.filter((value) => value && value !== '')),
@@ -1238,7 +1211,7 @@ class InventoryManager {
     // URI for reference
     const discogsUriOptions = unique([release?.uri]);
 
-    const result = {
+    return {
       title: titleOptions,
       artist: artistOptions,
       label: labelOptions,
@@ -1252,15 +1225,6 @@ class InventoryManager {
       releaseStatus: statusOptions,
       discogsUri: discogsUriOptions,
     };
-
-    console.log('Extracted suggestions summary:', {
-      label: labelOptions,
-      format: formatOptions,
-      country: countryOptions,
-      catalogNumber: catalogNumberOptions,
-    });
-
-    return result;
   }
 
   showDiscogsSuggestions(row, suggestions) {
