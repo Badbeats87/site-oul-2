@@ -1090,6 +1090,8 @@ class InventoryManager {
       status: release?.status,
       formats: release?.formats,
       styles: release?.styles,
+      vinylVersionsCount: release?.vinyl_versions?.length,
+      firstVinylVersion: release?.vinyl_versions?.[0],
     });
 
     const unique = (arr) => [
