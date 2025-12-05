@@ -188,7 +188,8 @@
 
 .inventory-table .table-input,
 .inventory-table .filter-select,
-.inventory-table select.filter-select {
+.inventory-table select.filter-select,
+.inventory-table select {
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   padding: 6px 8px;
@@ -200,10 +201,17 @@
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.inventory-table select {
+  appearance: auto;
+  padding-right: 24px;
 }
 
 .inventory-table .table-input:focus,
-.inventory-table .filter-select:focus {
+.inventory-table .filter-select:focus,
+.inventory-table select:focus {
   outline: none;
   border-color: #4f46e5;
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
