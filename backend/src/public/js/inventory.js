@@ -1174,7 +1174,9 @@ class InventoryManager {
     const allFormats = [
       ...(release?.formats || []),
       ...(release?.vinyl_versions || [])
-        .flatMap((v) => v?.formats || []),
+        .map((v) => v?.format)
+        .filter(Boolean)
+        .map((f) => ({name: f})), // Wrap string format in object to match object format structure
     ];
     const formatOptions = unique(
       allFormats
@@ -1208,13 +1210,15 @@ class InventoryManager {
     ]);
 
     // Status (official, bootleg, reissue, etc)
-    // For masters, check vinyl versions as well
+    // Masters don't have status, so try to infer from vinyl versions or use default
     const statusOptions = unique([
       release?.status,
       ...(release?.vinyl_versions || [])
-        .map((v) => v?.status)
+        .map((v) => v?.type || v?.status)
         .filter(Boolean),
-    ]);
+      // Masters typically don't have status in the same way releases do
+      // but we can use empty array if nothing found
+    ].filter(Boolean)); // Remove any undefined/null values
 
     // URI for reference
     const discogsUriOptions = unique([release?.uri]);
