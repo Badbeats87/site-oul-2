@@ -328,6 +328,17 @@
   display: block;
 }
 
+.suggestion-hint.is-visible select {
+  display: block;
+  width: 100%;
+  padding: 4px;
+  margin-top: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
 .suggestion-hint button {
   margin-left: var(--space-xxs);
   padding: 2px 5px;
