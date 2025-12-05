@@ -440,39 +440,30 @@ class InventoryManager {
         <td data-column-id="artist">${release.artist || '—'}</td>
         <td data-column-id="label">
           <input type="text" class="table-input" data-release-field="label" value="${release.label || ''}">
-          <div class="table-meta suggestion-hint" data-suggestion-for="label"></div>
         </td>
         <td data-column-id="catalogNumber">
           <input type="text" class="table-input" data-release-field="catalogNumber" value="${release.catalogNumber || ''}">
-          <div class="table-meta suggestion-hint" data-suggestion-for="catalogNumber"></div>
         </td>
         <td data-column-id="format">
           <input type="text" class="table-input" data-field="format" value="${item.format || ''}">
-          <div class="table-meta suggestion-hint" data-suggestion-for="format"></div>
         </td>
         <td data-column-id="country">
           <input type="text" class="table-input" data-field="country" value="${item.country || ''}">
-          <div class="table-meta suggestion-hint" data-suggestion-for="country"></div>
         </td>
         <td data-column-id="releaseStatus">
           <input type="text" class="table-input" data-field="releaseStatus" value="${item.releaseStatus || ''}">
-          <div class="table-meta suggestion-hint" data-suggestion-for="releaseStatus"></div>
         </td>
         <td data-column-id="styles">
           <input type="text" class="table-input" data-field="styles" value="${item.styles || ''}">
-          <div class="table-meta suggestion-hint" data-suggestion-for="styles"></div>
         </td>
         <td data-column-id="year">
           <input type="number" class="table-input" data-release-field="releaseYear" value="${release.releaseYear ?? ''}">
-          <div class="table-meta suggestion-hint" data-suggestion-for="releaseYear"></div>
         </td>
         <td data-column-id="genre">
           <input type="text" class="table-input" data-release-field="genre" value="${release.genre || ''}">
-          <div class="table-meta suggestion-hint" data-suggestion-for="genre"></div>
         </td>
         <td data-column-id="variant">
           <input type="text" class="table-input" data-release-field="description" value="${release.description || ''}" placeholder="Variant / version">
-          <div class="table-meta suggestion-hint" data-suggestion-for="description"></div>
         </td>
         <td data-column-id="sku"><input type="text" class="table-input" data-field="sku" value="${item.sku || ''}"></td>
         <td data-column-id="channel">${item.channel || '—'}</td>
@@ -965,8 +956,10 @@ class InventoryManager {
             return titleMatch && artistMatch;
           });
 
-          // Use only the best matches (limit to top 3 to avoid duplicates from multiple masters)
-          const topResults = filteredResults.slice(0, 3);
+          // If strict filtering returns nothing, be more lenient and accept any result with metadata
+          const topResults = filteredResults.length > 0
+            ? filteredResults.slice(0, 3)
+            : searchResults.filter(r => r.metadata).slice(0, 3);
 
           topResults.forEach((result) => {
             if (result.metadata) {
@@ -1240,7 +1233,7 @@ class InventoryManager {
   }
 
   showDiscogsSuggestions(row, suggestions) {
-    // Apply Discogs suggestions as dropdown select options
+    // Convert input fields to select dropdowns with suggestions
     const fieldMappings = {
       title: ['title'],
       artist: ['artist', 'releaseArtist'],
@@ -1255,9 +1248,6 @@ class InventoryManager {
       description: ['description', 'variant'],
       discogsUri: ['discogsUri', 'discogsId'],
     };
-
-    // Track which fields are lot metadata (not release fields) for correct attribute lookup
-    const lotMetadataFields = new Set(['format', 'country', 'releaseStatus', 'styles']);
 
     console.log('showDiscogsSuggestions called with:', {
       suggestionsCount: Object.keys(suggestions).length,
@@ -1291,57 +1281,57 @@ class InventoryManager {
       console.log(`Input for ${field}:`, input ? 'found' : 'NOT FOUND');
       if (!input) return;
 
-      // Find the suggestion hint container
-      const suggestionHint = row.querySelector(
-        `[data-suggestion-for="${field}"]`
-      );
-      console.log(`Suggestion hint for ${field}:`, suggestionHint ? 'found' : 'NOT FOUND');
-      if (!suggestionHint) return;
+      // Get current value
+      const currentValue = input.value;
 
       // Create dropdown select with suggestions
       const select = document.createElement('select');
-      select.className = 'suggestion-dropdown table-input';
-      select.setAttribute('data-suggestions-for', field);
+      select.className = 'table-input';
+      select.setAttribute('data-field', field);
 
-      // Add default/placeholder option
-      const defaultOption = document.createElement('option');
-      defaultOption.value = '';
-      defaultOption.textContent = `← ${field} options`;
-      defaultOption.disabled = true;
-      defaultOption.selected = true;
-      select.appendChild(defaultOption);
+      // Copy attributes from original input
+      if (input.hasAttribute('data-release-field')) {
+        select.setAttribute('data-release-field', input.getAttribute('data-release-field'));
+      }
+      if (input.hasAttribute('data-field')) {
+        select.setAttribute('data-field', input.getAttribute('data-field'));
+      }
 
-      // Add separator
-      const separator = document.createElement('option');
-      separator.disabled = true;
-      separator.textContent = '─'.repeat(40);
-      select.appendChild(separator);
+      // Add current value as first option (if not empty)
+      if (currentValue) {
+        const currentOption = document.createElement('option');
+        currentOption.value = currentValue;
+        currentOption.textContent = currentValue;
+        currentOption.selected = true;
+        select.appendChild(currentOption);
+      }
 
-      // Add suggestion options
+      // Add separator between current value and suggestions (if current value exists)
+      if (currentValue && valuesList.length > 0) {
+        const separator = document.createElement('option');
+        separator.disabled = true;
+        separator.textContent = '─'.repeat(30);
+        select.appendChild(separator);
+      }
+
+      // Add suggestion options (skip if already current value)
       valuesList.forEach((value) => {
-        const option = document.createElement('option');
-        option.value = value;
-        option.textContent = value;
-        select.appendChild(option);
-      });
-
-      // Handle selection
-      select.addEventListener('change', (e) => {
-        if (e.target.value) {
-          this.applySuggestion(row, field, e.target.value);
-          // Reset dropdown after applying
-          setTimeout(() => {
-            e.target.value = '';
-          }, 100);
+        if (value !== currentValue) {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = value;
+          select.appendChild(option);
         }
       });
 
-      // Replace suggestion hint content with select
-      suggestionHint.innerHTML = '';
-      suggestionHint.appendChild(select);
-      // Make the suggestion hint visible
-      suggestionHint.classList.add('is-visible');
-      console.log(`Created dropdown for ${field} with ${valuesList.length} options`);
+      // Handle changes
+      select.addEventListener('change', (e) => {
+        select.value = e.target.value;
+      });
+
+      // Replace the input with the select
+      input.replaceWith(select);
+      console.log(`Converted ${field} to dropdown with ${valuesList.length} suggestions`);
     });
   }
 
