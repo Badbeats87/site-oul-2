@@ -339,29 +339,17 @@
   cursor: pointer;
 }
 
-.suggestion-buttons {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 4px !important;
+.suggestion-dropdown {
+  display: block !important;
+  width: 100% !important;
   margin-top: 4px !important;
-  padding: 4px !important;
-  background-color: #f0f0f0 !important;
+  padding: 6px 8px !important;
+  font-size: var(--font-size-sm) !important;
+  border: 1px solid #0066cc !important;
   border-radius: 4px !important;
-}
-
-.button--suggestion-option {
-  font-size: var(--font-size-xs) !important;
-  padding: 6px 10px !important;
-  white-space: nowrap !important;
-  background-color: #007bff !important;
-  color: white !important;
-  border: none !important;
-  border-radius: 3px !important;
+  background-color: white !important;
+  color: #333 !important;
   cursor: pointer !important;
-}
-
-.button--suggestion-option:hover {
-  background-color: #0056b3 !important;
 }
 
 .suggestion-hint button {
