@@ -1330,6 +1330,8 @@ class InventoryManager {
       // Replace suggestion hint content with the select
       suggestionHint.innerHTML = '';
       suggestionHint.appendChild(select);
+      // Make the suggestion hint visible
+      suggestionHint.classList.add('is-visible');
       console.log(`Created dropdown for ${field} with ${valuesList.length} options`);
     });
   }
