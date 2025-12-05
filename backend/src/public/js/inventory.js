@@ -1168,8 +1168,14 @@ class InventoryManager {
     const stylesOptions = unique(release?.styles || []);
 
     // Format information - includes vinyl, CD, cassette, etc.
+    // For masters, also check vinyl versions
+    const allFormats = [
+      ...(release?.formats || []),
+      ...(release?.vinyl_versions || [])
+        .flatMap((v) => v?.formats || []),
+    ];
     const formatOptions = unique(
-      (release?.formats || [])
+      allFormats
         .map((format) => {
           const parts = [];
           if (format?.name) parts.push(format.name);
@@ -1181,7 +1187,7 @@ class InventoryManager {
 
     // Format descriptions and release notes
     const formatDescriptionOptions = unique(
-      (release?.formats || []).flatMap((format) => format?.descriptions || [])
+      allFormats.flatMap((format) => format?.descriptions || [])
     );
 
     // Description/notes - combine release notes and format descriptions
@@ -1191,10 +1197,22 @@ class InventoryManager {
     ]);
 
     // Country - where the record was pressed/released
-    const countryOptions = unique([release?.country]);
+    // For masters, check vinyl versions as well
+    const countryOptions = unique([
+      release?.country,
+      ...(release?.vinyl_versions || [])
+        .map((v) => v?.country)
+        .filter(Boolean),
+    ]);
 
     // Status (official, bootleg, reissue, etc)
-    const statusOptions = unique([release?.status]);
+    // For masters, check vinyl versions as well
+    const statusOptions = unique([
+      release?.status,
+      ...(release?.vinyl_versions || [])
+        .map((v) => v?.status)
+        .filter(Boolean),
+    ]);
 
     // URI for reference
     const discogsUriOptions = unique([release?.uri]);
