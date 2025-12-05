@@ -1097,11 +1097,15 @@ class InventoryManager {
     );
 
     // Label and catalog - handle both catno and catalog_number fields
-    const labelOptions = unique(
-      (release?.labels || [])
+    // Extract from both master release labels and vinyl version labels
+    const labelOptions = unique([
+      ...(release?.labels || [])
         .map((label) => label?.name?.trim())
-        .filter(Boolean)
-    );
+        .filter(Boolean),
+      ...(release?.vinyl_versions || [])
+        .map((v) => v?.label)
+        .filter(Boolean),
+    ]);
 
     // Catalog numbers: combine current release labels + all vinyl versions' catalog numbers
     // with smart filtering and normalization
