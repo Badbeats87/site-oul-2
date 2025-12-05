@@ -447,19 +447,19 @@ class InventoryManager {
           <div class="table-meta suggestion-hint" data-suggestion-for="catalogNumber"></div>
         </td>
         <td data-column-id="format">
-          <input type="text" class="table-input" data-release-field="format" value="${item.format || ''}">
+          <input type="text" class="table-input" data-field="format" value="${item.format || ''}">
           <div class="table-meta suggestion-hint" data-suggestion-for="format"></div>
         </td>
         <td data-column-id="country">
-          <input type="text" class="table-input" data-release-field="country" value="${item.country || ''}">
+          <input type="text" class="table-input" data-field="country" value="${item.country || ''}">
           <div class="table-meta suggestion-hint" data-suggestion-for="country"></div>
         </td>
         <td data-column-id="releaseStatus">
-          <input type="text" class="table-input" data-release-field="releaseStatus" value="${item.releaseStatus || ''}">
+          <input type="text" class="table-input" data-field="releaseStatus" value="${item.releaseStatus || ''}">
           <div class="table-meta suggestion-hint" data-suggestion-for="releaseStatus"></div>
         </td>
         <td data-column-id="styles">
-          <input type="text" class="table-input" data-release-field="styles" value="${item.styles || ''}">
+          <input type="text" class="table-input" data-field="styles" value="${item.styles || ''}">
           <div class="table-meta suggestion-hint" data-suggestion-for="styles"></div>
         </td>
         <td data-column-id="year">
@@ -1255,6 +1255,9 @@ class InventoryManager {
       description: ['description', 'variant'],
       discogsUri: ['discogsUri', 'discogsId'],
     };
+
+    // Track which fields are lot metadata (not release fields) for correct attribute lookup
+    const lotMetadataFields = new Set(['format', 'country', 'releaseStatus', 'styles']);
 
     console.log('showDiscogsSuggestions called with:', {
       suggestionsCount: Object.keys(suggestions).length,
