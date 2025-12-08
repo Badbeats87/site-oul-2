@@ -53,10 +53,18 @@ const submitForm = {
         sessionStorage.getItem('auth_token');
 
       if (!authToken) {
-        console.warn('No auth token, using default buy percentage');
+        console.warn('No auth token available for buyer policy');
+        this.buyerPolicy = {
+          buyFormula: {
+            buyPercentage: 0.55,
+            priceStatistic: 'MEDIAN',
+          }
+        };
+        console.log('Using default buyer policy:', this.buyerPolicy);
         return;
       }
 
+      console.log('Loading buyer policy with token...');
       const response = await fetch('/api/v1/admin/pricing/BUYER', {
         headers: {
           Authorization: `Bearer ${authToken}`,
@@ -65,6 +73,13 @@ const submitForm = {
 
       if (!response.ok) {
         console.warn('Failed to load buyer policy:', response.status);
+        console.warn('Response:', await response.text());
+        this.buyerPolicy = {
+          buyFormula: {
+            buyPercentage: 0.55,
+            priceStatistic: 'MEDIAN',
+          }
+        };
         return;
       }
 
@@ -72,12 +87,23 @@ const submitForm = {
       if (data.data) {
         this.buyerPolicy = data.data;
         console.log(
-          'Loaded buyer policy with buyPercentage:',
-          this.buyerPolicy.buyFormula?.buyPercentage
+          'Loaded buyer policy from API:',
+          {
+            buyPercentage: this.buyerPolicy.buyFormula?.buyPercentage,
+            priceStatistic: this.buyerPolicy.buyFormula?.priceStatistic,
+          }
         );
+      } else {
+        console.warn('No policy data in response');
       }
     } catch (error) {
       console.error('Error loading buyer policy:', error);
+      this.buyerPolicy = {
+        buyFormula: {
+          buyPercentage: 0.55,
+          priceStatistic: 'MEDIAN',
+        }
+      };
     }
   },
 
@@ -156,15 +182,23 @@ const submitForm = {
       const data = await response.json();
       const results = data.data?.results || data.data || [];
 
+      // Log raw API response for first result
+      console.log('Raw search response:', {
+        resultsCount: results.length,
+        firstResult: results[0],
+      });
+
       if (results.length === 0) {
         alert('No records found. Try a different search term.');
         return;
       }
 
       // Transform results and calculate estimated offers based on buyer pricing policy
-      const transformedResults = results.map((release) => {
+      const transformedResults = results.map((release, idx) => {
         // Get market snapshot
         const marketSnapshot = release.marketSnapshots?.[0];
+
+        console.log(`Result ${idx} market snapshot:`, marketSnapshot);
 
         // Get the price statistic from the loaded policy (LOW, MEDIAN, HIGH)
         const priceStatistic = this.buyerPolicy?.buyFormula?.priceStatistic || 'MEDIAN';
@@ -192,6 +226,21 @@ const submitForm = {
         let estimatedQuote = 0;
         if (basePrice > 0) {
           estimatedQuote = Math.round(basePrice * buyPercentage * 100) / 100;
+        }
+
+        // Log first result for debugging
+        if (idx === 0) {
+          console.log('=== PRICE CALCULATION DEBUG ===', {
+            title: release.title,
+            priceStatistic,
+            statLow: marketSnapshot?.statLow,
+            statMedian: marketSnapshot?.statMedian,
+            statHigh: marketSnapshot?.statHigh,
+            basePrice,
+            buyPercentage,
+            estimatedQuote,
+            buyerPolicy: this.buyerPolicy,
+          });
         }
 
         return {
