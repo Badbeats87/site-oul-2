@@ -901,12 +901,30 @@
             // Collect form data - ALWAYS collect BOTH buyFormula and sellFormula
             const buyPercentageInput = this.getInputByLabel('Buy Percentage');
             const sellPercentageInput = this.getInputByLabel('Sell Percentage');
-            const priceStatisticSelect = this.getSelectByLabel('Price Statistic');
+
+            // Get price statistic selects from their respective sections
+            // We need to find the Buy and Sell sections separately
+            const buySection = Array.from(document.querySelectorAll('.policy-section')).find(
+              (section) => section.textContent.includes('Buy (Offer) Formula')
+            );
+            const sellSection = Array.from(document.querySelectorAll('.policy-section')).find(
+              (section) => section.textContent.includes('Sell (List Price) Formula')
+            );
+
+            // Helper to find select by label within a section
+            const getSelectInSection = (section, labelText) => {
+              const labels = Array.from(section?.querySelectorAll('label') || []);
+              const label = labels.find((l) => l.textContent.includes(labelText));
+              const container = label?.closest('.form-group') || label?.closest('.form-row');
+              return container?.querySelector('select');
+            };
+
+            const buyPriceStatisticSelect = getSelectInSection(buySection, 'Price Statistic');
+            const sellPriceStatisticSelect = getSelectInSection(sellSection, 'Price Statistic');
+
             const minOfferInput = this.getInputByLabel('Minimum Offer');
             const maxOfferInput = this.getInputByLabel('Maximum Offer');
             const offerValidInput = this.getInputByLabel('Offer Valid For');
-            const minPriceInput = this.getInputByLabel('Minimum Price');
-            const maxPriceInput = this.getInputByLabel('Maximum Price');
 
             // Collect condition curve from first condition table (media)
             const mediaConditions = [
@@ -932,7 +950,7 @@
                 parseFloat(buyPercentageInput?.value || 55) / 100,
               priceStatistic:
                 ['LOW', 'MEDIAN', 'HIGH'][
-                  priceStatisticSelect?.selectedIndex || 1
+                  buyPriceStatisticSelect?.selectedIndex || 1
                 ] || 'MEDIAN',
             };
 
@@ -941,7 +959,7 @@
                 parseFloat(sellPercentageInput?.value || 125) / 100,
               priceStatistic:
                 ['LOW', 'MEDIAN', 'HIGH'][
-                  priceStatisticSelect?.selectedIndex || 1
+                  sellPriceStatisticSelect?.selectedIndex || 1
                 ] || 'MEDIAN',
             };
 
