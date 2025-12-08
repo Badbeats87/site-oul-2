@@ -99,6 +99,9 @@ class SubmissionService {
         );
       }
 
+      // Load active buyer pricing formula to use for calculations
+      const buyerFormula = await pricingService.getBuyerFormula();
+
       let totalOffered = 0;
       const createdItems = [];
 
@@ -287,8 +290,9 @@ class SubmissionService {
               releaseId: releaseIdToUse,
               mediaCondition: conditionMedia,
               sleeveCondition: conditionSleeve,
+              formula: buyerFormula,
             });
-            autoOfferPrice = Number(quote.finalPrice) * (quantity || 1);
+            autoOfferPrice = Number(quote.price) * (quantity || 1);
             logger.debug('Calculated price using pricing engine', {
               releaseId: releaseIdToUse,
               finalPrice: quote.finalPrice,
