@@ -703,9 +703,9 @@
       </footer>
     </main>
 
-    <script src="../../js/api-client.js?v=20251205"></script>
-    <script src="../../js/auth.js?v=20251205"></script>
-    <script src="../../js/topnav.js?v=20251205"></script>
+    <script src="../../js/api-client.js?v=20251208"></script>
+    <script src="../../js/auth.js?v=20251208"></script>
+    <script src="../../js/topnav.js?v=20251208"></script>
     <script>
       /**
        * Pricing Policy Editor Manager
@@ -730,8 +730,16 @@
         },
 
         detectPolicyType() {
-          const url = window.location.pathname;
-          this.policyType = url.includes('buyer') ? 'BUYER' : 'SELLER';
+          // Check for explicit policy type in URL or query params, default to BUYER
+          // e.g., /pricing-editor.html?type=SELLER or /pricing-editor-seller.html
+          const url = window.location.pathname + window.location.search;
+          const typeParam = new URLSearchParams(window.location.search).get('type');
+
+          if (typeParam && ['BUYER', 'SELLER'].includes(typeParam)) {
+            this.policyType = typeParam;
+          } else {
+            this.policyType = url.includes('seller') ? 'SELLER' : 'BUYER';
+          }
         },
 
         bindEvents() {
