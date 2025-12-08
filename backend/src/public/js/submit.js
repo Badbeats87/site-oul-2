@@ -11,11 +11,13 @@ const submitForm = {
     shipping: {},
     payout: '',
   },
+  buyerPolicy: null,
 
   init() {
     this.cacheElements();
     this.bindEvents();
     this.updateProgressIndicator();
+    this.loadBuyerPolicy();
   },
 
   cacheElements() {
@@ -42,6 +44,41 @@ const submitForm = {
       searchResults: document.getElementById('searchResults'),
       searchButton: document.querySelector('.search-box__button'),
     };
+  },
+
+  async loadBuyerPolicy() {
+    try {
+      const authToken =
+        localStorage.getItem('auth_token') ||
+        sessionStorage.getItem('auth_token');
+
+      if (!authToken) {
+        console.warn('No auth token, using default buy percentage');
+        return;
+      }
+
+      const response = await fetch('/api/v1/admin/pricing/BUYER', {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        console.warn('Failed to load buyer policy:', response.status);
+        return;
+      }
+
+      const data = await response.json();
+      if (data.data) {
+        this.buyerPolicy = data.data;
+        console.log(
+          'Loaded buyer policy with buyPercentage:',
+          this.buyerPolicy.buyFormula?.buyPercentage
+        );
+      }
+    } catch (error) {
+      console.error('Error loading buyer policy:', error);
+    }
   },
 
   bindEvents() {
@@ -134,11 +171,14 @@ const submitForm = {
             ? parseFloat(marketSnapshot.statMedian)
             : 0;
 
-        // Calculate estimated offer: lowest_price × 55% (standard buyer percentage)
+        // Get the buy percentage from the loaded policy, fallback to 0.55
+        const buyPercentage = this.buyerPolicy?.buyFormula?.buyPercentage || 0.55;
+
+        // Calculate estimated offer: lowest_price × buyPercentage
         // For NM/NM condition (default)
         let estimatedQuote = 0;
         if (lowestPrice > 0) {
-          estimatedQuote = Math.round(lowestPrice * 0.55 * 100) / 100;
+          estimatedQuote = Math.round(lowestPrice * buyPercentage * 100) / 100;
         }
 
         return {

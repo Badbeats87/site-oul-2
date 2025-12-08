@@ -707,6 +707,292 @@
     <script src="../../js/auth.js?v=20251205"></script>
     <script src="../../js/topnav.js?v=20251205"></script>
     <script>
+      /**
+       * Pricing Policy Editor Manager
+       * Handles loading and saving both BUYER and SELLER pricing policies
+       */
+      const pricingEditorManager = {
+        policyType: null,
+        authToken: null,
+        isEditing: false,
+
+        init() {
+          this.cacheAuthToken();
+          this.bindEvents();
+          this.detectPolicyType();
+          this.loadPolicy();
+        },
+
+        cacheAuthToken() {
+          this.authToken =
+            localStorage.getItem('auth_token') ||
+            sessionStorage.getItem('auth_token');
+        },
+
+        detectPolicyType() {
+          const url = window.location.pathname;
+          this.policyType = url.includes('buyer') ? 'BUYER' : 'SELLER';
+        },
+
+        bindEvents() {
+          const saveButton = document.querySelector('.button--success');
+          if (saveButton) {
+            saveButton.addEventListener('click', (e) => {
+              e.preventDefault();
+              this.savePolicy();
+            });
+          }
+
+          const resetButton = document.querySelectorAll('.button--secondary')[0];
+          if (resetButton) {
+            resetButton.addEventListener('click', (e) => {
+              e.preventDefault();
+              this.resetToDefault();
+            });
+          }
+        },
+
+        async loadPolicy() {
+          try {
+            if (!this.authToken) {
+              console.log('Not authenticated, showing default values');
+              return;
+            }
+
+            const response = await fetch(
+              `/api/v1/admin/pricing/${this.policyType}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${this.authToken}`,
+                },
+              }
+            );
+
+            if (!response.ok) {
+              console.warn('Failed to load policy:', response.status);
+              return;
+            }
+
+            const data = await response.json();
+            if (data.data) {
+              this.populateForm(data.data);
+            }
+          } catch (error) {
+            console.error('Error loading policy:', error);
+          }
+        },
+
+        getInputByLabel(labelText) {
+          const label = Array.from(document.querySelectorAll('label')).find(
+            (l) => l.textContent.includes(labelText)
+          );
+          const container =
+            label?.closest('.form-group') || label?.closest('.form-row');
+          return container?.querySelector('input[type="number"]');
+        },
+
+        getSelectByLabel(labelText) {
+          const label = Array.from(document.querySelectorAll('label')).find(
+            (l) => l.textContent.includes(labelText)
+          );
+          const container =
+            label?.closest('.form-group') || label?.closest('.form-row');
+          return container?.querySelector('select');
+        },
+
+        populateForm(policy) {
+          if (this.policyType === 'BUYER') {
+            // Buy Percentage
+            const buyPercentageInput = this.getInputByLabel('Buy Percentage');
+            if (buyPercentageInput && policy.buyFormula?.buyPercentage) {
+              buyPercentageInput.value = policy.buyFormula.buyPercentage * 100;
+            }
+
+            // Price Statistic
+            const priceStatisticSelect = this.getSelectByLabel('Price Statistic');
+            if (priceStatisticSelect && policy.buyFormula?.priceStatistic) {
+              const statMap = { LOW: 0, MEDIAN: 1, HIGH: 2 };
+              const optionIndex = statMap[policy.buyFormula.priceStatistic] ?? 1;
+              if (priceStatisticSelect.options[optionIndex]) {
+                priceStatisticSelect.selectedIndex = optionIndex;
+              }
+            }
+
+            // Min/Max offers
+            const minOfferInput = this.getInputByLabel('Minimum Offer');
+            if (minOfferInput && policy.minOffer) {
+              minOfferInput.value = policy.minOffer;
+            }
+
+            const maxOfferInput = this.getInputByLabel('Maximum Offer');
+            if (maxOfferInput && policy.maxOffer) {
+              maxOfferInput.value = policy.maxOffer;
+            }
+
+            // Offer expiry days
+            const offerValidInput = this.getInputByLabel('Offer Valid For');
+            if (offerValidInput && policy.offerExpiryDays) {
+              offerValidInput.value = policy.offerExpiryDays;
+            }
+          } else {
+            // SELLER formula
+            // Sell Percentage
+            const sellPercentageInput = this.getInputByLabel('Sell Percentage');
+            if (sellPercentageInput && policy.sellFormula?.sellPercentage) {
+              sellPercentageInput.value = policy.sellFormula.sellPercentage * 100;
+            }
+
+            // Price Statistic
+            const priceStatisticSelect = this.getSelectByLabel('Price Statistic');
+            if (priceStatisticSelect && policy.sellFormula?.priceStatistic) {
+              const statMap = { LOW: 0, MEDIAN: 1, HIGH: 2 };
+              const optionIndex = statMap[policy.sellFormula.priceStatistic] ?? 1;
+              if (priceStatisticSelect.options[optionIndex]) {
+                priceStatisticSelect.selectedIndex = optionIndex;
+              }
+            }
+
+            // Min/Max prices
+            const minPriceInput = this.getInputByLabel('Minimum Price');
+            if (minPriceInput && policy.sellFormula?.minPrice) {
+              minPriceInput.value = policy.sellFormula.minPrice;
+            }
+
+            const maxPriceInput = this.getInputByLabel('Maximum Price');
+            if (maxPriceInput && policy.sellFormula?.maxPrice) {
+              maxPriceInput.value = policy.sellFormula.maxPrice;
+            }
+          }
+
+          // Condition curve (both BUYER and SELLER)
+          if (policy.conditionCurve) {
+            const mediaConditions = [
+              'MINT',
+              'NM',
+              'VG_PLUS',
+              'VG',
+              'VG_MINUS',
+              'G',
+            ];
+            const mediaInputs = document.querySelectorAll(
+              '.condition-table:nth-of-type(1) .input-small'
+            );
+            mediaInputs.forEach((input, idx) => {
+              const condition = mediaConditions[idx];
+              if (policy.conditionCurve?.[condition]) {
+                input.value = policy.conditionCurve[condition] * 100;
+              }
+            });
+          }
+        },
+
+        async savePolicy() {
+          try {
+            if (!this.authToken) {
+              alert('Not authenticated. Please log in first.');
+              return;
+            }
+
+            const policyName = prompt(
+              'Enter a name for this policy:',
+              `${this.policyType} Policy v1`
+            );
+            if (!policyName) return;
+
+            // Collect form data
+            let buyFormula = {};
+            let sellFormula = {};
+
+            if (this.policyType === 'BUYER') {
+              const buyPercentageInput = this.getInputByLabel('Buy Percentage');
+              const priceStatisticSelect = this.getSelectByLabel(
+                'Price Statistic'
+              );
+              const minOfferInput = this.getInputByLabel('Minimum Offer');
+              const maxOfferInput = this.getInputByLabel('Maximum Offer');
+              const offerValidInput = this.getInputByLabel('Offer Valid For');
+
+              buyFormula = {
+                buyPercentage:
+                  parseFloat(buyPercentageInput?.value || 55) / 100,
+                priceStatistic:
+                  ['LOW', 'MEDIAN', 'HIGH'][
+                    priceStatisticSelect?.selectedIndex || 1
+                  ] || 'MEDIAN',
+              };
+            } else {
+              const sellPercentageInput = this.getInputByLabel('Sell Percentage');
+              const priceStatisticSelect = this.getSelectByLabel(
+                'Price Statistic'
+              );
+
+              sellFormula = {
+                sellPercentage:
+                  parseFloat(sellPercentageInput?.value || 125) / 100,
+                priceStatistic:
+                  ['LOW', 'MEDIAN', 'HIGH'][
+                    priceStatisticSelect?.selectedIndex || 1
+                  ] || 'MEDIAN',
+              };
+            }
+
+            const payload = {
+              name: policyName,
+              buyFormula,
+              sellFormula,
+              conditionCurve: {
+                MINT: 1.1,
+                NM: 1.0,
+                VG_PLUS: 0.85,
+                VG: 0.6,
+                VG_MINUS: 0.45,
+                G: 0.3,
+                FAIR: 0.2,
+                POOR: 0.1,
+              },
+            };
+
+            const response = await fetch(
+              `/api/v1/admin/pricing/${this.policyType}`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${this.authToken}`,
+                },
+                body: JSON.stringify(payload),
+              }
+            );
+
+            if (!response.ok) {
+              const error = await response.json();
+              alert('Error saving policy: ' + error.message);
+              return;
+            }
+
+            alert('Policy saved successfully!');
+            this.loadPolicy();
+          } catch (error) {
+            console.error('Error saving policy:', error);
+            alert('Error saving policy: ' + error.message);
+          }
+        },
+
+        resetToDefault() {
+          if (
+            confirm(
+              'Reset all fields to defaults? This will not save automatically.'
+            )
+          ) {
+            if (this.policyType === 'BUYER') {
+              const buyPercentageInput = this.getInputByLabel('Buy Percentage');
+              if (buyPercentageInput) buyPercentageInput.value = 55;
+            }
+            // Add more default resets as needed
+          }
+        },
+      };
+
       document.addEventListener('DOMContentLoaded', async function () {
         const isAuthenticated = await auth.verifySession();
         if (!isAuthenticated) {
@@ -722,6 +1008,9 @@
             }
           });
         }
+
+        // Initialize pricing editor manager
+        pricingEditorManager.init();
       });
     </script>
   </body>
