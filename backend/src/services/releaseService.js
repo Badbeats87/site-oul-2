@@ -137,16 +137,20 @@ class ReleaseService {
           ? parseFloat(marketSnapshot.statLow)
           : null;
       } else if (priceStatistic === 'HIGH') {
+        // If HIGH not available, estimate from LOW (typically 40-50% higher)
         baseStat = marketSnapshot.statHigh
           ? parseFloat(marketSnapshot.statHigh)
-          : null;
+          : marketSnapshot.statLow
+            ? parseFloat(marketSnapshot.statLow) * 1.4
+            : null;
       } else {
-        // Default to MEDIAN, but fallback to LOW if MEDIAN not available
+        // MEDIAN: Use actual median if available, otherwise estimate from LOW
         // (Discogs marketplace stats only provides lowest_price)
+        // Estimate: MEDIAN is typically 20-30% higher than LOW for vinyl
         baseStat = marketSnapshot.statMedian
           ? parseFloat(marketSnapshot.statMedian)
           : marketSnapshot.statLow
-            ? parseFloat(marketSnapshot.statLow)
+            ? parseFloat(marketSnapshot.statLow) * 1.25
             : null;
       }
 
