@@ -163,22 +163,35 @@ const submitForm = {
 
       // Transform results and calculate estimated offers based on buyer pricing policy
       const transformedResults = results.map((release) => {
-        // Get lowest Discogs price as base
+        // Get market snapshot
         const marketSnapshot = release.marketSnapshots?.[0];
-        const lowestPrice = marketSnapshot?.statLow
-          ? parseFloat(marketSnapshot.statLow)
-          : marketSnapshot?.statMedian
+
+        // Get the price statistic from the loaded policy (LOW, MEDIAN, HIGH)
+        const priceStatistic = this.buyerPolicy?.buyFormula?.priceStatistic || 'MEDIAN';
+
+        // Select appropriate price based on policy
+        let basePrice = 0;
+        if (priceStatistic === 'LOW') {
+          basePrice = marketSnapshot?.statLow ? parseFloat(marketSnapshot.statLow) : 0;
+        } else if (priceStatistic === 'HIGH') {
+          basePrice = marketSnapshot?.statHigh ? parseFloat(marketSnapshot.statHigh) : 0;
+        } else {
+          // Default to MEDIAN
+          basePrice = marketSnapshot?.statMedian
             ? parseFloat(marketSnapshot.statMedian)
-            : 0;
+            : marketSnapshot?.statLow
+              ? parseFloat(marketSnapshot.statLow)
+              : 0;
+        }
 
         // Get the buy percentage from the loaded policy, fallback to 0.55
         const buyPercentage = this.buyerPolicy?.buyFormula?.buyPercentage || 0.55;
 
-        // Calculate estimated offer: lowest_price × buyPercentage
+        // Calculate estimated offer: basePrice × buyPercentage
         // For NM/NM condition (default)
         let estimatedQuote = 0;
-        if (lowestPrice > 0) {
-          estimatedQuote = Math.round(lowestPrice * buyPercentage * 100) / 100;
+        if (basePrice > 0) {
+          estimatedQuote = Math.round(basePrice * buyPercentage * 100) / 100;
         }
 
         return {

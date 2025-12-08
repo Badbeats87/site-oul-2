@@ -290,6 +290,7 @@ class SubmissionService {
               releaseId: releaseIdToUse,
               mediaCondition: conditionMedia,
               sleeveCondition: conditionSleeve,
+              marketStatistic: buyerFormula.priceStatistic?.toLowerCase() || 'median',
               formula: buyerFormula,
             });
             autoOfferPrice = Number(quote.price) * (quantity || 1);

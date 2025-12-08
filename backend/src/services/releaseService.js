@@ -116,6 +116,12 @@ class ReleaseService {
 
       // Select price statistic based on policy (LOW, MEDIAN, HIGH)
       const priceStatistic = buyerFormula.priceStatistic || 'MEDIAN';
+
+      logger.debug('calculateOurPrice - buyerFormula loaded', {
+        priceStatistic,
+        buyPercentage: buyerFormula.buyPercentage,
+        allKeys: Object.keys(buyerFormula)
+      });
       let baseStat = null;
 
       if (priceStatistic === 'LOW') {
