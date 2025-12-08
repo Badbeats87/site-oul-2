@@ -6,6 +6,7 @@ import {
   rollbackPricingPolicy,
 } from '../controllers/pricingPolicyController.js';
 import { authenticate, requireRole } from '../middleware/authMiddleware.js';
+import pricingService from '../services/pricingService.js';
 
 const router = express.Router();
 
