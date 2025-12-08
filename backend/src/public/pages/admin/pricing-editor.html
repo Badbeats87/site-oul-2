@@ -809,31 +809,32 @@
         },
 
         populateForm(policy) {
+          // Price Statistic (shared by both BUYER and SELLER)
+          const priceStatisticSelect = this.getSelectByLabel('Price Statistic');
+          const formulaToCheck = this.policyType === 'BUYER' ? policy.buyFormula : policy.sellFormula;
+          if (priceStatisticSelect && formulaToCheck?.priceStatistic) {
+            const statMap = { LOW: 0, MEDIAN: 1, HIGH: 2 };
+            const optionIndex = statMap[formulaToCheck.priceStatistic] ?? 1;
+            if (priceStatisticSelect.options[optionIndex]) {
+              priceStatisticSelect.selectedIndex = optionIndex;
+            }
+          }
+
           if (this.policyType === 'BUYER') {
             // Buy Percentage
             const buyPercentageInput = this.getInputByLabel('Buy Percentage');
-            if (buyPercentageInput && policy.buyFormula?.buyPercentage) {
+            if (buyPercentageInput && policy.buyFormula?.buyPercentage !== undefined) {
               buyPercentageInput.value = policy.buyFormula.buyPercentage * 100;
-            }
-
-            // Price Statistic
-            const priceStatisticSelect = this.getSelectByLabel('Price Statistic');
-            if (priceStatisticSelect && policy.buyFormula?.priceStatistic) {
-              const statMap = { LOW: 0, MEDIAN: 1, HIGH: 2 };
-              const optionIndex = statMap[policy.buyFormula.priceStatistic] ?? 1;
-              if (priceStatisticSelect.options[optionIndex]) {
-                priceStatisticSelect.selectedIndex = optionIndex;
-              }
             }
 
             // Min/Max offers
             const minOfferInput = this.getInputByLabel('Minimum Offer');
-            if (minOfferInput && policy.minOffer) {
+            if (minOfferInput && policy.minOffer !== null && policy.minOffer !== undefined) {
               minOfferInput.value = policy.minOffer;
             }
 
             const maxOfferInput = this.getInputByLabel('Maximum Offer');
-            if (maxOfferInput && policy.maxOffer) {
+            if (maxOfferInput && policy.maxOffer !== null && policy.maxOffer !== undefined) {
               maxOfferInput.value = policy.maxOffer;
             }
 
@@ -846,29 +847,19 @@
             // SELLER formula
             // Sell Percentage
             const sellPercentageInput = this.getInputByLabel('Sell Percentage');
-            if (sellPercentageInput && policy.sellFormula?.sellPercentage) {
+            if (sellPercentageInput && policy.sellFormula?.sellPercentage !== undefined) {
               sellPercentageInput.value = policy.sellFormula.sellPercentage * 100;
-            }
-
-            // Price Statistic
-            const priceStatisticSelect = this.getSelectByLabel('Price Statistic');
-            if (priceStatisticSelect && policy.sellFormula?.priceStatistic) {
-              const statMap = { LOW: 0, MEDIAN: 1, HIGH: 2 };
-              const optionIndex = statMap[policy.sellFormula.priceStatistic] ?? 1;
-              if (priceStatisticSelect.options[optionIndex]) {
-                priceStatisticSelect.selectedIndex = optionIndex;
-              }
             }
 
             // Min/Max prices
             const minPriceInput = this.getInputByLabel('Minimum Price');
-            if (minPriceInput && policy.sellFormula?.minPrice) {
-              minPriceInput.value = policy.sellFormula.minPrice;
+            if (minPriceInput && policy.minOffer !== null && policy.minOffer !== undefined) {
+              minPriceInput.value = policy.minOffer;
             }
 
             const maxPriceInput = this.getInputByLabel('Maximum Price');
-            if (maxPriceInput && policy.sellFormula?.maxPrice) {
-              maxPriceInput.value = policy.sellFormula.maxPrice;
+            if (maxPriceInput && policy.maxOffer !== null && policy.maxOffer !== undefined) {
+              maxPriceInput.value = policy.maxOffer;
             }
           }
 
@@ -887,7 +878,7 @@
             );
             mediaInputs.forEach((input, idx) => {
               const condition = mediaConditions[idx];
-              if (policy.conditionCurve?.[condition]) {
+              if (policy.conditionCurve?.[condition] !== undefined) {
                 input.value = policy.conditionCurve[condition] * 100;
               }
             });
@@ -907,57 +898,61 @@
             );
             if (!policyName) return;
 
-            // Collect form data
-            let buyFormula = {};
-            let sellFormula = {};
+            // Collect form data - ALWAYS collect BOTH buyFormula and sellFormula
+            const buyPercentageInput = this.getInputByLabel('Buy Percentage');
+            const sellPercentageInput = this.getInputByLabel('Sell Percentage');
+            const priceStatisticSelect = this.getSelectByLabel('Price Statistic');
+            const minOfferInput = this.getInputByLabel('Minimum Offer');
+            const maxOfferInput = this.getInputByLabel('Maximum Offer');
+            const offerValidInput = this.getInputByLabel('Offer Valid For');
+            const minPriceInput = this.getInputByLabel('Minimum Price');
+            const maxPriceInput = this.getInputByLabel('Maximum Price');
 
-            if (this.policyType === 'BUYER') {
-              const buyPercentageInput = this.getInputByLabel('Buy Percentage');
-              const priceStatisticSelect = this.getSelectByLabel(
-                'Price Statistic'
-              );
-              const minOfferInput = this.getInputByLabel('Minimum Offer');
-              const maxOfferInput = this.getInputByLabel('Maximum Offer');
-              const offerValidInput = this.getInputByLabel('Offer Valid For');
+            // Collect condition curve from first condition table (media)
+            const mediaConditions = [
+              'MINT',
+              'NM',
+              'VG_PLUS',
+              'VG',
+              'VG_MINUS',
+              'G',
+            ];
+            const conditionCurve = {};
+            const mediaInputs = document.querySelectorAll(
+              '.condition-table:nth-of-type(1) .input-small'
+            );
+            mediaInputs.forEach((input, idx) => {
+              const condition = mediaConditions[idx];
+              conditionCurve[condition] = parseFloat(input.value || 100) / 100;
+            });
 
-              buyFormula = {
-                buyPercentage:
-                  parseFloat(buyPercentageInput?.value || 55) / 100,
-                priceStatistic:
-                  ['LOW', 'MEDIAN', 'HIGH'][
-                    priceStatisticSelect?.selectedIndex || 1
-                  ] || 'MEDIAN',
-              };
-            } else {
-              const sellPercentageInput = this.getInputByLabel('Sell Percentage');
-              const priceStatisticSelect = this.getSelectByLabel(
-                'Price Statistic'
-              );
+            // API requires both buyFormula and sellFormula always
+            const buyFormula = {
+              buyPercentage:
+                parseFloat(buyPercentageInput?.value || 55) / 100,
+              priceStatistic:
+                ['LOW', 'MEDIAN', 'HIGH'][
+                  priceStatisticSelect?.selectedIndex || 1
+                ] || 'MEDIAN',
+            };
 
-              sellFormula = {
-                sellPercentage:
-                  parseFloat(sellPercentageInput?.value || 125) / 100,
-                priceStatistic:
-                  ['LOW', 'MEDIAN', 'HIGH'][
-                    priceStatisticSelect?.selectedIndex || 1
-                  ] || 'MEDIAN',
-              };
-            }
+            const sellFormula = {
+              sellPercentage:
+                parseFloat(sellPercentageInput?.value || 125) / 100,
+              priceStatistic:
+                ['LOW', 'MEDIAN', 'HIGH'][
+                  priceStatisticSelect?.selectedIndex || 1
+                ] || 'MEDIAN',
+            };
 
             const payload = {
               name: policyName,
               buyFormula,
               sellFormula,
-              conditionCurve: {
-                MINT: 1.1,
-                NM: 1.0,
-                VG_PLUS: 0.85,
-                VG: 0.6,
-                VG_MINUS: 0.45,
-                G: 0.3,
-                FAIR: 0.2,
-                POOR: 0.1,
-              },
+              conditionCurve,
+              minOffer: parseFloat(minOfferInput?.value) || 5.0,
+              maxOffer: parseFloat(maxOfferInput?.value) || 500.0,
+              offerExpiryDays: parseInt(offerValidInput?.value) || 14,
             };
 
             const response = await fetch(
@@ -974,7 +969,8 @@
 
             if (!response.ok) {
               const error = await response.json();
-              alert('Error saving policy: ' + error.message);
+              alert('Error saving policy: ' + (error.message || error.error));
+              console.error('API Error:', error);
               return;
             }
 
