@@ -115,43 +115,42 @@ class ReleaseService {
       }
 
       // Select price statistic based on policy (LOW, MEDIAN, HIGH)
-      const priceStatistic = buyerFormula.priceStatistic || 'MEDIAN';
+      let priceStatistic = buyerFormula.priceStatistic || 'MEDIAN';
 
-      console.log('=== calculateOurPrice DEBUG ===');
-      console.log('buyerFormula:', {
-        priceStatistic,
-        buyPercentage: buyerFormula.buyPercentage,
-        allKeys: Object.keys(buyerFormula)
-      });
-      console.log('marketSnapshot fields:', Object.keys(marketSnapshot));
-      console.log('marketSnapshot values:', {
-        statLow: marketSnapshot.statLow,
-        statMedian: marketSnapshot.statMedian,
-        statHigh: marketSnapshot.statHigh,
-      });
-
+      // NOTE: Discogs API only provides lowest_price data
+      // If MEDIAN or HIGH is requested but not available, we MUST fall back to LOW
+      // This is not an estimation - it's the only reliable data available
       let baseStat = null;
+      let usedStatistic = priceStatistic;
 
       if (priceStatistic === 'LOW') {
         baseStat = marketSnapshot.statLow
           ? parseFloat(marketSnapshot.statLow)
           : null;
       } else if (priceStatistic === 'HIGH') {
-        // If HIGH not available, estimate from LOW (typically 40-50% higher)
-        baseStat = marketSnapshot.statHigh
-          ? parseFloat(marketSnapshot.statHigh)
-          : marketSnapshot.statLow
-            ? parseFloat(marketSnapshot.statLow) * 1.4
+        // Discogs doesn't provide highest price data
+        if (marketSnapshot.statHigh) {
+          baseStat = parseFloat(marketSnapshot.statHigh);
+        } else {
+          // Fall back to LOW since it's the only reliable data
+          baseStat = marketSnapshot.statLow
+            ? parseFloat(marketSnapshot.statLow)
             : null;
+          usedStatistic = 'LOW';
+          logger.warn('Policy requested HIGH price but Discogs only provides LOW, falling back to LOW');
+        }
       } else {
-        // MEDIAN: Use actual median if available, otherwise estimate from LOW
-        // (Discogs marketplace stats only provides lowest_price)
-        // Estimate: MEDIAN is typically 20-30% higher than LOW for vinyl
-        baseStat = marketSnapshot.statMedian
-          ? parseFloat(marketSnapshot.statMedian)
-          : marketSnapshot.statLow
-            ? parseFloat(marketSnapshot.statLow) * 1.25
+        // MEDIAN requested
+        if (marketSnapshot.statMedian) {
+          baseStat = parseFloat(marketSnapshot.statMedian);
+        } else {
+          // Fall back to LOW since it's the only reliable data from Discogs API
+          baseStat = marketSnapshot.statLow
+            ? parseFloat(marketSnapshot.statLow)
             : null;
+          usedStatistic = 'LOW';
+          logger.warn('Policy requested MEDIAN price but Discogs only provides LOW, falling back to LOW');
+        }
       }
 
       if (!baseStat) {
@@ -166,6 +165,8 @@ class ReleaseService {
       const basePrice = baseStat * buyPercentage;
 
       logger.debug('calculateOurPrice details', {
+        requestedStatistic: priceStatistic,
+        usedStatistic,
         baseStat,
         buyFormula: buyerFormula,
         buyPercentage,
@@ -183,6 +184,8 @@ class ReleaseService {
         basePrice,
         roundIncrement,
         ourPrice,
+        requestedStatistic: priceStatistic,
+        actualStatisticUsed: usedStatistic,
       });
 
       return ourPrice;
