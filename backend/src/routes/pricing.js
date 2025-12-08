@@ -182,4 +182,45 @@ router.post(
   rollbackPricingPolicy
 );
 
+/**
+ * @swagger
+ * /api/v1/admin/pricing/cache/clear:
+ *   post:
+ *     summary: Clear pricing policy cache
+ *     description: Immediately clear the cached pricing policies to force reload from database
+ *     tags:
+ *       - Admin - Pricing Policies
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Cache cleared successfully
+ */
+router.post(
+  '/cache/clear',
+  authenticate,
+  requireRole('ADMIN'),
+  (req, res) => {
+    try {
+      if (pricingService.clearPolicyCache) {
+        pricingService.clearPolicyCache();
+        res.json({
+          success: true,
+          message: 'Pricing policy cache cleared successfully',
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: 'Cache clear not available',
+        });
+      }
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+);
+
 export default router;

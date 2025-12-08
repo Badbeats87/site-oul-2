@@ -46,7 +46,7 @@ class PricingService {
 
     // Policy cache to avoid repeated database queries
     this.policyCache = new Map();
-    this.policyCacheTTL = 5 * 60 * 1000; // 5 minutes
+    this.policyCacheTTL = 30 * 1000; // 30 seconds (reduced from 5 minutes for faster policy updates)
   }
 
   /**
