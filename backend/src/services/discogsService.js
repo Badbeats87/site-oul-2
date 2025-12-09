@@ -1008,88 +1008,73 @@ class DiscogsService {
           firstVariantIds: vinylVariants.slice(0, 5).map(v => v.id),
         });
 
-        // Collect ALL individual marketplace listing prices from ALL variants
-        // Marketplace listings in Discogs are per-release (variant), so we aggregate across all variants
-        const allListingPrices = [];
-        let totalListingsCount = 0;
-        let variantsWithListings = 0;
+        // The /marketplace/stats/ endpoint only works with release IDs, not master IDs.
+        // We need to fetch the master record to get a specific release ID (main_release)
+        // then fetch marketplace price data for that release.
+        logger.debug('Fetching master record to get main_release ID', { masterId });
 
-        for (let i = 0; i < vinylVariants.length; i++) {
-          const variant = vinylVariants[i];
-          try {
-            // Fetch all individual listings for this variant
-            const listingStats = await this.getMarketplaceListingStats(
-              variant.id,
-              currencyCode
-            );
+        try {
+          const masterResponse = await this.client.get(`/masters/${masterId}`);
+          const mainReleaseId = masterResponse.data.main_release;
 
-            if (listingStats && listingStats.num_for_sale > 0) {
-              // We have marketplace stats for this variant
-              // Collect the LOWEST and HIGHEST prices from each variant to build aggregate distribution
-              if (listingStats.lowest) {
-                allListingPrices.push(parseFloat(listingStats.lowest));
-              }
-              if (listingStats.highest) {
-                allListingPrices.push(parseFloat(listingStats.highest));
-              }
-
-              totalListingsCount += listingStats.num_for_sale;
-              variantsWithListings++;
-
-              logger.debug('Fetched marketplace listings for variant', {
-                masterId,
-                releaseId: variant.id,
-                numListings: listingStats.num_for_sale,
-                lowest: listingStats.lowest,
-                median: listingStats.median,
-                highest: listingStats.highest,
-                variantIndex: i,
-              });
-            }
-
-            // Add small delay between requests to avoid rate limiting
-            await new Promise((resolve) => setTimeout(resolve, 100));
-          } catch (err) {
-            logger.debug('Failed to fetch marketplace listings for variant', {
-              masterId,
-              releaseId: variant.id,
-              variantIndex: i,
-              error: err.message,
-            });
-            // Continue to next variant
+          if (!mainReleaseId) {
+            logger.debug('Master record has no main_release field', { masterId });
+            return null;
           }
-        }
 
-        // Calculate median and statistics from collected prices across all variants
-        let lowestStats = null;
-        if (allListingPrices.length > 0) {
-          allListingPrices.sort((a, b) => a - b);
-
-          const lowest = allListingPrices[0];
-          const highest = allListingPrices[allListingPrices.length - 1];
-          const median =
-            allListingPrices.length % 2 === 0
-              ? (allListingPrices[allListingPrices.length / 2 - 1] + allListingPrices[allListingPrices.length / 2]) / 2
-              : allListingPrices[Math.floor(allListingPrices.length / 2)];
-
-          lowestStats = {
-            lowest: parseFloat(lowest.toFixed(2)),
-            median: parseFloat(median.toFixed(2)),
-            highest: parseFloat(highest.toFixed(2)),
-            currency: currencyCode,
-            num_for_sale: totalListingsCount,
-            variantsChecked: vinylVariants.length,
-            variantsWithListings,
-          };
-
-          logger.debug('Calculated vinyl marketplace statistics from all variant listings', {
+          logger.debug('Fetching marketplace price data for main release', {
             masterId,
-            lowestStats,
-            aggregatedPrices: allListingPrices.length,
+            mainReleaseId,
           });
-        }
 
-        return lowestStats;
+          // First try getPriceSuggestions which provides LOW, MEDIAN, HIGH prices
+          // from different vinyl condition grades
+          let marketplaceStats = await this.getPriceSuggestions(mainReleaseId);
+
+          if (marketplaceStats) {
+            logger.debug('Found price suggestions for main release', {
+              masterId,
+              mainReleaseId,
+              stats: {
+                lowest: marketplaceStats.lowest,
+                median: marketplaceStats.median,
+                highest: marketplaceStats.highest,
+              },
+            });
+            return marketplaceStats;
+          }
+
+          // Fallback to marketplace stats if price suggestions unavailable
+          logger.debug('Price suggestions unavailable, trying marketplace stats', {
+            masterId,
+            mainReleaseId,
+          });
+
+          marketplaceStats = await this.getMarketplaceStats(mainReleaseId, currencyCode);
+
+          if (marketplaceStats) {
+            logger.debug('Found marketplace stats for main release', {
+              masterId,
+              mainReleaseId,
+              stats: {
+                lowest: marketplaceStats.lowest,
+              },
+            });
+            return marketplaceStats;
+          }
+
+          logger.debug('No marketplace data found for main release', {
+            masterId,
+            mainReleaseId,
+          });
+          return null;
+        } catch (innerError) {
+          logger.debug('Failed to fetch marketplace price data for main release', {
+            masterId,
+            error: innerError.message,
+          });
+          return null;
+        }
       } catch (error) {
         logger.debug('Failed to fetch vinyl marketplace stats', {
           masterId,
