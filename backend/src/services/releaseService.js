@@ -679,17 +679,91 @@ class ReleaseService {
         .map(({ _score, ...release }) => release);
 
       // Fetch market data and calculate ourPrice for top results
+      // IMPORTANT: Always fetch fresh Discogs data when discogsId is available
       const resultsWithMarketData = await Promise.all(
         sorted.map(async (release) => {
-          const marketSnapshot = await prisma.marketSnapshot.findFirst({
-            where: {
+          let marketSnapshots = [];
+          let ourPrice = null;
+
+          // Only fetch fresh Discogs data if this is a Discogs-linked release
+          if (release.discogsId) {
+            try {
+              // Always fetch fresh marketplace listing stats from Discogs for accurate pricing
+              logger.debug('Fetching fresh Discogs marketplace data for search result', {
+                releaseId: release.id,
+                discogsId: release.discogsId,
+                title: release.title,
+              });
+
+              const priceStats = await discogsService.getMarketplaceListingStats(
+                release.discogsId,
+                'EUR'
+              );
+
+              if (priceStats) {
+                logger.debug('Got fresh marketplace stats for search result', {
+                  releaseId: release.id,
+                  discogsId: release.discogsId,
+                  stats: {
+                    lowest: priceStats.lowest,
+                    median: priceStats.median,
+                    highest: priceStats.highest,
+                    num_for_sale: priceStats.num_for_sale,
+                  },
+                });
+
+                // Create a fresh market snapshot from the Discogs data
+                const snapshot = {
+                  releaseId: release.id,
+                  source: 'DISCOGS',
+                  statLow: priceStats.lowest || null,
+                  statMedian: priceStats.median || null,
+                  statHigh: priceStats.highest || null,
+                  fetchedAt: new Date(),
+                };
+                marketSnapshots = [snapshot];
+              }
+            } catch (err) {
+              logger.warn('Failed to fetch fresh Discogs data for search result, using cache', {
+                releaseId: release.id,
+                discogsId: release.discogsId,
+                error: err.message,
+              });
+
+              // Fallback to cached data if fresh fetch fails
+              const cachedSnapshot = await prisma.marketSnapshot.findFirst({
+                where: {
+                  releaseId: release.id,
+                  source: 'DISCOGS',
+                },
+                orderBy: { createdAt: 'desc' },
+              });
+              if (cachedSnapshot) {
+                marketSnapshots = [cachedSnapshot];
+              }
+            }
+          } else {
+            // No discogsId - use cached data from database
+            logger.debug('Release not linked to Discogs, using cached market data', {
               releaseId: release.id,
-              source: 'DISCOGS',
-            },
-            orderBy: { createdAt: 'desc' },
-          });
-          const marketSnapshots = marketSnapshot ? [marketSnapshot] : [];
-          const ourPrice = await this.calculateOurPrice(marketSnapshots);
+              title: release.title,
+            });
+
+            const cachedSnapshot = await prisma.marketSnapshot.findFirst({
+              where: {
+                releaseId: release.id,
+                source: 'DISCOGS',
+              },
+              orderBy: { createdAt: 'desc' },
+            });
+            if (cachedSnapshot) {
+              marketSnapshots = [cachedSnapshot];
+            }
+          }
+
+          // Calculate ourPrice from fresh (or fallback cached) data
+          ourPrice = await this.calculateOurPrice(marketSnapshots);
+
           return {
             ...release,
             marketSnapshots,
