@@ -1004,13 +1004,12 @@ class DiscogsService {
               count: vinylVariants.length,
             });
 
-            // First pass: get aggregate stats for first few variants to find the best candidate
-            // Limit to first 5 variants to avoid excessive API calls and rate limiting
-            let bestVariant = null;
-            let lowestPrice = Infinity;
-            const variantsToCheck = Math.min(5, vinylVariants.length);
+            // Collect marketplace stats from all vinyl variants
+            // Calculate MEDIAN and HIGH across all variants
+            const variantPrices = [];
+            const variantStats = [];
 
-            for (let i = 0; i < variantsToCheck; i++) {
+            for (let i = 0; i < vinylVariants.length; i++) {
               const variant = vinylVariants[i];
               try {
                 const stats = await this.getMarketplaceStats(
@@ -1018,10 +1017,13 @@ class DiscogsService {
                   currencyCode
                 );
 
-                if (stats && stats.lowest && stats.lowest < lowestPrice) {
-                  lowestPrice = stats.lowest;
-                  bestVariant = variant;
-                  logger.debug('Found lower vinyl variant', {
+                if (stats && stats.lowest) {
+                  variantPrices.push(parseFloat(stats.lowest));
+                  variantStats.push({
+                    releaseId: variant.id,
+                    price: stats.lowest,
+                  });
+                  logger.debug('Collected variant marketplace price', {
                     masterId,
                     releaseId: variant.id,
                     price: stats.lowest,
@@ -1032,7 +1034,7 @@ class DiscogsService {
                 // Add small delay between requests to avoid rate limiting
                 await new Promise((resolve) => setTimeout(resolve, 100));
               } catch (err) {
-                logger.debug('Failed to fetch aggregate stats for vinyl variant', {
+                logger.debug('Failed to fetch marketplace stats for vinyl variant', {
                   masterId,
                   releaseId: variant.id,
                   variantIndex: i,
@@ -1042,66 +1044,30 @@ class DiscogsService {
               }
             }
 
-            // Second pass: if we found a best variant, try to get detailed listing stats for it
+            // Calculate median and high from collected prices
             let lowestStats = null;
-            if (bestVariant) {
-              try {
-                logger.debug('Fetching detailed listing stats for best variant', {
-                  masterId,
-                  releaseId: bestVariant.id,
-                });
-                const listingStats = await this.getMarketplaceListingStats(
-                  bestVariant.id,
-                  currencyCode
-                );
+            if (variantPrices.length > 0) {
+              variantPrices.sort((a, b) => a - b);
 
-                if (listingStats && listingStats.lowest) {
-                  lowestStats = listingStats;
-                  logger.debug('Successfully fetched detailed listing stats for vinyl variant', {
-                    masterId,
-                    releaseId: bestVariant.id,
-                    price: listingStats.lowest,
-                    median: listingStats.median,
-                    highest: listingStats.highest,
-                    numForSale: listingStats.num_for_sale,
-                  });
-                }
-              } catch (err) {
-                logger.debug('Failed to fetch listing stats for best variant, falling back to aggregate', {
-                  masterId,
-                  releaseId: bestVariant.id,
-                  error: err.message,
-                });
-                // Fall back to aggregate stats for the best variant
-                try {
-                  const fallbackStats = await this.getMarketplaceStats(
-                    bestVariant.id,
-                    currencyCode
-                  );
-                  lowestStats = fallbackStats;
-                  logger.debug('Using fallback aggregate stats for best vinyl variant', {
-                    masterId,
-                    releaseId: bestVariant.id,
-                    price: fallbackStats?.lowest,
-                  });
-                } catch (fallbackErr) {
-                  logger.debug('Fallback to aggregate stats also failed', {
-                    masterId,
-                    releaseId: bestVariant.id,
-                    error: fallbackErr.message,
-                  });
-                }
-              }
-            }
+              const lowest = variantPrices[0];
+              const highest = variantPrices[variantPrices.length - 1];
+              const median =
+                variantPrices.length % 2 === 0
+                  ? (variantPrices[variantPrices.length / 2 - 1] + variantPrices[variantPrices.length / 2]) / 2
+                  : variantPrices[Math.floor(variantPrices.length / 2)];
 
-            if (lowestStats) {
-              logger.debug('Found lowest vinyl marketplace price', {
+              lowestStats = {
+                lowest: parseFloat(lowest.toFixed(2)),
+                median: parseFloat(median.toFixed(2)),
+                highest: parseFloat(highest.toFixed(2)),
+                currency: currencyCode,
+                num_for_sale: variantPrices.length,
+              };
+
+              logger.debug('Calculated vinyl marketplace statistics from variants', {
                 masterId,
-                price: lowestStats.lowest,
-                median: lowestStats.median,
-                highest: lowestStats.highest,
-                currency: lowestStats.currency,
-                numForSale: lowestStats.num_for_sale,
+                lowestStats,
+                variantCount: variantStats.length,
               });
             }
 
