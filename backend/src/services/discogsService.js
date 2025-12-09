@@ -1069,6 +1069,149 @@ class DiscogsService {
   }
 
   /**
+   * Get marketplace listing statistics by fetching all current listings for a release
+   * Calculates LOW, MEDIAN, and HIGH prices from actual marketplace listings
+   * @param {number} releaseId - Discogs release ID
+   * @param {string} currencyCode - Optional currency code (default 'USD')
+   * @returns {Promise<Object>} - Statistics with lowest, median, highest prices and sample size
+   */
+  async getMarketplaceListingStats(releaseId, currencyCode = 'USD') {
+    try {
+      if (!releaseId || typeof releaseId !== 'number') {
+        throw new ApiError('Invalid release ID', 400);
+      }
+
+      const cacheKey = generateCacheKey(
+        'discogs',
+        `marketplace_listing_stats_${releaseId}_${currencyCode}`,
+        {}
+      );
+
+      return await getOrSet(
+        cacheKey,
+        async () => {
+          try {
+            logger.debug('Fetching marketplace listings for release', {
+              releaseId,
+              currencyCode,
+            });
+
+            const prices = [];
+            let page = 1;
+            let hasMore = true;
+            const maxPages = 50; // Safety limit to avoid infinite loops
+
+            // Fetch all listings with pagination
+            while (hasMore && page <= maxPages) {
+              try {
+                const response = await this.retryWithBackoff(
+                  () =>
+                    this.client.get(`/releases/${releaseId}/listings`, {
+                      params: {
+                        per_page: 100,
+                        page,
+                        status: 'For Sale',
+                      },
+                    }),
+                  3,
+                  1500
+                );
+
+                if (!response.data.listings || response.data.listings.length === 0) {
+                  hasMore = false;
+                  break;
+                }
+
+                // Extract prices from listings
+                response.data.listings.forEach((listing) => {
+                  if (listing.price && typeof listing.price === 'number' && listing.price > 0) {
+                    prices.push(parseFloat(listing.price));
+                  }
+                });
+
+                // Check if there are more pages
+                if (!response.data.pagination || response.data.pagination.pages <= page) {
+                  hasMore = false;
+                }
+
+                page++;
+
+                // Add small delay between requests to avoid rate limiting
+                await new Promise((resolve) => setTimeout(resolve, 100));
+              } catch (pageErr) {
+                logger.debug('Error fetching listings page', {
+                  releaseId,
+                  page,
+                  error: pageErr.message,
+                });
+                // Continue to next page or stop if it's a hard error
+                if (pageErr.response?.status === 404) {
+                  hasMore = false;
+                } else if (page === 1) {
+                  // If first page fails, return null
+                  return null;
+                } else {
+                  // If later pages fail, just use what we have
+                  hasMore = false;
+                }
+              }
+            }
+
+            // If no prices found, return null
+            if (prices.length === 0) {
+              logger.debug('No marketplace listings found for release', {
+                releaseId,
+              });
+              return null;
+            }
+
+            // Sort prices to calculate statistics
+            prices.sort((a, b) => a - b);
+
+            const lowest = prices[0];
+            const highest = prices[prices.length - 1];
+            const median =
+              prices.length % 2 === 0
+                ? (prices[prices.length / 2 - 1] + prices[prices.length / 2]) / 2
+                : prices[Math.floor(prices.length / 2)];
+
+            const stats = {
+              release_id: releaseId,
+              currency: currencyCode,
+              lowest: parseFloat(lowest.toFixed(2)),
+              median: parseFloat(median.toFixed(2)),
+              highest: parseFloat(highest.toFixed(2)),
+              average: parseFloat((prices.reduce((a, b) => a + b) / prices.length).toFixed(2)),
+              num_for_sale: prices.length,
+            };
+
+            logger.debug('Calculated marketplace listing statistics', {
+              releaseId,
+              stats,
+            });
+
+            return stats;
+          } catch (error) {
+            logger.debug('Failed to fetch marketplace listing stats', {
+              releaseId,
+              error: error.message,
+            });
+            return null;
+          }
+        },
+        process.env.NODE_ENV === 'development' ? 300 : 900 // Cache for 5 min (dev) or 15 min (prod) - prices change frequently
+      );
+    } catch (error) {
+      if (error.isApiError) throw error;
+      logger.debug('Failed to process marketplace listing stats', {
+        releaseId,
+        error: error.message,
+      });
+      return null;
+    }
+  }
+
+  /**
    * Get marketplace price suggestions for a release (requires OAuth)
    * @param {number} releaseId - Discogs release ID
    * @returns {Promise<Object>} - Price suggestions with marketplace data

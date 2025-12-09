@@ -833,65 +833,97 @@ class ReleaseService {
 
       if (releaseIdForStats) {
         // Try to get marketplace stats with smart fallback
-        // First: Try current marketplace listings (most accurate when available)
+        // First: Try fetching all marketplace listings and calculating LOW/MEDIAN/HIGH from them
         try {
-          priceStats = await discogsService.getMarketplaceStats(
+          logger.debug('Attempting to fetch marketplace listing statistics', {
+            releaseId: releaseIdForStats,
+          });
+
+          priceStats = await discogsService.getMarketplaceListingStats(
             releaseIdForStats,
             'EUR'
           );
-          logger.debug('Marketplace stats fetch result', {
-            releaseId: releaseIdForStats,
-            hasStats: !!priceStats,
-            stats: priceStats,
-          });
 
-          // For masters, always check vinyl variants - vinyl pressing prices are more reliable than master aggregates
-          if (isMaster) {
-            try {
-              logger.debug('Master found, checking vinyl variants', {
-                masterId: releaseIdForStats,
-              });
-              // Get vinyl variant with best marketplace price
-              const vinylStats = await discogsService.getVinylMarketplaceStats(
-                releaseIdForStats,
-                'EUR'
-              );
-              if (vinylStats) {
-                logger.debug('Found vinyl variant pricing', {
-                  masterId: releaseIdForStats,
-                  masterPrice: priceStats?.lowest,
-                  variantPrice: vinylStats?.lowest,
-                });
-
-                // Prefer vinyl variant pricing over master - vinyl pressings are actual saleable items
-                // Masters can have fake/spam listings, so we trust the lowest vinyl variant price
-                logger.debug(
-                  'Using vinyl variant pricing (preferred over master aggregate)',
-                  {
-                    masterId: releaseIdForStats,
-                    masterPrice: priceStats?.lowest,
-                    variantPrice: vinylStats.lowest,
-                  }
-                );
-                priceStats = vinylStats;
-              }
-            } catch (variantErr) {
-              logger.debug('Vinyl variant lookup failed, using master stats', {
-                masterId: releaseIdForStats,
-                error: variantErr.message,
-              });
-            }
+          if (priceStats) {
+            logger.debug('Successfully calculated marketplace listing statistics', {
+              releaseId: releaseIdForStats,
+              stats: {
+                lowest: priceStats.lowest,
+                median: priceStats.median,
+                highest: priceStats.highest,
+                sample_size: priceStats.num_for_sale,
+              },
+            });
           }
         } catch (err) {
-          logger.error('getMarketplaceStats failed', {
+          logger.debug('Marketplace listing stats calculation failed, trying fallback', {
             releaseId: releaseIdForStats,
             error: err.message,
-            errorStatus: err.response?.status,
           });
           priceStats = null;
         }
 
-        // Second: If marketplace stats unavailable/filtered out, try price suggestions
+        // Second: If marketplace listings unavailable, try the aggregate stats endpoint
+        if (!priceStats) {
+          try {
+            priceStats = await discogsService.getMarketplaceStats(
+              releaseIdForStats,
+              'EUR'
+            );
+            logger.debug('Marketplace stats fetch result', {
+              releaseId: releaseIdForStats,
+              hasStats: !!priceStats,
+              stats: priceStats,
+            });
+
+            // For masters, always check vinyl variants - vinyl pressing prices are more reliable than master aggregates
+            if (isMaster) {
+              try {
+                logger.debug('Master found, checking vinyl variants', {
+                  masterId: releaseIdForStats,
+                });
+                // Get vinyl variant with best marketplace price
+                const vinylStats = await discogsService.getVinylMarketplaceStats(
+                  releaseIdForStats,
+                  'EUR'
+                );
+                if (vinylStats) {
+                  logger.debug('Found vinyl variant pricing', {
+                    masterId: releaseIdForStats,
+                    masterPrice: priceStats?.lowest,
+                    variantPrice: vinylStats?.lowest,
+                  });
+
+                  // Prefer vinyl variant pricing over master - vinyl pressings are actual saleable items
+                  // Masters can have fake/spam listings, so we trust the lowest vinyl variant price
+                  logger.debug(
+                    'Using vinyl variant pricing (preferred over master aggregate)',
+                    {
+                      masterId: releaseIdForStats,
+                      masterPrice: priceStats?.lowest,
+                      variantPrice: vinylStats.lowest,
+                    }
+                  );
+                  priceStats = vinylStats;
+                }
+              } catch (variantErr) {
+                logger.debug('Vinyl variant lookup failed, using master stats', {
+                  masterId: releaseIdForStats,
+                  error: variantErr.message,
+                });
+              }
+            }
+          } catch (err) {
+            logger.error('getMarketplaceStats failed', {
+              releaseId: releaseIdForStats,
+              error: err.message,
+              errorStatus: err.response?.status,
+            });
+            priceStats = null;
+          }
+        }
+
+        // Third: If marketplace stats unavailable/filtered out, try price suggestions
         if (!priceStats) {
           try {
             logger.debug(
@@ -917,7 +949,7 @@ class ReleaseService {
           }
         }
 
-        // Third: If still no pricing, try historical price statistics
+        // Fourth: If still no pricing, try historical price statistics
         if (!priceStats) {
           try {
             logger.debug('Trying historical price statistics', {
