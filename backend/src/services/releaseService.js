@@ -137,7 +137,9 @@ class ReleaseService {
             ? parseFloat(marketSnapshot.statLow)
             : null;
           usedStatistic = 'LOW';
-          logger.warn('Policy requested HIGH price but Discogs only provides LOW, falling back to LOW');
+          logger.warn('Policy requested HIGH price but Discogs only provides LOW, falling back to LOW', {
+            marketSnapshot,
+          });
         }
       } else {
         // MEDIAN requested
@@ -149,7 +151,10 @@ class ReleaseService {
             ? parseFloat(marketSnapshot.statLow)
             : null;
           usedStatistic = 'LOW';
-          logger.warn('Policy requested MEDIAN price but Discogs only provides LOW, falling back to LOW');
+          logger.warn('Policy requested MEDIAN price but Discogs only provides LOW, falling back to LOW', {
+            marketSnapshot,
+            requestedStatistic: priceStatistic,
+          });
         }
       }
 
@@ -168,9 +173,14 @@ class ReleaseService {
         requestedStatistic: priceStatistic,
         usedStatistic,
         baseStat,
-        buyFormula: buyerFormula,
+        buyerFormula,
         buyPercentage,
         basePrice,
+        marketSnapshot: {
+          statLow: marketSnapshot.statLow,
+          statMedian: marketSnapshot.statMedian,
+          statHigh: marketSnapshot.statHigh,
+        },
       });
 
       // Apply standard rounding (defaults to 0.25 if not specified)
