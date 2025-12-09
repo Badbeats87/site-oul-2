@@ -948,140 +948,155 @@ class DiscogsService {
         throw new ApiError('Invalid master ID', 400);
       }
 
-      const cacheKey = generateCacheKey(
-        'discogs',
-        `vinyl_marketplace_stats_${masterId}_${currencyCode}`,
-        {}
-      );
+      // Fetch directly without cache to debug vinyl format filtering
+      try {
+        logger.debug('Fetching vinyl variants for master', { masterId });
 
-      return await getOrSet(
-        cacheKey,
-        async () => {
+        // Get ALL vinyl variants of this master (with pagination)
+        let allVersions = [];
+        let page = 1;
+        let hasMore = true;
+
+        while (hasMore) {
+          const response = await this.retryWithBackoff(
+            () =>
+              this.client.get(`/masters/${masterId}/versions`, {
+                params: { per_page: 500, page },
+              }),
+            3,
+            1500
+          );
+
+          if (!response.data.versions || response.data.versions.length === 0) {
+            hasMore = false;
+            break;
+          }
+
+          allVersions = allVersions.concat(response.data.versions);
+
+          // Check if there are more pages
+          if (response.data.pagination) {
+            hasMore = response.data.pagination.pages > page;
+          } else {
+            hasMore = response.data.versions.length === 500;
+          }
+
+          page++;
+
+          // Rate limiting
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+
+        if (allVersions.length === 0) {
+          logger.debug('No versions found for master', { masterId });
+          return null;
+        }
+
+        logger.debug('Fetched all versions for master', {
+          masterId,
+          totalVersions: allVersions.length,
+        });
+
+        // Use ALL variants (not just vinyl) since the "format" field doesn't reliably indicate vinyl
+        // We'll fetch marketplace stats for all variants
+        const vinylVariants = allVersions;
+
+        logger.debug('Found vinyl variants', {
+          masterId,
+          count: vinylVariants.length,
+          totalVersions: allVersions.length,
+          firstVariantIds: vinylVariants.slice(0, 5).map(v => v.id),
+        });
+
+        // Collect ALL individual marketplace listing prices from ALL variants
+        // Marketplace listings in Discogs are per-release (variant), so we aggregate across all variants
+        const allListingPrices = [];
+        let totalListingsCount = 0;
+        let variantsWithListings = 0;
+
+        for (let i = 0; i < vinylVariants.length; i++) {
+          const variant = vinylVariants[i];
           try {
-            logger.debug('Fetching vinyl variants for master', { masterId });
-
-            // Get all vinyl variants of this master
-            const response = await this.retryWithBackoff(
-              () =>
-                this.client.get(`/masters/${masterId}/versions`, {
-                  params: { per_page: 500 },
-                }),
-              3,
-              1500
+            // Fetch all individual listings for this variant
+            const listingStats = await this.getMarketplaceListingStats(
+              variant.id,
+              currencyCode
             );
 
-            if (
-              !response.data.versions ||
-              response.data.versions.length === 0
-            ) {
-              return null;
-            }
-
-            // Filter for vinyl format only (check if format contains LP, Vinyl, or 12"/7"/10" etc)
-            const vinylVariants = response.data.versions.filter((v) => {
-              if (!v.format) return false;
-              const formatLower = v.format.toLowerCase();
-              // Match: lp, vinyl, 12", 7", 10", 33 RPM, 45 RPM, 78 RPM
-              return (
-                formatLower.includes('lp') ||
-                formatLower.includes('vinyl') ||
-                formatLower.includes('12"') ||
-                formatLower.includes('7"') ||
-                formatLower.includes('10"') ||
-                formatLower.includes('33') || // 33 RPM
-                formatLower.includes('45') || // 45 RPM
-                formatLower.includes('78') // 78 RPM
-              );
-            });
-
-            if (vinylVariants.length === 0) {
-              logger.debug('No vinyl variants found for master', { masterId });
-              return null;
-            }
-
-            logger.debug('Found vinyl variants', {
-              masterId,
-              count: vinylVariants.length,
-            });
-
-            // Collect marketplace stats from all vinyl variants
-            // Calculate MEDIAN and HIGH across all variants
-            const variantPrices = [];
-            const variantStats = [];
-
-            for (let i = 0; i < vinylVariants.length; i++) {
-              const variant = vinylVariants[i];
-              try {
-                const stats = await this.getMarketplaceStats(
-                  variant.id,
-                  currencyCode
-                );
-
-                if (stats && stats.lowest) {
-                  variantPrices.push(parseFloat(stats.lowest));
-                  variantStats.push({
-                    releaseId: variant.id,
-                    price: stats.lowest,
-                  });
-                  logger.debug('Collected variant marketplace price', {
-                    masterId,
-                    releaseId: variant.id,
-                    price: stats.lowest,
-                    variantIndex: i,
-                  });
-                }
-
-                // Add small delay between requests to avoid rate limiting
-                await new Promise((resolve) => setTimeout(resolve, 100));
-              } catch (err) {
-                logger.debug('Failed to fetch marketplace stats for vinyl variant', {
-                  masterId,
-                  releaseId: variant.id,
-                  variantIndex: i,
-                  error: err.message,
-                });
-                // Continue to next variant
+            if (listingStats && listingStats.num_for_sale > 0) {
+              // We have marketplace stats for this variant
+              // Collect the LOWEST and HIGHEST prices from each variant to build aggregate distribution
+              if (listingStats.lowest) {
+                allListingPrices.push(parseFloat(listingStats.lowest));
               }
-            }
+              if (listingStats.highest) {
+                allListingPrices.push(parseFloat(listingStats.highest));
+              }
 
-            // Calculate median and high from collected prices
-            let lowestStats = null;
-            if (variantPrices.length > 0) {
-              variantPrices.sort((a, b) => a - b);
+              totalListingsCount += listingStats.num_for_sale;
+              variantsWithListings++;
 
-              const lowest = variantPrices[0];
-              const highest = variantPrices[variantPrices.length - 1];
-              const median =
-                variantPrices.length % 2 === 0
-                  ? (variantPrices[variantPrices.length / 2 - 1] + variantPrices[variantPrices.length / 2]) / 2
-                  : variantPrices[Math.floor(variantPrices.length / 2)];
-
-              lowestStats = {
-                lowest: parseFloat(lowest.toFixed(2)),
-                median: parseFloat(median.toFixed(2)),
-                highest: parseFloat(highest.toFixed(2)),
-                currency: currencyCode,
-                num_for_sale: variantPrices.length,
-              };
-
-              logger.debug('Calculated vinyl marketplace statistics from variants', {
+              logger.debug('Fetched marketplace listings for variant', {
                 masterId,
-                lowestStats,
-                variantCount: variantStats.length,
+                releaseId: variant.id,
+                numListings: listingStats.num_for_sale,
+                lowest: listingStats.lowest,
+                median: listingStats.median,
+                highest: listingStats.highest,
+                variantIndex: i,
               });
             }
 
-            return lowestStats;
-          } catch (error) {
-            logger.debug('Failed to fetch vinyl marketplace stats', {
+            // Add small delay between requests to avoid rate limiting
+            await new Promise((resolve) => setTimeout(resolve, 100));
+          } catch (err) {
+            logger.debug('Failed to fetch marketplace listings for variant', {
               masterId,
-              error: error.message,
+              releaseId: variant.id,
+              variantIndex: i,
+              error: err.message,
             });
-            return null;
+            // Continue to next variant
           }
-        },
-        process.env.NODE_ENV === 'development' ? 300 : 1800 // Cache for 5 min (dev) or 30 min (prod)
-      );
+        }
+
+        // Calculate median and statistics from collected prices across all variants
+        let lowestStats = null;
+        if (allListingPrices.length > 0) {
+          allListingPrices.sort((a, b) => a - b);
+
+          const lowest = allListingPrices[0];
+          const highest = allListingPrices[allListingPrices.length - 1];
+          const median =
+            allListingPrices.length % 2 === 0
+              ? (allListingPrices[allListingPrices.length / 2 - 1] + allListingPrices[allListingPrices.length / 2]) / 2
+              : allListingPrices[Math.floor(allListingPrices.length / 2)];
+
+          lowestStats = {
+            lowest: parseFloat(lowest.toFixed(2)),
+            median: parseFloat(median.toFixed(2)),
+            highest: parseFloat(highest.toFixed(2)),
+            currency: currencyCode,
+            num_for_sale: totalListingsCount,
+            variantsChecked: vinylVariants.length,
+            variantsWithListings,
+          };
+
+          logger.debug('Calculated vinyl marketplace statistics from all variant listings', {
+            masterId,
+            lowestStats,
+            aggregatedPrices: allListingPrices.length,
+          });
+        }
+
+        return lowestStats;
+      } catch (error) {
+        logger.debug('Failed to fetch vinyl marketplace stats', {
+          masterId,
+          error: error.message,
+        });
+        return null;
+      }
     } catch (error) {
       if (error.isApiError) throw error;
       logger.debug('Failed to process vinyl marketplace stats', {

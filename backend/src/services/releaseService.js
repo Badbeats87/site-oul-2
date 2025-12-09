@@ -895,6 +895,12 @@ class ReleaseService {
       let releaseIdForStats;
       let isMaster = false;
 
+      logger.debug('_enrichDiscogsResult called', {
+        resultId,
+        resultType: result.type,
+        typeEqualsMaster: result.type === 'master',
+      });
+
       if (result.type === 'master') {
         release = await discogsService.getMaster(resultId);
         releaseIdForStats = resultId;
@@ -917,37 +923,70 @@ class ReleaseService {
 
       if (releaseIdForStats) {
         // Try to get marketplace stats with smart fallback
-        // First: Try fetching all marketplace listings and calculating LOW/MEDIAN/HIGH from them
-        try {
-          logger.debug('Attempting to fetch marketplace listing statistics', {
-            releaseId: releaseIdForStats,
-          });
-
-          priceStats = await discogsService.getMarketplaceListingStats(
-            releaseIdForStats,
-            'EUR'
-          );
-
-          if (priceStats) {
-            logger.debug('Successfully calculated marketplace listing statistics', {
-              releaseId: releaseIdForStats,
-              stats: {
-                lowest: priceStats.lowest,
-                median: priceStats.median,
-                highest: priceStats.highest,
-                sample_size: priceStats.num_for_sale,
-              },
+        // For masters, check vinyl variants first - vinyl pressing prices are more reliable
+        if (isMaster) {
+          try {
+            logger.debug('Master found, checking vinyl variants first', {
+              masterId: releaseIdForStats,
             });
+            // Get vinyl variant marketplace stats (aggregated from all variants)
+            priceStats = await discogsService.getVinylMarketplaceStats(
+              releaseIdForStats,
+              'EUR'
+            );
+            if (priceStats) {
+              logger.debug('Found vinyl variant marketplace statistics', {
+                masterId: releaseIdForStats,
+                stats: {
+                  lowest: priceStats.lowest,
+                  median: priceStats.median,
+                  highest: priceStats.highest,
+                  sample_size: priceStats.num_for_sale,
+                },
+              });
+            }
+          } catch (err) {
+            logger.debug('Vinyl variant stats failed, will try fallback', {
+              masterId: releaseIdForStats,
+              error: err.message,
+            });
+            priceStats = null;
           }
-        } catch (err) {
-          logger.debug('Marketplace listing stats calculation failed, trying fallback', {
-            releaseId: releaseIdForStats,
-            error: err.message,
-          });
-          priceStats = null;
         }
 
-        // Second: If marketplace listings unavailable, try the aggregate stats endpoint
+        // If we haven't gotten stats yet (not a master or vinyl stats failed), try marketplace listings
+        if (!priceStats) {
+          try {
+            logger.debug('Attempting to fetch marketplace listing statistics', {
+              releaseId: releaseIdForStats,
+            });
+
+            priceStats = await discogsService.getMarketplaceListingStats(
+              releaseIdForStats,
+              'EUR'
+            );
+
+            if (priceStats) {
+              logger.debug('Successfully calculated marketplace listing statistics', {
+                releaseId: releaseIdForStats,
+                stats: {
+                  lowest: priceStats.lowest,
+                  median: priceStats.median,
+                  highest: priceStats.highest,
+                  sample_size: priceStats.num_for_sale,
+                },
+              });
+            }
+          } catch (err) {
+            logger.debug('Marketplace listing stats calculation failed, trying fallback', {
+              releaseId: releaseIdForStats,
+              error: err.message,
+            });
+            priceStats = null;
+          }
+        }
+
+        // Third: If marketplace listings unavailable, try the aggregate stats endpoint
         if (!priceStats) {
           try {
             priceStats = await discogsService.getMarketplaceStats(
@@ -959,44 +998,6 @@ class ReleaseService {
               hasStats: !!priceStats,
               stats: priceStats,
             });
-
-            // For masters, always check vinyl variants - vinyl pressing prices are more reliable than master aggregates
-            if (isMaster) {
-              try {
-                logger.debug('Master found, checking vinyl variants', {
-                  masterId: releaseIdForStats,
-                });
-                // Get vinyl variant with best marketplace price
-                const vinylStats = await discogsService.getVinylMarketplaceStats(
-                  releaseIdForStats,
-                  'EUR'
-                );
-                if (vinylStats) {
-                  logger.debug('Found vinyl variant pricing', {
-                    masterId: releaseIdForStats,
-                    masterPrice: priceStats?.lowest,
-                    variantPrice: vinylStats?.lowest,
-                  });
-
-                  // Prefer vinyl variant pricing over master - vinyl pressings are actual saleable items
-                  // Masters can have fake/spam listings, so we trust the lowest vinyl variant price
-                  logger.debug(
-                    'Using vinyl variant pricing (preferred over master aggregate)',
-                    {
-                      masterId: releaseIdForStats,
-                      masterPrice: priceStats?.lowest,
-                      variantPrice: vinylStats.lowest,
-                    }
-                  );
-                  priceStats = vinylStats;
-                }
-              } catch (variantErr) {
-                logger.debug('Vinyl variant lookup failed, using master stats', {
-                  masterId: releaseIdForStats,
-                  error: variantErr.message,
-                });
-              }
-            }
           } catch (err) {
             logger.error('getMarketplaceStats failed', {
               releaseId: releaseIdForStats,
