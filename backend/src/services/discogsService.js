@@ -1133,11 +1133,34 @@ class DiscogsService {
             let hasMore = true;
             const maxPages = 50; // Safety limit to avoid infinite loops
 
-            // Fetch all listings with pagination
+            // Fetch all listings with pagination - requires OAuth for marketplace access
             while (hasMore && page <= maxPages) {
               try {
-                const response = await this.retryWithBackoff(
-                  () =>
+                // Try to use OAuth token for authenticated marketplace access
+                const oauthToken = await discogsOAuthService.getLatestAccessToken();
+
+                let requestFn;
+                if (oauthToken && oauthToken.accessToken) {
+                  // Use OAuth authentication for marketplace listings
+                  const url = `${DISCOGS_API_BASE}/marketplace/listings?release_id=${releaseId}&per_page=100&page=${page}&status=For%20Sale&curr_abbr=${currencyCode}`;
+                  const authHeader = this._buildOAuthHeader(
+                    'GET',
+                    url,
+                    oauthToken.accessToken,
+                    oauthToken.accessTokenSecret,
+                    process.env.DISCOGS_CONSUMER_SECRET
+                  );
+
+                  requestFn = () =>
+                    axios.get(url, {
+                      headers: {
+                        'Authorization': authHeader,
+                        'User-Agent': 'VinylCatalogAPI/1.0',
+                      },
+                    });
+                } else {
+                  // Fallback to regular client request (will likely fail with 405)
+                  requestFn = () =>
                     this.client.get(`/marketplace/listings`, {
                       params: {
                         release_id: releaseId,
@@ -1145,10 +1168,10 @@ class DiscogsService {
                         page,
                         status: 'For Sale',
                       },
-                    }),
-                  3,
-                  1500
-                );
+                    });
+                }
+
+                const response = await this.retryWithBackoff(requestFn, 3, 1500);
 
                 if (!response.data.listings || response.data.listings.length === 0) {
                   hasMore = false;
