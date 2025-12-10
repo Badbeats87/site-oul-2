@@ -1102,12 +1102,10 @@ class DiscogsService {
 
   /**
    * Get marketplace listing statistics by fetching all current listings for a release
-   * DEPRECATED: The /marketplace/listings endpoint is for creating listings (POST), not reading
-   * This method returns null to allow fallback to getMarketplaceStats() which uses the official API
-   * @deprecated Use getMarketplaceStats() instead
+   * Uses OAuth authentication to access the marketplace listings endpoint
    * @param {number} releaseId - Discogs release ID
    * @param {string} currencyCode - Optional currency code (default 'USD')
-   * @returns {Promise<null>} - Always returns null, use getMarketplaceStats instead
+   * @returns {Promise<Object>} - Statistics with lowest, median, highest prices and sample size
    */
   async getMarketplaceListingStats(releaseId, currencyCode = 'USD') {
     try {
@@ -1115,15 +1113,146 @@ class DiscogsService {
         throw new ApiError('Invalid release ID', 400);
       }
 
-      // The /marketplace/listings endpoint is for creating listings (POST only)
-      // Discogs has deprecated the unofficial /marketplace/search endpoint
-      // Use getMarketplaceStats() which calls the official /marketplace/stats/ endpoint
-      logger.debug('getMarketplaceListingStats is deprecated, use getMarketplaceStats() instead', {
-        releaseId,
-        currencyCode,
-      });
+      const cacheKey = generateCacheKey(
+        'discogs',
+        `marketplace_listing_stats_${releaseId}_${currencyCode}`,
+        {}
+      );
 
-      return null;
+      return await getOrSet(
+        cacheKey,
+        async () => {
+          try {
+            // Get OAuth token for marketplace listings access
+            const oauthToken = await discogsOAuthService.getLatestAccessToken();
+
+            if (!oauthToken || !oauthToken.accessToken) {
+              logger.debug('No OAuth token available for marketplace listings', {
+                releaseId,
+              });
+              return null;
+            }
+
+            logger.debug('Fetching marketplace listings with OAuth', {
+              releaseId,
+              currencyCode,
+            });
+
+            const prices = [];
+            let page = 1;
+            let hasMore = true;
+            const maxPages = 50;
+
+            // Fetch all listings with pagination using OAuth
+            while (hasMore && page <= maxPages) {
+              try {
+                const url = `${DISCOGS_API_BASE}/marketplace/listings?release_id=${releaseId}&per_page=100&page=${page}&status=For%20Sale&curr_abbr=${currencyCode}`;
+                const authHeader = this._buildOAuthHeader(
+                  'GET',
+                  url,
+                  oauthToken.accessToken,
+                  oauthToken.accessTokenSecret,
+                  process.env.DISCOGS_CONSUMER_SECRET
+                );
+
+                const response = await axios.get(url, {
+                  headers: {
+                    Authorization: authHeader,
+                    'User-Agent': 'VinylCatalogAPI/1.0',
+                  },
+                });
+
+                if (!response.data.listings || response.data.listings.length === 0) {
+                  hasMore = false;
+                  break;
+                }
+
+                // Extract prices from listings
+                response.data.listings.forEach((listing) => {
+                  if (listing.price && typeof listing.price === 'number' && listing.price > 0) {
+                    prices.push(parseFloat(listing.price));
+                  }
+                });
+
+                logger.debug('Fetched marketplace listings page', {
+                  releaseId,
+                  page,
+                  listingsCount: response.data.listings.length,
+                  pricesCollected: prices.length,
+                });
+
+                // Check if there are more pages
+                if (!response.data.pagination || response.data.pagination.pages <= page) {
+                  hasMore = false;
+                }
+
+                page++;
+
+                // Add small delay between requests to avoid rate limiting
+                await new Promise((resolve) => setTimeout(resolve, 100));
+              } catch (pageErr) {
+                logger.debug('Error fetching marketplace listings page', {
+                  releaseId,
+                  page,
+                  error: pageErr.message,
+                  status: pageErr.response?.status,
+                });
+
+                if (pageErr.response?.status === 404) {
+                  hasMore = false;
+                } else if (page === 1) {
+                  // If first page fails, return null
+                  return null;
+                } else {
+                  // If later pages fail, use what we have
+                  hasMore = false;
+                }
+              }
+            }
+
+            // If no prices found, return null
+            if (prices.length === 0) {
+              logger.debug('No marketplace listings found for release', {
+                releaseId,
+              });
+              return null;
+            }
+
+            // Sort prices to calculate statistics
+            prices.sort((a, b) => a - b);
+
+            const lowest = prices[0];
+            const highest = prices[prices.length - 1];
+            const median =
+              prices.length % 2 === 0
+                ? (prices[prices.length / 2 - 1] + prices[prices.length / 2]) / 2
+                : prices[Math.floor(prices.length / 2)];
+
+            const result = {
+              lowest: parseFloat(lowest.toFixed(2)),
+              median: parseFloat(median.toFixed(2)),
+              highest: parseFloat(highest.toFixed(2)),
+              currency: currencyCode,
+              num_for_sale: prices.length,
+            };
+
+            logger.debug('Calculated marketplace listing statistics', {
+              releaseId,
+              currencyCode,
+              result,
+            });
+
+            return result;
+          } catch (error) {
+            logger.debug('Failed to fetch marketplace listings', {
+              releaseId,
+              error: error.message,
+            });
+            return null;
+          }
+        },
+        3600 // Cache for 1 hour
+      );
     } catch (error) {
       if (error.isApiError) throw error;
       logger.debug('Error in getMarketplaceListingStats', {
