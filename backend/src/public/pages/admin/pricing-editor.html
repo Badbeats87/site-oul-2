@@ -713,20 +713,12 @@
        */
       const pricingEditorManager = {
         policyType: null,
-        authToken: null,
         isEditing: false,
 
         init() {
-          this.cacheAuthToken();
           this.bindEvents();
           this.detectPolicyType();
           this.loadPolicy();
-        },
-
-        cacheAuthToken() {
-          this.authToken =
-            localStorage.getItem('auth_token') ||
-            sessionStorage.getItem('auth_token');
         },
 
         detectPolicyType() {
@@ -762,28 +754,14 @@
 
         async loadPolicy() {
           try {
-            if (!this.authToken) {
+            if (!api.isAuthenticated()) {
               console.log('Not authenticated, showing default values');
               return;
             }
 
-            const response = await fetch(
-              `/api/v1/admin/pricing/${this.policyType}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${this.authToken}`,
-                },
-              }
-            );
-
-            if (!response.ok) {
-              console.warn('Failed to load policy:', response.status);
-              return;
-            }
-
-            const data = await response.json();
-            if (data.data) {
-              this.populateForm(data.data);
+            const data = await api.get(`/admin/pricing/${this.policyType}`);
+            if (data) {
+              this.populateForm(data);
             }
           } catch (error) {
             console.error('Error loading policy:', error);
@@ -973,30 +951,17 @@
               offerExpiryDays: parseInt(offerValidInput?.value) || 14,
             };
 
-            const response = await fetch(
-              `/api/v1/admin/pricing/${this.policyType}`,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${this.authToken}`,
-                },
-                body: JSON.stringify(payload),
-              }
-            );
-
-            if (!response.ok) {
-              const error = await response.json();
-              alert('Error saving policy: ' + (error.message || error.error));
+            try {
+              const result = await api.post(`/admin/pricing/${this.policyType}`, payload);
+              alert('Policy saved successfully!');
+              this.loadPolicy();
+            } catch (error) {
+              alert('Error saving policy: ' + error.message);
               console.error('API Error:', error);
-              return;
             }
-
-            alert('Policy saved successfully!');
-            this.loadPolicy();
           } catch (error) {
-            console.error('Error saving policy:', error);
-            alert('Error saving policy: ' + error.message);
+            console.error('Error in savePolicy:', error);
+            alert('Error: ' + error.message);
           }
         },
 
