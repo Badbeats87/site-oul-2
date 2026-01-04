@@ -1,5 +1,5 @@
 # Build stage
-FROM node:18-alpine as builder
+FROM node:25-alpine as builder
 
 WORKDIR /app
 
@@ -25,7 +25,7 @@ RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npx prisma gene
 # Skip pruning to avoid removing prisma CLI that we need for migrations and seeding
 
 # Production stage
-FROM node:18-alpine
+FROM node:25-alpine
 
 WORKDIR /app
 
