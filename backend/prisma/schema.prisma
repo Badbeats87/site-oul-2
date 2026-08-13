@@ -8,72 +8,479 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============================================================================
-// CATALOG ENTITIES
-// ============================================================================
+model admin_table_preferences {
+  id              String      @id @db.Uuid
+  user_id         String      @db.Uuid
+  table_name      String      @db.VarChar(100)
+  visible_columns Json
+  created_at      DateTime    @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime    @db.Timestamptz(6)
+  admin_users     admin_users @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-model Release {
-  id              String   @id @default(uuid()) @db.Uuid
-  title           String   @db.VarChar(500)
-  artist          String   @db.VarChar(500)
-  label           String?  @db.VarChar(255)
-  catalogNumber   String?  @map("catalog_number") @db.VarChar(100)
-  barcode         String?  @db.VarChar(50)
-  releaseYear     Int?     @map("release_year")
-  genre           String?  @db.VarChar(100)
-  coverArtUrl     String?  @map("cover_art_url") @db.VarChar(1000)
-  description     String?  @db.Text
-  discogsId       Int?     @map("discogs_id") @unique
-
-  // Full-text search (tsvector for PostgreSQL)
-  searchVector    Unsupported("tsvector")? @map("search_vector")
-
-  // Timestamps
-  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
-
-  // Relations
-  marketSnapshots    MarketSnapshot[]
-  releasePolicies    ReleasePricingPolicy[]
-  submissionItems    SubmissionItem[]
-  inventoryLots      InventoryLot[]
-
-  // Indexes
-  @@index([artist, title])
-  @@index([barcode])
-  @@index([catalogNumber])
-  @@index([genre])
-  @@index([releaseYear])
-  @@index([createdAt])
-  @@index([genre, releaseYear])
-  @@index([discogsId])
-  @@map("releases")
+  @@unique([user_id, table_name])
+  @@index([user_id])
 }
 
-// ============================================================================
-// MARKET DATA
-// ============================================================================
+model admin_users {
+  id                      String                    @id @db.Uuid
+  email                   String                    @unique @db.VarChar(255)
+  name                    String                    @db.VarChar(255)
+  is_active               Boolean                   @default(true)
+  created_at              DateTime                  @default(now()) @db.Timestamptz(6)
+  updated_at              DateTime                  @db.Timestamptz(6)
+  last_login_at           DateTime?                 @db.Timestamptz(6)
+  password_hash           String                    @db.VarChar(255)
+  role                    UserRole                  @default(BUYER)
+  admin_table_preferences admin_table_preferences[]
+  refresh_tokens          refresh_tokens[]
 
-model MarketSnapshot {
-  id          String   @id @default(uuid()) @db.Uuid
-  releaseId   String   @map("release_id") @db.Uuid
+  @@index([email])
+  @@index([role, is_active])
+}
+
+model discogs_oauth_tokens {
+  id                  String    @id @db.Uuid
+  access_token        String    @unique @db.VarChar(500)
+  access_token_secret String    @db.VarChar(500)
+  discogs_username    String?   @db.VarChar(255)
+  discogs_user_id     Int?
+  is_active           Boolean   @default(true)
+  obtained_at         DateTime  @default(now()) @db.Timestamptz(6)
+  expires_at          DateTime? @db.Timestamptz(6)
+  created_at          DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime  @db.Timestamptz(6)
+
+  @@index([discogs_username])
+  @@index([is_active, created_at(sort: Desc)])
+}
+
+model inventory_hold_audits {
+  id          String     @id @db.Uuid
+  hold_id     String     @db.Uuid
+  from_status HoldStatus
+  to_status   HoldStatus
+  reason      String?    @db.VarChar(255)
+  changed_by  String?    @db.Uuid
+  changed_at  DateTime   @default(now()) @db.Timestamptz(6)
+
+  @@index([changed_at(sort: Desc)])
+  @@index([hold_id, changed_at(sort: Desc)])
+}
+
+model inventory_holds {
+  id               String         @id @db.Uuid
+  inventory_lot_id String         @db.Uuid
+  order_id         String?        @db.Uuid
+  session_id       String?        @db.VarChar(255)
+  hold_status      HoldStatus     @default(ACTIVE)
+  quantity         Int            @default(1)
+  expires_at       DateTime       @db.Timestamptz(6)
+  released_at      DateTime?      @db.Timestamptz(6)
+  released_reason  String?        @db.VarChar(255)
+  created_by       String?        @db.Uuid
+  created_at       DateTime       @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime       @db.Timestamptz(6)
+  inventory_lots   inventory_lots @relation(fields: [inventory_lot_id], references: [id], onDelete: Cascade)
+  orders           orders?        @relation(fields: [order_id], references: [id])
+
+  @@index([expires_at, hold_status])
+  @@index([hold_status, created_at(sort: Desc)])
+  @@index([inventory_lot_id, hold_status])
+  @@index([order_id, hold_status])
+  @@index([session_id, hold_status])
+}
+
+model inventory_lots {
+  id                 String            @id @db.Uuid
+  release_id         String            @db.Uuid
+  submission_item_id String?           @db.Uuid
+  condition_media    VinylCondition
+  condition_sleeve   VinylCondition
+  cost_basis         Decimal           @db.Decimal(10, 2)
+  list_price         Decimal           @db.Decimal(10, 2)
+  sale_price         Decimal?          @db.Decimal(10, 2)
+  channel            String?           @db.VarChar(50)
+  status             LotStatus         @default(DRAFT)
+  sku                String?           @unique @db.VarChar(100)
+  internal_notes     String?
+  public_description String?
+  photo_urls         Json?
+  reserved_at        DateTime?         @db.Timestamptz(6)
+  sold_at            DateTime?         @db.Timestamptz(6)
+  order_id           String?           @db.Uuid
+  created_at         DateTime          @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime          @db.Timestamptz(6)
+  listed_at          DateTime?         @db.Timestamptz(6)
+  country            String?           @db.VarChar(100)
+  format             String?           @db.VarChar(100)
+  release_status     String?           @db.VarChar(50)
+  styles             String?           @db.VarChar(255)
+  inventory_holds    inventory_holds[]
+  releases           releases          @relation(fields: [release_id], references: [id])
+  submission_items   submission_items? @relation(fields: [submission_item_id], references: [id])
+  order_items        order_items[]
+
+  @@index([release_id, status])
+  @@index([sku])
+  @@index([status, listed_at(sort: Desc)])
+}
+
+model market_snapshots {
+  id          String       @id @db.Uuid
+  release_id  String       @db.Uuid
   source      MarketSource
-  statLow     Decimal? @map("stat_low") @db.Decimal(10, 2)
-  statMedian  Decimal? @map("stat_median") @db.Decimal(10, 2)
-  statHigh    Decimal? @map("stat_high") @db.Decimal(10, 2)
-  sampleSize  Int?     @map("sample_size")
-  fetchedAt   DateTime @map("fetched_at") @db.Timestamptz
+  stat_low    Decimal?     @db.Decimal(10, 2)
+  stat_median Decimal?     @db.Decimal(10, 2)
+  stat_high   Decimal?     @db.Decimal(10, 2)
+  sample_size Int?
+  fetched_at  DateTime     @db.Timestamptz(6)
+  created_at  DateTime     @default(now()) @db.Timestamptz(6)
+  releases    releases     @relation(fields: [release_id], references: [id], onDelete: Cascade)
 
-  // Timestamps
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  @@index([release_id, fetched_at(sort: Desc)])
+  @@index([source, fetched_at(sort: Desc)])
+}
 
-  // Relations
-  release     Release  @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+model order_audits {
+  id            String      @id @db.Uuid
+  order_id      String      @db.Uuid
+  from_status   OrderStatus
+  to_status     OrderStatus
+  change_reason String?     @db.VarChar(255)
+  changed_by    String?     @db.Uuid
+  changed_at    DateTime    @default(now()) @db.Timestamptz(6)
+  orders        orders      @relation(fields: [order_id], references: [id], onDelete: Cascade)
 
-  // Indexes
-  @@index([releaseId, fetchedAt(sort: Desc)])
-  @@index([source, fetchedAt(sort: Desc)])
-  @@map("market_snapshots")
+  @@index([changed_at(sort: Desc)])
+  @@index([order_id, changed_at(sort: Desc)])
+}
+
+model order_items {
+  id                String         @id @db.Uuid
+  order_id          String         @db.Uuid
+  inventory_lot_id  String         @db.Uuid
+  price_at_purchase Decimal        @db.Decimal(10, 2)
+  release_title     String         @db.VarChar(500)
+  release_artist    String         @db.VarChar(500)
+  condition_media   VinylCondition
+  condition_sleeve  VinylCondition
+  created_at        DateTime       @default(now()) @db.Timestamptz(6)
+  inventory_lots    inventory_lots @relation(fields: [inventory_lot_id], references: [id])
+  orders            orders         @relation(fields: [order_id], references: [id], onDelete: Cascade)
+
+  @@index([inventory_lot_id])
+  @@index([order_id])
+}
+
+model orders {
+  id                       String            @id @db.Uuid
+  orderNumber              String            @unique @db.VarChar(50)
+  buyerEmail               String            @db.VarChar(255)
+  buyerName                String?           @db.VarChar(255)
+  buyerId                  String?           @db.Uuid
+  status                   OrderStatus       @default(CART)
+  subtotal                 Decimal           @db.Decimal(10, 2)
+  tax                      Decimal           @default(0) @db.Decimal(10, 2)
+  shipping                 Decimal           @default(0) @db.Decimal(10, 2)
+  total                    Decimal           @db.Decimal(10, 2)
+  stripe_payment_intent_id String?           @unique @db.VarChar(255)
+  stripe_payment_status    String?           @db.VarChar(50)
+  payment_method           String?           @db.VarChar(50)
+  shippingAddress          Json?
+  sessionId                String?           @db.VarChar(255)
+  ipAddress                String?           @db.VarChar(50)
+  userAgent                String?           @db.VarChar(500)
+  created_at               DateTime          @default(now()) @db.Timestamptz(6)
+  updated_at               DateTime          @db.Timestamptz(6)
+  checkout_started_at      DateTime?         @db.Timestamptz(6)
+  payment_confirmed_at     DateTime?         @db.Timestamptz(6)
+  shipped_at               DateTime?         @db.Timestamptz(6)
+  delivered_at             DateTime?         @db.Timestamptz(6)
+  shipping_method          ShippingMethod?
+  inventory_holds          inventory_holds[]
+  order_audits             order_audits[]
+  order_items              order_items[]
+  shipments                shipments?
+
+  @@index([buyerEmail])
+  @@index([sessionId])
+  @@index([status, created_at(sort: Desc)])
+  @@index([stripe_payment_intent_id])
+}
+
+model pricing_policies {
+  id                       String                     @id @db.Uuid
+  name                     String                     @db.VarChar(255)
+  scope                    PolicyScope
+  is_active                Boolean                    @default(true)
+  version                  Int                        @default(1)
+  buy_formula              Json
+  sell_formula             Json
+  condition_curve          Json
+  min_offer                Decimal?                   @db.Decimal(10, 2)
+  max_offer                Decimal?                   @db.Decimal(10, 2)
+  offer_expiry_days        Int                        @default(30)
+  genre_scope              String?                    @db.VarChar(100)
+  channel_scope            String?                    @db.VarChar(50)
+  created_at               DateTime                   @default(now()) @db.Timestamptz(6)
+  updated_at               DateTime                   @db.Timestamptz(6)
+  created_by               String?                    @db.Uuid
+  pricing_policy_audits    pricing_policy_audits[]
+  release_pricing_policies release_pricing_policies[]
+
+  @@index([genre_scope, is_active])
+  @@index([scope, is_active])
+}
+
+model pricing_policy_audits {
+  id               String           @id @db.Uuid
+  policy_id        String           @db.Uuid
+  change_type      String           @db.VarChar(50)
+  previous_version Int?
+  new_version      Int
+  changes          Json
+  changed_by       String?          @db.Uuid
+  changed_at       DateTime         @default(now()) @db.Timestamptz(6)
+  pricing_policies pricing_policies @relation(fields: [policy_id], references: [id], onDelete: Cascade)
+
+  @@index([policy_id, changed_at(sort: Desc)])
+}
+
+model refresh_tokens {
+  id          String      @id @db.Uuid
+  token       String      @unique @db.VarChar(500)
+  user_id     String      @db.Uuid
+  expires_at  DateTime    @db.Timestamptz(6)
+  revoked_at  DateTime?   @db.Timestamptz(6)
+  replaced_by String?     @db.Uuid
+  created_at  DateTime    @default(now()) @db.Timestamptz(6)
+  admin_users admin_users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([expires_at])
+  @@index([token])
+  @@index([user_id])
+}
+
+model release_pricing_policies {
+  id               String           @id @db.Uuid
+  release_id       String           @db.Uuid
+  policy_id        String           @db.Uuid
+  priority         Int              @default(0)
+  is_active        Boolean          @default(true)
+  created_at       DateTime         @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime         @db.Timestamptz(6)
+  pricing_policies pricing_policies @relation(fields: [policy_id], references: [id], onDelete: Cascade)
+  releases         releases         @relation(fields: [release_id], references: [id], onDelete: Cascade)
+
+  @@unique([release_id, policy_id])
+  @@index([release_id, is_active])
+}
+
+model releases {
+  id                       String                     @id @db.Uuid
+  title                    String                     @db.VarChar(500)
+  artist                   String                     @db.VarChar(500)
+  label                    String?                    @db.VarChar(255)
+  catalog_number           String?                    @db.VarChar(100)
+  barcode                  String?                    @db.VarChar(50)
+  release_year             Int?
+  genre                    String?                    @db.VarChar(100)
+  cover_art_url            String?                    @db.VarChar(1000)
+  description              String?
+  created_at               DateTime                   @default(now()) @db.Timestamptz(6)
+  updated_at               DateTime                   @db.Timestamptz(6)
+  search_vector            Unsupported("tsvector")?
+  discogs_id               Int?                       @unique
+  inventory_lots           inventory_lots[]
+  market_snapshots         market_snapshots[]
+  release_pricing_policies release_pricing_policies[]
+  submission_items         submission_items[]
+
+  @@index([artist, title])
+  @@index([barcode])
+  @@index([catalog_number])
+  @@index([created_at])
+  @@index([discogs_id])
+  @@index([genre])
+  @@index([genre, release_year])
+  @@index([release_year])
+}
+
+model seller_submissions {
+  id                String              @id @db.Uuid
+  seller_contact    String              @db.VarChar(255)
+  seller_name       String?             @db.VarChar(255)
+  seller_notes      String?
+  status            SubmissionStatus    @default(PENDING_REVIEW)
+  total_offered     Decimal?            @db.Decimal(10, 2)
+  total_accepted    Decimal?            @db.Decimal(10, 2)
+  channel           String?             @db.VarChar(50)
+  created_at        DateTime            @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime            @db.Timestamptz(6)
+  expires_at        DateTime            @db.Timestamptz(6)
+  reviewed_at       DateTime?           @db.Timestamptz(6)
+  reviewed_by       String?             @db.Uuid
+  submission_audits submission_audits[]
+  submission_items  submission_items[]
+
+  @@index([expires_at])
+  @@index([seller_contact])
+  @@index([status, created_at(sort: Desc)])
+}
+
+model shipment_tracking {
+  id               String    @id @db.Uuid
+  shipment_id      String    @db.Uuid
+  status           String    @db.VarChar(50)
+  status_detail    String?   @db.VarChar(255)
+  location         String?   @db.VarChar(255)
+  event_time       DateTime  @db.Timestamptz(6)
+  message          String?
+  carrier_event_id String?   @db.VarChar(100)
+  created_at       DateTime  @default(now()) @db.Timestamptz(6)
+  shipments        shipments @relation(fields: [shipment_id], references: [id], onDelete: Cascade)
+
+  @@index([shipment_id, event_time(sort: Desc)])
+}
+
+model shipments {
+  id                      String              @id @db.Uuid
+  order_id                String              @unique @db.Uuid
+  shipment_status         ShipmentStatus      @default(PENDING_LABEL)
+  carrier                 ShippingCarrier
+  shipping_method         ShippingMethod
+  tracking_number         String?             @unique @db.VarChar(100)
+  tracking_url            String?             @db.VarChar(500)
+  label_url               String?             @db.VarChar(500)
+  label_format            String?             @db.VarChar(20)
+  weight_oz               Int
+  packageType             String              @default("PACKAGE") @db.VarChar(50)
+  dimensions              Json?
+  base_rate               Decimal             @db.Decimal(10, 2)
+  insurance_cost          Decimal             @default(0) @db.Decimal(10, 2)
+  total_cost              Decimal             @db.Decimal(10, 2)
+  from_address            Json
+  to_address              Json
+  provider_shipment_id    String?             @db.VarChar(100)
+  provider_rate_id        String?             @db.VarChar(100)
+  provider_metadata       Json?
+  approved_for_shipment   Boolean             @default(false)
+  approved_by             String?             @db.Uuid
+  approved_at             DateTime?           @db.Timestamptz(6)
+  packed_by               String?             @db.Uuid
+  packed_at               DateTime?           @db.Timestamptz(6)
+  estimated_delivery_date DateTime?           @db.Timestamptz(6)
+  actual_delivery_date    DateTime?           @db.Timestamptz(6)
+  signature_required      Boolean             @default(false)
+  created_at              DateTime            @default(now()) @db.Timestamptz(6)
+  updated_at              DateTime            @db.Timestamptz(6)
+  shipped_at              DateTime?           @db.Timestamptz(6)
+  shipment_tracking       shipment_tracking[]
+  orders                  orders              @relation(fields: [order_id], references: [id], onDelete: Cascade)
+
+  @@index([carrier, shipment_status])
+  @@index([shipment_status, created_at(sort: Desc)])
+  @@index([tracking_number])
+}
+
+model shipping_rates {
+  id              String          @id @db.Uuid
+  zone_id         String          @db.Uuid
+  shipping_method ShippingMethod
+  carrier         ShippingCarrier
+  min_weight_oz   Int
+  max_weight_oz   Int
+  base_rate       Decimal         @db.Decimal(10, 2)
+  per_oz_rate     Decimal         @default(0) @db.Decimal(10, 4)
+  min_days        Int
+  max_days        Int
+  effective_date  DateTime        @default(now()) @db.Timestamptz(6)
+  expiration_date DateTime?       @db.Timestamptz(6)
+  is_active       Boolean         @default(true)
+  created_at      DateTime        @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime        @db.Timestamptz(6)
+  shipping_zones  shipping_zones  @relation(fields: [zone_id], references: [id], onDelete: Cascade)
+
+  @@index([min_weight_oz, max_weight_oz])
+  @@index([zone_id, shipping_method, is_active])
+}
+
+model shipping_zones {
+  id              String           @id @db.Uuid
+  name            String           @unique @db.VarChar(100)
+  description     String?
+  states_included String[]
+  zip_ranges      Json?
+  priority        Int              @default(0)
+  is_active       Boolean          @default(true)
+  created_at      DateTime         @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime         @db.Timestamptz(6)
+  shipping_rates  shipping_rates[]
+
+  @@index([priority, is_active])
+}
+
+model submission_audits {
+  id                 String             @id @db.Uuid
+  submission_id      String             @db.Uuid
+  from_status        SubmissionStatus
+  to_status          SubmissionStatus
+  change_reason      String?            @db.VarChar(255)
+  changed_by         String?            @db.Uuid
+  changed_at         DateTime           @default(now()) @db.Timestamptz(6)
+  seller_submissions seller_submissions @relation(fields: [submission_id], references: [id], onDelete: Cascade)
+
+  @@index([changed_at(sort: Desc)])
+  @@index([submission_id, changed_at(sort: Desc)])
+}
+
+model submission_items {
+  id                      String             @id @db.Uuid
+  submission_id           String             @db.Uuid
+  release_id              String             @db.Uuid
+  quantity                Int                @default(1)
+  seller_condition_media  VinylCondition
+  seller_condition_sleeve VinylCondition
+  auto_offer_price        Decimal            @db.Decimal(10, 2)
+  counter_offer_price     Decimal?           @db.Decimal(10, 2)
+  final_offer_price       Decimal?           @db.Decimal(10, 2)
+  policy_id_used          String?            @db.Uuid
+  policy_version_used     Int?
+  status                  ItemStatus         @default(PENDING)
+  notes                   String?
+  created_at              DateTime           @default(now()) @db.Timestamptz(6)
+  updated_at              DateTime           @db.Timestamptz(6)
+  inventory_lots          inventory_lots[]
+  releases                releases           @relation(fields: [release_id], references: [id])
+  seller_submissions      seller_submissions @relation(fields: [submission_id], references: [id], onDelete: Cascade)
+
+  @@index([release_id])
+  @@index([status])
+  @@index([submission_id])
+}
+
+enum HoldStatus {
+  ACTIVE
+  RELEASED
+  EXPIRED
+  CONVERTED_TO_SALE
+}
+
+enum ItemStatus {
+  PENDING
+  ACCEPTED
+  COUNTER_OFFERED
+  REJECTED
+  CONVERTED_TO_INVENTORY
+}
+
+enum LotStatus {
+  DRAFT
+  LIVE
+  RESERVED
+  SOLD
+  REMOVED
+  RETURNED
 }
 
 enum MarketSource {
@@ -83,46 +490,16 @@ enum MarketSource {
   MANUAL
 }
 
-// ============================================================================
-// PRICING POLICIES
-// ============================================================================
-
-model PricingPolicy {
-  id                String   @id @default(uuid()) @db.Uuid
-  name              String   @db.VarChar(255)
-  scope             PolicyScope
-  isActive          Boolean  @default(true) @map("is_active")
-  version           Int      @default(1)
-
-  // Formula configurations (stored as JSON)
-  buyFormula        Json     @map("buy_formula")
-  sellFormula       Json     @map("sell_formula")
-  conditionCurve    Json     @map("condition_curve")
-
-  // Policy parameters
-  minOffer          Decimal? @map("min_offer") @db.Decimal(10, 2)
-  maxOffer          Decimal? @map("max_offer") @db.Decimal(10, 2)
-  offerExpiryDays   Int      @default(30) @map("offer_expiry_days")
-
-  // Genre-specific scope
-  genreScope        String?  @map("genre_scope") @db.VarChar(100)
-
-  // Channel-specific scope
-  channelScope      String?  @map("channel_scope") @db.VarChar(50)
-
-  // Timestamps
-  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz
-  createdBy         String?  @map("created_by") @db.Uuid
-
-  // Relations
-  releasePolicies   ReleasePricingPolicy[]
-  policyAudits      PricingPolicyAudit[]
-
-  // Indexes
-  @@index([scope, isActive])
-  @@index([genreScope, isActive])
-  @@map("pricing_policies")
+enum OrderStatus {
+  CART
+  PAYMENT_PENDING
+  PAYMENT_CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  PAYMENT_FAILED
+  REFUNDED
 }
 
 enum PolicyScope {
@@ -134,81 +511,30 @@ enum PolicyScope {
   SELLER
 }
 
-// Junction table for release-specific policies
-model ReleasePricingPolicy {
-  id              String   @id @default(uuid()) @db.Uuid
-  releaseId       String   @map("release_id") @db.Uuid
-  policyId        String   @map("policy_id") @db.Uuid
-  priority        Int      @default(0)
-  isActive        Boolean  @default(true) @map("is_active")
-
-  // Timestamps
-  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
-
-  // Relations
-  release         Release        @relation(fields: [releaseId], references: [id], onDelete: Cascade)
-  policy          PricingPolicy  @relation(fields: [policyId], references: [id], onDelete: Cascade)
-
-  // Unique constraint
-  @@unique([releaseId, policyId])
-  @@index([releaseId, isActive])
-  @@map("release_pricing_policies")
+enum ShipmentStatus {
+  PENDING_LABEL
+  LABEL_GENERATED
+  READY_TO_SHIP
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED_DELIVERY
+  RETURNED
+  EXCEPTION
 }
 
-// Audit trail for pricing policy changes
-model PricingPolicyAudit {
-  id              String   @id @default(uuid()) @db.Uuid
-  policyId        String   @map("policy_id") @db.Uuid
-  changeType      String   @map("change_type") @db.VarChar(50)
-  previousVersion Int?     @map("previous_version")
-  newVersion      Int      @map("new_version")
-  changes         Json     // Stores the diff of what changed
-  changedBy       String?  @map("changed_by") @db.Uuid
-  changedAt       DateTime @default(now()) @map("changed_at") @db.Timestamptz
-
-  // Relations
-  policy          PricingPolicy @relation(fields: [policyId], references: [id], onDelete: Cascade)
-
-  // Indexes
-  @@index([policyId, changedAt(sort: Desc)])
-  @@map("pricing_policy_audits")
+enum ShippingCarrier {
+  MOCK
+  USPS
+  UPS
+  FEDEX
+  DHL
 }
 
-// ============================================================================
-// SELLER SUBMISSIONS
-// ============================================================================
-
-model SellerSubmission {
-  id              String   @id @default(uuid()) @db.Uuid
-  sellerContact   String   @map("seller_contact") @db.VarChar(255)
-  sellerName      String?  @map("seller_name") @db.VarChar(255)
-  sellerNotes     String?  @map("seller_notes") @db.Text
-  status          SubmissionStatus @default(PENDING_REVIEW)
-
-  // Total value calculations
-  totalOffered    Decimal? @map("total_offered") @db.Decimal(10, 2)
-  totalAccepted   Decimal? @map("total_accepted") @db.Decimal(10, 2)
-
-  // Submission channel
-  channel         String?  @db.VarChar(50)
-
-  // Timestamps
-  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
-  expiresAt       DateTime @map("expires_at") @db.Timestamptz
-  reviewedAt      DateTime? @map("reviewed_at") @db.Timestamptz
-  reviewedBy      String?  @map("reviewed_by") @db.Uuid
-
-  // Relations
-  items           SubmissionItem[]
-  audits          SubmissionAudit[]
-
-  // Indexes
-  @@index([status, createdAt(sort: Desc)])
-  @@index([sellerContact])
-  @@index([expiresAt])
-  @@map("seller_submissions")
+enum ShippingMethod {
+  STANDARD
+  EXPRESS
+  OVERNIGHT
 }
 
 enum SubmissionStatus {
@@ -221,611 +547,20 @@ enum SubmissionStatus {
   COMPLETED
 }
 
-// Audit trail for submission state changes
-model SubmissionAudit {
-  id              String   @id @default(uuid()) @db.Uuid
-  submissionId    String   @map("submission_id") @db.Uuid
-  fromStatus      SubmissionStatus @map("from_status")
-  toStatus        SubmissionStatus @map("to_status")
-  changeReason    String?  @map("change_reason") @db.VarChar(255)
-  changedBy       String?  @map("changed_by") @db.Uuid
-  changedAt       DateTime @default(now()) @map("changed_at") @db.Timestamptz
-
-  // Relations
-  submission      SellerSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-
-  // Indexes
-  @@index([submissionId, changedAt(sort: Desc)])
-  @@index([changedAt(sort: Desc)])
-  @@map("submission_audits")
-}
-
-model SubmissionItem {
-  id                    String   @id @default(uuid()) @db.Uuid
-  submissionId          String   @map("submission_id") @db.Uuid
-  releaseId             String   @map("release_id") @db.Uuid
-  quantity              Int      @default(1)
-
-  // Condition grades
-  sellerConditionMedia  VinylCondition @map("seller_condition_media")
-  sellerConditionSleeve VinylCondition @map("seller_condition_sleeve")
-
-  // Pricing
-  autoOfferPrice        Decimal  @map("auto_offer_price") @db.Decimal(10, 2)
-  counterOfferPrice     Decimal? @map("counter_offer_price") @db.Decimal(10, 2)
-  finalOfferPrice       Decimal? @map("final_offer_price") @db.Decimal(10, 2)
-
-  // Policy tracking
-  policyIdUsed          String?  @map("policy_id_used") @db.Uuid
-  policyVersionUsed     Int?     @map("policy_version_used")
-
-  // Item status
-  status                ItemStatus @default(PENDING)
-  notes                 String?  @db.Text
-
-  // Timestamps
-  createdAt             DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt             DateTime @updatedAt @map("updated_at") @db.Timestamptz
-
-  // Relations
-  submission            SellerSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  release               Release          @relation(fields: [releaseId], references: [id], onDelete: Restrict)
-  inventoryLots         InventoryLot[]
-
-  // Indexes
-  @@index([submissionId])
-  @@index([releaseId])
-  @@index([status])
-  @@map("submission_items")
-}
-
-enum ItemStatus {
-  PENDING
-  ACCEPTED
-  COUNTER_OFFERED
-  REJECTED
-  CONVERTED_TO_INVENTORY
-}
-
-// ============================================================================
-// INVENTORY MANAGEMENT
-// ============================================================================
-
-model InventoryLot {
-  id                String   @id @default(uuid()) @db.Uuid
-  releaseId         String   @map("release_id") @db.Uuid
-  submissionItemId  String?  @map("submission_item_id") @db.Uuid
-
-  // Condition (may differ from submission after inspection)
-  conditionMedia    VinylCondition @map("condition_media")
-  conditionSleeve   VinylCondition @map("condition_sleeve")
-
-  // Pricing
-  costBasis         Decimal  @map("cost_basis") @db.Decimal(10, 2)
-  listPrice         Decimal  @map("list_price") @db.Decimal(10, 2)
-  salePrice         Decimal? @map("sale_price") @db.Decimal(10, 2)
-
-  // Inventory details
-  channel           String?  @db.VarChar(50)
-  status            LotStatus @default(DRAFT)
-  sku               String?  @unique @db.VarChar(100)
-
-  // Merchandising
-  internalNotes     String?  @map("internal_notes") @db.Text
-  publicDescription String?  @map("public_description") @db.Text
-  photoUrls         Json?    @map("photo_urls")
-
-  // Release metadata (specific to this pressing/variant)
-  format            String?  @db.VarChar(100)
-  country           String?  @db.VarChar(100)
-  releaseStatus     String?  @map("release_status") @db.VarChar(50)
-  styles            String?  @db.VarChar(255)
-
-  // Sales tracking
-  reservedAt        DateTime? @map("reserved_at") @db.Timestamptz
-  soldAt            DateTime? @map("sold_at") @db.Timestamptz
-  orderId           String?   @map("order_id") @db.Uuid
-
-  // Timestamps
-  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz
-  listedAt          DateTime? @map("listed_at") @db.Timestamptz
-
-  // Relations
-  release           Release          @relation(fields: [releaseId], references: [id], onDelete: Restrict)
-  submissionItem    SubmissionItem?  @relation(fields: [submissionItemId], references: [id], onDelete: SetNull)
-  orderItems        OrderItem[]
-  holds             InventoryHold[]
-
-  // Indexes
-  @@index([releaseId, status])
-  @@index([status, listedAt(sort: Desc)])
-  @@index([sku])
-  @@map("inventory_lots")
-}
-
-enum LotStatus {
-  DRAFT
-  LIVE
-  RESERVED
-  SOLD
-  REMOVED
-  RETURNED
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  SELLER
+  BUYER
 }
 
 enum VinylCondition {
   MINT
-  NM          // Near Mint
-  VG_PLUS     // Very Good Plus
-  VG          // Very Good
-  VG_MINUS    // Very Good Minus
-  G           // Good
+  NM
+  VG_PLUS
+  VG
+  VG_MINUS
+  G
   FAIR
   POOR
-}
-
-// ============================================================================
-// ORDERS & CHECKOUT
-// ============================================================================
-
-enum OrderStatus {
-  CART                // Initial state - items in cart
-  PAYMENT_PENDING     // Payment intent created, awaiting confirmation
-  PAYMENT_CONFIRMED   // Payment successful
-  PROCESSING          // Order being prepared for shipment
-  SHIPPED             // Order shipped to customer
-  DELIVERED           // Order delivered
-  CANCELLED           // Order cancelled
-  PAYMENT_FAILED      // Payment failed
-  REFUNDED            // Order refunded
-}
-
-model Order {
-  id                     String      @id @default(uuid()) @db.Uuid
-  orderNumber            String      @unique @db.VarChar(50)
-
-  // Buyer Information (guest checkout supported)
-  buyerEmail             String      @db.VarChar(255)
-  buyerName              String?     @db.VarChar(255)
-  buyerId                String?     @db.Uuid
-
-  // Order Status
-  status                 OrderStatus @default(CART)
-
-  // Pricing
-  subtotal               Decimal     @db.Decimal(10, 2)
-  tax                    Decimal     @default(0) @db.Decimal(10, 2)
-  shipping               Decimal     @default(0) @db.Decimal(10, 2)
-  total                  Decimal     @db.Decimal(10, 2)
-
-  // Payment
-  stripePaymentIntentId  String?     @unique @map("stripe_payment_intent_id") @db.VarChar(255)
-  stripePaymentStatus    String?     @map("stripe_payment_status") @db.VarChar(50)
-  paymentMethod          String?     @map("payment_method") @db.VarChar(50)
-
-  // Shipping Address
-  shippingAddress        Json?
-  shippingMethod         ShippingMethod? @map("shipping_method")
-
-  // Metadata
-  sessionId              String?     @db.VarChar(255)
-  ipAddress              String?     @db.VarChar(50)
-  userAgent              String?     @db.VarChar(500)
-
-  // Timestamps
-  createdAt              DateTime    @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt              DateTime    @updatedAt @map("updated_at") @db.Timestamptz
-  checkoutStartedAt      DateTime?   @map("checkout_started_at") @db.Timestamptz
-  paymentConfirmedAt     DateTime?   @map("payment_confirmed_at") @db.Timestamptz
-  shippedAt              DateTime?   @map("shipped_at") @db.Timestamptz
-  deliveredAt            DateTime?   @map("delivered_at") @db.Timestamptz
-
-  // Relations
-  items                  OrderItem[]
-  audits                 OrderAudit[]
-  shipment               Shipment?
-  holds                  InventoryHold[]
-
-  // Indexes
-  @@index([buyerEmail])
-  @@index([status, createdAt(sort: Desc)])
-  @@index([stripePaymentIntentId])
-  @@index([sessionId])
-  @@map("orders")
-}
-
-model OrderItem {
-  id                 String         @id @default(uuid()) @db.Uuid
-  orderId            String         @map("order_id") @db.Uuid
-  inventoryLotId     String         @map("inventory_lot_id") @db.Uuid
-
-  // Snapshot pricing (preserve historical prices)
-  priceAtPurchase    Decimal        @map("price_at_purchase") @db.Decimal(10, 2)
-
-  // Product snapshot
-  releaseTitle       String         @map("release_title") @db.VarChar(500)
-  releaseArtist      String         @map("release_artist") @db.VarChar(500)
-  conditionMedia     VinylCondition @map("condition_media")
-  conditionSleeve    VinylCondition @map("condition_sleeve")
-
-  // Timestamps
-  createdAt          DateTime       @default(now()) @map("created_at") @db.Timestamptz
-
-  // Relations
-  order              Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  inventoryLot       InventoryLot   @relation(fields: [inventoryLotId], references: [id], onDelete: Restrict)
-
-  // Indexes
-  @@index([orderId])
-  @@index([inventoryLotId])
-  @@map("order_items")
-}
-
-model OrderAudit {
-  id           String      @id @default(uuid()) @db.Uuid
-  orderId      String      @map("order_id") @db.Uuid
-  fromStatus   OrderStatus @map("from_status")
-  toStatus     OrderStatus @map("to_status")
-  changeReason String?     @map("change_reason") @db.VarChar(255)
-  changedBy    String?     @map("changed_by") @db.Uuid
-  changedAt    DateTime    @default(now()) @map("changed_at") @db.Timestamptz
-
-  // Relations
-  order        Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  // Indexes
-  @@index([orderId, changedAt(sort: Desc)])
-  @@index([changedAt(sort: Desc)])
-  @@map("order_audits")
-}
-
-// Update Order model to include shipping fields
-// (See extension at end of SHIPPING MANAGEMENT section)
-
-// ============================================================================
-// SHIPPING MANAGEMENT
-// ============================================================================
-
-enum ShippingMethod {
-  STANDARD
-  EXPRESS
-  OVERNIGHT
-}
-
-enum ShipmentStatus {
-  PENDING_LABEL        // Awaiting label generation
-  LABEL_GENERATED      // Label created, pending approval
-  READY_TO_SHIP        // Admin approved
-  IN_TRANSIT           // Shipped, carrier has package
-  OUT_FOR_DELIVERY     // Final delivery leg
-  DELIVERED            // Successfully delivered
-  FAILED_DELIVERY      // Delivery attempt failed
-  RETURNED             // Returned to sender
-  EXCEPTION            // Carrier exception
-}
-
-enum ShippingCarrier {
-  MOCK
-  USPS
-  UPS
-  FEDEX
-  DHL
-}
-
-model Shipment {
-  id                    String          @id @default(uuid()) @db.Uuid
-  orderId               String          @unique @map("order_id") @db.Uuid
-
-  // Status tracking
-  shipmentStatus        ShipmentStatus  @map("shipment_status") @default(PENDING_LABEL)
-  carrier               ShippingCarrier
-  shippingMethod        ShippingMethod  @map("shipping_method")
-
-  // Tracking info
-  trackingNumber        String?         @unique @map("tracking_number") @db.VarChar(100)
-  trackingUrl           String?         @map("tracking_url") @db.VarChar(500)
-
-  // Label details
-  labelUrl              String?         @map("label_url") @db.VarChar(500)
-  labelFormat           String?         @map("label_format") @db.VarChar(20) // PDF, ZPL, PNG
-
-  // Package details
-  weightOz              Int             @map("weight_oz")
-  packageType           String          @default("PACKAGE") @db.VarChar(50)
-  dimensions            Json?           // {length, width, height, unit}
-
-  // Pricing
-  baseRate              Decimal         @map("base_rate") @db.Decimal(10, 2)
-  insuranceCost         Decimal         @default(0) @map("insurance_cost") @db.Decimal(10, 2)
-  totalCost             Decimal         @map("total_cost") @db.Decimal(10, 2)
-
-  // Addresses (denormalized for historical accuracy)
-  fromAddress           Json            @map("from_address")
-  toAddress             Json            @map("to_address")
-
-  // Provider integration (for Shippo/EasyPost)
-  providerShipmentId    String?         @map("provider_shipment_id") @db.VarChar(100)
-  providerRateId        String?         @map("provider_rate_id") @db.VarChar(100)
-  providerMetadata      Json?           @map("provider_metadata")
-
-  // Fulfillment workflow
-  approvedForShipment   Boolean         @default(false) @map("approved_for_shipment")
-  approvedBy            String?         @map("approved_by") @db.Uuid
-  approvedAt            DateTime?       @map("approved_at") @db.Timestamptz
-  packedBy              String?         @map("packed_by") @db.Uuid
-  packedAt              DateTime?       @map("packed_at") @db.Timestamptz
-
-  // Delivery estimates
-  estimatedDeliveryDate DateTime?       @map("estimated_delivery_date") @db.Timestamptz
-  actualDeliveryDate    DateTime?       @map("actual_delivery_date") @db.Timestamptz
-  signatureRequired     Boolean         @default(false) @map("signature_required")
-
-  // Timestamps
-  createdAt             DateTime        @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt             DateTime        @updatedAt @map("updated_at") @db.Timestamptz
-  shippedAt             DateTime?       @map("shipped_at") @db.Timestamptz
-
-  // Relations
-  order                 Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  trackingEvents        ShipmentTracking[]
-
-  @@index([shipmentStatus, createdAt(sort: Desc)])
-  @@index([trackingNumber])
-  @@index([carrier, shipmentStatus])
-  @@map("shipments")
-}
-
-model ShipmentTracking {
-  id              String      @id @default(uuid()) @db.Uuid
-  shipmentId      String      @map("shipment_id") @db.Uuid
-
-  status          String      @db.VarChar(50)
-  statusDetail    String?     @map("status_detail") @db.VarChar(255)
-  location        String?     @db.VarChar(255)
-  eventTime       DateTime    @map("event_time") @db.Timestamptz
-
-  message         String?     @db.Text
-  carrierEventId  String?     @map("carrier_event_id") @db.VarChar(100)
-
-  createdAt       DateTime    @default(now()) @map("created_at") @db.Timestamptz
-
-  shipment        Shipment    @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
-
-  @@index([shipmentId, eventTime(sort: Desc)])
-  @@map("shipment_tracking")
-}
-
-model ShippingZone {
-  id              String      @id @default(uuid()) @db.Uuid
-  name            String      @unique @db.VarChar(100)
-  description     String?     @db.Text
-
-  statesIncluded  String[]    @map("states_included") // ["CA", "NV", "AZ"]
-  zipRanges       Json?       @map("zip_ranges") // [{start: "90000", end: "96999"}]
-
-  priority        Int         @default(0) // Lower = higher priority for matching
-  isActive        Boolean     @default(true) @map("is_active")
-
-  createdAt       DateTime    @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt       DateTime    @updatedAt @map("updated_at") @db.Timestamptz
-
-  rates           ShippingRate[]
-
-  @@index([priority, isActive])
-  @@map("shipping_zones")
-}
-
-model ShippingRate {
-  id              String          @id @default(uuid()) @db.Uuid
-  zoneId          String          @map("zone_id") @db.Uuid
-
-  shippingMethod  ShippingMethod  @map("shipping_method")
-  carrier         ShippingCarrier
-
-  // Weight tiers
-  minWeightOz     Int             @map("min_weight_oz")
-  maxWeightOz     Int             @map("max_weight_oz")
-
-  // Pricing
-  baseRate        Decimal         @map("base_rate") @db.Decimal(10, 2)
-  perOzRate       Decimal         @default(0) @map("per_oz_rate") @db.Decimal(10, 4)
-
-  // Delivery time
-  minDays         Int             @map("min_days")
-  maxDays         Int             @map("max_days")
-
-  // Validity
-  effectiveDate   DateTime        @default(now()) @map("effective_date") @db.Timestamptz
-  expirationDate  DateTime?       @map("expiration_date") @db.Timestamptz
-
-  isActive        Boolean         @default(true) @map("is_active")
-
-  createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt       DateTime        @updatedAt @map("updated_at") @db.Timestamptz
-
-  zone            ShippingZone    @relation(fields: [zoneId], references: [id], onDelete: Cascade)
-
-  @@index([zoneId, shippingMethod, isActive])
-  @@index([minWeightOz, maxWeightOz])
-  @@map("shipping_rates")
-}
-
-// ============================================================================
-// THIRD-PARTY INTEGRATIONS
-// ============================================================================
-
-model DiscogsOAuthToken {
-  id                  String   @id @default(uuid()) @db.Uuid
-
-  // OAuth token data
-  accessToken         String   @unique @db.VarChar(500) @map("access_token")
-  accessTokenSecret   String   @db.VarChar(500) @map("access_token_secret")
-
-  // User identification from Discogs
-  discogsUsername     String?  @db.VarChar(255) @map("discogs_username")
-  discogsUserId       Int?     @map("discogs_user_id")
-
-  // Token lifecycle
-  isActive            Boolean  @default(true) @map("is_active")
-
-  // Timestamps
-  obtainedAt          DateTime @default(now()) @map("obtained_at") @db.Timestamptz
-  expiresAt           DateTime? @map("expires_at") @db.Timestamptz
-  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz
-
-  // Indexes
-  @@index([isActive, createdAt(sort: Desc)])
-  @@index([discogsUsername])
-  @@map("discogs_oauth_tokens")
-}
-
-// ============================================================================
-// USER AUTHENTICATION & AUTHORIZATION
-// ============================================================================
-
-enum UserRole {
-  SUPER_ADMIN  // Full system access, manage users
-  ADMIN        // Manage catalog, pricing, inventory
-  SELLER       // Submit items, view own submissions
-  BUYER        // Browse catalog, place orders
-}
-
-// ============================================================================
-// ADMIN USERS (for audit tracking)
-// ============================================================================
-
-model AdminUser {
-  id                    String   @id @default(uuid()) @db.Uuid
-  email                 String   @unique @db.VarChar(255)
-  name                  String   @db.VarChar(255)
-  role                  UserRole @default(BUYER)
-  passwordHash          String   @map("password_hash") @db.VarChar(255)
-  isActive              Boolean  @default(true) @map("is_active")
-
-  // Timestamps
-  createdAt             DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt             DateTime @updatedAt @map("updated_at") @db.Timestamptz
-  lastLoginAt           DateTime? @map("last_login_at") @db.Timestamptz
-
-  // Relations
-  refreshTokens         RefreshToken[]
-  tablePreferences      AdminTablePreference[]
-
-  @@index([email])
-  @@index([role, isActive])
-  @@map("admin_users")
-}
-
-// Refresh tokens for session management and revocation
-model RefreshToken {
-  id          String   @id @default(uuid()) @db.Uuid
-  token       String   @unique @db.VarChar(500)
-  userId      String   @map("user_id") @db.Uuid
-  expiresAt   DateTime @map("expires_at") @db.Timestamptz
-  revokedAt   DateTime? @map("revoked_at") @db.Timestamptz
-  replacedBy  String?  @map("replaced_by") @db.Uuid
-
-  // Timestamps
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
-
-  // Relations
-  user        AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Indexes
-  @@index([userId])
-  @@index([token])
-  @@index([expiresAt])
-  @@map("refresh_tokens")
-}
-
-// ============================================================================
-// ADMIN TABLE PREFERENCES (Column Visibility)
-// ============================================================================
-
-model AdminTablePreference {
-  id              String   @id @default(uuid()) @db.Uuid
-  userId          String   @map("user_id") @db.Uuid
-  tableName       String   @map("table_name") @db.VarChar(100)
-
-  // Column visibility stored as JSON object
-  // Example: {"title": true, "artist": true, "sku": false}
-  visibleColumns  Json     @map("visible_columns")
-
-  // Timestamps
-  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
-
-  // Relations
-  user            AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Constraints: One preference record per user per table
-  @@unique([userId, tableName])
-  @@index([userId])
-  @@map("admin_table_preferences")
-}
-
-// ============================================================================
-// INVENTORY RESERVATION & HOLDS
-// ============================================================================
-
-enum HoldStatus {
-  ACTIVE              // Hold is currently active
-  RELEASED            // Hold was released (item available again)
-  EXPIRED             // Hold expired without conversion to order
-  CONVERTED_TO_SALE   // Hold converted to sold order item
-}
-
-model InventoryHold {
-  id               String   @id @default(uuid()) @db.Uuid
-  inventoryLotId   String   @map("inventory_lot_id") @db.Uuid
-
-  // Order/Cart tracking
-  orderId          String?  @map("order_id") @db.Uuid
-  sessionId        String?  @map("session_id") @db.VarChar(255)  // For guest carts
-
-  // Hold status and lifecycle
-  holdStatus       HoldStatus @default(ACTIVE) @map("hold_status")
-  quantity         Int        @default(1)  // Support for multi-unit holds if needed
-
-  // Hold validity
-  expiresAt        DateTime   @map("expires_at") @db.Timestamptz
-  releasedAt       DateTime?  @map("released_at") @db.Timestamptz
-  releasedReason   String?    @map("released_reason") @db.VarChar(255)
-
-  // Audit trail
-  createdBy        String?    @map("created_by") @db.Uuid
-  createdAt        DateTime   @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt        DateTime   @updatedAt @map("updated_at") @db.Timestamptz
-
-  // Relations
-  inventoryLot     InventoryLot @relation(fields: [inventoryLotId], references: [id], onDelete: Cascade)
-  order            Order?       @relation(fields: [orderId], references: [id], onDelete: SetNull)
-
-  // Indexes for efficient queries
-  @@index([inventoryLotId, holdStatus])
-  @@index([orderId, holdStatus])
-  @@index([sessionId, holdStatus])
-  @@index([expiresAt, holdStatus])  // For finding expired holds
-  @@index([holdStatus, createdAt(sort: Desc)])
-  @@map("inventory_holds")
-}
-
-model InventoryHoldAudit {
-  id               String   @id @default(uuid()) @db.Uuid
-  holdId           String   @map("hold_id") @db.Uuid
-
-  // Status transition tracking
-  fromStatus       HoldStatus @map("from_status")
-  toStatus         HoldStatus @map("to_status")
-  reason           String?    @db.VarChar(255)
-
-  // Metadata
-  changedBy        String?    @map("changed_by") @db.Uuid
-  changedAt        DateTime   @default(now()) @map("changed_at") @db.Timestamptz
-
-  // Indexes
-  @@index([holdId, changedAt(sort: Desc)])
-  @@index([changedAt(sort: Desc)])
-  @@map("inventory_hold_audits")
 }
